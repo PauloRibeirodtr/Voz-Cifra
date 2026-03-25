@@ -19,7 +19,7 @@
         .preview-fiel .marcacao { display: inline-flex; align-items: center; border-radius: 9999px; background: #eef2ff; color: #4338ca; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 0.85rem; margin: 1.25rem 0 0.8rem; }
         .acorde-mini-card.ativo { border-color: #f97316; background: #fff7ed; color: #9a3412; }
         .diagrama-acorde svg { width: 100%; height: auto; max-width: 240px; }
-        .tooltip-acorde { position: fixed; z-index: 80; width: 280px; pointer-events: none; border-radius: 1rem; border: 1px solid #fed7aa; background: rgba(255,255,255,0.98); box-shadow: 0 18px 50px rgba(15, 23, 42, 0.16); padding: 1rem; backdrop-filter: blur(8px); }
+        .tooltip-acorde { position: fixed; z-index: 80; width: 240px; pointer-events: none; border-radius: 1rem; border: 1px solid #fed7aa; background: rgba(255,255,255,0.98); box-shadow: 0 18px 50px rgba(15, 23, 42, 0.16); padding: 0.85rem; backdrop-filter: blur(8px); }
         .tooltip-acorde.hidden { display: none; }
         .tooltip-acorde svg { width: 100%; height: auto; }
         .variacao-acorde.ativa { background: #166534; color: #fff; border-color: #166534; }
@@ -39,6 +39,8 @@
             .preview-musico-scroll { max-height: none; }
             .cifra-acordes { font-size: 0.88rem; }
             .cifra-letra { font-size: 1rem; line-height: 1.75rem; }
+            .tooltip-acorde { width: 180px; padding: 0.65rem; border-radius: 0.9rem; }
+            .tooltip-acorde svg { max-width: 140px; margin: 0 auto; display: block; }
         }
     </style>
 @endpush
@@ -472,8 +474,10 @@
                 tooltipAcordeNome.textContent = acorde.nome;
                 tooltipAcordeDiagrama.innerHTML = renderizarDiagrama(acorde.shape);
                 tooltipAcorde.classList.remove('hidden');
-                tooltipAcorde.style.left = `${Math.min(x + 18, window.innerWidth - 300)}px`;
-                tooltipAcorde.style.top = `${Math.max(y - 220, 16)}px`;
+                const larguraTooltip = window.innerWidth <= 767 ? 180 : 240;
+                const offsetVertical = window.innerWidth <= 767 ? 165 : 220;
+                tooltipAcorde.style.left = `${Math.max(12, Math.min(x + 14, window.innerWidth - larguraTooltip - 12))}px`;
+                tooltipAcorde.style.top = `${Math.max(y - offsetVertical, 12)}px`;
             };
 
             const ocultarTooltipAcorde = () => {

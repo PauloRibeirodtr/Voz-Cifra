@@ -14,7 +14,7 @@
 
     <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden relative z-10 p-8 m-4">
         <div class="text-center mb-8">
-            <img src="{{ asset('storage/logo/final.png') }}" alt="Logo" class="w-24 mx-auto mb-4 drop-shadow-lg">
+            <img src="{{ asset('logo/final.png') }}" alt="Logo Voz e Cifra" class="w-24 mx-auto mb-4 drop-shadow-lg">
             <h2 class="text-2xl font-bold text-gray-800">Bem-vindo de volta!</h2>
             <p class="text-gray-400 text-sm mt-1">Acesse o painel administrativo do ministerio.</p>
         </div>

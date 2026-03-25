@@ -4,7 +4,7 @@
 >
     <div class="flex items-center justify-between border-b border-green-800 px-4 py-4 md:hidden">
         <div class="flex items-center gap-3">
-            <img src="{{ asset('storage/logo/final.png') }}" alt="Logo Voz e Cifra" class="h-11 w-auto">
+            <img src="{{ asset('logo/final.png') }}" alt="Logo Voz e Cifra" class="h-11 w-auto">
             <div>
                 <p class="text-[10px] font-black uppercase tracking-[0.22em] text-green-300">Voz &amp; Cifra</p>
                 <p class="text-sm font-semibold text-white/90">Menu administrativo</p>
@@ -14,7 +14,7 @@
 
     <div class="py-8 flex flex-col items-center justify-center border-b border-green-800 bg-green-900 shadow-md relative shrink-0">
         <div class="absolute bg-white opacity-5 w-24 h-24 rounded-full blur-xl top-8"></div>
-        <img src="{{ asset('storage/logo/final.png') }}" alt="Logo Voz e Cifra" class="w-28 h-auto mb-4 drop-shadow-2xl hover:scale-105 transition transform duration-300 relative z-10">
+        <img src="{{ asset('logo/final.png') }}" alt="Logo Voz e Cifra" class="w-28 h-auto mb-4 drop-shadow-2xl hover:scale-105 transition transform duration-300 relative z-10">
         <div class="text-center relative z-10">
             <h1 class="font-extrabold text-xl tracking-widest leading-none text-white drop-shadow-md">VOZ</h1>
             <h2 class="font-bold text-lg tracking-wider text-green-100 opacity-90 leading-tight">&amp; CIFRA</h2>
