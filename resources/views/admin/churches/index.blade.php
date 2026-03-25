@@ -1,0 +1,134 @@
+@extends('admin.layouts.admin')
+
+@section('title', 'Igrejas | Voz & Cifra')
+@section('mobile_title', 'Igrejas')
+
+@section('content')
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Igrejas cadastradas</h1>
+            <p class="text-sm text-gray-500">Gerencie as igrejas e seus administradores locais.</p>
+        </div>
+
+        <a href="{{ route('admin.igrejas.create') }}" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-medium text-white hover:bg-green-800 sm:w-auto">
+            Nova igreja
+        </a>
+    </div>
+
+    @if (session('success'))
+        <div class="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 text-sm rounded">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        @if ($igrejas->isEmpty())
+            <div class="p-8 text-center text-gray-500">
+                Nenhuma igreja cadastrada ate o momento.
+            </div>
+        @else
+            <div class="hidden overflow-x-auto md:block">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Igreja</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Localizacao</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Admin local</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Status</th>
+                            <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-500">Acoes</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach ($igrejas as $igreja)
+                            @php($adminLocal = $igreja->usuarios->first())
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4">
+                                    <div class="font-semibold text-gray-800">{{ $igreja->nome }}</div>
+                                    <div class="text-sm text-gray-500">{{ $igreja->slug }}</div>
+                                    <div class="text-xs text-gray-400">CNPJ: {{ $igreja->cnpj }}</div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600">
+                                    <div>{{ $igreja->cidade }} - {{ $igreja->estado }}</div>
+                                    @if ($igreja->endereco)
+                                        <div class="text-xs text-gray-400">{{ $igreja->endereco }}</div>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600">
+                                    @if ($adminLocal)
+                                        <div class="font-medium text-gray-800">{{ $adminLocal->nome }}</div>
+                                        <div>{{ $adminLocal->email }}</div>
+                                        @if ($adminLocal->telefone)
+                                            <div>{{ $adminLocal->telefone }}</div>
+                                        @endif
+                                        <div class="text-xs text-gray-400">{{ $adminLocal->cpf }}</div>
+                                    @else
+                                        <span class="text-amber-600 font-medium">Sem admin local</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold {{ $igreja->ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                        {{ $igreja->ativo ? 'Ativa' : 'Inativa' }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <a href="{{ route('admin.igrejas.edit', $igreja) }}" class="inline-flex px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                        Editar
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="space-y-4 p-4 md:hidden">
+                @foreach ($igrejas as $igreja)
+                    @php($adminLocal = $igreja->usuarios->first())
+                    <article class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <h2 class="break-words text-base font-bold text-gray-800">{{ $igreja->nome }}</h2>
+                                <p class="mt-1 break-all text-sm text-gray-500">{{ $igreja->slug }}</p>
+                                <p class="mt-1 text-xs text-gray-400">CNPJ: {{ $igreja->cnpj }}</p>
+                            </div>
+
+                            <span class="inline-flex shrink-0 rounded-full px-3 py-1 text-xs font-semibold {{ $igreja->ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                {{ $igreja->ativo ? 'Ativa' : 'Inativa' }}
+                            </span>
+                        </div>
+
+                        <div class="mt-4 grid grid-cols-1 gap-3 text-sm text-gray-600">
+                            <div class="rounded-xl bg-gray-50 p-3">
+                                <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-400">Localizacao</span>
+                                <div class="mt-1">{{ $igreja->cidade }} - {{ $igreja->estado }}</div>
+                                @if ($igreja->endereco)
+                                    <div class="mt-1 text-xs text-gray-400">{{ $igreja->endereco }}</div>
+                                @endif
+                            </div>
+
+                            <div class="rounded-xl bg-gray-50 p-3">
+                                <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-400">Admin local</span>
+                                @if ($adminLocal)
+                                    <div class="mt-1 font-semibold text-gray-800">{{ $adminLocal->nome }}</div>
+                                    <div class="break-all">{{ $adminLocal->email }}</div>
+                                    @if ($adminLocal->telefone)
+                                        <div>{{ $adminLocal->telefone }}</div>
+                                    @endif
+                                    <div class="text-xs text-gray-400">{{ $adminLocal->cpf }}</div>
+                                @else
+                                    <div class="mt-1 font-medium text-amber-600">Sem admin local</div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <a href="{{ route('admin.igrejas.edit', $igreja) }}" class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                                Editar igreja
+                            </a>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+        @endif
+    </div>
+@endsection

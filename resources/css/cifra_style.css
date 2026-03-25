@@ -1,0 +1,89 @@
+/* ARQUIVO: public/css/cifra_style.css */
+
+/* CONFIGURAÇÃO GERAL DA ÁREA DA CIFRA */
+.cifra-body {
+    font-family: 'Roboto Mono', monospace;
+    line-height: 3; /* Espaçamento igual ao original */
+    white-space: pre-wrap;
+    overflow-x: auto;
+    font-size: 16px; /* Tamanho base */
+}
+
+/* O TEXTO DO ACORDE (C, G, Am...) */
+.chord {
+    color: #ea580c; /* Laranja vibrante */
+    font-weight: 700;
+    cursor: pointer;
+    position: relative; /* Essencial para segurar o tooltip */
+    display: inline-block;
+    transition: all 0.2s;
+    z-index: 10;
+}
+
+.chord:hover { 
+    color: #c2410c; 
+    transform: translateY(-2px); 
+    z-index: 50;
+}
+
+/* O BALÃOZINHO (TOOLTIP) - Exatamente como no seu código */
+.chord-tooltip {
+    opacity: 0; 
+    visibility: hidden;
+    position: absolute;
+    bottom: 110%; /* Fica acima do acorde */
+    left: 50%;
+    transform: translateX(-50%) translateY(10px); /* Efeito de subida */
+    
+    background: white;
+    border: 1px solid #e5e7eb;
+    padding: 12px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    
+    z-index: 100;
+    width: 130px; /* LARGURA FIXA QUE VOCÊ QUERIA */
+    text-align: center;
+    transition: all 0.2s ease-in-out;
+    pointer-events: none;
+}
+
+/* SETINHA DO BALÃO */
+.chord-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -8px;
+    border-width: 8px;
+    border-style: solid;
+    border-color: white transparent transparent transparent;
+}
+
+/* MOSTRAR AO PASSAR O MOUSE */
+.chord:hover .chord-tooltip { 
+    opacity: 1; 
+    visibility: visible; 
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ESTILO DO SVG DENTRO DO BALÃO */
+.chord-svg {
+    width: 100%;
+    height: auto;
+}
+
+.chord-svg text { font-family: sans-serif; font-weight: bold; }
+.chord-svg path { stroke-linecap: round; }
+
+/* BARRA LATERAL */
+#chordList div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* IMPRESSÃO */
+@media print {
+    .chord-tooltip { display: none !important; }
+}
