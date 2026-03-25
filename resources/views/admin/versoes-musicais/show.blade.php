@@ -7,15 +7,17 @@
     <style>
         .aba-modo.ativa { background: #166534; color: #fff; box-shadow: 0 8px 18px rgba(22, 101, 52, 0.18); }
         .painel-modo.hidden { display: none; }
+        .preview-admin-box { --admin-escala-fonte: 1; }
+        .preview-musico-scroll { --escala-fonte: 1; max-height: 68vh; overflow-y: auto; scroll-behavior: smooth; }
+        .preview-fiel { --escala-fonte: 1; }
         .cifra-linha { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.15rem; margin-bottom: 0.65rem; }
         .cifra-segmento { display: inline-flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; min-height: 3.5rem; }
-        .cifra-acordes { min-height: 1.4rem; margin-bottom: 0.1rem; color: #f97316; font-weight: 800; font-size: 0.95rem; line-height: 1.1rem; letter-spacing: 0.01em; white-space: pre; }
+        .cifra-acordes { min-height: 1.4rem; margin-bottom: 0.1rem; color: #f97316; font-weight: 800; font-size: calc(0.95rem * var(--escala-fonte)); line-height: calc(1.1rem * var(--escala-fonte)); letter-spacing: 0.01em; white-space: pre; }
         .cifra-acorde { display: inline-block; cursor: pointer; padding: 0 0.05rem; border-radius: 0.35rem; transition: background-color 0.15s ease, color 0.15s ease; }
         .cifra-acorde:hover, .cifra-acorde.ativa { background: rgba(249, 115, 22, 0.14); color: #c2410c; }
-        .cifra-letra { color: #111827; font-size: 1.08rem; line-height: 1.85rem; white-space: pre-wrap; }
+        .cifra-letra { color: #111827; font-size: calc(1.08rem * var(--escala-fonte)); line-height: calc(1.85rem * var(--escala-fonte)); white-space: pre-wrap; }
         .cifra-marcacao { display: inline-flex; align-items: center; border-radius: 9999px; background: #e5e7eb; color: #374151; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 0.85rem; margin: 1rem 0 0.75rem; }
-        .preview-musico-scroll { max-height: 68vh; overflow-y: auto; scroll-behavior: smooth; }
-        .preview-fiel p { margin-bottom: 0.95rem; color: #1f2937; font-size: 1.03rem; line-height: 1.95rem; }
+        .preview-fiel p { margin-bottom: 0.95rem; color: #1f2937; font-size: calc(1.03rem * var(--escala-fonte)); line-height: calc(1.95rem * var(--escala-fonte)); }
         .preview-fiel .marcacao { display: inline-flex; align-items: center; border-radius: 9999px; background: #eef2ff; color: #4338ca; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 0.85rem; margin: 1.25rem 0 0.8rem; }
         .acorde-mini-card.ativo { border-color: #f97316; background: #fff7ed; color: #9a3412; }
         .diagrama-acorde svg { width: 100%; height: auto; max-width: 240px; }
@@ -30,17 +32,23 @@
         .bpm-box { display: inline-flex; align-items: center; border: 1px solid #d1d5db; border-radius: 0.85rem; overflow: hidden; background: #fff; }
         .bpm-box button { width: 2.2rem; height: 2.2rem; font-weight: 800; color: #374151; background: #f9fafb; }
         .bpm-box input { width: 4rem; text-align: center; border: 0; outline: none; font-weight: 700; color: #111827; }
+        .controle-preview { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; justify-content: space-between; margin-top: 1rem; }
+        .controle-preview-grupo { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+        .botao-pill { display: inline-flex; align-items: center; justify-content: center; min-width: 2.5rem; height: 2.5rem; padding: 0 0.9rem; border-radius: 9999px; border: 1px solid #d1d5db; background: #fff; color: #374151; font-size: 0.9rem; font-weight: 700; transition: all 0.15s ease; }
+        .botao-pill:hover { border-color: #fdba74; background: #fff7ed; color: #c2410c; }
+        .pill-info { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 2.5rem; padding: 0 0.95rem; border-radius: 9999px; background: #f8fafc; border: 1px solid #e2e8f0; color: #0f172a; font-size: 0.85rem; font-weight: 700; }
         .musico-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+        .preview-admin-texto { font-size: calc(0.95rem * var(--admin-escala-fonte)); line-height: calc(1.75rem * var(--admin-escala-fonte)); }
         @media (min-width: 1280px) {
             .painel-musico-topo { grid-template-columns: minmax(0, 1fr) 380px; align-items: start; }
             .musico-layout { grid-template-columns: minmax(0, 1fr); }
         }
         @media (max-width: 767px) {
             .preview-musico-scroll { max-height: none; }
-            .cifra-acordes { font-size: 0.88rem; }
-            .cifra-letra { font-size: 1rem; line-height: 1.75rem; }
             .tooltip-acorde { width: 180px; padding: 0.65rem; border-radius: 0.9rem; }
             .tooltip-acorde svg { max-width: 140px; margin: 0 auto; display: block; }
+            .controle-preview { align-items: stretch; }
+            .controle-preview-grupo { width: 100%; }
         }
     </style>
 @endpush

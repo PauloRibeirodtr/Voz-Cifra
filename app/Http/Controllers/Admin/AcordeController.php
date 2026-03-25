@@ -22,7 +22,11 @@ class AcordeController extends Controller
             });
         }
 
-        $acordes = $consulta->latest()->paginate(12);
+        $acordes = $consulta
+            ->orderBy('nome')
+            ->orderBy('descricao')
+            ->latest('id')
+            ->paginate(12);
         $acordes->getCollection()->transform(fn (Acorde $acorde) => $this->adaptarAcordeParaView($acorde));
 
         return view('admin.acordes.index', [
@@ -46,7 +50,8 @@ class AcordeController extends Controller
             'shape' => ['nullable'],
         ]);
 
-        $nome = $dados['nome'] ?? $dados['name'] ?? null;
+        $nome = trim((string) ($dados['nome'] ?? $dados['name'] ?? ''));
+        $descricao = trim((string) ($dados['descricao'] ?? $dados['description'] ?? ''));
 
         if (!$nome) {
             return back()->withErrors([
@@ -54,9 +59,31 @@ class AcordeController extends Controller
             ])->withInput();
         }
 
+        if ($descricao === '' && Acorde::where('nome', $nome)->exists()) {
+            return back()->withErrors([
+                'descricao' => 'Esse acorde ja possui outras variacoes. Preencha a descricao visual para diferenciar este shape.',
+            ])->withInput();
+        }
+
+        $consultaDuplicada = Acorde::query()->where('nome', $nome);
+
+        if ($descricao === '') {
+            $consultaDuplicada->where(function ($query) {
+                $query->whereNull('descricao')->orWhere('descricao', '');
+            });
+        } else {
+            $consultaDuplicada->where('descricao', $descricao);
+        }
+
+        if ($consultaDuplicada->exists()) {
+            return back()->withErrors([
+                'descricao' => 'Ja existe uma variacao desse acorde com a mesma descricao visual.',
+            ])->withInput();
+        }
+
         Acorde::create([
             'nome' => $nome,
-            'descricao' => $dados['descricao'] ?? $dados['description'] ?? null,
+            'descricao' => $descricao !== '' ? $descricao : null,
             'dados_diagrama' => $this->normalizarDadosDiagrama($dados['dados_diagrama'] ?? $dados['shape'] ?? null),
             'ativo' => true,
         ]);
@@ -98,7 +125,8 @@ class AcordeController extends Controller
             'ativo' => ['nullable', 'boolean'],
         ]);
 
-        $nome = $dados['nome'] ?? $dados['name'] ?? null;
+        $nome = trim((string) ($dados['nome'] ?? $dados['name'] ?? ''));
+        $descricao = trim((string) ($dados['descricao'] ?? $dados['description'] ?? ''));
 
         if (!$nome) {
             return back()->withErrors([
@@ -106,9 +134,33 @@ class AcordeController extends Controller
             ])->withInput();
         }
 
+        if ($descricao === '' && Acorde::where('nome', $nome)->whereKeyNot($acorde->id)->exists()) {
+            return back()->withErrors([
+                'descricao' => 'Esse acorde ja possui outras variacoes. Preencha a descricao visual para diferenciar este shape.',
+            ])->withInput();
+        }
+
+        $consultaDuplicada = Acorde::query()
+            ->where('nome', $nome)
+            ->whereKeyNot($acorde->id);
+
+        if ($descricao === '') {
+            $consultaDuplicada->where(function ($query) {
+                $query->whereNull('descricao')->orWhere('descricao', '');
+            });
+        } else {
+            $consultaDuplicada->where('descricao', $descricao);
+        }
+
+        if ($consultaDuplicada->exists()) {
+            return back()->withErrors([
+                'descricao' => 'Ja existe outra variacao desse acorde com a mesma descricao visual.',
+            ])->withInput();
+        }
+
         $acorde->update([
             'nome' => $nome,
-            'descricao' => $dados['descricao'] ?? $dados['description'] ?? null,
+            'descricao' => $descricao !== '' ? $descricao : null,
             'dados_diagrama' => $this->normalizarDadosDiagrama($dados['dados_diagrama'] ?? $dados['shape'] ?? null),
             'ativo' => (bool) ($dados['ativo'] ?? $acorde->ativo),
         ]);

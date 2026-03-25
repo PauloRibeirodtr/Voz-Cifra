@@ -33,6 +33,7 @@ Route::middleware(['auth', 'verified_custom', 'super.admin'])
         Route::get('/perfil', [AdminMasterController::class, 'profile'])->name('profile');
         Route::put('/perfil', [AdminMasterController::class, 'updateProfile'])->name('profile.update');
         Route::get('/configuracoes', [AdminMasterController::class, 'settings'])->name('settings');
+        Route::post('/configuracoes/admins-master', [AdminMasterController::class, 'storeAdminMaster'])->name('admins-master.store');
 
         Route::get('/igrejas', [IgrejaController::class, 'index'])->name('igrejas.index');
         Route::get('/igrejas/criar', [IgrejaController::class, 'create'])->name('igrejas.create');

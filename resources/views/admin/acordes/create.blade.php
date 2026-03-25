@@ -31,17 +31,44 @@
                         <p class="text-gray-400 text-sm mt-1">Preencha os dados e desenhe o shape ao lado.</p>
                     </div>
 
+                    @if ($errors->any())
+                        <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-700">
+                            <p class="font-bold">Nao foi possivel salvar o acorde.</p>
+                            <ul class="mt-2 list-disc space-y-1 pl-5">
+                                @foreach ($errors->all() as $erro)
+                                    <li>{{ $erro }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <form id="acordeForm" action="{{ route('admin.acordes.store') }}" method="POST" class="space-y-5">
                         @csrf
 
                         <div>
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Nome do acorde *</label>
-                            <input type="text" id="input-nome" name="nome" placeholder="Ex.: C#m7(9)" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xl font-bold text-gray-800 placeholder-gray-300 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                            <input type="text" id="input-nome" name="nome" value="{{ old('nome') }}" placeholder="Ex.: C#m7(9)" required class="w-full bg-gray-50 border {{ $errors->has('nome') ? 'border-red-400 ring-2 ring-red-100' : 'border-gray-200' }} rounded-xl px-4 py-3 text-xl font-bold text-gray-800 placeholder-gray-300 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                            @error('nome')
+                                <p class="mt-2 text-sm font-medium text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div>
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Descricao visual</label>
-                            <input type="text" id="input-variacao" placeholder="Ex.: Shape de E" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-medium text-gray-600 placeholder-gray-300 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                            <input type="text" id="input-variacao" value="{{ old('descricao') }}" placeholder="Ex.: Shape de E" class="w-full bg-gray-50 border {{ $errors->has('descricao') ? 'border-red-400 ring-2 ring-red-100' : 'border-gray-200' }} rounded-xl px-4 py-3 font-medium text-gray-600 placeholder-gray-300 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                            @error('descricao')
+                                <p class="mt-2 text-sm font-medium text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Casa inicial do shape</label>
+                            <select id="input-base-fret" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-bold text-gray-700 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                                @for ($casa = 1; $casa <= 12; $casa++)
+                                    <option value="{{ $casa }}">{{ $casa }}° casa</option>
+                                @endfor
+                            </select>
+                            <p class="mt-1 text-xs text-gray-500">Use quando o desenho do acorde comecar acima da primeira casa. O braco continua mostrando 5 trastes, mas passa a representar a partir da casa escolhida.</p>
                         </div>
 
                         <input type="hidden" id="final-json" name="shape">
@@ -104,6 +131,8 @@ const fretGap = CONFIG.height / CONFIG.numFrets;
 let state = { baseFret: 1, variation_name: null, positions: [], barres: [], topMarkers: [null, null, null, null, null, null] };
 
 document.addEventListener('DOMContentLoaded', () => {
+    state.baseFret = Number(@json(old('base_fret', 1))) || 1;
+
     document.getElementById('input-nome')?.addEventListener('input', e => {
         document.getElementById('preview-nome').innerText = e.target.value || '--';
     });
@@ -112,6 +141,15 @@ document.addEventListener('DOMContentLoaded', () => {
         state.variation_name = e.target.value || null;
         document.getElementById('preview-variacao').innerText = e.target.value || 'Shape...';
     });
+
+    document.getElementById('input-base-fret')?.addEventListener('change', e => {
+        state.baseFret = Number(e.target.value || 1);
+        renderAll();
+    });
+
+    if (document.getElementById('input-base-fret')) {
+        document.getElementById('input-base-fret').value = String(state.baseFret);
+    }
 
     document.getElementById('acordeSVG')?.addEventListener('click', handleGridClick);
     document.getElementById('btnClear')?.addEventListener('click', () => {
@@ -125,6 +163,18 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('final-json').value = JSON.stringify(state);
     });
 
+    const valorInicialNome = document.getElementById('input-nome')?.value;
+    const valorInicialVariacao = document.getElementById('input-variacao')?.value;
+
+    if (valorInicialNome) {
+        document.getElementById('preview-nome').innerText = valorInicialNome;
+    }
+
+    if (valorInicialVariacao) {
+        state.variation_name = valorInicialVariacao;
+        document.getElementById('preview-variacao').innerText = valorInicialVariacao;
+    }
+
     renderAll();
 });
 
@@ -136,7 +186,12 @@ function renderAll() {
     let gridSVG = '';
     let marksSVG = '';
 
-    gridSVG += `<rect x="${CONFIG.startX}" y="${CONFIG.startY - 6}" width="${CONFIG.width}" height="6" class="nut-rect" />`;
+    if (Number(state.baseFret) <= 1) {
+        gridSVG += `<rect x="${CONFIG.startX}" y="${CONFIG.startY - 6}" width="${CONFIG.width}" height="6" class="nut-rect" />`;
+    } else {
+        gridSVG += `<text x="${CONFIG.startX - 12}" y="${CONFIG.startY + 25}" text-anchor="end" fill="#6b7280" font-weight="900" font-size="18">${state.baseFret}a</text>`;
+        gridSVG += `<line x1="${CONFIG.startX}" y1="${CONFIG.startY}" x2="${CONFIG.startX + CONFIG.width}" y2="${CONFIG.startY}" class="fret-line" />`;
+    }
 
     for (let i = 1; i <= CONFIG.numFrets; i++) {
         let y = CONFIG.startY + (i * fretGap);

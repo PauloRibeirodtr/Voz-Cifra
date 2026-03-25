@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 class AdminMasterController extends Controller
 {
@@ -31,7 +32,7 @@ class AdminMasterController extends Controller
         ]);
     }
 
-    public function settings()
+    public function settings(): View
     {
         return view('admin.settings.index', [
             'metricasSistema' => [
@@ -40,6 +41,10 @@ class AdminMasterController extends Controller
                 'total_acordes' => Acorde::count(),
                 'total_usuarios' => Usuario::count(),
             ],
+            'adminsMaster' => Usuario::query()
+                ->where('perfil_global', 'admin_master')
+                ->orderBy('nome')
+                ->get(),
         ]);
     }
 
@@ -72,5 +77,35 @@ class AdminMasterController extends Controller
         $usuario->save();
 
         return back()->with('success', 'Perfil atualizado com sucesso.');
+    }
+
+    public function storeAdminMaster(Request $request): RedirectResponse
+    {
+        $dados = $request->validate([
+            'nome' => ['required', 'string', 'max:255'],
+            'cpf' => ['required', 'string', 'max:14', Rule::unique('usuarios', 'cpf')],
+            'email' => ['required', 'email', 'max:255', Rule::unique('usuarios', 'email')],
+            'telefone' => ['nullable', 'string', 'max:20'],
+            'password' => ['nullable', 'confirmed', 'min:8'],
+            'ativo' => ['nullable', 'boolean'],
+        ]);
+
+        $cpfNumerico = preg_replace('/\D+/', '', $dados['cpf']) ?: $dados['cpf'];
+
+        Usuario::create([
+            'igreja_id' => null,
+            'nome' => $dados['nome'],
+            'cpf' => $dados['cpf'],
+            'email' => $dados['email'],
+            'telefone' => $dados['telefone'] ?? null,
+            'password' => $dados['password'] ?: $cpfNumerico,
+            'perfil_global' => 'admin_master',
+            'ativo' => (bool) ($dados['ativo'] ?? true),
+            'primeiro_acesso' => true,
+        ]);
+
+        return redirect()
+            ->route('admin.settings')
+            ->with('success', 'Novo admin master cadastrado com sucesso. A senha inicial sera a informada no formulario ou, se ficar em branco, o CPF sem pontuacao.');
     }
 }

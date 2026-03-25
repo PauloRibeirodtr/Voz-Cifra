@@ -1,6 +1,7 @@
 @extends('admin.layouts.admin')
 
 @section('title', 'Editar acorde - ' . $acorde->nome)
+@section('mobile_title', 'Editar acorde')
 
 @push('styles')
 <style>
@@ -27,18 +28,45 @@
                 <a href="{{ route('admin.acordes.index') }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-bold transition">Voltar</a>
             </div>
 
+            @if ($errors->any())
+                <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-700">
+                    <p class="font-bold">Nao foi possivel salvar as alteracoes.</p>
+                    <ul class="mt-2 list-disc space-y-1 pl-5">
+                        @foreach ($errors->all() as $erro)
+                            <li>{{ $erro }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <form id="acordeForm" action="{{ route('admin.acordes.update', $acorde->id) }}" method="POST" class="space-y-5">
                 @csrf
                 @method('PUT')
 
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nome do acorde *</label>
-                    <input type="text" name="nome" id="input-nome" value="{{ $acorde->nome }}" required class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-lg font-bold focus:ring-2 focus:ring-orange-500 outline-none">
+                    <input type="text" name="nome" id="input-nome" value="{{ old('nome', $acorde->nome) }}" required class="w-full bg-gray-50 border {{ $errors->has('nome') ? 'border-red-400 ring-2 ring-red-100' : 'border-gray-200' }} rounded-lg px-4 py-3 text-lg font-bold focus:ring-2 focus:ring-orange-500 outline-none">
+                    @error('nome')
+                        <p class="mt-2 text-sm font-medium text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Descricao visual</label>
-                    <input type="text" id="input-variacao" value="{{ $acorde->variation_name }}" placeholder="Ex.: Pestana 3a casa" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none">
+                    <input type="text" id="input-variacao" value="{{ old('descricao', $acorde->variation_name) }}" placeholder="Ex.: Pestana 3a casa" class="w-full bg-gray-50 border {{ $errors->has('descricao') ? 'border-red-400 ring-2 ring-red-100' : 'border-gray-200' }} rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none">
+                    @error('descricao')
+                        <p class="mt-2 text-sm font-medium text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Casa inicial do shape</label>
+                    <select id="input-base-fret" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 font-bold text-gray-700 focus:ring-2 focus:ring-orange-500 outline-none">
+                        @for ($casa = 1; $casa <= 12; $casa++)
+                            <option value="{{ $casa }}" {{ (int) $acorde->base_fret === $casa ? 'selected' : '' }}>{{ $casa }}° casa</option>
+                        @endfor
+                    </select>
+                    <p class="mt-1 text-xs text-gray-500">Use isso quando o desenho comecar acima da primeira casa. O editor continua mostrando 5 trastes a partir da casa escolhida.</p>
                 </div>
 
                 <input type="hidden" name="shape" id="final-json">
@@ -117,6 +145,10 @@ function setupInputs() {
         state.variation_name = e.target.value || null;
         document.getElementById('preview-variacao').innerText = e.target.value || 'Shape padrao';
     });
+    document.getElementById('input-base-fret').addEventListener('change', e => {
+        state.baseFret = Number(e.target.value || 1);
+        renderAll();
+    });
     document.getElementById('btnClear').addEventListener('click', () => {
         state.positions = [];
         state.barres = [];
@@ -137,10 +169,10 @@ function renderAll() {
     let gridSVG = '';
     let marksSVG = '';
 
-    if (state.baseFret === 1) {
+    if (Number(state.baseFret) <= 1) {
         gridSVG += `<rect x="${CONFIG.startX}" y="${CONFIG.startY-6}" width="${CONFIG.width}" height="6" class="nut-rect" />`;
     } else {
-        gridSVG += `<text x="${CONFIG.startX-10}" y="${CONFIG.startY+25}" text-anchor="end" fill="#6b7280" font-weight="bold" font-size="18">${state.baseFret}ª</text>`;
+        gridSVG += `<text x="${CONFIG.startX-10}" y="${CONFIG.startY+25}" text-anchor="end" fill="#6b7280" font-weight="bold" font-size="18">${state.baseFret}a</text>`;
         gridSVG += `<line x1="${CONFIG.startX}" y1="${CONFIG.startY}" x2="${CONFIG.startX+CONFIG.width}" y2="${CONFIG.startY}" class="fret-line" />`;
     }
 

@@ -80,7 +80,7 @@
                 </div>
 
                 <div class="p-2 bg-gray-50 text-center text-xs font-bold text-gray-400 border-t border-gray-100">
-                    CASA {{ $acorde->base_fret }}
+                    CASA {{ $acorde->base_fret }}°
                 </div>
             </div>
         @empty

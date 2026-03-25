@@ -78,15 +78,21 @@ class VersaoMusicalController extends Controller
         $this->garantirVinculoComMusica($musica, $versaoMusical);
 
         $versaoMusical->load('criadoPor');
+        $acordesAtivos = Acorde::where('ativo', true)->orderBy('nome')->get();
         $resultadoCifras = $this->normalizadorCifrasService->processar(
             $versaoMusical->letra_com_cifras,
-            Acorde::where('ativo', true)->pluck('nome')->all()
+            $acordesAtivos->pluck('nome')->all()
         );
 
-        $acordesDaVersao = Acorde::where('ativo', true)
+        $acordesDaVersao = $acordesAtivos
             ->whereIn('nome', $resultadoCifras['acordes_encontrados'])
-            ->orderBy('nome')
-            ->get()
+            ->sortBy('nome')
+            ->values()
+            ->map(fn (Acorde $acorde): array => $this->adaptarAcordeParaPreview($acorde))
+            ->values()
+            ->all();
+
+        $bibliotecaAcordes = $acordesAtivos
             ->map(fn (Acorde $acorde): array => $this->adaptarAcordeParaPreview($acorde))
             ->values()
             ->all();
@@ -98,6 +104,7 @@ class VersaoMusicalController extends Controller
             'acordesEncontrados' => $resultadoCifras['acordes_encontrados'],
             'acordesInvalidos' => $resultadoCifras['acordes_invalidos'],
             'acordesDaVersao' => $acordesDaVersao,
+            'bibliotecaAcordes' => $bibliotecaAcordes,
         ]);
     }
 

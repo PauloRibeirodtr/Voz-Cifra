@@ -1,6 +1,7 @@
 @extends('admin.layouts.admin')
 
 @section('title', 'Visualizar acorde - ' . $acorde->nome)
+@section('mobile_title', 'Acorde')
 
 @push('styles')
 <style>
@@ -48,7 +49,7 @@
                 <h3 class="font-bold text-lg mb-4 text-gray-800 border-b pb-2">Detalhes do acorde</h3>
                 <ul class="text-gray-600 space-y-3">
                     <li><strong class="text-gray-800">Descricao:</strong> {{ $acorde->descricao ?: 'Nao informada' }}</li>
-                    <li><strong class="text-gray-800">Casa base do shape:</strong> {{ $acorde->base_fret }}ª casa</li>
+                    <li><strong class="text-gray-800">Casa base do shape:</strong> {{ $acorde->base_fret }}° casa</li>
                     <li><strong class="text-gray-800">Criado em:</strong> {{ $acorde->created_at->format('d/m/Y H:i') }}</li>
                     <li><strong class="text-gray-800">ID no sistema:</strong> #{{ $acorde->id }}</li>
                 </ul>
@@ -86,7 +87,7 @@ function render() {
     if (baseFret === 1) {
         grid += `<rect x="${CONFIG.startX}" y="${CONFIG.startY-6}" width="${CONFIG.width}" height="6" class="nut-rect" />`;
     } else {
-        grid += `<text x="${CONFIG.startX-10}" y="${CONFIG.startY+25}" text-anchor="end" fill="#9ca3af" font-weight="bold" font-size="18">${baseFret}ª</text>`;
+        grid += `<text x="${CONFIG.startX-10}" y="${CONFIG.startY+25}" text-anchor="end" fill="#9ca3af" font-weight="bold" font-size="18">${baseFret}°</text>`;
         grid += `<line x1="${CONFIG.startX}" y1="${CONFIG.startY}" x2="${CONFIG.startX+CONFIG.width}" y2="${CONFIG.startY}" class="fret-line" />`;
     }
 
