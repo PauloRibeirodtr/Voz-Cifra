@@ -41,6 +41,35 @@
         </div>
     </div>
 
+    <div class="mb-6 sm:mb-8 rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-sm">
+        <div class="mb-4">
+            <h2 class="text-lg font-bold text-gray-800">Acessos rapidos</h2>
+            <p class="mt-1 text-sm text-gray-500">Atalhos para os modulos centrais mais usados nesta etapa.</p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <a href="{{ route('admin.igrejas.index') }}" class="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 transition hover:border-green-200 hover:bg-green-50">
+                <span class="block text-xs font-black uppercase tracking-wider text-green-700">Igrejas</span>
+                <span class="mt-2 block text-base font-bold text-gray-800">Gerenciar igrejas</span>
+            </a>
+
+            <a href="{{ route('admin.musicas.index') }}" class="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 transition hover:border-green-200 hover:bg-green-50">
+                <span class="block text-xs font-black uppercase tracking-wider text-green-700">Musicas</span>
+                <span class="mt-2 block text-base font-bold text-gray-800">Biblioteca musical</span>
+            </a>
+
+            <a href="{{ route('admin.acordes.index') }}" class="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 transition hover:border-green-200 hover:bg-green-50">
+                <span class="block text-xs font-black uppercase tracking-wider text-green-700">Acordes</span>
+                <span class="mt-2 block text-base font-bold text-gray-800">Dicionario de acordes</span>
+            </a>
+
+            <a href="{{ route('admin.settings') }}" class="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 transition hover:border-green-200 hover:bg-green-50">
+                <span class="block text-xs font-black uppercase tracking-wider text-green-700">Configuracoes</span>
+                <span class="mt-2 block text-base font-bold text-gray-800">Conta e sistema</span>
+            </a>
+        </div>
+    </div>
+
     <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100">
         <h2 class="font-bold text-lg text-gray-700 mb-4">Visao geral desta etapa</h2>
         <p class="text-gray-600 leading-7">
