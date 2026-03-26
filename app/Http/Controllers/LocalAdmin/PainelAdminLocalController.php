@@ -3,72 +3,115 @@
 namespace App\Http\Controllers\LocalAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Igreja;
+use App\Models\Missa;
 use App\Models\Usuario;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 class PainelAdminLocalController extends Controller
 {
-    public function __construct()
+    public function dashboard(): View
     {
-        $this->middleware('auth');
-    }
+        $usuario = $this->obterUsuario();
+        $igreja = $this->adicionarDadosPublicos($this->obterIgreja($usuario));
 
-    public function index()
-    {
-        /** @var \App\Models\Usuario $usuario */
-        $usuario = Auth::user();
-        $igreja = $usuario->igreja;
+        $metricas = [
+            'total_missas' => Missa::where('igreja_id', $igreja->id)->count(),
+            'missas_ativas' => Missa::where('igreja_id', $igreja->id)->where('ativo', true)->count(),
+            'membros_ativos' => Usuario::where('igreja_id', $igreja->id)->where('perfil_global', 'member')->where('ativo', true)->count(),
+            'membros_pendentes' => Usuario::where('igreja_id', $igreja->id)->where('perfil_global', 'member')->where('ativo', false)->count(),
+        ];
 
-        if (!$igreja || $usuario->perfil_global !== 'admin_local') {
-            return redirect()->route('home')->with('error', 'Acesso restrito ao administrador local.');
-        }
-
-        $membros = Usuario::where('igreja_id', $igreja->id)
-            ->where('perfil_global', 'member')
-            ->orderBy('nome')
+        $proximasMissas = Missa::with('tempoLiturgico')
+            ->where('igreja_id', $igreja->id)
+            ->orderBy('data_missa')
+            ->orderBy('hora_inicio')
+            ->take(5)
             ->get();
 
-        $pendingMembers = $membros->where('ativo', false)->values();
-
-        return view('local-admin.dashboard', compact('igreja', 'membros', 'pendingMembers'));
+        return view('local-admin.dashboard', [
+            'usuario' => $usuario,
+            'igreja' => $igreja,
+            'metricas' => $metricas,
+            'proximasMissas' => $proximasMissas,
+        ]);
     }
 
-    public function approveMember(int $userId): RedirectResponse
+    public function church(): View
+    {
+        $usuario = $this->obterUsuario();
+        $igreja = $this->adicionarDadosPublicos($this->obterIgreja($usuario));
+
+        return view('local-admin.church', [
+            'igreja' => $igreja,
+            'usuario' => $usuario,
+        ]);
+    }
+
+    public function profile(): View
+    {
+        return view('local-admin.profile', [
+            'user' => $this->obterUsuario(),
+            'igreja' => $this->adicionarDadosPublicos($this->obterIgreja($this->obterUsuario())),
+        ]);
+    }
+
+    public function updateProfile(Request $request): RedirectResponse
+    {
+        $usuario = $this->obterUsuario();
+
+        $dados = $request->validate([
+            'email' => ['required', 'email', Rule::unique('usuarios', 'email')->ignore($usuario->id)],
+            'telefone' => ['nullable', 'string', 'max:20'],
+            'password' => ['nullable', 'confirmed', 'min:8'],
+        ]);
+
+        $usuario->email = $dados['email'];
+        $usuario->telefone = $dados['telefone'] ?? null;
+
+        if (!empty($dados['password'])) {
+            $usuario->password = $dados['password'];
+            $usuario->primeiro_acesso = false;
+        }
+
+        $usuario->save();
+
+        return back()->with('success', 'Perfil do administrador local atualizado com sucesso.');
+    }
+
+    private function obterUsuario(): Usuario
     {
         /** @var \App\Models\Usuario $usuario */
         $usuario = Auth::user();
-        $igreja = $usuario->igreja;
 
-        if (!$igreja || $usuario->perfil_global !== 'admin_local') {
-            return redirect()->route('home')->with('error', 'Ação não autorizada.');
-        }
+        abort_unless($usuario && $usuario->ehAdminLocal(), 403);
 
-        $membro = Usuario::where('igreja_id', $igreja->id)
-            ->where('perfil_global', 'member')
-            ->findOrFail($userId);
-
-        $membro->update(['ativo' => true]);
-
-        return back()->with('success', "Membro {$membro->nome} ativado com sucesso.");
+        return $usuario;
     }
 
-    public function rejectMember(int $userId): RedirectResponse
+    private function obterIgreja(Usuario $usuario): Igreja
     {
-        /** @var \App\Models\Usuario $usuario */
-        $usuario = Auth::user();
         $igreja = $usuario->igreja;
 
-        if (!$igreja || $usuario->perfil_global !== 'admin_local') {
-            return redirect()->route('home')->with('error', 'Ação não autorizada.');
-        }
+        abort_unless($igreja !== null, 404, 'Igreja nao encontrada para este administrador local.');
 
-        $membro = Usuario::where('igreja_id', $igreja->id)
-            ->where('perfil_global', 'member')
-            ->findOrFail($userId);
+        return $igreja;
+    }
 
-        $membro->update(['ativo' => false]);
+    private function adicionarDadosPublicos(Igreja $igreja): Igreja
+    {
+        $linkPublico = route('igrejas.public.show', ['slug' => $igreja->slug]);
 
-        return back()->with('success', "Membro {$membro->nome} foi desativado.");
+        $igreja->setAttribute('link_publico', $linkPublico);
+        $igreja->setAttribute(
+            'qr_code_url',
+            'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' . urlencode($linkPublico)
+        );
+
+        return $igreja;
     }
 }

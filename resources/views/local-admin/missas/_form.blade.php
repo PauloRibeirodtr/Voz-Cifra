@@ -1,0 +1,93 @@
+@php
+    $classeInput = 'mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-100';
+@endphp
+
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+    <section class="xl:col-span-2 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+        @if ($errors->any())
+            <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
+                <ul class="list-disc pl-5">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <div class="grid grid-cols-1 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Titulo da missa</label>
+                <input type="text" name="titulo" value="{{ old('titulo', $missa->titulo) }}" class="{{ $classeInput }}" placeholder="Ex.: Missa dominical da noite" required>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Data</label>
+                    <input type="date" name="data_missa" value="{{ old('data_missa', optional($missa->data_missa)->format('Y-m-d')) }}" class="{{ $classeInput }}" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Tempo liturgico</label>
+                    <select name="tempo_liturgico_id" class="{{ $classeInput }}">
+                        <option value="">Selecionar depois</option>
+                        @foreach ($temposLiturgicos as $tempoLiturgico)
+                            <option value="{{ $tempoLiturgico->id }}" @selected((string) old('tempo_liturgico_id', $missa->tempo_liturgico_id) === (string) $tempoLiturgico->id)>
+                                {{ $tempoLiturgico->nome }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Hora de inicio</label>
+                    <input type="time" name="hora_inicio" value="{{ old('hora_inicio', $missa->hora_inicio ? substr((string) $missa->hora_inicio, 0, 5) : '') }}" class="{{ $classeInput }}" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Hora de termino</label>
+                    <input type="time" name="hora_fim" value="{{ old('hora_fim', $missa->hora_fim ? substr((string) $missa->hora_fim, 0, 5) : '') }}" class="{{ $classeInput }}" required>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Padre</label>
+                <select name="padre_id" class="{{ $classeInput }}">
+                    <option value="">Nao vincular agora</option>
+                    @foreach ($padres as $padre)
+                        <option value="{{ $padre->id }}" @selected((string) old('padre_id', $missa->padre_id) === (string) $padre->id)>
+                            {{ $padre->nome }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Observacoes</label>
+                <textarea name="observacoes" rows="5" class="{{ $classeInput }}" placeholder="Observacoes gerais da missa, orientacoes ou combinados internos.">{{ old('observacoes', $missa->observacoes) }}</textarea>
+            </div>
+        </div>
+    </section>
+
+    <aside class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+        <h2 class="text-lg font-bold text-gray-900">Status da missa</h2>
+        <p class="mt-2 text-sm text-gray-500">Se marcar como ativa, esta missa passa a ser a principal da igreja para o fluxo futuro.</p>
+
+        <label class="mt-5 inline-flex items-start gap-3 text-sm font-medium text-gray-700">
+            <input type="hidden" name="ativo" value="0">
+            <input type="checkbox" name="ativo" value="1" {{ old('ativo', $missa->exists ? (int) $missa->ativo : 1) ? 'checked' : '' }} class="mt-1 rounded border-gray-300 text-green-700 focus:ring-green-500">
+            <span>Deixar esta missa ativa para a igreja</span>
+        </label>
+
+        <div class="mt-6 space-y-3">
+            <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-green-700 px-5 py-3 font-semibold text-white hover:bg-green-800">
+                {{ $missa->exists ? 'Salvar alteracoes' : 'Criar missa' }}
+            </button>
+
+            <a href="{{ route('local-admin.missas.index') }}" class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 font-semibold text-gray-700 hover:bg-gray-50">
+                Voltar
+            </a>
+        </div>
+    </aside>
+</div>

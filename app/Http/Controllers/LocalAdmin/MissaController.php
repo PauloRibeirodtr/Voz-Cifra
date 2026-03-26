@@ -1,0 +1,484 @@
+<?php
+
+namespace App\Http\Controllers\LocalAdmin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Igreja;
+use App\Models\Missa;
+use App\Models\MissaMusica;
+use App\Models\MomentoLiturgico;
+use App\Models\Musica;
+use App\Models\Padre;
+use App\Models\TempoLiturgico;
+use App\Models\Usuario;
+use App\Models\VersaoMusical;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\CarbonImmutable;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
+
+class MissaController extends Controller
+{
+    public function index(): View
+    {
+        $igreja = $this->obterIgreja();
+        $this->sincronizarMissasEncerradas($igreja);
+
+        $missas = Missa::with(['tempoLiturgico', 'padre'])
+            ->withCount('missaMusicas')
+            ->where('igreja_id', $igreja->id)
+            ->orderByDesc('data_missa')
+            ->orderByDesc('hora_inicio')
+            ->get();
+
+        return view('local-admin.missas.index', [
+            'igreja' => $this->adicionarDadosPublicos($igreja),
+            'missas' => $missas,
+        ]);
+    }
+
+    public function create(): View
+    {
+        $igreja = $this->obterIgreja();
+        $this->sincronizarMissasEncerradas($igreja);
+
+        return view('local-admin.missas.create', [
+            'igreja' => $this->adicionarDadosPublicos($igreja),
+            'missa' => new Missa(),
+            'temposLiturgicos' => TempoLiturgico::where('ativo', true)->orderBy('nome')->get(),
+            'padres' => Padre::query()->orderBy('nome')->get(),
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $dados = $this->validarDadosMissa($request);
+        $igreja = $this->obterIgreja();
+
+        $missa = DB::transaction(function () use ($dados, $igreja): Missa {
+            if (($dados['ativo'] ?? false) === true) {
+                Missa::where('igreja_id', $igreja->id)->update(['ativo' => false]);
+            }
+
+            return Missa::create([
+                'igreja_id' => $igreja->id,
+                'padre_id' => $dados['padre_id'] ?? null,
+                'tempo_liturgico_id' => $dados['tempo_liturgico_id'] ?? null,
+                'titulo' => $dados['titulo'],
+                'data_missa' => $dados['data_missa'],
+                'hora_inicio' => $dados['hora_inicio'],
+                'hora_fim' => $dados['hora_fim'],
+                'observacoes' => $dados['observacoes'] ?? null,
+                'ativo' => (bool) ($dados['ativo'] ?? true),
+            ]);
+        });
+
+        return redirect()
+            ->route('local-admin.missas.show', $missa)
+            ->with('success', 'Missa cadastrada com sucesso. Agora voce pode montar o repertorio.');
+    }
+
+    public function show(Missa $missa): View
+    {
+        $this->garantirMissaDaIgreja($missa);
+        $igreja = $this->obterIgreja();
+        $this->sincronizarMissasEncerradas($igreja);
+        $missa->refresh();
+
+        $missa->load([
+            'tempoLiturgico',
+            'padre',
+            'missaMusicas' => fn ($query) => $query
+                ->with([
+                    'musica.tempoLiturgico',
+                    'musica.momentoLiturgico',
+                    'musica.versoesMusicais' => fn ($subQuery) => $subQuery->where('ativo', true)->orderBy('titulo'),
+                    'versaoMusical',
+                    'momentoLiturgico',
+                ])
+                ->orderBy('ordem'),
+        ]);
+
+        $musicas = Musica::with(['tempoLiturgico', 'momentoLiturgico', 'versoesMusicais' => fn ($query) => $query->where('ativo', true)->orderBy('titulo')])
+            ->where('ativo', true)
+            ->orderBy('titulo')
+            ->get();
+
+        return view('local-admin.missas.show', [
+            'igreja' => $this->adicionarDadosPublicos($igreja),
+            'missa' => $missa,
+            'musicas' => $musicas,
+            'versoesMusicais' => VersaoMusical::with('musica')
+                ->where('ativo', true)
+                ->orderBy('titulo')
+                ->get(),
+            'momentosLiturgicos' => MomentoLiturgico::where('ativo', true)->orderByRaw('ordem_exibicao asc nulls last')->orderBy('nome')->get(),
+        ]);
+    }
+
+    public function edit(Missa $missa): View
+    {
+        $this->garantirMissaDaIgreja($missa);
+        $igreja = $this->obterIgreja();
+        $this->sincronizarMissasEncerradas($igreja);
+        $missa->refresh();
+
+        return view('local-admin.missas.edit', [
+            'igreja' => $this->adicionarDadosPublicos($igreja),
+            'missa' => $missa,
+            'temposLiturgicos' => TempoLiturgico::where('ativo', true)->orderBy('nome')->get(),
+            'padres' => Padre::query()->orderBy('nome')->get(),
+        ]);
+    }
+
+    public function update(Request $request, Missa $missa): RedirectResponse
+    {
+        $this->garantirMissaDaIgreja($missa);
+        $dados = $this->validarDadosMissa($request);
+
+        DB::transaction(function () use ($dados, $missa): void {
+            if (($dados['ativo'] ?? false) === true) {
+                Missa::where('igreja_id', $missa->igreja_id)
+                    ->where('id', '!=', $missa->id)
+                    ->update(['ativo' => false]);
+            }
+
+            $missa->update([
+                'padre_id' => $dados['padre_id'] ?? null,
+                'tempo_liturgico_id' => $dados['tempo_liturgico_id'] ?? null,
+                'titulo' => $dados['titulo'],
+                'data_missa' => $dados['data_missa'],
+                'hora_inicio' => $dados['hora_inicio'],
+                'hora_fim' => $dados['hora_fim'],
+                'observacoes' => $dados['observacoes'] ?? null,
+                'ativo' => (bool) ($dados['ativo'] ?? false),
+            ]);
+        });
+
+        return redirect()
+            ->route('local-admin.missas.show', $missa)
+            ->with('success', 'Missa atualizada com sucesso.');
+    }
+
+    public function toggle(Missa $missa): RedirectResponse
+    {
+        $this->garantirMissaDaIgreja($missa);
+        $igreja = $this->obterIgreja();
+        $this->sincronizarMissasEncerradas($igreja);
+        $missa->refresh();
+
+        if ($this->missaJaEncerrada($missa)) {
+            return back()->withErrors([
+                'missa' => 'Nao e possivel ativar uma missa cujo horario de termino ja passou.',
+            ]);
+        }
+
+        DB::transaction(function () use ($missa): void {
+            $novoStatus = !$missa->ativo;
+
+            if ($novoStatus) {
+                Missa::where('igreja_id', $missa->igreja_id)->update(['ativo' => false]);
+            }
+
+            $missa->update(['ativo' => $novoStatus]);
+        });
+
+        return back()->with('success', $missa->ativo ? 'Missa ativada com sucesso.' : 'Missa desativada com sucesso.');
+    }
+
+    public function storeRepertorio(Request $request, Missa $missa): RedirectResponse
+    {
+        $this->garantirMissaDaIgreja($missa);
+
+        $dados = $request->validate([
+            'musica_id' => ['required', 'exists:musicas,id'],
+            'versao_musical_id' => ['nullable', 'exists:versoes_musicais,id'],
+            'momento_liturgico_id' => ['nullable', 'exists:momentos_liturgicos,id'],
+        ], [
+            'musica_id.required' => 'Selecione uma musica para adicionar ao repertorio.',
+        ]);
+
+        if (!empty($dados['versao_musical_id'])) {
+            $versao = VersaoMusical::findOrFail($dados['versao_musical_id']);
+            if ((int) $versao->musica_id !== (int) $dados['musica_id']) {
+                return back()->withErrors([
+                    'versao_musical_id' => 'A versao musical selecionada nao pertence a musica escolhida.',
+                ])->withInput();
+            }
+        }
+
+        $proximaOrdem = (int) ($missa->missaMusicas()->max('ordem') ?? 0) + 1;
+
+        MissaMusica::create([
+            'missa_id' => $missa->id,
+            'musica_id' => $dados['musica_id'],
+            'versao_musical_id' => $dados['versao_musical_id'] ?? null,
+            'momento_liturgico_id' => $dados['momento_liturgico_id'] ?? null,
+            'ordem' => $proximaOrdem,
+        ]);
+
+        return redirect()
+            ->route('local-admin.missas.show', $missa)
+            ->with('success', 'Musica adicionada ao repertorio da missa.');
+    }
+
+    public function updateRepertorio(Request $request, Missa $missa, MissaMusica $missaMusica): RedirectResponse
+    {
+        $this->garantirMissaDaIgreja($missa);
+        $this->garantirItemDaMissa($missa, $missaMusica);
+
+        $dados = $request->validate([
+            'versao_musical_id' => ['nullable', 'exists:versoes_musicais,id'],
+            'momento_liturgico_id' => ['nullable', 'exists:momentos_liturgicos,id'],
+        ]);
+
+        if (!empty($dados['versao_musical_id'])) {
+            $versao = VersaoMusical::findOrFail($dados['versao_musical_id']);
+            if ((int) $versao->musica_id !== (int) $missaMusica->musica_id) {
+                return back()->withErrors([
+                    'versao_musical_id' => 'A versao musical selecionada nao pertence a musica deste item.',
+                ]);
+            }
+        }
+
+        $missaMusica->update([
+            'versao_musical_id' => $dados['versao_musical_id'] ?? null,
+            'momento_liturgico_id' => $dados['momento_liturgico_id'] ?? null,
+        ]);
+
+        return back()->with('success', 'Item do repertorio atualizado com sucesso.');
+    }
+
+    public function subirRepertorio(Missa $missa, MissaMusica $missaMusica): RedirectResponse
+    {
+        $this->garantirMissaDaIgreja($missa);
+        $this->garantirItemDaMissa($missa, $missaMusica);
+
+        $itemAnterior = MissaMusica::where('missa_id', $missa->id)
+            ->where('ordem', '<', $missaMusica->ordem)
+            ->orderByDesc('ordem')
+            ->first();
+
+        if (!$itemAnterior) {
+            return back();
+        }
+
+        DB::transaction(function () use ($missaMusica, $itemAnterior): void {
+            $ordemAtual = $missaMusica->ordem;
+            $ordemDestino = $itemAnterior->ordem;
+
+            // Usa uma ordem temporaria fora da faixa normal para evitar colisao
+            // com a unique constraint (missa_id, ordem) durante o swap.
+            $missaMusica->update(['ordem' => -$ordemAtual]);
+            $itemAnterior->update(['ordem' => $ordemAtual]);
+            $missaMusica->update(['ordem' => $ordemDestino]);
+        });
+
+        return back()->with('success', 'Item movido para cima.');
+    }
+
+    public function descerRepertorio(Missa $missa, MissaMusica $missaMusica): RedirectResponse
+    {
+        $this->garantirMissaDaIgreja($missa);
+        $this->garantirItemDaMissa($missa, $missaMusica);
+
+        $itemSeguinte = MissaMusica::where('missa_id', $missa->id)
+            ->where('ordem', '>', $missaMusica->ordem)
+            ->orderBy('ordem')
+            ->first();
+
+        if (!$itemSeguinte) {
+            return back();
+        }
+
+        DB::transaction(function () use ($missaMusica, $itemSeguinte): void {
+            $ordemAtual = $missaMusica->ordem;
+            $ordemDestino = $itemSeguinte->ordem;
+
+            // Usa uma ordem temporaria fora da faixa normal para evitar colisao
+            // com a unique constraint (missa_id, ordem) durante o swap.
+            $missaMusica->update(['ordem' => -$ordemAtual]);
+            $itemSeguinte->update(['ordem' => $ordemAtual]);
+            $missaMusica->update(['ordem' => $ordemDestino]);
+        });
+
+        return back()->with('success', 'Item movido para baixo.');
+    }
+
+    public function destroyRepertorio(Missa $missa, MissaMusica $missaMusica): RedirectResponse
+    {
+        $this->garantirMissaDaIgreja($missa);
+        $this->garantirItemDaMissa($missa, $missaMusica);
+
+        $missaMusica->delete();
+
+        $missa->missaMusicas()
+            ->orderBy('ordem')
+            ->get()
+            ->values()
+            ->each(function (MissaMusica $item, int $indice): void {
+                $item->update(['ordem' => $indice + 1]);
+            });
+
+        return back()->with('success', 'Item removido do repertorio.');
+    }
+
+    public function showCifra(Missa $missa, MissaMusica $missaMusica): View
+    {
+        $this->garantirMissaDaIgreja($missa);
+        $this->garantirItemDaMissa($missa, $missaMusica);
+        $igreja = $this->obterIgreja();
+        $this->sincronizarMissasEncerradas($igreja);
+        $missa->refresh();
+
+        $missaMusica->load(['musica', 'versaoMusical', 'momentoLiturgico']);
+
+        return view('local-admin.missas.cifra', [
+            'igreja' => $this->adicionarDadosPublicos($igreja),
+            'missa' => $missa,
+            'itemRepertorio' => $missaMusica,
+        ]);
+    }
+
+    public function apresentacao(Missa $missa): View
+    {
+        $this->garantirMissaDaIgreja($missa);
+        $igreja = $this->obterIgreja();
+        $this->sincronizarMissasEncerradas($igreja);
+        $missa->refresh();
+
+        $missa->load([
+            'tempoLiturgico',
+            'padre',
+            'missaMusicas' => fn ($query) => $query
+                ->with(['musica', 'versaoMusical', 'momentoLiturgico'])
+                ->orderBy('ordem'),
+        ]);
+
+        return view('local-admin.missas.apresentacao', [
+            'igreja' => $this->adicionarDadosPublicos($igreja),
+            'missa' => $missa,
+        ]);
+    }
+
+    public function pdf(Missa $missa)
+    {
+        $this->garantirMissaDaIgreja($missa);
+        $igreja = $this->obterIgreja();
+        $this->sincronizarMissasEncerradas($igreja);
+        $missa->refresh();
+
+        $missa->load([
+            'igreja',
+            'tempoLiturgico',
+            'padre',
+            'missaMusicas' => fn ($query) => $query
+                ->with(['musica', 'versaoMusical', 'momentoLiturgico'])
+                ->orderBy('ordem'),
+        ]);
+
+        $pdf = Pdf::loadView('local-admin.missas.pdf', [
+            'missa' => $missa,
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->download('missa-' . $missa->id . '.pdf');
+    }
+
+    private function validarDadosMissa(Request $request): array
+    {
+        return $request->validate([
+            'titulo' => ['required', 'string', 'max:255'],
+            'tempo_liturgico_id' => ['nullable', 'exists:tempos_liturgicos,id'],
+            'padre_id' => ['nullable', 'exists:padres,id'],
+            'data_missa' => ['required', 'date'],
+            'hora_inicio' => ['required', 'date_format:H:i'],
+            'hora_fim' => ['required', 'date_format:H:i', 'after:hora_inicio'],
+            'observacoes' => ['nullable', 'string'],
+            'ativo' => ['nullable', 'boolean'],
+        ], [
+            'titulo.required' => 'Informe o titulo da missa.',
+            'data_missa.required' => 'Informe a data da missa.',
+            'hora_inicio.required' => 'Informe o horario de inicio.',
+            'hora_fim.required' => 'Informe o horario de termino.',
+            'hora_inicio.date_format' => 'Informe o horario de inicio no formato HH:MM.',
+            'hora_fim.date_format' => 'Informe o horario de termino no formato HH:MM.',
+            'hora_fim.after' => 'O horario de termino deve ser posterior ao horario de inicio.',
+        ]);
+    }
+
+    private function obterUsuario(): Usuario
+    {
+        /** @var \App\Models\Usuario $usuario */
+        $usuario = Auth::user();
+
+        abort_unless($usuario && $usuario->ehAdminLocal(), 403);
+
+        return $usuario;
+    }
+
+    private function obterIgreja(): Igreja
+    {
+        $igreja = $this->obterUsuario()->igreja;
+
+        abort_unless($igreja !== null, 404, 'Igreja nao encontrada para este administrador local.');
+
+        return $igreja;
+    }
+
+    private function garantirMissaDaIgreja(Missa $missa): void
+    {
+        abort_unless((int) $missa->igreja_id === (int) $this->obterIgreja()->id, 404);
+    }
+
+    private function garantirItemDaMissa(Missa $missa, MissaMusica $missaMusica): void
+    {
+        abort_unless((int) $missaMusica->missa_id === (int) $missa->id, 404);
+    }
+
+    private function adicionarDadosPublicos(Igreja $igreja): Igreja
+    {
+        $linkPublico = route('igrejas.public.show', ['slug' => $igreja->slug]);
+
+        $igreja->setAttribute('link_publico', $linkPublico);
+        $igreja->setAttribute(
+            'qr_code_url',
+            'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' . urlencode($linkPublico)
+        );
+
+        return $igreja;
+    }
+
+    private function sincronizarMissasEncerradas(Igreja $igreja): void
+    {
+        $agora = CarbonImmutable::now('America/Cuiaba');
+
+        Missa::query()
+            ->where('igreja_id', $igreja->id)
+            ->where('ativo', true)
+            ->where(function ($query) use ($agora) {
+                $query
+                    ->whereDate('data_missa', '<', $agora->toDateString())
+                    ->orWhere(function ($subQuery) use ($agora) {
+                        $subQuery
+                            ->whereDate('data_missa', $agora->toDateString())
+                            ->where('hora_fim', '<', $agora->format('H:i:s'));
+                    });
+            })
+            ->update(['ativo' => false]);
+    }
+
+    private function missaJaEncerrada(Missa $missa): bool
+    {
+        $agora = CarbonImmutable::now('America/Cuiaba');
+        $dataHoraFim = CarbonImmutable::createFromFormat(
+            'Y-m-d H:i:s',
+            $missa->data_missa->format('Y-m-d') . ' ' . substr((string) $missa->hora_fim, 0, 8),
+            'America/Cuiaba'
+        );
+
+        return $dataHoraFim->lessThan($agora);
+    }
+}

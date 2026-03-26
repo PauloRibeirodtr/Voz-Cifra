@@ -5,7 +5,7 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon%20Ready-336791)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4-06B6D4)
 ![Vite](https://img.shields.io/badge/Vite-7-646CFF)
-![Status](https://img.shields.io/badge/status-admin_master%20funcional-brightgreen)
+![Status](https://img.shields.io/badge/status-admin_master%20e%20admin_local%20funcionais-brightgreen)
 
 Sistema web em Laravel 12 para organizacao do ministerio musical e do nucleo liturgico, com cadastro centralizado, fluxo fechado e evolucao por etapas.
 
@@ -13,7 +13,7 @@ Sistema web em Laravel 12 para organizacao do ministerio musical e do nucleo lit
 
 O projeto foi estruturado como um sistema administrativo fechado.
 
-Nesta etapa, o foco esta no `admin_master`, responsavel pelos cadastros centrais, configuracoes do sistema e organizacao inicial da base.
+Nesta etapa, o foco esta no `admin_master` e no inicio funcional do `admin_local`, mantendo a base central estavel e abrindo a operacao da igreja com seguranca.
 
 Hoje o projeto ja permite:
 
@@ -24,6 +24,8 @@ Hoje o projeto ja permite:
 - manter tempos e momentos liturgicos
 - cadastrar musicas base
 - cadastrar versoes musicais com cifras
+- autenticar o `admin_local`
+- operar missas e repertorio da igreja
 - preparar o link publico fixo da igreja para uso futuro
 
 ## Tecnologias
@@ -49,8 +51,11 @@ Hoje o projeto ja permite:
 ### Autenticacao
 
 - login do `admin_master`
+- login do `admin_local`
 - logout
 - protecao de rotas administrativas
+- bloqueio de acesso do `admin_local` ao painel do `admin_master`
+- primeiro acesso com troca obrigatoria de senha para o `admin_local`
 
 ### Painel do admin master
 
@@ -61,6 +66,32 @@ Hoje o projeto ja permite:
 - alteracao de email, telefone e senha
 - cadastro de outros `admin_master`
 - encerramento de sessao por `Configuracoes`
+
+### Area do admin local
+
+- painel inicial da igreja
+- visualizacao dos dados da propria igreja
+- link publico fixo e QR da igreja
+- perfil proprio do administrador local
+- navegacao responsiva da area da igreja
+
+### Missas e repertorio da igreja
+
+- listar missas da propria igreja
+- criar missa
+- editar missa
+- ativar e desativar missa
+- desativacao automatica de missa encerrada pelo horario
+- montar repertorio com a base central de musicas
+- buscar musica por titulo, artista ou trecho da letra
+- associar momento liturgico ao item do repertorio
+- vincular versao musical existente ao item
+- reordenar repertorio com seguranca
+- visualizacao com cifra por item
+- modo de apresentacao da missa em sequencia
+- transposicao visual de tom para leitura
+- controles de fonte e auto rolagem nas telas de leitura
+- gerar PDF simples da missa
 
 ### Igrejas
 
@@ -140,6 +171,9 @@ Hoje o projeto ja permite:
 
 - rota publica fixa por `slug`
 - pagina publica inicial da igreja
+- sincronizacao automatica de estado da missa publica
+- contagem regressiva real da proxima missa
+- estado automatico de celebracao em andamento
 - estrutura pronta para o QR Code fixo da igreja
 - base preparada para, no futuro, exibir a missa ativa da igreja no mesmo link
 
@@ -147,13 +181,13 @@ Hoje o projeto ja permite:
 
 Ainda nao foram abertos nesta etapa:
 
-- fluxo real do `admin_local`
 - fluxo real do `member`
 - modulo de padres
-- modulo de missas
 - experiencia publica final da missa por igreja
-- definicao da missa ativa da igreja no link publico
 - visao publica completa do fiel sem cifra
+- biblioteca propria de arquivos por igreja
+- versao musical exclusiva por igreja
+- transposicao completa de tom em nivel de cadastro e persistencia
 
 ## O que saiu do fluxo
 
@@ -256,9 +290,15 @@ Padrao atual:
 - A biblioteca de acordes funciona como apoio visual, validacao e dicionario.
 - O link publico da igreja ja e fixo e baseado no `slug`.
 - O QR Code da igreja ja pode apontar para esse link fixo.
-- A pagina publica da igreja ainda esta em modo preparatorio, sem a missa publica completa.
-- O foco atual do projeto esta fechado no `admin_master`.
+- A pagina publica da igreja ja identifica automaticamente a proxima missa e a celebracao em andamento.
+- A missa publica completa do fiel ainda nao foi aberta; por enquanto o link publico mostra o estado preparatorio da igreja.
+- O foco atual do projeto esta no `admin_master`, na operacao inicial do `admin_local` e na base da missa publica.
 
 ## Proxima etapa
 
-O proximo passo natural do projeto e abrir o fluxo do `admin_local`, com funcoes especificas por igreja e administracao dos musicos vinculados.
+O proximo passo natural do projeto e aprofundar a experiencia do `admin_local`, abrir a camada publica final do fiel e avaliar com seguranca:
+
+- padres com estrategia central ou vinculada por igreja
+- preferencia de versao musical por igreja
+- biblioteca interna de materiais da igreja
+- experiencia publica completa da missa sem cifra

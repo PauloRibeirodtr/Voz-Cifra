@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'super.admin' => \App\Http\Middleware\CheckSuperAdmin::class,
             'role' => \App\Http\Middleware\CheckRole::class,
             'verified_custom' => \App\Http\Middleware\EnsureUserIsVerified::class,
+            'local_admin.primeiro_acesso' => \App\Http\Middleware\GarantirTrocaSenhaPrimeiroAcessoAdminLocal::class,
         ]);
 
     })

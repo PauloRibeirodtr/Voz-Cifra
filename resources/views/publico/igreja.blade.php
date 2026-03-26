@@ -19,9 +19,7 @@
             --shadow: 0 28px 80px rgba(0, 0, 0, 0.22);
         }
 
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         html, body {
             margin: 0;
@@ -34,9 +32,7 @@
             color: var(--text);
         }
 
-        body {
-            min-height: 100vh;
-        }
+        body { min-height: 100vh; }
 
         .page {
             width: min(1160px, calc(100% - 28px));
@@ -60,12 +56,9 @@
         .hero {
             display: grid;
             grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.95fr);
-            gap: 0;
         }
 
-        .hero-main {
-            padding: 34px;
-        }
+        .hero-main { padding: 34px; }
 
         .brand {
             display: flex;
@@ -158,7 +151,6 @@
         }
 
         .hero-side {
-            position: relative;
             border-left: 1px solid rgba(255, 255, 255, 0.10);
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.08));
             padding: 34px 28px;
@@ -171,9 +163,7 @@
             padding: 22px;
         }
 
-        .panel + .panel {
-            margin-top: 18px;
-        }
+        .panel + .panel { margin-top: 18px; }
 
         .panel-title {
             margin: 0;
@@ -222,6 +212,28 @@
             background: rgba(247, 200, 115, 0.12);
             border: 1px solid rgba(247, 200, 115, 0.22);
             padding: 16px 18px;
+        }
+
+        .access-tools {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .access-tools button {
+            border: 1px solid var(--soft-border);
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text);
+            border-radius: 999px;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .access-tools button:hover {
+            background: rgba(255, 255, 255, 0.16);
         }
 
         .next-missa strong {
@@ -274,13 +286,8 @@
             animation: pulse 1.6s infinite ease-in-out;
         }
 
-        .dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
 
         .footer-note {
             margin-top: 18px;
@@ -290,22 +297,12 @@
         }
 
         @keyframes pulse {
-            0%, 80%, 100% {
-                opacity: 0.35;
-                transform: scale(0.9);
-            }
-
-            40% {
-                opacity: 1;
-                transform: scale(1);
-            }
+            0%, 80%, 100% { opacity: 0.35; transform: scale(0.9); }
+            40% { opacity: 1; transform: scale(1); }
         }
 
         @media (max-width: 960px) {
-            .hero {
-                grid-template-columns: 1fr;
-            }
-
+            .hero { grid-template-columns: 1fr; }
             .hero-side {
                 border-left: 0;
                 border-top: 1px solid rgba(255, 255, 255, 0.10);
@@ -318,27 +315,11 @@
                 padding: 18px 0;
             }
 
-            .hero-main,
-            .hero-side {
-                padding: 22px;
-            }
-
-            .brand img {
-                width: 52px;
-            }
-
-            .brand-name {
-                font-size: 24px;
-            }
-
-            .lead {
-                font-size: 16px;
-            }
-
-            .info-row,
-            .countdown {
-                grid-template-columns: 1fr;
-            }
+            .hero-main, .hero-side { padding: 22px; }
+            .brand img { width: 52px; }
+            .brand-name { font-size: 24px; }
+            .lead { font-size: 16px; }
+            .info-row, .countdown { grid-template-columns: 1fr; }
 
             .count-item {
                 display: flex;
@@ -348,9 +329,7 @@
                 padding: 14px 16px;
             }
 
-            .count-label {
-                margin-top: 0;
-            }
+            .count-label { margin-top: 0; }
         }
     </style>
 </head>
@@ -363,7 +342,13 @@
                         <img src="{{ asset('logo/final.png') }}" alt="Logo Voz &amp; Cifra">
                         <div>
                             <p class="brand-kicker">Voz &amp; Cifra</p>
-                            <p class="brand-name">Aguardando a proxima missa</p>
+                            <p class="brand-name">
+                                @if ($estadoCelebracao === 'em_andamento')
+                                    Celebracao em andamento
+                                @else
+                                    Aguardando a proxima missa
+                                @endif
+                            </p>
                         </div>
                     </div>
 
@@ -371,13 +356,26 @@
 
                     <h1 class="title">{{ $igreja->nome }}</h1>
 
+                    <p class="lead">
+                        @if ($estadoCelebracao === 'em_andamento' && $missaPublica)
+                            A celebracao cadastrada para esta igreja ja entrou em andamento. Este link publico fixo continuara sendo o endereco oficial da missa ativa, com horario de Corumba - MS.
+                        @elseif ($proximaMissa)
+                            A proxima celebracao cadastrada para esta igreja ja foi identificada. Este link publico fixo sera usado para exibir a missa ativa com leitura limpa e sem cifras no horario oficial de Corumba - MS.
+                        @else
+                            Em breve, aqui aparecera a missa organizada pela equipe da igreja, com leitura limpa .
+                        @endif
+                    </p>
+
+                    <div class="access-tools">
+                        <button type="button" data-public-font="-1">A-</button>
+                        <button type="button" data-public-font-reset>Fonte padrao</button>
+                        <button type="button" data-public-font="1">A+</button>
+                    </div>
 
                     <div class="info-row">
                         <div class="info-card">
                             <span class="label">Endereco</span>
-                            <span class="value">
-                                {{ $igreja->endereco ?: 'Endereco da igreja sera exibido aqui em breve.' }}
-                            </span>
+                            <span class="value">{{ $igreja->endereco ?: 'Endereco da igreja sera exibido aqui em breve.' }}</span>
                         </div>
 
                         <div class="info-card">
@@ -389,46 +387,86 @@
 
                 <aside class="hero-side">
                     <div class="panel">
-                        <p class="panel-title">Contagem regressiva simbolica</p>
-                        <div class="countdown" data-countdown>
-                            <div class="count-item">
-                                <span class="count-number" data-days>00</span>
-                                <span class="count-label">Dias</span>
-                            </div>
-                            <div class="count-item">
-                                <span class="count-number" data-hours>00</span>
-                                <span class="count-label">Horas</span>
-                            </div>
-                            <div class="count-item">
-                                <span class="count-number" data-minutes>00</span>
-                                <span class="count-label">Min</span>
-                            </div>
-                            <div class="count-item">
-                                <span class="count-number" data-seconds>00</span>
-                                <span class="count-label">Seg</span>
-                            </div>
+                        <p class="panel-title">
+                            @if ($estadoCelebracao === 'em_andamento')
+                                Contagem para o fim da missa
+                            @elseif ($proximaMissa)
+                                Contagem para a proxima missa
+                            @else
+                                Aguardando agendamento
+                            @endif
+                        </p>
+                        <div class="countdown" data-countdown data-state="{{ $estadoCelebracao }}" data-status-url="{{ route('igrejas.public.status', ['slug' => $igreja->slug]) }}" @if($countdownIso) data-target="{{ $countdownIso }}" @endif>
+                            <div class="count-item"><span class="count-number" data-days>00</span><span class="count-label">Dias</span></div>
+                            <div class="count-item"><span class="count-number" data-hours>00</span><span class="count-label">Horas</span></div>
+                            <div class="count-item"><span class="count-number" data-minutes>00</span><span class="count-label">Min</span></div>
+                            <div class="count-item"><span class="count-number" data-seconds>00</span><span class="count-label">Seg</span></div>
                         </div>
 
                         <div class="next-missa">
-                            <strong>Proxima missa</strong>
-                            <span>
-                                Assim que a celebracao da igreja for publicada, esta pagina sera atualizada automaticamente
-                                com a liturgia e os cantos preparados para o momento.
-                            </span>
+                            @if ($missaPublica)
+                                <strong>
+                                    @if ($estadoCelebracao === 'em_andamento')
+                                        Missa em andamento: {{ $missaPublica->titulo }}
+                                    @else
+                                        {{ $missaPublica->titulo }}
+                                    @endif
+                                </strong>
+                                <span>
+                                    {{ $missaPublica->data_missa->format('d/m/Y') }}
+                                    @if ($estadoCelebracao === 'em_andamento')
+                                        • de {{ substr((string) $missaPublica->hora_inicio, 0, 5) }} ate {{ substr((string) $missaPublica->hora_fim, 0, 5) }}
+                                    @else
+                                        as {{ substr((string) $missaPublica->hora_inicio, 0, 5) }}
+                                    @endif
+                                    @if ($missaPublica->padre)
+                                        • Padre {{ $missaPublica->padre->nome }}
+                                    @endif
+                                    <br>
+                                    Horario oficial de Corumba - MS.
+                                    @if ($missaPublica->tempoLiturgico)
+                                        <br>{{ $missaPublica->tempoLiturgico->nome }}
+                                    @endif
+                                </span>
+                            @else
+                                <strong>Proxima missa</strong>
+                                <span>
+                                    Ainda nao existe uma missa futura cadastrada para esta igreja. Assim que a celebracao for organizada, esta pagina sera atualizada automaticamente com a liturgia e os cantos preparados.
+                                </span>
+                            @endif
                         </div>
                     </div>
 
                     <div class="panel notice">
                         <p class="panel-title">Aguarde a publicacao da celebracao</p>
-                        
+                        <p class="notice-text">
+                            @if ($estadoCelebracao === 'em_andamento')
+                                A celebracao ativa desta igreja ja esta em andamento. Assim que a proxima etapa do modulo publico for concluida, esta mesma pagina podera exibir o conteudo completo da missa em tempo real.
+                            @elseif ($proximaMissa)
+                                O link publico desta igreja ja esta fixo e pronto para uso. Quando chegar o horario da missa cadastrada, esta mesma pagina podera exibir o conteudo publico final da celebracao.
+                            @else
+                                O link publico desta igreja ja esta fixo e pronto para uso. O conteudo final sera liberado aqui quando a missa ativa for organizada pela administracao local.
+                            @endif
+                        </p>
+
                         <div class="loading" aria-hidden="true">
                             <span class="dot"></span>
                             <span class="dot"></span>
                             <span class="dot"></span>
-                            <span>Preparando a experiencia da proxima missa</span>
+                            <span>
+                                @if ($estadoCelebracao === 'em_andamento')
+                                    Mantendo a pagina sincronizada com a celebracao atual
+                                @elseif ($proximaMissa)
+                                    Preparando a celebracao cadastrada para esta igreja
+                                @else
+                                    Preparando a experiencia da proxima missa
+                                @endif
+                            </span>
                         </div>
 
-                       
+                        <p class="footer-note">
+                            Esta tela e apenas uma etapa de preparacao. O QR Code da igreja continua apontando para este mesmo link fixo.
+                        </p>
                     </div>
                 </aside>
             </div>
@@ -437,13 +475,36 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const destino = new Date();
-            destino.setHours(destino.getHours() + 48);
-
+            const countdown = document.querySelector('[data-countdown]');
             const dias = document.querySelector('[data-days]');
             const horas = document.querySelector('[data-hours]');
             const minutos = document.querySelector('[data-minutes]');
             const segundos = document.querySelector('[data-seconds]');
+            let escalaFonte = 1;
+
+            const aplicarEscalaFonte = () => {
+                document.documentElement.style.fontSize = `${Math.max(0.9, Math.min(1.4, escalaFonte)) * 16}px`;
+            };
+
+            if (!countdown || !dias || !horas || !minutos || !segundos) {
+                return;
+            }
+
+            const target = countdown.dataset.target;
+            const countdownState = countdown.dataset.state;
+            const statusUrl = countdown.dataset.statusUrl;
+            let recargaAgendada = false;
+            let ultimaChaveEstado = [countdownState, target || '', window.location.pathname].join('|');
+
+            if (!target) {
+                dias.textContent = '--';
+                horas.textContent = '--';
+                minutos.textContent = '--';
+                segundos.textContent = '--';
+                return;
+            }
+
+            const destino = new Date(target);
 
             const atualizar = () => {
                 const agora = new Date().getTime();
@@ -454,6 +515,12 @@
                     horas.textContent = '00';
                     minutos.textContent = '00';
                     segundos.textContent = '00';
+
+                    if (!recargaAgendada && (countdownState === 'em_andamento' || countdownState === 'proxima')) {
+                        recargaAgendada = true;
+                        window.setTimeout(() => window.location.reload(), 1500);
+                    }
+
                     return;
                 }
 
@@ -470,6 +537,48 @@
 
             atualizar();
             setInterval(atualizar, 1000);
+
+            document.querySelectorAll('[data-public-font]').forEach((botao) => {
+                botao.addEventListener('click', () => {
+                    escalaFonte = Math.max(0.9, Math.min(1.4, escalaFonte + (Number(botao.dataset.publicFont || 0) * 0.08)));
+                    aplicarEscalaFonte();
+                });
+            });
+
+            document.querySelector('[data-public-font-reset]')?.addEventListener('click', () => {
+                escalaFonte = 1;
+                aplicarEscalaFonte();
+            });
+
+            if (statusUrl) {
+                window.setInterval(async () => {
+                    try {
+                        const resposta = await fetch(statusUrl, {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                        });
+
+                        if (!resposta.ok) {
+                            return;
+                        }
+
+                        const payload = await resposta.json();
+                        const novaChaveEstado = [
+                            payload.estado || '',
+                            payload.countdown_iso || '',
+                            String(payload.missa_id || ''),
+                        ].join('|');
+
+                        if (novaChaveEstado !== ultimaChaveEstado) {
+                            window.location.reload();
+                        }
+                    } catch (error) {
+                        console.debug('Falha ao sincronizar a pagina publica.', error);
+                    }
+                }, 30000);
+            }
         });
     </script>
 </body>

@@ -51,6 +51,16 @@ class AuthController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
+        if (method_exists($usuarioAutenticado, 'ehAdminLocal') && $usuarioAutenticado->ehAdminLocal()) {
+            if ($usuarioAutenticado->primeiro_acesso) {
+                return redirect()
+                    ->route('local-admin.profile')
+                    ->with('status', 'No primeiro acesso, atualize sua senha para continuar usando o painel da igreja com seguranca.');
+            }
+
+            return redirect()->route('local-admin.dashboard');
+        }
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

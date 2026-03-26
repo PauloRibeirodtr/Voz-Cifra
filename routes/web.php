@@ -8,13 +8,30 @@ use App\Http\Controllers\Admin\MusicaController;
 use App\Http\Controllers\Admin\TempoLiturgicoController;
 use App\Http\Controllers\Admin\VersaoMusicalController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\LocalAdmin\MissaController as LocalAdminMissaController;
+use App\Http\Controllers\LocalAdmin\PainelAdminLocalController;
 use App\Http\Controllers\Publico\IgrejaPublicaController;
+use App\Models\Usuario;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return auth()->check()
-        ? redirect()->route('admin.dashboard')
-        : redirect()->route('login');
+    if (!Auth::check()) {
+        return redirect()->route('login');
+    }
+
+    /** @var Usuario|null $usuario */
+    $usuario = Auth::user();
+
+    if (method_exists($usuario, 'ehAdminMaster') && $usuario->ehAdminMaster()) {
+        return redirect()->route('admin.dashboard');
+    }
+
+    if (method_exists($usuario, 'ehAdminLocal') && $usuario->ehAdminLocal()) {
+        return redirect()->route('local-admin.dashboard');
+    }
+
+    return redirect()->route('login');
 })->name('root');
 
 Route::middleware('guest')->group(function () {
@@ -79,6 +96,37 @@ Route::middleware(['auth', 'verified_custom', 'super.admin'])
         Route::put('/musicas/{musica}/versoes/{versaoMusical}', [VersaoMusicalController::class, 'update'])->name('versoes-musicais.update');
         Route::delete('/musicas/{musica}/versoes/{versaoMusical}', [VersaoMusicalController::class, 'destroy'])->name('versoes-musicais.destroy');
     });
+
+Route::middleware(['auth', 'verified_custom', 'role:admin_local', 'local_admin.primeiro_acesso'])
+    ->prefix('igreja')
+    ->name('local-admin.')
+    ->group(function () {
+        Route::get('/painel', [PainelAdminLocalController::class, 'dashboard'])->name('dashboard');
+        Route::get('/perfil', [PainelAdminLocalController::class, 'profile'])->name('profile');
+        Route::put('/perfil', [PainelAdminLocalController::class, 'updateProfile'])->name('profile.update');
+        Route::get('/dados', [PainelAdminLocalController::class, 'church'])->name('church');
+
+        Route::get('/missas', [LocalAdminMissaController::class, 'index'])->name('missas.index');
+        Route::get('/missas/criar', [LocalAdminMissaController::class, 'create'])->name('missas.create');
+        Route::post('/missas', [LocalAdminMissaController::class, 'store'])->name('missas.store');
+        Route::get('/missas/{missa}/apresentacao', [LocalAdminMissaController::class, 'apresentacao'])->name('missas.apresentacao');
+        Route::get('/missas/{missa}', [LocalAdminMissaController::class, 'show'])->name('missas.show');
+        Route::get('/missas/{missa}/editar', [LocalAdminMissaController::class, 'edit'])->name('missas.edit');
+        Route::put('/missas/{missa}', [LocalAdminMissaController::class, 'update'])->name('missas.update');
+        Route::post('/missas/{missa}/toggle', [LocalAdminMissaController::class, 'toggle'])->name('missas.toggle');
+        Route::get('/missas/{missa}/pdf', [LocalAdminMissaController::class, 'pdf'])->name('missas.pdf');
+
+        Route::post('/missas/{missa}/repertorio', [LocalAdminMissaController::class, 'storeRepertorio'])->name('repertorio.store');
+        Route::put('/missas/{missa}/repertorio/{missaMusica}', [LocalAdminMissaController::class, 'updateRepertorio'])->name('repertorio.update');
+        Route::post('/missas/{missa}/repertorio/{missaMusica}/subir', [LocalAdminMissaController::class, 'subirRepertorio'])->name('repertorio.up');
+        Route::post('/missas/{missa}/repertorio/{missaMusica}/descer', [LocalAdminMissaController::class, 'descerRepertorio'])->name('repertorio.down');
+        Route::delete('/missas/{missa}/repertorio/{missaMusica}', [LocalAdminMissaController::class, 'destroyRepertorio'])->name('repertorio.destroy');
+        Route::get('/missas/{missa}/repertorio/{missaMusica}/cifra', [LocalAdminMissaController::class, 'showCifra'])->name('repertorio.cifra');
+    });
+
+Route::get('/publico/igrejas/{slug}/status', [IgrejaPublicaController::class, 'status'])
+    ->where('slug', '[A-Za-z0-9\-]+')
+    ->name('igrejas.public.status');
 
 Route::get('/{slug}', [IgrejaPublicaController::class, 'show'])
     ->where('slug', '[A-Za-z0-9\-]+')
