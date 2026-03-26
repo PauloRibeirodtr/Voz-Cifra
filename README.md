@@ -19,10 +19,12 @@ Hoje o projeto ja permite:
 
 - autenticar o `admin_master`
 - administrar igrejas e administradores locais
+- administrar outros `admin_master`
 - manter biblioteca de acordes
 - manter tempos e momentos liturgicos
 - cadastrar musicas base
 - cadastrar versoes musicais com cifras
+- preparar o link publico fixo da igreja para uso futuro
 
 ## Tecnologias
 
@@ -53,9 +55,12 @@ Hoje o projeto ja permite:
 ### Painel do admin master
 
 - dashboard inicial
+- acessos rapidos para os modulos centrais
 - perfil
 - configuracoes
 - alteracao de email, telefone e senha
+- cadastro de outros `admin_master`
+- encerramento de sessao por `Configuracoes`
 
 ### Igrejas
 
@@ -64,6 +69,10 @@ Hoje o projeto ja permite:
 - cadastrar `admin_local` junto com a igreja
 - editar igreja
 - editar dados do administrador local vinculado
+- gerar e manter `slug` unico por igreja
+- preparar link publico fixo por igreja
+- preparar QR Code fixo apontando para o link publico
+- permitir ao `admin_master` visualizar link publico e QR da igreja
 
 ### Acordes
 
@@ -127,6 +136,13 @@ Hoje o projeto ja permite:
 - `MomentoLiturgicoSeeder`
 - `AcordeSeeder`
 
+### Preparacao da area publica por igreja
+
+- rota publica fixa por `slug`
+- pagina publica inicial da igreja
+- estrutura pronta para o QR Code fixo da igreja
+- base preparada para, no futuro, exibir a missa ativa da igreja no mesmo link
+
 ## Modulos fora do escopo atual
 
 Ainda nao foram abertos nesta etapa:
@@ -135,8 +151,9 @@ Ainda nao foram abertos nesta etapa:
 - fluxo real do `member`
 - modulo de padres
 - modulo de missas
-- parte publica por igreja
-- QR Code para pagina publica da igreja
+- experiencia publica final da missa por igreja
+- definicao da missa ativa da igreja no link publico
+- visao publica completa do fiel sem cifra
 
 ## O que saiu do fluxo
 
@@ -237,6 +254,9 @@ Padrao atual:
 - A versao musical guarda cifra, tom, BPM e apoio de execucao.
 - Hoje nao existe relacao persistida entre `versoes_musicais` e `acordes`.
 - A biblioteca de acordes funciona como apoio visual, validacao e dicionario.
+- O link publico da igreja ja e fixo e baseado no `slug`.
+- O QR Code da igreja ja pode apontar para esse link fixo.
+- A pagina publica da igreja ainda esta em modo preparatorio, sem a missa publica completa.
 - O foco atual do projeto esta fechado no `admin_master`.
 
 ## Proxima etapa
