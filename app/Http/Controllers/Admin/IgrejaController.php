@@ -23,7 +23,8 @@ class IgrejaController extends Controller
                 ->orderBy('nome'),
         ])
             ->orderBy('nome')
-            ->get();
+            ->get()
+            ->map(fn (Igreja $igreja) => $this->adicionarDadosPublicos($igreja));
 
         return view('admin.churches.index', [
             'igrejas' => $igrejas,
@@ -52,7 +53,7 @@ class IgrejaController extends Controller
             'admin_telefone' => ['nullable', 'string', 'max:20'],
         ]);
 
-        DB::transaction(function () use ($dados): void {
+        $igreja = DB::transaction(function () use ($dados): Igreja {
             $slug = $this->resolverSlug(
                 $dados['slug'] ?? null,
                 $dados['nome']
@@ -80,16 +81,19 @@ class IgrejaController extends Controller
                 'ativo' => true,
                 'primeiro_acesso' => true,
             ]);
+
+            return $igreja;
         });
 
         return redirect()
-            ->route('admin.igrejas.index')
-            ->with('success', 'Igreja e administrador local cadastrados com sucesso. A senha inicial do admin local e o CPF informado, usando apenas os numeros.');
+            ->route('admin.igrejas.edit', $igreja)
+            ->with('success', 'Igreja e administrador local cadastrados com sucesso. O link publico fixo e o QR Code desta igreja ja estao prontos para uso futuro.');
     }
 
     public function edit(Igreja $igreja): View
     {
         $adminLocal = $this->obterAdminLocal($igreja);
+        $igreja = $this->adicionarDadosPublicos($igreja);
 
         return view('admin.churches.edit', [
             'igreja' => $igreja,
@@ -219,5 +223,18 @@ class IgrejaController extends Controller
     protected function somenteDigitos(string $valor): string
     {
         return preg_replace('/\D+/', '', $valor) ?? '';
+    }
+
+    protected function adicionarDadosPublicos(Igreja $igreja): Igreja
+    {
+        $linkPublico = route('igrejas.public.show', ['slug' => $igreja->slug]);
+
+        $igreja->setAttribute('link_publico', $linkPublico);
+        $igreja->setAttribute(
+            'qr_code_url',
+            'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' . urlencode($linkPublico)
+        );
+
+        return $igreja;
     }
 }

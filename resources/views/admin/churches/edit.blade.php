@@ -128,6 +128,42 @@
             </div>
         </div>
 
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div class="max-w-2xl">
+                    <h2 class="text-lg font-bold text-gray-800">Link publico e QR fixo</h2>
+                    <p class="mt-2 text-sm text-gray-500">
+                        Este link e permanente para a igreja e servira como base da area publica e do QR Code fixo.
+                        No futuro, o conteudo desta URL mudara conforme a missa ativa organizada pelo admin local.
+                    </p>
+
+                    <div class="mt-5 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                        <span class="block text-xs font-bold uppercase tracking-wider text-gray-400">Link publico da igreja</span>
+                        <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="mt-2 block break-all text-sm font-semibold text-green-700 hover:underline">
+                            {{ $igreja->link_publico }}
+                        </a>
+                    </div>
+
+                    <div class="mt-4 flex flex-col gap-3 sm:flex-row">
+                        <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                            Abrir pagina publica
+                        </a>
+                        <a href="{{ $igreja->qr_code_url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                            Abrir QR fixo
+                        </a>
+                    </div>
+                </div>
+
+                <div class="w-full max-w-xs rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                    <span class="block text-xs font-bold uppercase tracking-wider text-gray-400">Previa do QR Code fixo</span>
+                    <img src="{{ $igreja->qr_code_url }}" alt="QR Code da igreja {{ $igreja->nome }}" class="mt-4 w-full rounded-xl border border-gray-200 bg-white p-3" />
+                    <p class="mt-3 text-xs leading-5 text-gray-500">
+                        O QR aponta sempre para a mesma URL da igreja. O que vai mudar depois e o conteudo exibido nessa pagina.
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <a href="{{ route('admin.igrejas.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 text-gray-700 font-medium hover:bg-gray-50">
                 Cancelar

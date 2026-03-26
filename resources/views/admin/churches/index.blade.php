@@ -35,6 +35,7 @@
                             <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Localizacao</th>
                             <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Admin local</th>
                             <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Status</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Link publico</th>
                             <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-500">Acoes</th>
                         </tr>
                     </thead>
@@ -69,6 +70,16 @@
                                     <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold {{ $igreja->ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                                         {{ $igreja->ativo ? 'Ativa' : 'Inativa' }}
                                     </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600">
+                                    <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="break-all text-green-700 hover:underline">
+                                        {{ $igreja->link_publico }}
+                                    </a>
+                                    <div class="mt-2 flex items-center gap-2">
+                                        <a href="{{ $igreja->qr_code_url }}" target="_blank" rel="noopener noreferrer" class="inline-flex rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+                                            Ver QR
+                                        </a>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <a href="{{ route('admin.igrejas.edit', $igreja) }}" class="inline-flex px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
@@ -118,6 +129,16 @@
                                 @else
                                     <div class="mt-1 font-medium text-amber-600">Sem admin local</div>
                                 @endif
+                            </div>
+
+                            <div class="rounded-xl bg-gray-50 p-3">
+                                <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-400">Acesso publico fixo</span>
+                                <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="mt-1 block break-all text-sm font-medium text-green-700 hover:underline">
+                                    {{ $igreja->link_publico }}
+                                </a>
+                                <a href="{{ $igreja->qr_code_url }}" target="_blank" rel="noopener noreferrer" class="mt-3 inline-flex items-center justify-center rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+                                    Ver QR fixo
+                                </a>
                             </div>
                         </div>
 

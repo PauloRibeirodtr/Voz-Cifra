@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\MusicaController;
 use App\Http\Controllers\Admin\TempoLiturgicoController;
 use App\Http\Controllers\Admin\VersaoMusicalController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Publico\IgrejaPublicaController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -78,3 +79,7 @@ Route::middleware(['auth', 'verified_custom', 'super.admin'])
         Route::put('/musicas/{musica}/versoes/{versaoMusical}', [VersaoMusicalController::class, 'update'])->name('versoes-musicais.update');
         Route::delete('/musicas/{musica}/versoes/{versaoMusical}', [VersaoMusicalController::class, 'destroy'])->name('versoes-musicais.destroy');
     });
+
+Route::get('/{slug}', [IgrejaPublicaController::class, 'show'])
+    ->where('slug', '[A-Za-z0-9\-]+')
+    ->name('igrejas.public.show');
