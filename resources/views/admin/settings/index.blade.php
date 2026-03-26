@@ -21,7 +21,7 @@
                 <div class="flex items-start justify-between gap-4">
                     <div>
                         <h2 class="text-lg font-bold text-gray-800">Perfil</h2>
-                        <p class="text-sm text-gray-500 mt-2">Atualize email, telefone e senha do administrador principal.</p>
+                        <p class="text-sm text-gray-500 mt-2">Atualize email, telefone e senha do administrador principal em um unico lugar.</p>
                     </div>
                     <div class="h-11 w-11 rounded-full bg-green-100 text-green-700 flex items-center justify-center">
                         <i class="fa-solid fa-user"></i>
@@ -39,19 +39,22 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <div class="flex items-start justify-between gap-4">
                     <div>
-                        <h2 class="text-lg font-bold text-gray-800">Seguranca</h2>
-                        <p class="text-sm text-gray-500 mt-2">Use este atalho para alterar sua senha de acesso com seguranca.</p>
+                        <h2 class="text-lg font-bold text-gray-800">Sessao</h2>
+                        <p class="text-sm text-gray-500 mt-2">Encerre o acesso atual com seguranca quando terminar de usar o painel.</p>
                     </div>
-                    <div class="h-11 w-11 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center">
-                        <i class="fa-solid fa-shield-halved"></i>
+                    <div class="h-11 w-11 rounded-full bg-red-100 text-red-700 flex items-center justify-center">
+                        <i class="fa-solid fa-right-from-bracket"></i>
                     </div>
                 </div>
 
                 <div class="mt-6">
-                    <a href="{{ route('admin.profile') }}#password" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-50">
-                        <i class="fa-solid fa-key"></i>
-                        <span>Alterar senha</span>
-                    </a>
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                            <span>Sair da conta</span>
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
