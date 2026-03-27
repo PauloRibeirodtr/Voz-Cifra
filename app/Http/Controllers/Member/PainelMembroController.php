@@ -3,20 +3,75 @@
 namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
+use App\Models\Usuario;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 class PainelMembroController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware(['auth', 'verified_custom', 'role:member']);
     }
 
-    public function index()
+    public function dashboard(): View
     {
-        $usuario = Auth::user();
+        $usuario = $this->obterUsuario();
         $igreja = $usuario?->igreja;
 
         return view('member.dashboard', compact('usuario', 'igreja'));
+    }
+
+    public function profile(): View
+    {
+        $usuario = $this->obterUsuario();
+
+        return view('member.profile', [
+            'user' => $usuario,
+            'igreja' => $usuario->igreja,
+        ]);
+    }
+
+    public function updateProfile(Request $request): RedirectResponse
+    {
+        $usuario = $this->obterUsuario();
+        $primeiroAcesso = (bool) ($usuario->primeiro_acesso ?? false);
+
+        $dados = $request->validate([
+            'email' => ['required', 'email', Rule::unique('usuarios', 'email')->ignore($usuario->id)],
+            'telefone' => ['nullable', 'string', 'max:20'],
+            'password' => [$primeiroAcesso ? 'required' : 'nullable', 'confirmed', 'min:8'],
+        ], [
+            'password.required' => 'No primeiro acesso, defina uma nova senha para liberar o painel do músico.',
+            'password.confirmed' => 'A confirmação da senha não confere.',
+            'password.min' => 'A nova senha precisa ter pelo menos 8 caracteres.',
+        ]);
+
+        $usuario->email = $dados['email'];
+        $usuario->telefone = $dados['telefone'] ?? null;
+
+        if (!empty($dados['password'])) {
+            $usuario->password = $dados['password'];
+            $usuario->primeiro_acesso = false;
+        }
+
+        $usuario->save();
+
+        return back()->with('success', $primeiroAcesso
+            ? 'Senha atualizada com sucesso. O acesso do músico foi liberado.'
+            : 'Perfil do músico atualizado com sucesso.');
+    }
+
+    private function obterUsuario(): Usuario
+    {
+        /** @var \App\Models\Usuario $usuario */
+        $usuario = Auth::user();
+
+        abort_unless($usuario && $usuario->ehMembro(), 403);
+
+        return $usuario;
     }
 }

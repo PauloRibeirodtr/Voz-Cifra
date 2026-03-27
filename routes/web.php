@@ -4,13 +4,16 @@ use App\Http\Controllers\Admin\AcordeController;
 use App\Http\Controllers\Admin\AdminMasterController;
 use App\Http\Controllers\Admin\IgrejaController;
 use App\Http\Controllers\Admin\MomentoLiturgicoController;
+use App\Http\Controllers\Admin\MusicoController as AdminMusicoController;
 use App\Http\Controllers\Admin\MusicaController;
 use App\Http\Controllers\Admin\PadreController;
 use App\Http\Controllers\Admin\TempoLiturgicoController;
 use App\Http\Controllers\Admin\VersaoMusicalController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\LocalAdmin\MusicoController as LocalAdminMusicoController;
 use App\Http\Controllers\LocalAdmin\MissaController as LocalAdminMissaController;
 use App\Http\Controllers\LocalAdmin\PainelAdminLocalController;
+use App\Http\Controllers\Member\PainelMembroController;
 use App\Http\Controllers\Publico\IgrejaPublicaController;
 use App\Models\Usuario;
 use Illuminate\Support\Facades\Auth;
@@ -30,6 +33,10 @@ Route::get('/', function () {
 
     if (method_exists($usuario, 'ehAdminLocal') && $usuario->ehAdminLocal()) {
         return redirect()->route('local-admin.dashboard');
+    }
+
+    if (method_exists($usuario, 'ehMembro') && $usuario->ehMembro()) {
+        return redirect()->route('member.dashboard');
     }
 
     return redirect()->route('login');
@@ -60,6 +67,15 @@ Route::middleware(['auth', 'verified_custom', 'super.admin'])
         Route::get('/igrejas/{igreja}/editar', [IgrejaController::class, 'edit'])->name('igrejas.edit');
         Route::put('/igrejas/{igreja}', [IgrejaController::class, 'update'])->name('igrejas.update');
         Route::post('/igrejas/{igreja}/admin-local/resetar-senha', [IgrejaController::class, 'resetAdminLocalPassword'])->name('igrejas.admin-local.password.reset');
+
+        Route::get('/musicos', [AdminMusicoController::class, 'index'])->name('musicos.index');
+        Route::get('/musicos/criar', [AdminMusicoController::class, 'create'])->name('musicos.create');
+        Route::post('/musicos', [AdminMusicoController::class, 'store'])->name('musicos.store');
+        Route::get('/musicos/{musico}/editar', [AdminMusicoController::class, 'edit'])->name('musicos.edit');
+        Route::put('/musicos/{musico}', [AdminMusicoController::class, 'update'])->name('musicos.update');
+        Route::post('/musicos/{musico}/toggle', [AdminMusicoController::class, 'toggle'])->name('musicos.toggle');
+        Route::post('/musicos/{musico}/resetar-senha', [AdminMusicoController::class, 'resetPassword'])->name('musicos.password.reset');
+        Route::delete('/musicos/{musico}', [AdminMusicoController::class, 'destroy'])->name('musicos.destroy');
 
         Route::get('/padres', [PadreController::class, 'index'])->name('padres.index');
         Route::get('/padres/criar', [PadreController::class, 'create'])->name('padres.create');
@@ -115,6 +131,15 @@ Route::middleware(['auth', 'verified_custom', 'role:admin_local', 'local_admin.p
         Route::put('/perfil', [PainelAdminLocalController::class, 'updateProfile'])->name('profile.update');
         Route::get('/dados', [PainelAdminLocalController::class, 'church'])->name('church');
 
+        Route::get('/musicos', [LocalAdminMusicoController::class, 'index'])->name('musicos.index');
+        Route::get('/musicos/criar', [LocalAdminMusicoController::class, 'create'])->name('musicos.create');
+        Route::post('/musicos', [LocalAdminMusicoController::class, 'store'])->name('musicos.store');
+        Route::get('/musicos/{musico}/editar', [LocalAdminMusicoController::class, 'edit'])->name('musicos.edit');
+        Route::put('/musicos/{musico}', [LocalAdminMusicoController::class, 'update'])->name('musicos.update');
+        Route::post('/musicos/{musico}/toggle', [LocalAdminMusicoController::class, 'toggle'])->name('musicos.toggle');
+        Route::post('/musicos/{musico}/resetar-senha', [LocalAdminMusicoController::class, 'resetPassword'])->name('musicos.password.reset');
+        Route::delete('/musicos/{musico}', [LocalAdminMusicoController::class, 'destroy'])->name('musicos.destroy');
+
         Route::get('/missas', [LocalAdminMissaController::class, 'index'])->name('missas.index');
         Route::get('/missas/criar', [LocalAdminMissaController::class, 'create'])->name('missas.create');
         Route::post('/missas', [LocalAdminMissaController::class, 'store'])->name('missas.store');
@@ -131,6 +156,15 @@ Route::middleware(['auth', 'verified_custom', 'role:admin_local', 'local_admin.p
         Route::post('/missas/{missa}/repertorio/{missaMusica}/descer', [LocalAdminMissaController::class, 'descerRepertorio'])->name('repertorio.down');
         Route::delete('/missas/{missa}/repertorio/{missaMusica}', [LocalAdminMissaController::class, 'destroyRepertorio'])->name('repertorio.destroy');
         Route::get('/missas/{missa}/repertorio/{missaMusica}/cifra', [LocalAdminMissaController::class, 'showCifra'])->name('repertorio.cifra');
+    });
+
+Route::middleware(['auth', 'verified_custom', 'role:member'])
+    ->prefix('musico')
+    ->name('member.')
+    ->group(function () {
+        Route::get('/painel', [PainelMembroController::class, 'dashboard'])->name('dashboard');
+        Route::get('/perfil', [PainelMembroController::class, 'profile'])->name('profile');
+        Route::put('/perfil', [PainelMembroController::class, 'updateProfile'])->name('profile.update');
     });
 
 Route::get('/publico/igrejas/{slug}/status', [IgrejaPublicaController::class, 'status'])

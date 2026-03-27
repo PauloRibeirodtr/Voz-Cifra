@@ -56,6 +56,11 @@
             <span>Igrejas</span>
         </a>
 
+        <a href="{{ route('admin.musicos.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.musicos.*')) }}">
+            <i class="fa-solid fa-users w-5 text-center group-hover:scale-110 transition"></i>
+            <span>Músicos</span>
+        </a>
+
         <a href="{{ route('admin.padres.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.padres.*')) }}">
             <i class="fa-solid fa-user-tie w-5 text-center group-hover:scale-110 transition"></i>
             <span>Padres</span>

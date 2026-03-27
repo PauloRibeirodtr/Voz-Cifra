@@ -16,7 +16,7 @@
         <div class="text-center mb-8">
             <img src="{{ asset('logo/final.png') }}" alt="Logo Voz e Cifra" class="w-24 mx-auto mb-4 drop-shadow-lg">
             <h2 class="text-2xl font-bold text-gray-800">Bem-vindo de volta!</h2>
-            <p class="text-gray-400 text-sm mt-1">Acesse o painel administrativo do ministerio.</p>
+            <p class="text-gray-400 text-sm mt-1">Acesse sua area do sistema com seguranca.</p>
         </div>
 
         @if (session('status'))
@@ -79,7 +79,7 @@
         </form>
 
         <div class="text-center mt-8 pt-6 border-t border-gray-100">
-            <p class="text-sm text-gray-500">Acesso restrito ao sistema administrativo.</p>
+            <p class="text-sm text-gray-500">Acesso restrito aos perfis liberados no sistema.</p>
         </div>
     </div>
 

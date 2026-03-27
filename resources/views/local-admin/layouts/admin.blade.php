@@ -20,20 +20,50 @@
                     <h1 class="truncate text-base font-extrabold text-slate-900">@yield('mobile_title', 'Painel da igreja')</h1>
                 </div>
 
-                <button
-                    type="button"
-                    id="local_sidebar_toggle"
-                    class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 bg-white text-slate-700 shadow-sm transition hover:border-green-200 hover:bg-green-50 hover:text-green-700"
-                    aria-controls="local_sidebar"
-                    aria-expanded="false"
-                    aria-label="Abrir menu"
-                >
-                    <i class="fa-solid fa-bars text-base"></i>
-                </button>
+                <div class="flex items-center gap-2">
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button
+                            type="submit"
+                            class="inline-flex h-11 items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
+                            aria-label="Sair do sistema"
+                        >
+                            Sair
+                        </button>
+                    </form>
+
+                    <button
+                        type="button"
+                        id="local_sidebar_toggle"
+                        class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 bg-white text-slate-700 shadow-sm transition hover:border-green-200 hover:bg-green-50 hover:text-green-700"
+                        aria-controls="local_sidebar"
+                        aria-expanded="false"
+                        aria-label="Abrir menu"
+                    >
+                        <i class="fa-solid fa-bars text-base"></i>
+                    </button>
+                </div>
             </div>
         </header>
 
         <main class="relative overflow-x-hidden px-4 py-4 sm:px-6 sm:py-6 lg:px-8" id="mainContent">
+            <div class="mb-6 hidden items-center justify-between gap-4 md:flex">
+                <div class="min-w-0">
+                    <p class="text-[11px] font-black uppercase tracking-[0.22em] text-green-700">Voz &amp; Cifra</p>
+                    <p class="truncate text-sm text-slate-500">@yield('desktop_subtitle', 'Area administrativa da igreja')</p>
+                </div>
+
+                <form action="{{ route('logout') }}" method="POST">
+                    @csrf
+                    <button
+                        type="submit"
+                        class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
+                    >
+                        Sair
+                    </button>
+                </form>
+            </div>
+
             @yield('content')
             @include('admin.partials.footer')
         </main>

@@ -57,6 +57,11 @@
             <span>Minha igreja</span>
         </a>
 
+        <a href="{{ route('local-admin.musicos.index') }}" class="{{ $itemMenuClasse(request()->routeIs('local-admin.musicos.*')) }}">
+            <i class="fa-solid fa-users w-5 text-center group-hover:scale-110 transition"></i>
+            <span>Músicos</span>
+        </a>
+
         <a href="{{ route('local-admin.missas.index') }}" class="{{ $itemMenuClasse(request()->routeIs('local-admin.missas.*', 'local-admin.repertorio.*')) }}">
             <i class="fa-solid fa-calendar-check w-5 text-center group-hover:scale-110 transition"></i>
             <span>Missas</span>

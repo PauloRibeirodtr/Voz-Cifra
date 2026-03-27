@@ -78,6 +78,16 @@ class AuthController extends Controller
             return redirect()->route('local-admin.dashboard');
         }
 
+        if (method_exists($usuarioAutenticado, 'ehMembro') && $usuarioAutenticado->ehMembro()) {
+            if ($usuarioAutenticado->primeiro_acesso) {
+                return redirect()
+                    ->route('member.profile')
+                    ->with('status', 'No primeiro acesso, atualize sua senha para liberar o painel do músico com segurança.');
+            }
+
+            return redirect()->route('member.dashboard');
+        }
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
