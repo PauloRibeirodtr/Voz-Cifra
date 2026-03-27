@@ -3,13 +3,19 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\Usuario;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    private const LOGIN_MAX_ATTEMPTS = 5;
+
+    private const LOGIN_DECAY_SECONDS = 300;
+
     public function showLogin()
     {
         return view('auth.login');
@@ -22,20 +28,31 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        $usuario = Usuario::where('email', $credenciais['email'])->first();
+        $throttleKey = $this->throttleKey($request, $credenciais['email']);
 
-        if (!$usuario || !($usuario->ativo ?? false)) {
-            return back()->withErrors([
-                'email' => 'Usuário inexistente ou inativo.',
-            ])->onlyInput('email');
+        $this->ensureIsNotRateLimited($throttleKey);
+
+        if (!Auth::attempt([
+            'email' => $credenciais['email'],
+            'password' => $credenciais['password'],
+            'ativo' => true,
+        ], $request->boolean('remember'))) {
+            RateLimiter::hit($throttleKey, self::LOGIN_DECAY_SECONDS);
+
+            if (RateLimiter::tooManyAttempts($throttleKey, self::LOGIN_MAX_ATTEMPTS)) {
+                $seconds = RateLimiter::availableIn($throttleKey);
+
+                throw ValidationException::withMessages([
+                    'email' => 'Muitas tentativas de login. Tente novamente em ' . $this->formatLockoutTime($seconds) . '.',
+                ]);
+            }
+
+            throw ValidationException::withMessages([
+                'email' => 'E-mail ou senha incorretos.',
+            ]);
         }
 
-        if (!Auth::attempt($credenciais, $request->boolean('remember'))) {
-            return back()->withErrors([
-                'email' => 'As credenciais informadas estão incorretas.',
-            ])->onlyInput('email');
-        }
-
+        RateLimiter::clear($throttleKey);
         $request->session()->regenerate();
 
         /** @var \App\Models\Usuario $usuarioAutenticado */
@@ -66,7 +83,7 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login')->withErrors([
-            'email' => 'Este perfil ainda não está liberado nesta etapa do sistema.',
+            'email' => 'Este perfil ainda nao esta liberado nesta etapa do sistema.',
         ]);
     }
 
@@ -77,5 +94,34 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
+    }
+
+    private function ensureIsNotRateLimited(string $throttleKey): void
+    {
+        if (!RateLimiter::tooManyAttempts($throttleKey, self::LOGIN_MAX_ATTEMPTS)) {
+            return;
+        }
+
+        $seconds = RateLimiter::availableIn($throttleKey);
+
+        throw ValidationException::withMessages([
+            'email' => 'Muitas tentativas de login. Tente novamente em ' . $this->formatLockoutTime($seconds) . '.',
+        ]);
+    }
+
+    private function throttleKey(Request $request, string $identifier): string
+    {
+        return Str::lower(trim($identifier)) . '|' . $request->ip();
+    }
+
+    private function formatLockoutTime(int $seconds): string
+    {
+        if ($seconds < 60) {
+            return $seconds . ' segundos';
+        }
+
+        $minutes = (int) ceil($seconds / 60);
+
+        return $minutes . ' minuto(s)';
     }
 }
