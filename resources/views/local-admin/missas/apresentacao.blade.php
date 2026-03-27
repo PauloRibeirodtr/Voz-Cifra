@@ -3,6 +3,10 @@
 @section('title', 'Apresentacao da missa | Voz & Cifra')
 @section('mobile_title', 'Apresentacao')
 
+@push('styles')
+    @include('partials.cifra-viewer-styles')
+@endpush
+
 @section('content')
     @php
         $itensApresentacao = $missa->missaMusicas
@@ -114,7 +118,7 @@
                     </div>
 
                     <div id="apresentacao_container" class="max-h-[68vh] overflow-y-auto rounded-2xl bg-gray-900 p-5 text-green-200 shadow-inner">
-                        <pre id="apresentacao_letra" class="whitespace-pre-wrap break-words text-sm leading-7"></pre>
+                        <div id="apresentacao_letra" class="space-y-2"></div>
                     </div>
                 </div>
             </section>
@@ -124,8 +128,10 @@
 
 @push('scripts')
     @if ($itensApresentacao->isNotEmpty())
+        @include('partials.chord-transposer-script')
         <script>
             document.addEventListener('DOMContentLoaded', () => {
+                const helper = window.VozECifraChord;
                 const itens = @json($itensApresentacao, JSON_UNESCAPED_UNICODE);
                 const titulo = document.getElementById('apresentacao_titulo');
                 const subtitulo = document.getElementById('apresentacao_subtitulo');
@@ -148,43 +154,16 @@
                 let rolagemAtiva = false;
                 let intervaloRolagem = null;
 
-                const escalaSustenidos = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-                const escalaBemol = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
-
-                const ehAcorde = (valor) => /^[A-G](?:#|b)?(?:[a-zA-Z0-9º°+\-]*(?:\([^)\]]+\))?)?(?:\/[A-G](?:#|b)?)?$/.test((valor || '').trim());
-
-                const transporNota = (nota, passos) => {
-                    const usaBemol = nota.includes('b');
-                    const escala = usaBemol ? escalaBemol : escalaSustenidos;
-                    const indice = escala.indexOf(nota);
-
-                    if (indice === -1) {
-                        return nota;
-                    }
-
-                    return escala[(indice + passos + 120) % 12];
-                };
-
-                const transporAcorde = (acorde, passos) => {
-                    const match = acorde.match(/^([A-G](?:#|b)?)(.*?)(?:\/([A-G](?:#|b)?))?$/);
-
-                    if (!match) {
-                        return acorde;
-                    }
-
-                    const [, tonica, sufixo, baixo] = match;
-                    return transporNota(tonica, passos) + sufixo + (baixo ? '/' + transporNota(baixo, passos) : '');
-                };
-
-                const transporTexto = (texto, passos) => texto.replace(/\[([^\[\]\r\n]+)\]/g, (match, possivelAcorde) => {
-                    return ehAcorde(possivelAcorde) ? '[' + transporAcorde(possivelAcorde, passos) + ']' : match;
-                });
+                if (!helper || !letra || !container) {
+                    return;
+                }
 
                 const pararRolagem = () => {
                     if (intervaloRolagem) {
                         window.clearInterval(intervaloRolagem);
                         intervaloRolagem = null;
                     }
+
                     rolagemAtiva = false;
                     if (botaoRolagem) {
                         botaoRolagem.textContent = 'Iniciar auto rolagem';
@@ -192,7 +171,7 @@
                 };
 
                 const iniciarRolagem = () => {
-                    if (!container || !controleVelocidade) {
+                    if (!controleVelocidade) {
                         return;
                     }
 
@@ -219,10 +198,16 @@
                     subtitulo.textContent = [item.artista || 'Artista nao informado', item.versao].filter(Boolean).join(' • ');
                     ordem.textContent = 'Ordem ' + item.ordem;
                     momento.textContent = item.momento || 'Momento nao definido';
-                    letra.textContent = transporTexto(item.letra || '', transposicaoAtual);
-                    letra.style.fontSize = fonteAtual + 'px';
-                    letra.style.lineHeight = Math.max(1.9, fonteAtual / 8) + '';
-                    tomBadge.textContent = 'Tom ' + (item.tom && ehAcorde(item.tom) ? transporAcorde(item.tom, transposicaoAtual) : 'Nao informado');
+                    letra.innerHTML = helper.renderChordSheetHtml(
+                        helper.transposeBracketedText(item.letra || '', transposicaoAtual),
+                        { chordAttribute: 'data-acorde-hover' }
+                    );
+                    letra.style.setProperty('--escala-fonte', String(fonteAtual / 16));
+                    tomBadge.textContent = 'Tom ' + (
+                        item.tom && helper.isChord(item.tom)
+                            ? helper.transposeChord(item.tom, transposicaoAtual)
+                            : 'Nao informado'
+                    );
                     bpmBadge.textContent = 'BPM ' + (item.bpm || '-');
                     container.scrollTop = 0;
 
@@ -232,10 +217,15 @@
                         botao.classList.toggle('bg-indigo-50', ativo);
                     });
 
-                    botaoAnterior.disabled = indiceAtual === 0;
-                    botaoAnterior.classList.toggle('opacity-50', indiceAtual === 0);
-                    botaoProxima.disabled = indiceAtual === itens.length - 1;
-                    botaoProxima.classList.toggle('opacity-50', indiceAtual === itens.length - 1);
+                    if (botaoAnterior) {
+                        botaoAnterior.disabled = indiceAtual === 0;
+                        botaoAnterior.classList.toggle('opacity-50', indiceAtual === 0);
+                    }
+
+                    if (botaoProxima) {
+                        botaoProxima.disabled = indiceAtual === itens.length - 1;
+                        botaoProxima.classList.toggle('opacity-50', indiceAtual === itens.length - 1);
+                    }
                 };
 
                 botaoAnterior?.addEventListener('click', () => {

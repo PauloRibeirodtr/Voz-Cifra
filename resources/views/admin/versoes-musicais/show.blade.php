@@ -53,6 +53,222 @@
     </style>
 @endpush
 
+@push('scripts')
+    @include('partials.chord-transposer-script')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const helper = window.VozECifraChord;
+            const previewMusicoRender = document.getElementById('preview_musico_render');
+            const indicadorTomAtual = document.getElementById('indicador_tom_atual_musico');
+            const textoOriginal = @json($versaoMusical->letra_com_cifras);
+            const tomOriginal = @json($versaoMusical->tom_musical);
+            const bibliotecaAcordes = @json($bibliotecaAcordes);
+            const gruposAcorde = helper ? helper.buildChordGroups(bibliotecaAcordes) : null;
+            const painelDiagrama = document.getElementById('painel_diagrama_acorde');
+            const nomeAcordeAtivo = document.getElementById('nome_acorde_ativo');
+            const descricaoAcordeAtivo = document.getElementById('descricao_acorde_ativo');
+            const variacoesAcorde = document.getElementById('variacoes_acorde');
+            const tooltipAcorde = document.getElementById('tooltip_acorde');
+            const tooltipAcordeNome = document.getElementById('tooltip_acorde_nome');
+            const tooltipAcordeDiagrama = document.getElementById('tooltip_acorde_diagrama');
+            let transposicaoAtual = 0;
+
+            if (!helper || !previewMusicoRender) {
+                return;
+            }
+
+            const renderizarDiagrama = (shape) => {
+                if (!shape) {
+                    return '<div class="text-sm text-gray-400">Sem desenho disponivel.</div>';
+                }
+
+                const config = { startX: 30, startY: 40, width: 180, height: 240, numStrings: 6, numFrets: 5 };
+                const stringGap = config.width / (config.numStrings - 1);
+                const fretGap = config.height / config.numFrets;
+                const baseFret = shape.baseFret || 1;
+                const positions = shape.positions || [];
+                const barres = shape.barres || [];
+                const topMarkers = shape.topMarkers || [null, null, null, null, null, null];
+                let grid = '';
+                let marks = '';
+
+                if (baseFret === 1) {
+                    grid += `<rect x="${config.startX}" y="${config.startY - 6}" width="${config.width}" height="6" rx="2" fill="#e5e7eb" />`;
+                } else {
+                    grid += `<text x="${config.startX - 10}" y="${config.startY + 25}" text-anchor="end" fill="#6b7280" font-weight="bold" font-size="18">${baseFret}a</text>`;
+                    grid += `<line x1="${config.startX}" y1="${config.startY}" x2="${config.startX + config.width}" y2="${config.startY}" stroke="#9ca3af" stroke-width="2" />`;
+                }
+
+                for (let i = 1; i <= config.numFrets; i++) {
+                    const y = config.startY + (i * fretGap);
+                    grid += `<line x1="${config.startX}" y1="${y}" x2="${config.startX + config.width}" y2="${y}" stroke="#9ca3af" stroke-width="2" />`;
+                }
+
+                for (let i = 0; i < config.numStrings; i++) {
+                    const x = config.startX + (i * stringGap);
+                    const thickness = 0.8 + ((5 - i) * 0.5);
+                    grid += `<line x1="${x}" y1="${config.startY}" x2="${x}" y2="${config.startY + config.height}" stroke="#d1d5db" stroke-width="${thickness}" />`;
+                }
+
+                topMarkers.forEach((marker, i) => {
+                    const x = config.startX + (i * stringGap);
+                    const y = config.startY - 15;
+                    if (marker === 'muted') marks += `<text x="${x}" y="${y + 5}" fill="#ef4444" font-size="18" font-weight="900" text-anchor="middle">X</text>`;
+                    else if (marker === 'open') marks += `<circle cx="${x}" cy="${y}" r="5" stroke="#2563eb" stroke-width="2.5" fill="none" />`;
+                });
+
+                barres.forEach((barre) => {
+                    const y = config.startY + (barre.fret * fretGap) - (fretGap / 2);
+                    const x1 = config.startX + ((6 - barre.fromString) * stringGap);
+                    const x2 = config.startX + ((6 - barre.toString) * stringGap);
+                    marks += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="#ea580c" stroke-width="14" stroke-linecap="round" opacity="0.95" />`;
+                });
+
+                positions.forEach((position) => {
+                    const y = config.startY + (position.fret * fretGap) - (fretGap / 2);
+                    const x = config.startX + ((6 - position.string) * stringGap);
+                    marks += `<circle cx="${x}" cy="${y}" r="12" fill="#ea580c" />`;
+                    if (position.finger) {
+                        marks += `<text x="${x}" y="${y + 1}" fill="white" font-size="14" font-weight="800" text-anchor="middle" dominant-baseline="central">${position.finger}</text>`;
+                    }
+                });
+
+                return `<svg viewBox="0 0 240 300" aria-label="Diagrama do acorde"><rect x="30" y="40" width="180" height="240" rx="4" fill="#2e1a12" stroke="#1a0f0a" stroke-width="2"></rect>${grid}${marks}</svg>`;
+            };
+
+            const preencherVariacoes = (nome, indiceAtivo = 0) => {
+                const variacoes = helper.getChordMatches(gruposAcorde, nome);
+
+                if (!variacoesAcorde) {
+                    return;
+                }
+
+                if (variacoes.length <= 1) {
+                    variacoesAcorde.innerHTML = '';
+                    return;
+                }
+
+                variacoesAcorde.innerHTML = variacoes.map((variacao, indice) => `
+                    <button
+                        type="button"
+                        class="variacao-acorde rounded-lg border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-700"
+                        data-variacao-acorde-helper="${helper.escapeHtml(nome)}"
+                        data-variacao-indice-helper="${indice}"
+                    >
+                        ${variacao.descricao ? helper.escapeHtml(variacao.descricao) : `Variacao ${indice + 1}`}
+                    </button>
+                `).join('');
+
+                variacoesAcorde.querySelectorAll('[data-variacao-acorde-helper]').forEach((botao) => {
+                    botao.classList.toggle('ativa', Number(botao.dataset.variacaoIndiceHelper) === indiceAtivo);
+                    botao.addEventListener('click', () => ativarAcorde(nome, Number(botao.dataset.variacaoIndiceHelper)));
+                });
+            };
+
+            const ativarAcorde = (nome, indice = 0) => {
+                const acorde = helper.getChordMatches(gruposAcorde, nome)[indice] || null;
+                const assinaturaAtual = helper.getChordSignature(nome);
+
+                document.querySelectorAll('[data-acorde-hover], [data-acorde-card]').forEach((elemento) => {
+                    const valorElemento = elemento.dataset.acordeHover || elemento.dataset.acordeCard;
+                    const assinaturaElemento = helper.getChordSignature(valorElemento);
+                    const ativo = valorElemento === nome || (assinaturaElemento && assinaturaAtual && assinaturaElemento === assinaturaAtual);
+                    elemento.classList.toggle('ativa', ativo);
+                });
+
+                if (!acorde) {
+                    if (painelDiagrama) painelDiagrama.innerHTML = '<div class="text-sm text-gray-400">Sem desenho disponivel.</div>';
+                    if (nomeAcordeAtivo) nomeAcordeAtivo.textContent = nome || 'Nenhum acorde selecionado';
+                    if (descricaoAcordeAtivo) descricaoAcordeAtivo.textContent = 'Esse acorde nao possui desenho cadastrado na biblioteca.';
+                    return;
+                }
+
+                if (painelDiagrama) painelDiagrama.innerHTML = renderizarDiagrama(acorde.shape);
+                if (nomeAcordeAtivo) nomeAcordeAtivo.textContent = nome;
+                if (descricaoAcordeAtivo) descricaoAcordeAtivo.textContent = acorde.descricao || 'Shape salvo na biblioteca de acordes.';
+                preencherVariacoes(nome, indice);
+            };
+
+            const mostrarTooltipAcorde = (nome, x, y) => {
+                const acorde = helper.getChordMatches(gruposAcorde, nome)[0] || null;
+
+                if (!tooltipAcorde || !tooltipAcordeNome || !tooltipAcordeDiagrama || !acorde) {
+                    return;
+                }
+
+                tooltipAcordeNome.textContent = nome;
+                tooltipAcordeDiagrama.innerHTML = renderizarDiagrama(acorde.shape);
+                tooltipAcorde.classList.remove('hidden');
+                const larguraTooltip = window.innerWidth <= 767 ? 180 : 240;
+                const offsetVertical = window.innerWidth <= 767 ? 165 : 220;
+                tooltipAcorde.style.left = `${Math.max(12, Math.min(x + 14, window.innerWidth - larguraTooltip - 12))}px`;
+                tooltipAcorde.style.top = `${Math.max(y - offsetVertical, 12)}px`;
+            };
+
+            const renderizarPreview = () => {
+                previewMusicoRender.innerHTML = helper.renderChordSheetHtml(
+                    helper.transposeBracketedText(textoOriginal, transposicaoAtual),
+                    { chordAttribute: 'data-acorde-hover' }
+                );
+
+                if (indicadorTomAtual) {
+                    indicadorTomAtual.textContent = 'Tom atual: ' + (
+                        tomOriginal && helper.isChord(tomOriginal)
+                            ? helper.transposeChord(tomOriginal, transposicaoAtual)
+                            : 'Nao informado'
+                    );
+                }
+            };
+
+            document.querySelectorAll('[data-transpose-step]').forEach((botao) => {
+                botao.addEventListener('click', () => {
+                    transposicaoAtual += Number(botao.dataset.transposeStep || 0);
+                    renderizarPreview();
+                });
+            });
+
+            document.querySelector('[data-transpose-reset]')?.addEventListener('click', () => {
+                transposicaoAtual = 0;
+                renderizarPreview();
+            });
+
+            document.addEventListener('mouseover', (event) => {
+                const acorde = event.target.closest('[data-acorde-hover]');
+                if (!acorde) {
+                    return;
+                }
+
+                ativarAcorde(acorde.dataset.acordeHover);
+                mostrarTooltipAcorde(acorde.dataset.acordeHover, event.clientX, event.clientY);
+            });
+
+            document.addEventListener('mousemove', (event) => {
+                const acorde = event.target.closest('[data-acorde-hover]');
+                if (!acorde) {
+                    return;
+                }
+
+                mostrarTooltipAcorde(acorde.dataset.acordeHover, event.clientX, event.clientY);
+            });
+
+            document.addEventListener('mouseout', (event) => {
+                if (event.target.closest('[data-acorde-hover]')) {
+                    tooltipAcorde?.classList.add('hidden');
+                }
+            });
+
+            document.addEventListener('click', (event) => {
+                const acorde = event.target.closest('[data-acorde-hover], [data-acorde-card]');
+                if (acorde) {
+                    ativarAcorde(acorde.dataset.acordeHover || acorde.dataset.acordeCard);
+                }
+            });
+
+            renderizarPreview();
+        });
+    </script>
+@endpush
+
 @section('content')
     @php
         $linhasSemCifra = preg_split('/\r\n|\r|\n/', $letraSemCifras) ?: [];
@@ -171,7 +387,7 @@
 
                             <div class="mt-4 flex flex-wrap gap-2">
                                 @if ($versaoMusical->tom_musical)
-                                    <span class="controle-pill">Tom: {{ $versaoMusical->tom_musical }}</span>
+                                    <span class="controle-pill">Tom original: {{ $versaoMusical->tom_musical }}</span>
                                 @endif
                                 <span class="controle-pill">BPM inicial: {{ $versaoMusical->bpm ?: '-' }}</span>
                                 <span class="controle-pill">Voz &amp; Cifra</span>
@@ -206,6 +422,15 @@
                         </div>
 
                         <button type="button" id="toggle_metronomo" class="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">Iniciar metronomo</button>
+                    </div>
+
+                    <div class="controle-preview">
+                        <div class="controle-preview-grupo">
+                            <span class="pill-info" id="indicador_tom_atual_musico">Tom atual: {{ $versaoMusical->tom_musical ?: 'Nao informado' }}</span>
+                            <button type="button" class="botao-pill" data-transpose-step="-1">Tom -</button>
+                            <button type="button" class="botao-pill" data-transpose-reset>Tom original</button>
+                            <button type="button" class="botao-pill" data-transpose-step="1">Tom +</button>
+                        </div>
                     </div>
                 </div>
 

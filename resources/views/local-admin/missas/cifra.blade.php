@@ -3,6 +3,10 @@
 @section('title', 'Visualizacao com cifra | Voz & Cifra')
 @section('mobile_title', 'Cifra')
 
+@push('styles')
+    @include('partials.cifra-viewer-styles')
+@endpush
+
 @section('content')
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
@@ -15,7 +19,7 @@
             </p>
         </div>
 
-        <a href="{{ route('local-admin.missas.show', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-700 font-medium hover:bg-gray-50">
+        <a href="{{ route('local-admin.missas.show', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 font-medium text-gray-700 hover:bg-gray-50">
             Voltar para a missa
         </a>
     </div>
@@ -55,7 +59,7 @@
                         {{ $itemRepertorio->versaoMusical->titulo ?: 'Versao principal' }}
                     </span>
                     @if ($itemRepertorio->versaoMusical->tom_musical)
-                        <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">Tom {{ $itemRepertorio->versaoMusical->tom_musical }}</span>
+                        <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">Tom original {{ $itemRepertorio->versaoMusical->tom_musical }}</span>
                     @endif
                     @if ($itemRepertorio->versaoMusical->bpm)
                         <span class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">BPM {{ $itemRepertorio->versaoMusical->bpm }}</span>
@@ -63,7 +67,7 @@
                 </div>
 
                 <div class="rounded-2xl bg-gray-900 p-5 text-green-200 shadow-inner">
-                    <pre id="letra_com_cifras_preview" class="whitespace-pre-wrap break-words text-sm leading-7">{{ $itemRepertorio->versaoMusical->letra_com_cifras }}</pre>
+                    <div id="letra_com_cifras_preview" class="space-y-2"></div>
                 </div>
             </section>
 
@@ -72,7 +76,7 @@
                 <div class="mt-4 space-y-4 text-sm text-gray-600">
                     <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Musica</span><span>{{ $itemRepertorio->musica->titulo }}</span></div>
                     <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Versao</span><span>{{ $itemRepertorio->versaoMusical->titulo ?: 'Versao principal' }}</span></div>
-                    <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Tom</span><span>{{ $itemRepertorio->versaoMusical->tom_musical ?: 'Nao informado' }}</span></div>
+                    <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Tom original</span><span>{{ $itemRepertorio->versaoMusical->tom_musical ?: 'Nao informado' }}</span></div>
                     <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">BPM</span><span>{{ $itemRepertorio->versaoMusical->bpm ?: 'Nao informado' }}</span></div>
                     <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Momento liturgico</span><span>{{ $itemRepertorio->momentoLiturgico?->nome ?: 'Nao definido' }}</span></div>
                 </div>
@@ -90,8 +94,10 @@
 
 @push('scripts')
     @if ($itemRepertorio->versaoMusical)
+        @include('partials.chord-transposer-script')
         <script>
             document.addEventListener('DOMContentLoaded', () => {
+                const helper = window.VozECifraChord;
                 const preview = document.getElementById('letra_com_cifras_preview');
                 const tomBadge = document.getElementById('tom_atual_badge');
                 const textoOriginal = @json($itemRepertorio->versaoMusical->letra_com_cifras, JSON_UNESCAPED_UNICODE);
@@ -99,64 +105,29 @@
                 let transposicaoAtual = 0;
                 let fonteAtual = 14;
 
-                if (!preview) {
+                if (!preview || !helper) {
                     return;
                 }
-
-                const escalaSustenidos = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-                const escalaBemol = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
-
-                const ehAcorde = (valor) => /^[A-G](?:#|b)?(?:[a-zA-Z0-9º°+\-]*(?:\([^)\]]+\))?)?(?:\/[A-G](?:#|b)?)?$/.test((valor || '').trim());
-
-                const transporNota = (nota, passos) => {
-                    const usaBemol = nota.includes('b');
-                    const escala = usaBemol ? escalaBemol : escalaSustenidos;
-                    const indice = escala.indexOf(nota);
-
-                    if (indice === -1) {
-                        return nota;
-                    }
-
-                    const novoIndice = (indice + passos + 120) % 12;
-                    return escala[novoIndice];
-                };
-
-                const transporAcorde = (acorde, passos) => {
-                    const match = acorde.match(/^([A-G](?:#|b)?)(.*?)(?:\/([A-G](?:#|b)?))?$/);
-
-                    if (!match) {
-                        return acorde;
-                    }
-
-                    const [, tonica, sufixo, baixo] = match;
-                    const novaTonica = transporNota(tonica, passos);
-                    const novoBaixo = baixo ? '/' + transporNota(baixo, passos) : '';
-
-                    return novaTonica + sufixo + novoBaixo;
-                };
-
-                const transporTexto = (texto, passos) => texto.replace(/\[([^\[\]\r\n]+)\]/g, (match, possivelAcorde) => {
-                    return ehAcorde(possivelAcorde) ? '[' + transporAcorde(possivelAcorde, passos) + ']' : match;
-                });
 
                 const atualizarTomBadge = () => {
                     if (!tomBadge) {
                         return;
                     }
 
-                    if (!tomOriginal || !ehAcorde(tomOriginal)) {
+                    if (!tomOriginal || !helper.isChord(tomOriginal)) {
                         tomBadge.textContent = 'Tom nao informado';
                         return;
                     }
 
-                    const tomAtual = transporAcorde(tomOriginal, transposicaoAtual);
-                    tomBadge.textContent = 'Tom ' + tomAtual;
+                    tomBadge.textContent = 'Tom ' + helper.transposeChord(tomOriginal, transposicaoAtual);
                 };
 
                 const renderizar = () => {
-                    preview.textContent = transporTexto(textoOriginal, transposicaoAtual);
-                    preview.style.fontSize = fonteAtual + 'px';
-                    preview.style.lineHeight = Math.max(1.8, fonteAtual / 8) + '';
+                    preview.innerHTML = helper.renderChordSheetHtml(
+                        helper.transposeBracketedText(textoOriginal, transposicaoAtual),
+                        { chordAttribute: 'data-acorde-hover' }
+                    );
+                    preview.style.setProperty('--escala-fonte', String(fonteAtual / 14));
                     atualizarTomBadge();
                 };
 
