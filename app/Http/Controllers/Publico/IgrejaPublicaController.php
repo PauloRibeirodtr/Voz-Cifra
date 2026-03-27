@@ -71,7 +71,7 @@ class IgrejaPublicaController extends Controller
             ->update(['ativo' => false]);
 
         $missaEmAndamento = Missa::query()
-            ->with(['tempoLiturgico', 'padre'])
+            ->with($this->publicMissaRelations())
             ->where('igreja_id', $igreja->id)
             ->whereDate('data_missa', $agora->toDateString())
             ->where('hora_inicio', '<=', $agora->format('H:i:s'))
@@ -81,7 +81,7 @@ class IgrejaPublicaController extends Controller
             ->first();
 
         $proximaMissa = Missa::query()
-            ->with(['tempoLiturgico', 'padre'])
+            ->with($this->publicMissaRelations())
             ->where('igreja_id', $igreja->id)
             ->where(function ($query) use ($agora) {
                 $query
@@ -98,6 +98,7 @@ class IgrejaPublicaController extends Controller
             ->first();
 
         $missaPublica = $missaEmAndamento ?: $proximaMissa;
+        $this->anexarRepertorioPublico($missaPublica);
         $estadoCelebracao = $missaEmAndamento ? 'em_andamento' : ($proximaMissa ? 'proxima' : 'aguardando');
         $countdownIso = null;
 
@@ -120,6 +121,46 @@ class IgrejaPublicaController extends Controller
             'proximaMissa' => $proximaMissa,
             'countdownIso' => $countdownIso,
         ];
+    }
+
+    private function publicMissaRelations(): array
+    {
+        return [
+            'tempoLiturgico',
+            'padre',
+            'missaMusicas' => fn ($query) => $query
+                ->with(['musica', 'versaoMusical', 'momentoLiturgico'])
+                ->orderBy('ordem'),
+        ];
+    }
+
+    private function anexarRepertorioPublico(?Missa $missa): void
+    {
+        if (!$missa) {
+            return;
+        }
+
+        $itens = $missa->missaMusicas->map(function ($item) {
+            $letraBase = $item->versaoMusical?->letra_com_cifras ?: $item->musica?->letra ?: '';
+
+            return [
+                'ordem' => $item->ordem,
+                'titulo' => $item->musica?->titulo ?: 'Canto sem titulo',
+                'momento' => $item->momentoLiturgico?->nome,
+                'letra_publica' => $this->limparLetraPublica($letraBase),
+            ];
+        })->values();
+
+        $missa->setAttribute('itens_publicos', $itens);
+    }
+
+    private function limparLetraPublica(string $texto): string
+    {
+        $textoSemCifras = preg_replace('/\[[^\]]+\]/', '', $texto) ?? $texto;
+        $textoSemEspacosExtras = preg_replace("/[ \t]+\n/", "\n", $textoSemCifras) ?? $textoSemCifras;
+        $textoNormalizado = preg_replace("/\n{3,}/", "\n\n", trim($textoSemEspacosExtras)) ?? trim($textoSemEspacosExtras);
+
+        return $textoNormalizado;
     }
 
     private function publicMissaReference(?Missa $missa): ?string

@@ -296,6 +296,114 @@
             color: rgba(240, 253, 244, 0.70);
         }
 
+        .celebration-section {
+            padding: 0 34px 34px;
+            border-top: 1px solid rgba(255, 255, 255, 0.10);
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.02));
+        }
+
+        .celebration-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            padding-top: 28px;
+        }
+
+        .celebration-title {
+            margin: 0;
+            font-size: clamp(28px, 4vw, 42px);
+            line-height: 1.05;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+        }
+
+        .celebration-lead {
+            margin: 10px 0 0;
+            max-width: 720px;
+            font-size: 15px;
+            line-height: 1.8;
+            color: var(--muted);
+        }
+
+        .celebration-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(247, 200, 115, 0.28);
+            background: rgba(247, 200, 115, 0.14);
+            padding: 10px 16px;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #fff2ca;
+        }
+
+        .celebration-list {
+            display: grid;
+            gap: 18px;
+            margin-top: 24px;
+        }
+
+        .celebration-item {
+            border-radius: 26px;
+            border: 1px solid var(--soft-border);
+            background: rgba(255, 255, 255, 0.08);
+            padding: 22px;
+        }
+
+        .celebration-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .celebration-pill {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.10);
+            padding: 7px 12px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .celebration-song {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .celebration-lyrics {
+            margin-top: 14px;
+            border-radius: 22px;
+            background: rgba(0, 0, 0, 0.12);
+            padding: 18px;
+            color: rgba(255, 255, 255, 0.94);
+            font-size: 18px;
+            line-height: 1.9;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .celebration-empty {
+            margin-top: 24px;
+            border-radius: 24px;
+            border: 1px dashed rgba(255, 255, 255, 0.24);
+            padding: 20px;
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
         @keyframes pulse {
             0%, 80%, 100% { opacity: 0.35; transform: scale(0.9); }
             40% { opacity: 1; transform: scale(1); }
@@ -315,7 +423,7 @@
                 padding: 18px 0;
             }
 
-            .hero-main, .hero-side { padding: 22px; }
+            .hero-main, .hero-side, .celebration-section { padding: 22px; }
             .brand img { width: 52px; }
             .brand-name { font-size: 24px; }
             .lead { font-size: 16px; }
@@ -471,6 +579,58 @@
                 </aside>
             </div>
         </section>
+
+        @if ($missaPublica)
+            <section class="celebration-section">
+                <div class="celebration-header">
+                    <div>
+                        <p class="brand-kicker">Leitura publica</p>
+                        <h2 class="celebration-title">
+                            @if ($estadoCelebracao === 'em_andamento')
+                                Missa publica sem cifras
+                            @else
+                                Previa publica da proxima missa
+                            @endif
+                        </h2>
+                        <p class="celebration-lead">
+                            Esta area foi preparada para o fiel acompanhar os cantos com leitura limpa, sem cifras e sem elementos tecnicos da equipe musical.
+                        </p>
+                    </div>
+                    <span class="celebration-badge">
+                        @if ($estadoCelebracao === 'em_andamento')
+                            Celebracao em andamento
+                        @elseif ($estadoCelebracao === 'proxima')
+                            Proxima celebracao
+                        @else
+                            Preparacao
+                        @endif
+                    </span>
+                </div>
+
+                @php($itensPublicos = collect($missaPublica->itens_publicos ?? []))
+
+                @if ($itensPublicos->isNotEmpty())
+                    <div class="celebration-list">
+                        @foreach ($itensPublicos as $item)
+                            <article class="celebration-item">
+                                <div class="celebration-meta">
+                                    <span class="celebration-pill">Ordem {{ $item['ordem'] }}</span>
+                                    @if (!empty($item['momento']))
+                                        <span class="celebration-pill">{{ $item['momento'] }}</span>
+                                    @endif
+                                </div>
+                                <h3 class="celebration-song">{{ $item['titulo'] }}</h3>
+                                <div class="celebration-lyrics">{{ $item['letra_publica'] !== '' ? $item['letra_publica'] : 'A letra deste canto ainda nao foi preparada para exibicao publica.' }}</div>
+                            </article>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="celebration-empty">
+                        O repertorio desta missa ainda nao foi organizado para exibicao publica. Quando a equipe concluir a preparacao, os cantos sem cifras aparecerao aqui automaticamente.
+                    </div>
+                @endif
+            </section>
+        @endif
     </main>
 
     <script>
