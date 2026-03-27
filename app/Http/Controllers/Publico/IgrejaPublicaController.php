@@ -7,6 +7,7 @@ use App\Models\Igreja;
 use App\Models\Missa;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Config;
 use Illuminate\View\View;
 
 class IgrejaPublicaController extends Controller
@@ -45,7 +46,7 @@ class IgrejaPublicaController extends Controller
 
         return response()->json([
             'estado' => $estado['estadoCelebracao'],
-            'missa_id' => $missaPublica?->id,
+            'missa_ref' => $this->publicMissaReference($missaPublica),
             'countdown_iso' => $estado['countdownIso'],
             'timezone' => $timezone,
         ]);
@@ -119,5 +120,19 @@ class IgrejaPublicaController extends Controller
             'proximaMissa' => $proximaMissa,
             'countdownIso' => $countdownIso,
         ];
+    }
+
+    private function publicMissaReference(?Missa $missa): ?string
+    {
+        if (!$missa) {
+            return null;
+        }
+
+        return hash_hmac('sha256', implode('|', [
+            $missa->id,
+            $missa->data_missa?->format('Y-m-d'),
+            substr((string) $missa->hora_inicio, 0, 8),
+            substr((string) $missa->hora_fim, 0, 8),
+        ]), (string) Config::get('app.key'));
     }
 }

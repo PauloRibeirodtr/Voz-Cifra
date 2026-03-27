@@ -568,7 +568,7 @@
                         const novaChaveEstado = [
                             payload.estado || '',
                             payload.countdown_iso || '',
-                            String(payload.missa_id || ''),
+                            String(payload.missa_ref || ''),
                         ].join('|');
 
                         if (novaChaveEstado !== ultimaChaveEstado) {
