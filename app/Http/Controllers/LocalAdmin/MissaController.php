@@ -50,6 +50,11 @@ class MissaController extends Controller
             'missa' => new Missa(),
             'temposLiturgicos' => TempoLiturgico::where('ativo', true)->orderBy('nome')->get(),
             'padres' => Padre::query()->orderBy('nome')->get(),
+            'missasAnteriores' => Missa::query()
+                ->where('igreja_id', $igreja->id)
+                ->orderByDesc('data_missa')
+                ->orderByDesc('hora_inicio')
+                ->get(),
         ]);
     }
 
@@ -63,7 +68,7 @@ class MissaController extends Controller
                 Missa::where('igreja_id', $igreja->id)->update(['ativo' => false]);
             }
 
-            return Missa::create([
+            $missa = Missa::create([
                 'igreja_id' => $igreja->id,
                 'padre_id' => $dados['padre_id'] ?? null,
                 'tempo_liturgico_id' => $dados['tempo_liturgico_id'] ?? null,
@@ -74,11 +79,35 @@ class MissaController extends Controller
                 'observacoes' => $dados['observacoes'] ?? null,
                 'ativo' => (bool) ($dados['ativo'] ?? true),
             ]);
+
+            if (!empty($dados['reaproveitar_repertorio']) && !empty($dados['missa_origem_id'])) {
+                $missaOrigem = Missa::query()
+                    ->where('igreja_id', $igreja->id)
+                    ->whereKey($dados['missa_origem_id'])
+                    ->with(['missaMusicas' => fn ($query) => $query->orderBy('ordem')])
+                    ->first();
+
+                if ($missaOrigem) {
+                    foreach ($missaOrigem->missaMusicas as $itemOrigem) {
+                        MissaMusica::create([
+                            'missa_id' => $missa->id,
+                            'musica_id' => $itemOrigem->musica_id,
+                            'versao_musical_id' => $itemOrigem->versao_musical_id,
+                            'momento_liturgico_id' => $itemOrigem->momento_liturgico_id,
+                            'ordem' => $itemOrigem->ordem,
+                        ]);
+                    }
+                }
+            }
+
+            return $missa;
         });
 
         return redirect()
             ->route('local-admin.missas.show', $missa)
-            ->with('success', 'Missa cadastrada com sucesso. Agora voce pode montar o repertorio.');
+            ->with('success', !empty($dados['reaproveitar_repertorio']) && !empty($dados['missa_origem_id'])
+                ? 'Missa cadastrada com sucesso. O repertório anterior foi copiado como ponto de partida.'
+                : 'Missa cadastrada com sucesso. Agora voce pode montar o repertorio.');
     }
 
     public function show(Missa $missa): View
@@ -398,6 +427,8 @@ class MissaController extends Controller
             'hora_fim' => ['required', 'date_format:H:i', 'after:hora_inicio'],
             'observacoes' => ['nullable', 'string'],
             'ativo' => ['nullable', 'boolean'],
+            'reaproveitar_repertorio' => ['nullable', 'boolean'],
+            'missa_origem_id' => ['nullable', 'exists:missas,id'],
         ], [
             'titulo.required' => 'Informe o titulo da missa.',
             'data_missa.required' => 'Informe a data da missa.',

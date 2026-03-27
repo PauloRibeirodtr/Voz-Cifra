@@ -11,6 +11,6 @@
 
     <form action="{{ route('local-admin.missas.store') }}" method="POST">
         @csrf
-        @include('local-admin.missas._form')
+        @include('local-admin.missas._form', ['modoCriacao' => true])
     </form>
 @endsection

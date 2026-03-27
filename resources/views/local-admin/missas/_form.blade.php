@@ -15,6 +15,35 @@
         @endif
 
         <div class="grid grid-cols-1 gap-4">
+            @if (!empty($modoCriacao))
+                <div class="rounded-2xl border border-green-100 bg-green-50 p-4">
+                    <span class="block text-sm font-semibold text-green-900">Deseja reaproveitar o repertório de uma missa anterior?</span>
+                    <div class="mt-4 flex flex-wrap gap-4">
+                        <label class="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <input type="radio" name="reaproveitar_repertorio" value="0" {{ old('reaproveitar_repertorio', '0') !== '1' ? 'checked' : '' }} class="border-gray-300 text-green-700 focus:ring-green-500">
+                            <span>Não</span>
+                        </label>
+                        <label class="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <input type="radio" name="reaproveitar_repertorio" value="1" {{ old('reaproveitar_repertorio') === '1' ? 'checked' : '' }} class="border-gray-300 text-green-700 focus:ring-green-500">
+                            <span>Sim</span>
+                        </label>
+                    </div>
+
+                    <div class="mt-4" id="bloco_reaproveitar_repertorio">
+                        <label class="block text-sm font-medium text-gray-700">Missa anterior</label>
+                        <select name="missa_origem_id" class="{{ $classeInput }}">
+                            <option value="">Selecione uma missa da mesma igreja</option>
+                            @foreach (($missasAnteriores ?? collect()) as $missaAnterior)
+                                <option value="{{ $missaAnterior->id }}" @selected((string) old('missa_origem_id') === (string) $missaAnterior->id)>
+                                    {{ $missaAnterior->titulo }} • {{ optional($missaAnterior->data_missa)->format('d/m/Y') }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="mt-2 text-xs text-gray-500">O sistema copia músicas, ordem, momento litúrgico e versão musical. Depois você pode ajustar tudo livremente.</p>
+                    </div>
+                </div>
+            @endif
+
             <div>
                 <label class="block text-sm font-medium text-gray-700">Titulo da missa</label>
                 <input type="text" name="titulo" value="{{ old('titulo', $missa->titulo) }}" class="{{ $classeInput }}" placeholder="Ex.: Missa dominical da noite" required>
@@ -91,3 +120,34 @@
         </div>
     </aside>
 </div>
+
+@if (!empty($modoCriacao))
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const radios = document.querySelectorAll('[name="reaproveitar_repertorio"]');
+                const bloco = document.getElementById('bloco_reaproveitar_repertorio');
+                const select = document.querySelector('[name="missa_origem_id"]');
+
+                if (!bloco || !select || radios.length === 0) {
+                    return;
+                }
+
+                const atualizarBloco = () => {
+                    const desejaReaproveitar = document.querySelector('[name="reaproveitar_repertorio"]:checked')?.value === '1';
+                    bloco.style.display = desejaReaproveitar ? 'block' : 'none';
+
+                    if (!desejaReaproveitar) {
+                        select.value = '';
+                    }
+                };
+
+                radios.forEach((radio) => {
+                    radio.addEventListener('change', atualizarBloco);
+                });
+
+                atualizarBloco();
+            });
+        </script>
+    @endpush
+@endif
