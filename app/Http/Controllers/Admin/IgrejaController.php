@@ -8,6 +8,7 @@ use App\Models\Usuario;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -170,6 +171,51 @@ class IgrejaController extends Controller
         return redirect()
             ->route('admin.igrejas.edit', $igreja)
             ->with('success', 'Igreja atualizada com sucesso.');
+    }
+
+    public function resetAdminLocalPassword(Request $request, Igreja $igreja): RedirectResponse
+    {
+        $adminLocal = $this->obterAdminLocal($igreja);
+        $origem = $request->input('origem') === 'edit' ? 'edit' : 'index';
+
+        if (!$adminLocal) {
+            return redirect()
+                ->route($origem === 'edit' ? 'admin.igrejas.edit' : 'admin.igrejas.index', $origem === 'edit' ? $igreja : [])
+                ->with('error', 'Esta igreja ainda nao possui administrador local cadastrado.');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'password' => ['nullable', 'confirmed', 'min:8'],
+        ], [
+            'password.confirmed' => 'A confirmacao da nova senha nao confere.',
+            'password.min' => 'A nova senha precisa ter pelo menos 8 caracteres.',
+        ]);
+
+        if ($validator->fails()) {
+            $redirecionamento = redirect()
+                ->route($origem === 'edit' ? 'admin.igrejas.edit' : 'admin.igrejas.index', $origem === 'edit' ? $igreja : [])
+                ->withErrors($validator)
+                ->withInput();
+
+            if ($origem === 'index') {
+                $redirecionamento->with('abrir_reset_modal', $igreja->id);
+            }
+
+            return $redirecionamento;
+        }
+
+        $dados = $validator->validated();
+
+        $adminLocal->update([
+            'password' => filled($dados['password'] ?? null)
+                ? $dados['password']
+                : $this->gerarSenhaInicialPorCpf($adminLocal->cpf),
+            'primeiro_acesso' => true,
+        ]);
+
+        return redirect()
+            ->route($origem === 'edit' ? 'admin.igrejas.edit' : 'admin.igrejas.index', $origem === 'edit' ? $igreja : [])
+            ->with('success', 'Senha redefinida com sucesso. O usuario devera trocar no proximo acesso.');
     }
 
     protected function obterAdminLocal(Igreja $igreja): ?Usuario

@@ -21,6 +21,22 @@
         </div>
     @endif
 
+    @if (session('error'))
+        <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 text-sm rounded">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 text-sm rounded">
+            <ul class="list-disc pl-4">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         @if ($igrejas->isEmpty())
             <div class="p-8 text-center text-gray-500">
@@ -82,9 +98,21 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <a href="{{ route('admin.igrejas.edit', $igreja) }}" class="inline-flex px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                        Editar
-                                    </a>
+                                    <div class="inline-flex items-center gap-2">
+                                        <a href="{{ route('admin.igrejas.edit', $igreja) }}" class="inline-flex px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                            Editar
+                                        </a>
+                                        @if ($adminLocal)
+                                            <button
+                                                type="button"
+                                                class="inline-flex rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-800 hover:bg-amber-100"
+                                                data-reset-admin-local
+                                                data-modal-id="resetar-admin-local-{{ $igreja->id }}"
+                                            >
+                                                Resetar senha
+                                            </button>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
@@ -142,14 +170,119 @@
                             </div>
                         </div>
 
-                        <div class="mt-4">
+                        <div class="mt-4 grid grid-cols-1 gap-2">
                             <a href="{{ route('admin.igrejas.edit', $igreja) }}" class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
                                 Editar igreja
                             </a>
+                            @if ($adminLocal)
+                                <button
+                                    type="button"
+                                    class="inline-flex w-full items-center justify-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800 hover:bg-amber-100"
+                                    data-reset-admin-local
+                                    data-modal-id="resetar-admin-local-{{ $igreja->id }}"
+                                >
+                                    Resetar senha do admin local
+                                </button>
+                            @endif
                         </div>
                     </article>
                 @endforeach
             </div>
+
+            @foreach ($igrejas as $igreja)
+                @php($adminLocal = $igreja->usuarios->first())
+                @if ($adminLocal)
+                    <div id="resetar-admin-local-{{ $igreja->id }}" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 px-4 py-6" data-reset-modal>
+                        <div class="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl">
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    <h2 class="text-lg font-bold text-gray-900">Resetar senha do admin local</h2>
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        {{ $adminLocal->nome }} • {{ $igreja->nome }}
+                                    </p>
+                                </div>
+                                <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-gray-200 text-gray-500 hover:bg-gray-50" data-fechar-reset-modal>
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+
+                            <form action="{{ route('admin.igrejas.admin-local.password.reset', $igreja) }}" method="POST" class="mt-6 space-y-4" onsubmit="return confirm('Confirma a redefinicao da senha deste admin local?');">
+                                @csrf
+                                <input type="hidden" name="origem" value="index">
+
+                                <div class="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm text-amber-900">
+                                    Se voce deixar a nova senha em branco, o sistema vai usar o CPF do admin local como senha padrao e obrigar a troca no proximo acesso.
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Nova senha manual</label>
+                                    <input type="password" name="password" class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-100" placeholder="Opcional">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Confirmar nova senha</label>
+                                    <input type="password" name="password_confirmation" class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-100" placeholder="Repita a nova senha">
+                                </div>
+
+                                <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                                    <button type="button" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 text-gray-700 font-medium hover:bg-gray-50" data-fechar-reset-modal>
+                                        Cancelar
+                                    </button>
+                                    <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-amber-600 px-5 py-3 font-semibold text-white hover:bg-amber-700">
+                                        Confirmar reset
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                @endif
+            @endforeach
         @endif
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const abrirBotoes = document.querySelectorAll('[data-reset-admin-local]');
+            const modalInicialId = @json(session('abrir_reset_modal') ? 'resetar-admin-local-' . session('abrir_reset_modal') : null);
+
+            abrirBotoes.forEach((botao) => {
+                const modalId = botao.getAttribute('data-modal-id');
+                const modal = modalId ? document.getElementById(modalId) : null;
+
+                if (!modal) {
+                    return;
+                }
+
+                const fechar = () => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    document.body.classList.remove('overflow-hidden');
+                };
+
+                botao.addEventListener('click', () => {
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    document.body.classList.add('overflow-hidden');
+                });
+
+                modal.querySelectorAll('[data-fechar-reset-modal]').forEach((controle) => {
+                    controle.addEventListener('click', fechar);
+                });
+
+                modal.addEventListener('click', (evento) => {
+                    if (evento.target === modal) {
+                        fechar();
+                    }
+                });
+
+                if (modalInicialId && modal.id === modalInicialId) {
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    document.body.classList.add('overflow-hidden');
+                }
+            });
+        });
+    </script>
+@endpush
