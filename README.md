@@ -13,13 +13,14 @@ Sistema web em Laravel 12 para organizacao do ministerio musical e do nucleo lit
 
 O projeto foi estruturado como um sistema administrativo fechado.
 
-Nesta etapa, o foco esta no `admin_master` e no inicio funcional do `admin_local`, mantendo a base central estavel e abrindo a operacao da igreja com seguranca.
+Nesta etapa, o foco esta no `admin_master` e em uma camada funcional mais madura do `admin_local`, mantendo a base central estavel e abrindo a operacao da igreja com seguranca.
 
 Hoje o projeto ja permite:
 
 - autenticar o `admin_master`
 - administrar igrejas e administradores locais
 - administrar outros `admin_master`
+- manter cadastro administrativo de padres
 - manter biblioteca de acordes
 - manter tempos e momentos liturgicos
 - cadastrar musicas base
@@ -56,6 +57,10 @@ Hoje o projeto ja permite:
 - protecao de rotas administrativas
 - bloqueio de acesso do `admin_local` ao painel do `admin_master`
 - primeiro acesso com troca obrigatoria de senha para o `admin_local`
+- limitacao de tentativas no login com bloqueio temporario
+- mensagens genericas para falha de credenciais
+- regeneracao de sessao no login e invalidacao segura no logout
+- headers basicos de seguranca nas respostas HTTP
 
 ### Painel do admin master
 
@@ -65,6 +70,7 @@ Hoje o projeto ja permite:
 - configuracoes
 - alteracao de email, telefone e senha
 - cadastro de outros `admin_master`
+- reset de senha do `admin_local` com obrigacao de troca no proximo acesso
 - encerramento de sessao por `Configuracoes`
 
 ### Area do admin local
@@ -100,10 +106,20 @@ Hoje o projeto ja permite:
 - cadastrar `admin_local` junto com a igreja
 - editar igreja
 - editar dados do administrador local vinculado
+- redefinir senha do `admin_local` a partir da gestao da igreja
 - gerar e manter `slug` unico por igreja
 - preparar link publico fixo por igreja
 - preparar QR Code fixo apontando para o link publico
 - permitir ao `admin_master` visualizar link publico e QR da igreja
+
+### Padres
+
+- listar padres
+- criar padre
+- editar padre
+- ativar e inativar padre
+- vincular padre opcionalmente a uma igreja
+- manter padre apenas como cadastro administrativo, sem login e sem painel
 
 ### Acordes
 
@@ -182,7 +198,6 @@ Hoje o projeto ja permite:
 Ainda nao foram abertos nesta etapa:
 
 - fluxo real do `member`
-- modulo de padres
 - experiencia publica final da missa por igreja
 - visao publica completa do fiel sem cifra
 - biblioteca propria de arquivos por igreja
@@ -288,17 +303,18 @@ Padrao atual:
 - A versao musical guarda cifra, tom, BPM e apoio de execucao.
 - Hoje nao existe relacao persistida entre `versoes_musicais` e `acordes`.
 - A biblioteca de acordes funciona como apoio visual, validacao e dicionario.
+- O modulo de `padres` e apenas administrativo; padre nao entra no sistema como usuario.
 - O link publico da igreja ja e fixo e baseado no `slug`.
 - O QR Code da igreja ja pode apontar para esse link fixo.
 - A pagina publica da igreja ja identifica automaticamente a proxima missa e a celebracao em andamento.
 - A missa publica completa do fiel ainda nao foi aberta; por enquanto o link publico mostra o estado preparatorio da igreja.
-- O foco atual do projeto esta no `admin_master`, na operacao inicial do `admin_local` e na base da missa publica.
+- O foco atual do projeto esta no `admin_master`, na operacao funcional do `admin_local` e na base da missa publica.
 
 ## Proxima etapa
 
 O proximo passo natural do projeto e aprofundar a experiencia do `admin_local`, abrir a camada publica final do fiel e avaliar com seguranca:
 
-- padres com estrategia central ou vinculada por igreja
+- aprimorar o uso de padres por igreja e no contexto das missas
 - preferencia de versao musical por igreja
 - biblioteca interna de materiais da igreja
 - experiencia publica completa da missa sem cifra
