@@ -2,6 +2,14 @@
     id="local_sidebar"
     class="fixed inset-y-0 left-0 z-40 flex h-[100dvh] w-[78vw] max-w-[22rem] -translate-x-full flex-col overflow-hidden bg-green-900 text-white shadow-2xl transition-transform duration-300 md:h-screen md:w-64 md:max-w-none md:translate-x-0"
 >
+    @php
+        $itemMenuClasse = static function (bool $ativo): string {
+            return $ativo
+                ? 'flex items-center gap-4 rounded-2xl border border-green-700 bg-green-800 px-4 py-3 font-semibold text-white shadow-sm transition group'
+                : 'flex items-center gap-4 rounded-2xl px-4 py-3 font-medium text-white transition hover:bg-green-800 group';
+        };
+    @endphp
+
     <div class="flex items-center justify-between border-b border-green-800 px-4 py-3 md:hidden">
         <div class="flex items-center gap-3">
             <img src="{{ asset('logo/final.png') }}" alt="Logo Voz e Cifra" class="h-9 w-auto shrink-0">
@@ -37,29 +45,24 @@
     </div>
 
     <nav class="flex-1 overflow-y-auto px-3 py-3 pb-24 space-y-1.5 md:px-4 md:py-6 md:pb-6 md:space-y-3">
-        <a href="{{ route('local-admin.dashboard') }}" class="flex items-center gap-4 rounded-2xl px-4 py-3 font-medium text-white transition hover:bg-green-800 group">
+        <a href="{{ route('local-admin.dashboard') }}" class="{{ $itemMenuClasse(request()->routeIs('local-admin.dashboard')) }}">
             <i class="fa-solid fa-house w-5 text-center group-hover:scale-110 transition"></i>
             <span>Painel</span>
         </a>
 
         <div class="pt-3 pb-1 pl-4 text-[11px] font-black uppercase tracking-widest text-green-400 opacity-70">Gestao da igreja</div>
 
-        <a href="{{ route('local-admin.church') }}" class="flex items-center gap-4 rounded-2xl px-4 py-3 font-medium text-white transition hover:bg-green-800 group">
+        <a href="{{ route('local-admin.church') }}" class="{{ $itemMenuClasse(request()->routeIs('local-admin.church')) }}">
             <i class="fa-solid fa-church w-5 text-center group-hover:scale-110 transition"></i>
             <span>Minha igreja</span>
         </a>
 
-        <a href="{{ route('local-admin.missas.index') }}" class="flex items-center gap-4 rounded-2xl px-4 py-3 font-medium text-white transition hover:bg-green-800 group">
+        <a href="{{ route('local-admin.missas.index') }}" class="{{ $itemMenuClasse(request()->routeIs('local-admin.missas.*', 'local-admin.repertorio.*')) }}">
             <i class="fa-solid fa-calendar-check w-5 text-center group-hover:scale-110 transition"></i>
             <span>Missas</span>
         </a>
 
-        <a href="{{ route('local-admin.missas.create') }}" class="flex items-center gap-4 rounded-2xl px-4 py-3 font-medium text-white transition hover:bg-green-800 group">
-            <i class="fa-solid fa-plus w-5 text-center group-hover:scale-110 transition"></i>
-            <span>Nova missa</span>
-        </a>
-
-        <a href="{{ route('local-admin.profile') }}" class="flex items-center gap-4 rounded-2xl px-4 py-3 font-medium text-white transition hover:bg-green-800 group">
+        <a href="{{ route('local-admin.profile') }}" class="{{ $itemMenuClasse(request()->routeIs('local-admin.profile', 'local-admin.profile.update')) }}">
             <i class="fa-solid fa-user-pen w-5 text-center group-hover:scale-110 transition"></i>
             <span>Meu perfil</span>
         </a>

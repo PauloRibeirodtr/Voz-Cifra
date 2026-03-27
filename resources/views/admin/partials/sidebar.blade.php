@@ -2,6 +2,14 @@
     id="admin_sidebar"
     class="fixed inset-y-0 left-0 z-40 flex h-[100dvh] w-[78vw] max-w-[22rem] -translate-x-full flex-col overflow-hidden bg-green-900 text-white shadow-2xl transition-transform duration-300 md:h-screen md:w-64 md:max-w-none md:translate-x-0"
 >
+    @php
+        $itemMenuClasse = static function (bool $ativo): string {
+            return $ativo
+                ? 'flex items-center gap-4 rounded-2xl border border-green-700 bg-green-800 px-4 py-3 text-white shadow-sm transition font-semibold group'
+                : 'flex items-center gap-4 rounded-2xl px-4 py-3 text-white transition hover:bg-green-800 font-medium group';
+        };
+    @endphp
+
     <div class="flex items-center justify-between border-b border-green-800 px-4 py-3 md:hidden">
         <div class="flex items-center gap-3">
             <img src="{{ asset('logo/final.png') }}" alt="Logo Voz e Cifra" class="h-9 w-auto shrink-0">
@@ -36,64 +44,44 @@
     </div>
 
     <nav class="flex-1 overflow-y-auto px-3 py-3 pb-24 space-y-1.5 md:px-4 md:py-6 md:pb-6 md:space-y-3">
-        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-4 rounded-2xl px-4 py-3 text-white transition hover:bg-green-800 font-medium group">
+        <a href="{{ route('admin.dashboard') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.dashboard')) }}">
             <i class="fa-solid fa-house w-5 text-center group-hover:scale-110 transition"></i>
             <span>Painel</span>
         </a>
 
         <div class="pt-3 pb-1 pl-4 text-[11px] font-black text-green-400 uppercase tracking-widest opacity-70">Administracao central</div>
 
-        <a href="{{ route('admin.igrejas.index') }}" class="flex items-center gap-4 rounded-2xl px-4 py-3 text-white transition hover:bg-green-800 font-medium group">
+        <a href="{{ route('admin.igrejas.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.igrejas.*')) }}">
             <i class="fa-solid fa-church w-5 text-center group-hover:scale-110 transition"></i>
             <span>Igrejas</span>
         </a>
 
-        <a href="{{ route('admin.igrejas.create') }}" class="flex items-center gap-4 rounded-2xl px-4 py-3 text-white transition hover:bg-green-800 font-medium group">
-            <i class="fa-solid fa-plus w-5 text-center group-hover:scale-110 transition"></i>
-            <span>Nova igreja</span>
+        <a href="{{ route('admin.padres.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.padres.*')) }}">
+            <i class="fa-solid fa-user-tie w-5 text-center group-hover:scale-110 transition"></i>
+            <span>Padres</span>
         </a>
 
-        <a href="{{ route('admin.acordes.index') }}" class="flex items-center gap-4 rounded-2xl px-4 py-3 text-white transition hover:bg-green-800 font-medium group">
+        <a href="{{ route('admin.acordes.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.acordes.*')) }}">
             <i class="fa-solid fa-guitar w-5 text-center group-hover:scale-110 transition"></i>
             <span>Acordes</span>
         </a>
 
-        <a href="{{ route('admin.acordes.create') }}" class="flex items-center gap-4 rounded-2xl px-4 py-3 text-white transition hover:bg-green-800 font-medium group">
-            <i class="fa-solid fa-music w-5 text-center group-hover:scale-110 transition"></i>
-            <span>Novo acorde</span>
-        </a>
-
-        <a href="{{ route('admin.tempos-liturgicos.index') }}" class="flex items-center gap-4 rounded-2xl px-4 py-3 text-white transition hover:bg-green-800 font-medium group">
+        <a href="{{ route('admin.tempos-liturgicos.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.tempos-liturgicos.*')) }}">
             <i class="fa-solid fa-calendar-days w-5 text-center group-hover:scale-110 transition"></i>
             <span>Tempos liturgicos</span>
         </a>
 
-        <a href="{{ route('admin.tempos-liturgicos.create') }}" class="flex items-center gap-4 rounded-2xl px-4 py-3 text-white transition hover:bg-green-800 font-medium group">
-            <i class="fa-solid fa-plus w-5 text-center group-hover:scale-110 transition"></i>
-            <span>Novo tempo</span>
-        </a>
-
-        <a href="{{ route('admin.momentos-liturgicos.index') }}" class="flex items-center gap-4 rounded-2xl px-4 py-3 text-white transition hover:bg-green-800 font-medium group">
+        <a href="{{ route('admin.momentos-liturgicos.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.momentos-liturgicos.*')) }}">
             <i class="fa-solid fa-list-ol w-5 text-center group-hover:scale-110 transition"></i>
             <span>Momentos liturgicos</span>
         </a>
 
-        <a href="{{ route('admin.momentos-liturgicos.create') }}" class="flex items-center gap-4 rounded-2xl px-4 py-3 text-white transition hover:bg-green-800 font-medium group">
-            <i class="fa-solid fa-plus w-5 text-center group-hover:scale-110 transition"></i>
-            <span>Novo momento</span>
-        </a>
-
-        <a href="{{ route('admin.musicas.index') }}" class="flex items-center gap-4 rounded-2xl px-4 py-3 text-white transition hover:bg-green-800 font-medium group">
+        <a href="{{ route('admin.musicas.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.musicas.*', 'admin.versoes-musicais.*')) }}">
             <i class="fa-solid fa-music w-5 text-center group-hover:scale-110 transition"></i>
             <span>Musicas</span>
         </a>
 
-        <a href="{{ route('admin.musicas.create') }}" class="flex items-center gap-4 rounded-2xl px-4 py-3 text-white transition hover:bg-green-800 font-medium group">
-            <i class="fa-solid fa-plus w-5 text-center group-hover:scale-110 transition"></i>
-            <span>Nova musica</span>
-        </a>
-
-        <a href="{{ route('admin.settings') }}" class="flex items-center gap-4 rounded-2xl px-4 py-3 text-white transition hover:bg-green-800 font-medium group">
+        <a href="{{ route('admin.settings') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.settings', 'admin.profile', 'admin.profile.update', 'admin.admins-master.store')) }}">
             <i class="fa-solid fa-gear w-5 text-center group-hover:scale-110 transition"></i>
             <span>Configuracoes</span>
         </a>
