@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AdminMasterController;
 use App\Http\Controllers\Admin\IgrejaController;
 use App\Http\Controllers\Admin\MomentoLiturgicoController;
 use App\Http\Controllers\Admin\MusicaController;
+use App\Http\Controllers\Admin\PadreController;
 use App\Http\Controllers\Admin\TempoLiturgicoController;
 use App\Http\Controllers\Admin\VersaoMusicalController;
 use App\Http\Controllers\Auth\AuthController;
@@ -58,6 +59,14 @@ Route::middleware(['auth', 'verified_custom', 'super.admin'])
         Route::post('/igrejas', [IgrejaController::class, 'store'])->name('igrejas.store');
         Route::get('/igrejas/{igreja}/editar', [IgrejaController::class, 'edit'])->name('igrejas.edit');
         Route::put('/igrejas/{igreja}', [IgrejaController::class, 'update'])->name('igrejas.update');
+        Route::post('/igrejas/{igreja}/admin-local/resetar-senha', [IgrejaController::class, 'resetAdminLocalPassword'])->name('igrejas.admin-local.password.reset');
+
+        Route::get('/padres', [PadreController::class, 'index'])->name('padres.index');
+        Route::get('/padres/criar', [PadreController::class, 'create'])->name('padres.create');
+        Route::post('/padres', [PadreController::class, 'store'])->name('padres.store');
+        Route::get('/padres/{padre}/editar', [PadreController::class, 'edit'])->name('padres.edit');
+        Route::put('/padres/{padre}', [PadreController::class, 'update'])->name('padres.update');
+        Route::post('/padres/{padre}/toggle', [PadreController::class, 'toggle'])->name('padres.toggle');
 
         Route::get('/acordes', [AcordeController::class, 'index'])->name('acordes.index');
         Route::get('/acordes/criar', [AcordeController::class, 'create'])->name('acordes.create');

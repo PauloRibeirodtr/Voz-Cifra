@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Padre extends Model
@@ -15,6 +16,7 @@ class Padre extends Model
     protected $fillable = [
         'nome',
         'cpf',
+        'igreja_id',
         'ativo',
     ];
 
@@ -28,5 +30,10 @@ class Padre extends Model
     public function missas(): HasMany
     {
         return $this->hasMany(Missa::class, 'padre_id');
+    }
+
+    public function igreja(): BelongsTo
+    {
+        return $this->belongsTo(Igreja::class, 'igreja_id');
     }
 }

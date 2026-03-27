@@ -39,4 +39,9 @@ class Igreja extends Model
     {
         return $this->hasMany(Missa::class, 'igreja_id');
     }
+
+    public function padres(): HasMany
+    {
+        return $this->hasMany(Padre::class, 'igreja_id');
+    }
 }
