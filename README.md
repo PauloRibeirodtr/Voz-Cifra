@@ -21,13 +21,16 @@ Hoje o projeto ja permite:
 - administrar igrejas e administradores locais
 - administrar outros `admin_master`
 - manter cadastro administrativo de padres
+- manter cadastro de musicos por igreja
 - manter biblioteca de acordes
 - manter tempos e momentos liturgicos
 - cadastrar musicas base
 - cadastrar versoes musicais com cifras
 - autenticar o `admin_local`
+- autenticar o `member`
 - operar missas e repertorio da igreja
-- preparar o link publico fixo da igreja para uso futuro
+- reaproveitar repertorio de missas anteriores na criacao de nova missa
+- exibir a missa publica sem cifras no link fixo da igreja
 
 ## Tecnologias
 
@@ -53,10 +56,12 @@ Hoje o projeto ja permite:
 
 - login do `admin_master`
 - login do `admin_local`
+- login do `member`
 - logout
 - protecao de rotas administrativas
 - bloqueio de acesso do `admin_local` ao painel do `admin_master`
 - primeiro acesso com troca obrigatoria de senha para o `admin_local`
+- primeiro acesso com troca obrigatoria de senha para o `member`
 - limitacao de tentativas no login com bloqueio temporario
 - mensagens genericas para falha de credenciais
 - regeneracao de sessao no login e invalidacao segura no logout
@@ -85,6 +90,7 @@ Hoje o projeto ja permite:
 
 - listar missas da propria igreja
 - criar missa
+- reaproveitar repertorio de missa anterior da mesma igreja ao criar nova missa
 - editar missa
 - ativar e desativar missa
 - desativacao automatica de missa encerrada pelo horario
@@ -98,6 +104,20 @@ Hoje o projeto ja permite:
 - transposicao visual de tom para leitura
 - controles de fonte e auto rolagem nas telas de leitura
 - gerar PDF simples da missa
+
+### Musicos
+
+- listar musicos
+- cadastrar musico
+- editar musico
+- ativar e inativar musico
+- excluir musico
+- resetar senha do musico com obrigacao de troca no proximo acesso
+- restringir o `admin_local` aos musicos da propria igreja
+- permitir ao `admin_master` visualizar e administrar musicos de todas as igrejas
+- painel inicial do `member`
+- perfil proprio do `member`
+- logout acessivel nas areas autenticadas
 
 ### Igrejas
 
@@ -190,19 +210,20 @@ Hoje o projeto ja permite:
 - sincronizacao automatica de estado da missa publica
 - contagem regressiva real da proxima missa
 - estado automatico de celebracao em andamento
+- exibicao da missa publica sem cifras para o fiel
+- controles de fonte na tela publica
 - estrutura pronta para o QR Code fixo da igreja
-- base preparada para, no futuro, exibir a missa ativa da igreja no mesmo link
+- base preparada para aprofundar a experiencia publica final da missa no mesmo link
 
 ## Modulos fora do escopo atual
 
 Ainda nao foram abertos nesta etapa:
 
-- fluxo real do `member`
-- experiencia publica final da missa por igreja
-- visao publica completa do fiel sem cifra
 - biblioteca propria de arquivos por igreja
 - versao musical exclusiva por igreja
 - transposicao completa de tom em nivel de cadastro e persistencia
+- experiencia avancada do `member` com repertorio pessoal e leitura propria
+- experiencia publica final completa da missa por igreja em tempo real
 
 ## O que saiu do fluxo
 
@@ -304,10 +325,12 @@ Padrao atual:
 - Hoje nao existe relacao persistida entre `versoes_musicais` e `acordes`.
 - A biblioteca de acordes funciona como apoio visual, validacao e dicionario.
 - O modulo de `padres` e apenas administrativo; padre nao entra no sistema como usuario.
+- O modulo de `musicos` usa o perfil `member` como usuario do sistema, sempre vinculado a uma igreja.
 - O link publico da igreja ja e fixo e baseado no `slug`.
 - O QR Code da igreja ja pode apontar para esse link fixo.
 - A pagina publica da igreja ja identifica automaticamente a proxima missa e a celebracao em andamento.
-- A missa publica completa do fiel ainda nao foi aberta; por enquanto o link publico mostra o estado preparatorio da igreja.
+- A pagina publica da igreja ja pode exibir leitura sem cifras do repertorio preparado para o fiel.
+- A experiencia publica final ainda pode evoluir com mais contexto liturgico e sincronizacao em tempo real.
 - O foco atual do projeto esta no `admin_master`, na operacao funcional do `admin_local` e na base da missa publica.
 
 ## Proxima etapa
@@ -315,6 +338,7 @@ Padrao atual:
 O proximo passo natural do projeto e aprofundar a experiencia do `admin_local`, abrir a camada publica final do fiel e avaliar com seguranca:
 
 - aprimorar o uso de padres por igreja e no contexto das missas
+- aprofundar a experiencia do `member` com repertorio e leitura musical
 - preferencia de versao musical por igreja
 - biblioteca interna de materiais da igreja
 - experiencia publica completa da missa sem cifra
