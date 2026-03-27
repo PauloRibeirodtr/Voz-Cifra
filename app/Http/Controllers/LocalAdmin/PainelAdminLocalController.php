@@ -63,11 +63,16 @@ class PainelAdminLocalController extends Controller
     public function updateProfile(Request $request): RedirectResponse
     {
         $usuario = $this->obterUsuario();
+        $primeiroAcesso = (bool) ($usuario->primeiro_acesso ?? false);
 
         $dados = $request->validate([
             'email' => ['required', 'email', Rule::unique('usuarios', 'email')->ignore($usuario->id)],
             'telefone' => ['nullable', 'string', 'max:20'],
-            'password' => ['nullable', 'confirmed', 'min:8'],
+            'password' => [$primeiroAcesso ? 'required' : 'nullable', 'confirmed', 'min:8'],
+        ], [
+            'password.required' => 'No primeiro acesso, defina uma nova senha para liberar o painel da igreja.',
+            'password.confirmed' => 'A confirmacao da senha nao confere.',
+            'password.min' => 'A nova senha precisa ter pelo menos 8 caracteres.',
         ]);
 
         $usuario->email = $dados['email'];
@@ -80,7 +85,9 @@ class PainelAdminLocalController extends Controller
 
         $usuario->save();
 
-        return back()->with('success', 'Perfil do administrador local atualizado com sucesso.');
+        return back()->with('success', $primeiroAcesso
+            ? 'Senha atualizada com sucesso. O acesso completo ao painel da igreja foi liberado.'
+            : 'Perfil do administrador local atualizado com sucesso.');
     }
 
     private function obterUsuario(): Usuario
