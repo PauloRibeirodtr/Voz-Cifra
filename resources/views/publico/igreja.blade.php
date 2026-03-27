@@ -17,6 +17,7 @@
             --accent: #d7ffe3;
             --accent-2: #f7c873;
             --shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+            --public-font-scale: 1;
         }
 
         * {
@@ -131,9 +132,44 @@
         .lead {
             margin: 18px 0 0;
             max-width: 56rem;
-            font-size: clamp(16px, 4vw, 19px);
+            font-size: clamp(calc(16px * var(--public-font-scale)), calc(4vw * var(--public-font-scale)), calc(19px * var(--public-font-scale)));
             line-height: 1.85;
             color: var(--muted);
+        }
+
+        .celebration-focus {
+            margin-top: 18px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(247, 200, 115, 0.16), rgba(255, 255, 255, 0.08));
+            padding: 16px 18px;
+            border: 1px solid rgba(255, 242, 202, 0.12);
+        }
+
+        .celebration-focus-label {
+            display: block;
+            margin: 0;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #fff2ca;
+        }
+
+        .celebration-focus-title {
+            margin: 8px 0 0;
+            font-size: clamp(calc(24px * var(--public-font-scale)), calc(6vw * var(--public-font-scale)), calc(38px * var(--public-font-scale)));
+            line-height: 1.08;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            color: #ffffff;
+            text-wrap: balance;
+        }
+
+        .celebration-focus-meta {
+            margin: 10px 0 0;
+            font-size: clamp(calc(14px * var(--public-font-scale)), calc(3.6vw * var(--public-font-scale)), calc(17px * var(--public-font-scale)));
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.84);
         }
 
         .access-tools {
@@ -154,6 +190,9 @@
             font-size: 14px;
             font-weight: 800;
             cursor: pointer;
+            min-height: 48px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .access-tools button:hover {
@@ -257,7 +296,7 @@
 
         .next-missa span {
             color: var(--muted);
-            font-size: 15px;
+            font-size: clamp(calc(15px * var(--public-font-scale)), calc(3.8vw * var(--public-font-scale)), calc(17px * var(--public-font-scale)));
             line-height: 1.75;
         }
 
@@ -276,7 +315,7 @@
 
         .notice-text {
             margin: 14px 0 0;
-            font-size: 15px;
+            font-size: clamp(calc(15px * var(--public-font-scale)), calc(3.8vw * var(--public-font-scale)), calc(17px * var(--public-font-scale)));
             line-height: 1.85;
             color: var(--muted);
         }
@@ -310,7 +349,7 @@
 
         .footer-note {
             margin-top: 18px;
-            font-size: 13px;
+            font-size: clamp(calc(13px * var(--public-font-scale)), calc(3.3vw * var(--public-font-scale)), calc(15px * var(--public-font-scale)));
             line-height: 1.8;
             color: rgba(240, 253, 244, 0.70);
         }
@@ -335,7 +374,7 @@
         .celebration-lead {
             margin: 10px 0 0;
             max-width: 720px;
-            font-size: clamp(15px, 3.8vw, 18px);
+            font-size: clamp(calc(15px * var(--public-font-scale)), calc(3.8vw * var(--public-font-scale)), calc(18px * var(--public-font-scale)));
             line-height: 1.85;
             color: var(--muted);
         }
@@ -386,7 +425,7 @@
 
         .celebration-song {
             margin: 0;
-            font-size: clamp(22px, 5vw, 30px);
+            font-size: clamp(calc(22px * var(--public-font-scale)), calc(5vw * var(--public-font-scale)), calc(30px * var(--public-font-scale)));
             line-height: 1.18;
             font-weight: 800;
             letter-spacing: -0.02em;
@@ -398,7 +437,7 @@
             background: rgba(0, 0, 0, 0.10);
             padding: 16px 16px 18px;
             color: rgba(255, 255, 255, 0.95);
-            font-size: clamp(19px, 4.9vw, 24px);
+            font-size: clamp(calc(19px * var(--public-font-scale)), calc(4.9vw * var(--public-font-scale)), calc(24px * var(--public-font-scale)));
             line-height: 2.05;
             white-space: break-spaces;
             word-break: break-word;
@@ -412,7 +451,7 @@
             background: rgba(255, 255, 255, 0.04);
             padding: 20px;
             color: var(--muted);
-            font-size: 16px;
+            font-size: clamp(calc(16px * var(--public-font-scale)), calc(4vw * var(--public-font-scale)), calc(18px * var(--public-font-scale)));
             line-height: 1.9;
         }
 
@@ -528,6 +567,25 @@
                             Em breve, aqui aparecera a missa organizada pela equipe da igreja, com leitura limpa.
                         @endif
                     </p>
+
+                    @if ($missaPublica)
+                        <div class="celebration-focus">
+                            <span class="celebration-focus-label">
+                                @if ($estadoCelebracao === 'em_andamento')
+                                    Celebracao em exibicao
+                                @else
+                                    Celebracao identificada
+                                @endif
+                            </span>
+                            <h2 class="celebration-focus-title">{{ $missaPublica->titulo }}</h2>
+                            <p class="celebration-focus-meta">
+                                {{ $missaPublica->data_missa->format('d/m/Y') }} as {{ substr((string) $missaPublica->hora_inicio, 0, 5) }}
+                                @if ($missaPublica->tempoLiturgico)
+                                    • {{ $missaPublica->tempoLiturgico->nome }}
+                                @endif
+                            </p>
+                        </div>
+                    @endif
 
                     <div class="access-tools">
                         <button type="button" data-public-font="-1">A-</button>
@@ -690,6 +748,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const root = document.documentElement;
             const countdown = document.querySelector('[data-countdown]');
             const dias = document.querySelector('[data-days]');
             const horas = document.querySelector('[data-hours]');
@@ -698,8 +757,35 @@
             let escalaFonte = 1;
 
             const aplicarEscalaFonte = () => {
-                document.documentElement.style.fontSize = `${Math.max(0.95, Math.min(1.5, escalaFonte)) * 16}px`;
+                const escalaSegura = Math.max(0.9, Math.min(1.45, escalaFonte));
+                root.style.setProperty('--public-font-scale', escalaSegura.toFixed(2));
             };
+
+            aplicarEscalaFonte();
+
+            const vincularAcaoBotao = (elemento, callback) => {
+                if (!elemento) {
+                    return;
+                }
+
+                elemento.addEventListener('click', callback);
+                elemento.addEventListener('touchend', (event) => {
+                    event.preventDefault();
+                    callback();
+                }, { passive: false });
+            };
+
+            document.querySelectorAll('[data-public-font]').forEach((botao) => {
+                vincularAcaoBotao(botao, () => {
+                    escalaFonte = Math.max(0.9, Math.min(1.45, escalaFonte + (Number(botao.dataset.publicFont || 0) * 0.08)));
+                    aplicarEscalaFonte();
+                });
+            });
+
+            vincularAcaoBotao(document.querySelector('[data-public-font-reset]'), () => {
+                escalaFonte = 1;
+                aplicarEscalaFonte();
+            });
 
             if (!countdown || !dias || !horas || !minutos || !segundos) {
                 return;
@@ -752,18 +838,6 @@
 
             atualizar();
             setInterval(atualizar, 1000);
-
-            document.querySelectorAll('[data-public-font]').forEach((botao) => {
-                botao.addEventListener('click', () => {
-                    escalaFonte = Math.max(0.95, Math.min(1.5, escalaFonte + (Number(botao.dataset.publicFont || 0) * 0.08)));
-                    aplicarEscalaFonte();
-                });
-            });
-
-            document.querySelector('[data-public-font-reset]')?.addEventListener('click', () => {
-                escalaFonte = 1;
-                aplicarEscalaFonte();
-            });
 
             if (statusUrl) {
                 window.setInterval(async () => {
