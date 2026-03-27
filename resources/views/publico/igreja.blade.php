@@ -11,20 +11,24 @@
             --bg-2: #145a3b;
             --bg-3: #2f8a57;
             --text: #f6fff8;
-            --muted: rgba(240, 253, 244, 0.84);
-            --soft: rgba(255, 255, 255, 0.10);
-            --soft-border: rgba(255, 255, 255, 0.14);
+            --muted: rgba(240, 253, 244, 0.82);
+            --soft: rgba(255, 255, 255, 0.07);
+            --soft-2: rgba(255, 255, 255, 0.1);
             --accent: #d7ffe3;
             --accent-2: #f7c873;
-            --shadow: 0 28px 80px rgba(0, 0, 0, 0.22);
+            --shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
         }
 
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
-        html, body {
+        html,
+        body {
             margin: 0;
             min-height: 100%;
-            font-family: Arial, Helvetica, sans-serif;
+            overflow-x: hidden;
+            font-family: "Segoe UI", Arial, Helvetica, sans-serif;
             background:
                 radial-gradient(circle at top right, rgba(255, 255, 255, 0.10), transparent 24%),
                 radial-gradient(circle at left bottom, rgba(255, 255, 255, 0.08), transparent 28%),
@@ -32,165 +36,197 @@
             color: var(--text);
         }
 
-        body { min-height: 100vh; }
-
-        .page {
-            width: min(1160px, calc(100% - 28px));
-            margin: 0 auto;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            padding: 28px 0;
+        body {
+            line-height: 1.6;
         }
 
-        .shell {
+        .page {
             width: 100%;
-            border-radius: 34px;
-            border: 1px solid var(--soft-border);
-            background: rgba(255, 255, 255, 0.08);
+            min-height: 100vh;
+            padding: 12px 10px 28px;
+        }
+
+        .shell,
+        .celebration-section {
+            width: min(100%, 1180px);
+            margin: 0 auto;
+            border-radius: 24px;
+            background: var(--soft);
             box-shadow: var(--shadow);
-            backdrop-filter: blur(14px);
-            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .celebration-section {
+            margin-top: 16px;
+            padding: 20px 16px 14px;
         }
 
         .hero {
             display: grid;
-            grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.95fr);
+            grid-template-columns: minmax(0, 1fr);
         }
 
-        .hero-main { padding: 34px; }
+        .hero-main {
+            padding: 18px 16px 14px;
+        }
+
+        .hero-side {
+            padding: 4px 16px 18px;
+        }
 
         .brand {
             display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 28px;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 22px;
         }
 
         .brand img {
-            width: 64px;
+            width: 52px;
             height: auto;
-            filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.18));
+            flex-shrink: 0;
+            filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.14));
         }
 
         .brand-kicker {
             margin: 0 0 4px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 800;
-            letter-spacing: 0.26em;
+            letter-spacing: 0.22em;
             text-transform: uppercase;
             color: var(--accent);
         }
 
         .brand-name {
             margin: 0;
-            font-size: 28px;
-            font-weight: 800;
+            font-size: clamp(24px, 5vw, 34px);
+            line-height: 1.08;
+            font-weight: 900;
             letter-spacing: -0.03em;
+            text-wrap: balance;
         }
 
         .location {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             border-radius: 999px;
-            border: 1px solid var(--soft-border);
-            background: rgba(255, 255, 255, 0.08);
-            padding: 10px 16px;
-            font-size: 14px;
+            background: var(--soft-2);
+            padding: 9px 14px;
+            font-size: 13px;
+            font-weight: 700;
             color: var(--accent);
         }
 
         .title {
-            margin: 22px 0 0;
-            font-size: clamp(36px, 5vw, 66px);
-            line-height: 0.98;
+            margin: 18px 0 0;
+            max-width: 14ch;
+            font-size: clamp(34px, 9vw, 68px);
+            line-height: 0.96;
             font-weight: 900;
             letter-spacing: -0.04em;
-            max-width: 780px;
+            text-wrap: balance;
         }
 
         .lead {
-            margin: 22px 0 0;
-            max-width: 760px;
-            font-size: 18px;
-            line-height: 1.8;
+            margin: 18px 0 0;
+            max-width: 56rem;
+            font-size: clamp(16px, 4vw, 19px);
+            line-height: 1.85;
             color: var(--muted);
         }
 
+        .access-tools {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        .access-tools button {
+            flex: 1 1 0;
+            min-width: 0;
+            border: 0;
+            border-radius: 999px;
+            background: var(--soft-2);
+            color: var(--text);
+            padding: 11px 16px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .access-tools button:hover {
+            background: rgba(255, 255, 255, 0.18);
+        }
+
         .info-row {
-            margin-top: 26px;
+            margin-top: 22px;
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 16px;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 12px;
+        }
+
+        .info-card,
+        .panel,
+        .celebration-item {
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.06);
         }
 
         .info-card {
-            border-radius: 24px;
-            border: 1px solid var(--soft-border);
-            background: rgba(0, 0, 0, 0.10);
-            padding: 18px 20px;
+            padding: 16px 18px;
         }
 
-        .label {
+        .label,
+        .panel-title {
             display: block;
-            font-size: 12px;
+            margin: 0;
+            font-size: 11px;
             font-weight: 800;
-            letter-spacing: 0.14em;
+            letter-spacing: 0.12em;
             text-transform: uppercase;
             color: var(--accent);
         }
 
         .value {
             display: block;
-            margin-top: 10px;
-            font-size: 21px;
-            line-height: 1.45;
-            font-weight: 700;
+            margin-top: 8px;
+            font-size: clamp(18px, 4vw, 22px);
+            line-height: 1.55;
+            font-weight: 600;
             word-break: break-word;
         }
 
-        .hero-side {
-            border-left: 1px solid rgba(255, 255, 255, 0.10);
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.08));
-            padding: 34px 28px;
-        }
-
         .panel {
-            border-radius: 28px;
-            border: 1px solid var(--soft-border);
-            background: rgba(255, 255, 255, 0.08);
-            padding: 22px;
+            padding: 18px;
         }
 
-        .panel + .panel { margin-top: 18px; }
-
-        .panel-title {
-            margin: 0;
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            color: var(--accent);
+        .panel + .panel {
+            margin-top: 14px;
         }
 
         .countdown {
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 10px;
-            margin-top: 18px;
+            margin-top: 16px;
         }
 
         .count-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
             border-radius: 18px;
             background: rgba(0, 0, 0, 0.12);
-            padding: 14px 10px;
-            text-align: center;
+            padding: 13px 14px;
+            text-align: left;
         }
 
         .count-number {
             display: block;
-            font-size: 28px;
+            font-size: clamp(28px, 7vw, 34px);
             font-weight: 900;
             line-height: 1;
             color: #fff7db;
@@ -198,7 +234,6 @@
 
         .count-label {
             display: block;
-            margin-top: 8px;
             font-size: 11px;
             font-weight: 700;
             letter-spacing: 0.12em;
@@ -207,45 +242,23 @@
         }
 
         .next-missa {
-            margin-top: 18px;
-            border-radius: 20px;
+            margin-top: 16px;
+            border-radius: 18px;
             background: rgba(247, 200, 115, 0.12);
-            border: 1px solid rgba(247, 200, 115, 0.22);
-            padding: 16px 18px;
-        }
-
-        .access-tools {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 18px;
-        }
-
-        .access-tools button {
-            border: 1px solid var(--soft-border);
-            background: rgba(255, 255, 255, 0.08);
-            color: var(--text);
-            border-radius: 999px;
-            padding: 10px 14px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .access-tools button:hover {
-            background: rgba(255, 255, 255, 0.16);
+            padding: 16px;
         }
 
         .next-missa strong {
             display: block;
             margin-bottom: 6px;
-            font-size: 18px;
+            font-size: 19px;
+            line-height: 1.4;
         }
 
         .next-missa span {
             color: var(--muted);
-            font-size: 14px;
-            line-height: 1.6;
+            font-size: 15px;
+            line-height: 1.75;
         }
 
         .notice {
@@ -264,13 +277,14 @@
         .notice-text {
             margin: 14px 0 0;
             font-size: 15px;
-            line-height: 1.8;
+            line-height: 1.85;
             color: var(--muted);
         }
 
         .loading {
             display: flex;
             align-items: center;
+            flex-wrap: wrap;
             gap: 10px;
             margin-top: 18px;
             color: var(--accent);
@@ -286,44 +300,43 @@
             animation: pulse 1.6s infinite ease-in-out;
         }
 
-        .dot:nth-child(2) { animation-delay: 0.2s; }
-        .dot:nth-child(3) { animation-delay: 0.4s; }
+        .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
 
         .footer-note {
             margin-top: 18px;
             font-size: 13px;
-            line-height: 1.7;
+            line-height: 1.8;
             color: rgba(240, 253, 244, 0.70);
-        }
-
-        .celebration-section {
-            padding: 0 34px 34px;
-            border-top: 1px solid rgba(255, 255, 255, 0.10);
-            background: linear-gradient(180deg, rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.02));
         }
 
         .celebration-header {
             display: flex;
             flex-wrap: wrap;
-            align-items: flex-end;
+            align-items: flex-start;
             justify-content: space-between;
             gap: 16px;
-            padding-top: 28px;
         }
 
         .celebration-title {
             margin: 0;
-            font-size: clamp(28px, 4vw, 42px);
-            line-height: 1.05;
+            font-size: clamp(26px, 7vw, 40px);
+            line-height: 1.08;
             font-weight: 900;
             letter-spacing: -0.03em;
+            text-wrap: balance;
         }
 
         .celebration-lead {
             margin: 10px 0 0;
             max-width: 720px;
-            font-size: 15px;
-            line-height: 1.8;
+            font-size: clamp(15px, 3.8vw, 18px);
+            line-height: 1.85;
             color: var(--muted);
         }
 
@@ -332,10 +345,9 @@
             align-items: center;
             gap: 8px;
             border-radius: 999px;
-            border: 1px solid rgba(247, 200, 115, 0.28);
             background: rgba(247, 200, 115, 0.14);
-            padding: 10px 16px;
-            font-size: 12px;
+            padding: 10px 14px;
+            font-size: 11px;
             font-weight: 800;
             letter-spacing: 0.12em;
             text-transform: uppercase;
@@ -344,22 +356,19 @@
 
         .celebration-list {
             display: grid;
-            gap: 18px;
-            margin-top: 24px;
+            gap: 14px;
+            margin-top: 22px;
         }
 
         .celebration-item {
-            border-radius: 26px;
-            border: 1px solid var(--soft-border);
-            background: rgba(255, 255, 255, 0.08);
-            padding: 22px;
+            padding: 18px 18px 20px;
         }
 
         .celebration-meta {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 14px;
+            gap: 8px;
+            margin-bottom: 12px;
         }
 
         .celebration-pill {
@@ -367,7 +376,7 @@
             align-items: center;
             border-radius: 999px;
             background: rgba(255, 255, 255, 0.10);
-            padding: 7px 12px;
+            padding: 7px 11px;
             font-size: 11px;
             font-weight: 800;
             letter-spacing: 0.1em;
@@ -377,67 +386,113 @@
 
         .celebration-song {
             margin: 0;
-            font-size: 24px;
+            font-size: clamp(22px, 5vw, 30px);
+            line-height: 1.18;
             font-weight: 800;
             letter-spacing: -0.02em;
         }
 
         .celebration-lyrics {
             margin-top: 14px;
-            border-radius: 22px;
-            background: rgba(0, 0, 0, 0.12);
-            padding: 18px;
-            color: rgba(255, 255, 255, 0.94);
-            font-size: 18px;
-            line-height: 1.9;
-            white-space: pre-wrap;
+            border-radius: 18px;
+            background: rgba(0, 0, 0, 0.10);
+            padding: 16px 16px 18px;
+            color: rgba(255, 255, 255, 0.95);
+            font-size: clamp(19px, 4.9vw, 24px);
+            line-height: 2.05;
+            white-space: break-spaces;
             word-break: break-word;
+            overflow-wrap: anywhere;
+            text-wrap: pretty;
         }
 
         .celebration-empty {
             margin-top: 24px;
-            border-radius: 24px;
-            border: 1px dashed rgba(255, 255, 255, 0.24);
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.04);
             padding: 20px;
             color: var(--muted);
-            font-size: 15px;
-            line-height: 1.8;
+            font-size: 16px;
+            line-height: 1.9;
         }
 
         @keyframes pulse {
-            0%, 80%, 100% { opacity: 0.35; transform: scale(0.9); }
-            40% { opacity: 1; transform: scale(1); }
-        }
+            0%, 80%, 100% {
+                opacity: 0.35;
+                transform: scale(0.9);
+            }
 
-        @media (max-width: 960px) {
-            .hero { grid-template-columns: 1fr; }
-            .hero-side {
-                border-left: 0;
-                border-top: 1px solid rgba(255, 255, 255, 0.10);
+            40% {
+                opacity: 1;
+                transform: scale(1);
             }
         }
 
-        @media (max-width: 680px) {
+        @media (min-width: 720px) {
             .page {
-                width: min(100% - 18px, 1160px);
-                padding: 18px 0;
+                padding: 18px 18px 36px;
             }
 
-            .hero-main, .hero-side, .celebration-section { padding: 22px; }
-            .brand img { width: 52px; }
-            .brand-name { font-size: 24px; }
-            .lead { font-size: 16px; }
-            .info-row, .countdown { grid-template-columns: 1fr; }
+            .hero-main {
+                padding: 24px 22px 18px;
+            }
+
+            .hero-side {
+                padding: 8px 22px 22px;
+            }
+
+            .celebration-section {
+                padding: 24px 22px 16px;
+            }
+
+            .access-tools button {
+                flex: 0 0 auto;
+            }
+
+            .info-row {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (min-width: 961px) {
+            .page {
+                padding: 28px 24px 52px;
+            }
+
+            .shell,
+            .celebration-section {
+                border-radius: 28px;
+            }
+
+            .hero {
+                grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.9fr);
+            }
+
+            .hero-main {
+                padding: 36px 36px 30px;
+            }
+
+            .hero-side {
+                padding: 36px 30px 30px 16px;
+            }
+
+            .countdown {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
 
             .count-item {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                text-align: left;
-                padding: 14px 16px;
+                display: block;
+                text-align: center;
+                padding: 14px 12px;
             }
 
-            .count-label { margin-top: 0; }
+            .count-label {
+                margin-top: 8px;
+            }
+
+            .celebration-section {
+                padding: 30px 36px 18px;
+            }
         }
     </style>
 </head>
@@ -466,11 +521,11 @@
 
                     <p class="lead">
                         @if ($estadoCelebracao === 'em_andamento' && $missaPublica)
-                            A celebracao cadastrada para esta igreja ja entrou em andamento. Este link publico fixo continuara sendo o endereco oficial da missa ativa, com horario de Corumba - MS.
+                            A celebracao cadastrada para esta igreja ja entrou em andamento. Este link publico fixo continuara sendo o endereco oficial da missa ativa, com horario oficial de Cuiaba - MT.
                         @elseif ($proximaMissa)
-                            A proxima celebracao cadastrada para esta igreja ja foi identificada. Este link publico fixo sera usado para exibir a missa ativa com leitura limpa e sem cifras no horario oficial de Corumba - MS.
+                            A proxima celebracao cadastrada para esta igreja ja foi identificada. Este link publico fixo sera usado para exibir a missa ativa com leitura limpa e sem cifras no horario oficial de Cuiaba - MT.
                         @else
-                            Em breve, aqui aparecera a missa organizada pela equipe da igreja, com leitura limpa .
+                            Em breve, aqui aparecera a missa organizada pela equipe da igreja, com leitura limpa.
                         @endif
                     </p>
 
@@ -525,13 +580,13 @@
                                     @if ($estadoCelebracao === 'em_andamento')
                                         • de {{ substr((string) $missaPublica->hora_inicio, 0, 5) }} ate {{ substr((string) $missaPublica->hora_fim, 0, 5) }}
                                     @else
-                                        as {{ substr((string) $missaPublica->hora_inicio, 0, 5) }}
+                                        • as {{ substr((string) $missaPublica->hora_inicio, 0, 5) }}
                                     @endif
                                     @if ($missaPublica->padre)
                                         • Padre {{ $missaPublica->padre->nome }}
                                     @endif
                                     <br>
-                                    Horario oficial de Corumba - MS.
+                                    Horario oficial de Cuiaba - MT.
                                     @if ($missaPublica->tempoLiturgico)
                                         <br>{{ $missaPublica->tempoLiturgico->nome }}
                                     @endif
@@ -643,7 +698,7 @@
             let escalaFonte = 1;
 
             const aplicarEscalaFonte = () => {
-                document.documentElement.style.fontSize = `${Math.max(0.9, Math.min(1.4, escalaFonte)) * 16}px`;
+                document.documentElement.style.fontSize = `${Math.max(0.95, Math.min(1.5, escalaFonte)) * 16}px`;
             };
 
             if (!countdown || !dias || !horas || !minutos || !segundos) {
@@ -700,7 +755,7 @@
 
             document.querySelectorAll('[data-public-font]').forEach((botao) => {
                 botao.addEventListener('click', () => {
-                    escalaFonte = Math.max(0.9, Math.min(1.4, escalaFonte + (Number(botao.dataset.publicFont || 0) * 0.08)));
+                    escalaFonte = Math.max(0.95, Math.min(1.5, escalaFonte + (Number(botao.dataset.publicFont || 0) * 0.08)));
                     aplicarEscalaFonte();
                 });
             });
