@@ -25,6 +25,12 @@
         </div>
     @endif
 
+    @if (session('error'))
+        <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 text-sm rounded">
+            {{ session('error') }}
+        </div>
+    @endif
+
     @if ($errors->any())
         <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 text-sm rounded">
             <ul class="list-disc pl-4">
@@ -123,10 +129,51 @@
                 </div>
 
                 <div class="md:col-span-2 bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800">
-                    A senha do administrador local continua sob controle interno. Se voce precisar redefinir o acesso dele depois, podemos criar essa acao na proxima etapa.
+                    Os dados principais do administrador local sao mantidos aqui. A redefinicao de senha fica disponivel logo abaixo, com troca obrigatoria no proximo acesso.
                 </div>
             </div>
         </div>
+
+        @if ($adminLocal)
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div class="max-w-2xl">
+                        <h2 class="text-lg font-bold text-gray-800">Acesso do admin local</h2>
+                        <p class="mt-2 text-sm text-gray-500">
+                            Redefina a senha deste admin local com seguranca. Ao concluir, o sistema vai marcar o proximo login como primeiro acesso.
+                        </p>
+                    </div>
+                    <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $adminLocal->primeiro_acesso ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-700' }}">
+                        {{ $adminLocal->primeiro_acesso ? 'Troca pendente no proximo login' : 'Acesso liberado' }}
+                    </span>
+                </div>
+
+                <form action="{{ route('admin.igrejas.admin-local.password.reset', $igreja) }}" method="POST" class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2" onsubmit="return confirm('Confirma a redefinicao da senha deste admin local?');">
+                    @csrf
+                    <input type="hidden" name="origem" value="edit">
+
+                    <div class="lg:col-span-2 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm text-amber-900">
+                        Se a nova senha ficar em branco, o sistema vai usar o CPF do admin local como senha padrao. Em ambos os casos, ele sera obrigado a trocar a senha no proximo acesso.
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Nova senha manual</label>
+                        <input type="password" name="password" class="{{ $classeInput }}" placeholder="Opcional">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Confirmar nova senha</label>
+                        <input type="password" name="password_confirmation" class="{{ $classeInput }}" placeholder="Repita a nova senha">
+                    </div>
+
+                    <div class="lg:col-span-2 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-amber-600 px-5 py-3 font-semibold text-white hover:bg-amber-700">
+                            Resetar senha do admin local
+                        </button>
+                    </div>
+                </form>
+            </div>
+        @endif
 
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
