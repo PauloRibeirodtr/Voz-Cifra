@@ -8,6 +8,7 @@ use App\Models\Igreja;
 use App\Models\Missa;
 use App\Models\Musica;
 use App\Models\Usuario;
+use App\Rules\StrongPassword;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -63,7 +64,7 @@ class AdminMasterController extends Controller
         $dados = $request->validate([
             'email' => ['required', 'email', Rule::unique('usuarios', 'email')->ignore($usuario->id)],
             'telefone' => ['nullable', 'string', 'max:20'],
-            'password' => ['nullable', 'confirmed', 'min:8'],
+            'password' => ['nullable', 'confirmed', new StrongPassword()],
         ]);
 
         $usuario->email = $dados['email'];
@@ -86,7 +87,7 @@ class AdminMasterController extends Controller
             'cpf' => ['required', 'string', 'max:14', Rule::unique('usuarios', 'cpf')],
             'email' => ['required', 'email', 'max:255', Rule::unique('usuarios', 'email')],
             'telefone' => ['nullable', 'string', 'max:20'],
-            'password' => ['nullable', 'confirmed', 'min:8'],
+            'password' => ['nullable', 'confirmed', new StrongPassword()],
             'ativo' => ['nullable', 'boolean'],
         ]);
 

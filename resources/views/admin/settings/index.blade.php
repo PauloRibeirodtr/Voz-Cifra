@@ -171,9 +171,10 @@
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
+                            <div data-password-strength-container>
                                 <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Senha inicial</label>
-                                <input type="password" name="password" class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-green-600 focus:ring-2 focus:ring-green-100" placeholder="Opcional">
+                                <input type="password" name="password" data-password-strength-input class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-green-600 focus:ring-2 focus:ring-green-100" placeholder="Opcional">
+                                @include('partials.password-strength-meter')
                                 @error('password')
                                     <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                 @enderror
@@ -181,7 +182,7 @@
 
                             <div>
                                 <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Confirmar senha</label>
-                                <input type="password" name="password_confirmation" class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-green-600 focus:ring-2 focus:ring-green-100" placeholder="Repita a senha">
+                                <input type="password" name="password_confirmation" data-password-confirmation-input class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-green-600 focus:ring-2 focus:ring-green-100" placeholder="Repita a senha">
                             </div>
                         </div>
 
@@ -300,4 +301,5 @@
             }
         });
     </script>
+    @include('partials.password-strength-script')
 @endpush

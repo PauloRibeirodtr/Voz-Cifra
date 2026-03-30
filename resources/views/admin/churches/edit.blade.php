@@ -156,14 +156,15 @@
                         Se a nova senha ficar em branco, o sistema vai usar o CPF do admin local como senha padrao. Em ambos os casos, ele sera obrigado a trocar a senha no proximo acesso.
                     </div>
 
-                    <div>
+                    <div data-password-strength-container>
                         <label class="block text-sm font-medium text-gray-700">Nova senha manual</label>
-                        <input type="password" name="password" class="{{ $classeInput }}" placeholder="Opcional">
+                        <input type="password" name="password" data-password-strength-input class="{{ $classeInput }}" placeholder="Opcional">
+                        @include('partials.password-strength-meter')
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Confirmar nova senha</label>
-                        <input type="password" name="password_confirmation" class="{{ $classeInput }}" placeholder="Repita a nova senha">
+                        <input type="password" name="password_confirmation" data-password-confirmation-input class="{{ $classeInput }}" placeholder="Repita a nova senha">
                     </div>
 
                     <div class="lg:col-span-2 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
@@ -314,4 +315,5 @@
             campoTelefone?.addEventListener('input', () => campoTelefone.value = aplicarMascaraTelefone(campoTelefone.value));
         });
     </script>
+    @include('partials.password-strength-script')
 @endpush

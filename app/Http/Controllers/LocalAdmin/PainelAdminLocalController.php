@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Igreja;
 use App\Models\Missa;
 use App\Models\Usuario;
+use App\Rules\StrongPassword;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -68,11 +69,10 @@ class PainelAdminLocalController extends Controller
         $dados = $request->validate([
             'email' => ['required', 'email', Rule::unique('usuarios', 'email')->ignore($usuario->id)],
             'telefone' => ['nullable', 'string', 'max:20'],
-            'password' => [$primeiroAcesso ? 'required' : 'nullable', 'confirmed', 'min:8'],
+            'password' => [$primeiroAcesso ? 'required' : 'nullable', 'confirmed', new StrongPassword()],
         ], [
             'password.required' => 'No primeiro acesso, defina uma nova senha para liberar o painel da igreja.',
             'password.confirmed' => 'A confirmacao da senha nao confere.',
-            'password.min' => 'A nova senha precisa ter pelo menos 8 caracteres.',
         ]);
 
         $usuario->email = $dados['email'];

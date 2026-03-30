@@ -214,14 +214,15 @@
                                     Se voce deixar a nova senha em branco, o sistema vai usar o CPF do admin local como senha padrao e obrigar a troca no proximo acesso.
                                 </div>
 
-                                <div>
+                                <div data-password-strength-container>
                                     <label class="block text-sm font-medium text-gray-700">Nova senha manual</label>
-                                    <input type="password" name="password" class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-100" placeholder="Opcional">
+                                    <input type="password" name="password" data-password-strength-input class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-100" placeholder="Opcional">
+                                    @include('partials.password-strength-meter')
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Confirmar nova senha</label>
-                                    <input type="password" name="password_confirmation" class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-100" placeholder="Repita a nova senha">
+                                    <input type="password" name="password_confirmation" data-password-confirmation-input class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-100" placeholder="Repita a nova senha">
                                 </div>
 
                                 <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
@@ -285,4 +286,5 @@
             });
         });
     </script>
+    @include('partials.password-strength-script')
 @endpush

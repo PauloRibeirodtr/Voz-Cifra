@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Igreja;
 use App\Models\Usuario;
+use App\Rules\StrongPassword;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -185,10 +186,9 @@ class IgrejaController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'password' => ['nullable', 'confirmed', 'min:8'],
+            'password' => ['nullable', 'confirmed', new StrongPassword()],
         ], [
             'password.confirmed' => 'A confirmacao da nova senha nao confere.',
-            'password.min' => 'A nova senha precisa ter pelo menos 8 caracteres.',
         ]);
 
         if ($validator->fails()) {

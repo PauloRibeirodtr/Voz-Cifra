@@ -61,14 +61,15 @@
         <p class="mt-2 text-sm text-gray-500">Se a senha inicial ficar em branco, o sistema usa o CPF como senha padrão e obriga a troca no primeiro acesso.</p>
 
         @unless ($musico->exists)
-            <div class="mt-5">
+            <div class="mt-5" data-password-strength-container>
                 <label class="block text-sm font-medium text-gray-700">Senha inicial</label>
-                <input type="password" name="password" class="{{ $classeInput }}" placeholder="Opcional">
+                <input type="password" name="password" data-password-strength-input class="{{ $classeInput }}" placeholder="Opcional">
+                @include('partials.password-strength-meter')
             </div>
 
             <div class="mt-4">
                 <label class="block text-sm font-medium text-gray-700">Confirmar senha inicial</label>
-                <input type="password" name="password_confirmation" class="{{ $classeInput }}" placeholder="Repita a senha">
+                <input type="password" name="password_confirmation" data-password-confirmation-input class="{{ $classeInput }}" placeholder="Repita a senha">
             </div>
         @endunless
 
@@ -135,4 +136,5 @@
             }
         });
     </script>
+    @include('partials.password-strength-script')
 @endpush

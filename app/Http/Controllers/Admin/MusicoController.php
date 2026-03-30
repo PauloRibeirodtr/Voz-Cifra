@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Igreja;
 use App\Models\Usuario;
+use App\Rules\StrongPassword;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -127,7 +128,7 @@ class MusicoController extends Controller
             'cpf' => ['required', 'string', 'max:14', Rule::unique('usuarios', 'cpf')->ignore($musico?->id)],
             'email' => ['required', 'email', 'max:255', Rule::unique('usuarios', 'email')->ignore($musico?->id)],
             'telefone' => ['nullable', 'string', 'max:20'],
-            'password' => [$musico ? 'nullable' : 'nullable', 'confirmed', 'min:8'],
+            'password' => ['nullable', 'confirmed', new StrongPassword()],
             'ativo' => ['nullable', 'boolean'],
         ]);
     }

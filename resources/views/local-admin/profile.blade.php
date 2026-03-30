@@ -58,14 +58,15 @@
                         <input type="text" name="telefone" value="{{ old('telefone', $user->telefone) }}" data-telefone-input placeholder="(65) 99999-9999" class="{{ $classeInput }}">
                     </div>
 
-                    <div id="password">
+                    <div id="password" data-password-strength-container>
                         <label class="block text-sm font-medium text-gray-700">Nova senha</label>
-                        <input type="password" name="password" class="{{ $classeInput }}" placeholder="Minimo de 8 caracteres">
+                        <input type="password" name="password" data-password-strength-input class="{{ $classeInput }}" placeholder="Minimo de 8 caracteres">
+                        @include('partials.password-strength-meter', ['required' => (bool) ($user->primeiro_acesso ?? false)])
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Confirmar nova senha</label>
-                        <input type="password" name="password_confirmation" class="{{ $classeInput }}" placeholder="Repita a nova senha">
+                        <input type="password" name="password_confirmation" data-password-confirmation-input class="{{ $classeInput }}" placeholder="Repita a nova senha">
                     </div>
 
                     <button class="mt-2 rounded-xl bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800">
@@ -135,4 +136,5 @@
             campoTelefone.value = aplicarMascaraTelefone(campoTelefone.value);
         });
     </script>
+    @include('partials.password-strength-script')
 @endpush

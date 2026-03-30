@@ -76,14 +76,15 @@
                         <input type="text" name="telefone" value="{{ old('telefone', $user->telefone) }}" class="{{ $classeInput }}" placeholder="(65) 99999-9999">
                     </div>
 
-                    <div>
+                    <div data-password-strength-container>
                         <label class="block text-sm font-medium text-gray-700">Nova senha</label>
-                        <input type="password" name="password" class="{{ $classeInput }}" placeholder="Mínimo de 8 caracteres">
+                        <input type="password" name="password" data-password-strength-input class="{{ $classeInput }}" placeholder="Minimo de 8 caracteres">
+                        @include('partials.password-strength-meter', ['required' => (bool) ($user->primeiro_acesso ?? false)])
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Confirmar nova senha</label>
-                        <input type="password" name="password_confirmation" class="{{ $classeInput }}" placeholder="Repita a nova senha">
+                        <input type="password" name="password_confirmation" data-password-confirmation-input class="{{ $classeInput }}" placeholder="Repita a nova senha">
                     </div>
                 </div>
             </section>
@@ -103,5 +104,6 @@
             </div>
         </form>
     </div>
+    @include('partials.password-strength-script')
 </body>
 </html>

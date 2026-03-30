@@ -48,7 +48,7 @@ class AuthController extends Controller
             }
 
             throw ValidationException::withMessages([
-                'email' => 'E-mail ou senha incorretos.',
+                'email' => 'Credenciais invalidas.',
             ]);
         }
 
@@ -93,7 +93,7 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login')->withErrors([
-            'email' => 'Este perfil ainda nao esta liberado nesta etapa do sistema.',
+            'email' => 'Credenciais invalidas.',
         ]);
     }
 
