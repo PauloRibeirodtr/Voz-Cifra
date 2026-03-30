@@ -35,12 +35,12 @@
         </div>
     @endif
 
-    <form action="{{ route('local-admin.profile.update') }}" method="POST">
-        @csrf
-        @method('PUT')
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <section class="xl:col-span-2 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+            <form action="{{ route('local-admin.profile.update') }}" method="POST">
+                @csrf
+                @method('PUT')
 
-        <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
-            <section class="xl:col-span-2 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
                 <div class="grid grid-cols-1 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Nome</label>
@@ -73,37 +73,37 @@
                         Atualizar perfil
                     </button>
                 </div>
-            </section>
+            </form>
+        </section>
 
-            <aside class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-bold text-gray-900">Dados da igreja</h2>
-                <div class="mt-4 space-y-4 text-sm text-gray-600">
-                    <div>
-                        <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Igreja</span>
-                        <span>{{ $igreja->nome }}</span>
-                    </div>
-                    <div>
-                        <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Cidade</span>
-                        <span>{{ $igreja->cidade }} - {{ $igreja->estado }}</span>
-                    </div>
-                    <div>
-                        <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Link publico</span>
-                        <a href="{{ $igreja->link_publico }}" target="_blank" class="break-all text-green-700 hover:underline">{{ $igreja->link_publico }}</a>
-                    </div>
+        <aside class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+            <h2 class="text-lg font-bold text-gray-900">Dados da igreja</h2>
+            <div class="mt-4 space-y-4 text-sm text-gray-600">
+                <div>
+                    <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Igreja</span>
+                    <span>{{ $igreja->nome }}</span>
                 </div>
+                <div>
+                    <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Cidade</span>
+                    <span>{{ $igreja->cidade }} - {{ $igreja->estado }}</span>
+                </div>
+                <div>
+                    <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Link publico</span>
+                    <a href="{{ $igreja->link_publico }}" target="_blank" class="break-all text-green-700 hover:underline">{{ $igreja->link_publico }}</a>
+                </div>
+            </div>
 
-                <div class="mt-6 border-t border-gray-100 pt-6">
-                    <h3 class="text-sm font-black uppercase tracking-wider text-gray-500">Sessao</h3>
-                    <form action="{{ route('logout') }}" method="POST" class="mt-3">
-                        @csrf
-                        <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-red-600 px-4 py-3 font-semibold text-white hover:bg-red-700">
-                            Sair da conta
-                        </button>
-                    </form>
-                </div>
-            </aside>
-        </div>
-    </form>
+            <div class="mt-6 border-t border-gray-100 pt-6">
+                <h3 class="text-sm font-black uppercase tracking-wider text-gray-500">Sessao</h3>
+                <form action="{{ route('logout') }}" method="POST" class="mt-3">
+                    @csrf
+                    <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-red-600 px-4 py-3 font-semibold text-white hover:bg-red-700">
+                        Sair da conta
+                    </button>
+                </form>
+            </div>
+        </aside>
+    </div>
 @endsection
 
 @push('scripts')
