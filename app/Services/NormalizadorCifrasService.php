@@ -180,7 +180,7 @@ class NormalizadorCifrasService
             return false;
         }
 
-        return (bool) preg_match('/^[A-G](?:#|b)?(?:[a-zA-Z0-9º°+\-]*(?:\([^)\]]+\))?)?(?:\/[A-G](?:#|b)?)?$/', $valor);
+        return (bool) preg_match('/^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\\+|-|[0-9#b])|\\([^\\)\\]]+\\))*(?:\\/[A-G](?:#|b)?)?$/', $valor);
     }
 
     private function normalizarQuebrasDeLinha(string $texto): string
@@ -188,3 +188,5 @@ class NormalizadorCifrasService
         return str_replace(["\r\n", "\r"], "\n", trim($texto));
     }
 }
+
+

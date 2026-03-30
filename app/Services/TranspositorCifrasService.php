@@ -143,7 +143,7 @@ class TranspositorCifrasService
             return false;
         }
 
-        return preg_match('/^[A-G](?:#|b)?(?:[a-zA-Z0-9ÂºÂ°+\-]*(?:\([^)\]]+\))?)?(?:\/[A-G](?:#|b)?)?$/', $chord) === 1;
+        return preg_match('/^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\+|-|[0-9#b])|\([^)\]]+\))*(?:\/[A-G](?:#|b)?)?$/', $chord) === 1;
     }
 
     private function getSemitone(string $note): ?int

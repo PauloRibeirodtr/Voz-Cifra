@@ -214,7 +214,7 @@ Quao grande e o meu Deus</pre>
                 return false;
             }
 
-            return /^[A-G](?:#|b)?(?:[a-zA-Z0-9ÂºÂ°+\-]*(?:\([^)]+\))?)?(?:\/[A-G](?:#|b)?)?$/.test(texto);
+            return /^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\\+|-|[0-9#b])|\\([^)]+\\))*(?:\\/[A-G](?:#|b)?)?$/.test(texto);
         };
 
         const ehLinhaTablatura = (linha) => {
@@ -393,3 +393,5 @@ Quao grande e o meu Deus</pre>
     })();
 </script>
 @endpush
+
+

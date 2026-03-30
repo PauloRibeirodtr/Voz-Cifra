@@ -195,7 +195,7 @@ Quao grande e o meu Deus</pre>
                 return;
             }
 
-            const regexAcorde = /^[A-G](?:#|b)?(?:m|maj|min|sus|add|dim|aug|Âº|Â°)?(?:\d+)?(?:\/[A-G](?:#|b)?)?$/i;
+            const regexAcorde = /^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\\+|-|[0-9#b])|\\([^)]+\\))*(?:\\/[A-G](?:#|b)?)?$/;
 
             const linhaContemApenasAcordes = (linha) => {
                 const texto = linha.trim();
@@ -256,3 +256,4 @@ Quao grande e o meu Deus</pre>
         });
     </script>
 @endpush
+

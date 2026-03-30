@@ -30,7 +30,7 @@
 
         const SEMITONE_TO_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
         const SEMITONE_TO_FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
-        const CHORD_REGEX = /^[A-G](?:#|b)?(?:[a-zA-Z0-9º°+\-]*(?:\([^)\]]+\))?)?(?:\/[A-G](?:#|b)?)?$/;
+        const CHORD_REGEX = /^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\+|-|[0-9#b])|\([^\)\]]+\))*(?:\/[A-G](?:#|b)?)?$/;
         const CHORD_PARTS_REGEX = /^([A-G](?:#|b)?)(.*?)(?:\/([A-G](?:#|b)?))?$/;
 
         const normalizeWhitespace = (value) => (value || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
@@ -239,6 +239,14 @@
             return [];
         };
 
+        const extractChordsFromBracketedText = (text) => {
+            const matches = normalizeWhitespace(text).match(/\[([^\[\]\r\n]+)\]/g) || [];
+
+            return [...new Set(matches
+                .map((match) => match.slice(1, -1).trim())
+                .filter((value) => isChord(value)))];
+        };
+
         window.VozECifraChord = {
             escapeHtml,
             isChord,
@@ -251,6 +259,7 @@
             getChordSignature,
             buildChordGroups,
             getChordMatches,
+            extractChordsFromBracketedText,
         };
     })();
 </script>

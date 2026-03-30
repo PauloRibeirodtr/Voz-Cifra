@@ -205,11 +205,36 @@
                 tooltipAcorde.style.top = `${Math.max(y - offsetVertical, 12)}px`;
             };
 
+            const listaAcordesTranspostos = document.getElementById('lista_acordes_transpostos');
+
+            const renderizarListaAcordes = (textoTransposto) => {
+                if (!listaAcordesTranspostos) {
+                    return;
+                }
+
+                const acordesAtuais = helper.extractChordsFromBracketedText(textoTransposto);
+
+                if (acordesAtuais.length === 0) {
+                    listaAcordesTranspostos.innerHTML = '<p class="text-sm text-gray-500">Nenhum acorde encontrado na biblioteca para esta versao.</p>';
+                    return;
+                }
+
+                listaAcordesTranspostos.innerHTML = acordesAtuais.map((acorde) => `
+                    <button type="button" class="acorde-mini-card rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 hover:border-orange-300 hover:bg-orange-50" data-acorde-card="${helper.escapeHtml(acorde)}">
+                        ${helper.escapeHtml(acorde)}
+                    </button>
+                `).join('');
+            };
+
+
             const renderizarPreview = () => {
+                const textoTransposto = helper.transposeBracketedText(textoOriginal, transposicaoAtual);
+
                 previewMusicoRender.innerHTML = helper.renderChordSheetHtml(
-                    helper.transposeBracketedText(textoOriginal, transposicaoAtual),
+                    textoTransposto,
                     { chordAttribute: 'data-acorde-hover' }
                 );
+                renderizarListaAcordes(textoTransposto);
 
                 if (indicadorTomAtual) {
                     indicadorTomAtual.textContent = 'Tom atual: ' + (
@@ -492,7 +517,7 @@
                     <div id="variacoes_acorde" class="mt-4 flex flex-wrap justify-center gap-2"></div>
                 </div>
 
-                <div class="mt-5 flex flex-wrap gap-2">
+                <div class="mt-5 flex flex-wrap gap-2" id="lista_acordes_transpostos">
                     @php
                         $acordesAgrupados = [];
                         foreach ($acordesDaVersao as $acordeDaVersao) {
@@ -566,7 +591,7 @@
                 grupos[acorde.nome].push(acorde);
                 return grupos;
             }, {});
-            const ehAcorde = (texto) => /^[A-G](?:#|b)?(?:[a-zA-Z0-9º°+\-]*(?:\([^)]+\))?)?(?:\/[A-G](?:#|b)?)?$/.test((texto || '').trim());
+            const ehAcorde = (texto) => helper?.isChord?.(texto) ?? false;
             const escaparHtml = (texto) => (texto || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
             const ativarModo = (modo) => {
@@ -869,3 +894,6 @@
         });
     </script>
 @endpush
+
+
+
