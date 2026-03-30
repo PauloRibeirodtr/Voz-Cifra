@@ -86,6 +86,12 @@
                     </div>
 
                     <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700">Tom usado na missa</label>
+                        <input type="text" name="tom_usado" value="{{ old('tom_usado') }}" class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-green-600 focus:ring-2 focus:ring-green-100" placeholder="Opcional. Se vazio, usa o tom original da versao.">
+                        <p class="mt-1 text-xs text-gray-500">Preencha apenas se a igreja for tocar em um tom diferente da versao original.</p>
+                    </div>
+
+                    <div class="md:col-span-2">
                         <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-green-700 px-5 py-3 font-semibold text-white hover:bg-green-800">
                             Adicionar ao repertorio
                         </button>
@@ -119,6 +125,12 @@
                                         <p class="mt-1 text-sm text-gray-500">{{ $item->musica->artista ?: 'Artista nao informado' }}</p>
                                         <p class="mt-2 text-sm text-gray-600">
                                             Versao: {{ $item->versaoMusical?->titulo ?: 'Nao vinculada' }}
+                                            @if ($item->tom_exibicao)
+                                                • Tom da missa {{ $item->tom_exibicao }}
+                                            @endif
+                                            @if ($item->tom_usado && $item->versaoMusical?->tom_musical)
+                                                • Original {{ $item->versaoMusical->tom_musical }}
+                                            @endif
                                             @if ($item->versaoMusical?->tom_musical)
                                                 • Tom {{ $item->versaoMusical->tom_musical }}
                                             @endif
@@ -186,6 +198,11 @@
                                     </div>
 
                                     <div class="md:col-span-3">
+                                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400">Tom usado na missa</label>
+                                        <input type="text" name="tom_usado" value="{{ old('tom_usado', $item->tom_usado) }}" class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-green-600 focus:ring-2 focus:ring-green-100" placeholder="Se vazio, usa o tom original da versao">
+                                    </div>
+
+                                    <div class="md:col-span-3">
                                         <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black">
                                             Salvar item
                                         </button>
@@ -248,6 +265,7 @@
             const musicaId = document.getElementById('musica_id');
             const musicaSelecionadaTexto = document.getElementById('musica_selecionada_texto');
             const selectVersao = document.getElementById('versao_musical_id');
+            const campoTomUsado = document.querySelector('input[name="tom_usado"]');
             const oldVersaoId = @json(old('versao_musical_id'));
 
             if (!inputBusca || !resultadoBusca || !musicaId || !musicaSelecionadaTexto || !selectVersao) {
@@ -284,6 +302,17 @@
                 });
 
                 selectVersao.disabled = false;
+
+                if (!campoTomUsado || campoTomUsado.value.trim() !== '') {
+                    return;
+                }
+
+                const versaoSelecionadaAtual = musicaSelecionada.versoes.find((versao) => String(versao.id) === String(versaoSelecionada))
+                    || musicaSelecionada.versoes[0];
+
+                campoTomUsado.placeholder = versaoSelecionadaAtual?.tom
+                    ? 'Tom original sugerido: ' + versaoSelecionadaAtual.tom
+                    : 'Se vazio, usa o tom original da versao';
             };
 
             const selecionarMusica = (musicaSelecionada, versaoSelecionada = null) => {

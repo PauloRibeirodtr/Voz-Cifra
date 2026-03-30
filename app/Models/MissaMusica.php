@@ -16,6 +16,7 @@ class MissaMusica extends Model
         'missa_id',
         'musica_id',
         'versao_musical_id',
+        'tom_usado',
         'momento_liturgico_id',
         'ordem',
     ];
@@ -45,5 +46,10 @@ class MissaMusica extends Model
     public function momentoLiturgico(): BelongsTo
     {
         return $this->belongsTo(MomentoLiturgico::class, 'momento_liturgico_id');
+    }
+
+    public function getTomExibicaoAttribute(): ?string
+    {
+        return $this->tom_usado ?: $this->versaoMusical?->tom_musical;
     }
 }

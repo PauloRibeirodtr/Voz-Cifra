@@ -14,6 +14,14 @@
         table.repertorio { width: 100%; border-collapse: collapse; margin-top: 16px; }
         table.repertorio th, table.repertorio td { border: 1px solid #d1d5db; padding: 10px; text-align: left; }
         table.repertorio th { background: #f3f4f6; font-size: 11px; text-transform: uppercase; }
+        .cifra-bloco { page-break-inside: avoid; border: 1px solid #d1d5db; border-radius: 12px; padding: 14px; margin-top: 18px; }
+        .cifra-linha { display: block; margin-bottom: 9px; }
+        .cifra-segmento { display: inline-block; vertical-align: top; min-height: 28px; }
+        .cifra-acordes { display: block; min-height: 14px; color: #b45309; font-weight: bold; font-size: 10px; white-space: pre; }
+        .cifra-acorde { display: inline-block; margin-right: 4px; }
+        .cifra-letra { display: block; color: #111827; font-size: 11px; line-height: 1.7; white-space: pre-wrap; }
+        .cifra-marcacao { display: inline-block; margin: 10px 0 8px; padding: 4px 10px; border-radius: 999px; background: #e5e7eb; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.08em; }
+        .cifra-espaco { height: 10px; }
     </style>
 </head>
 <body>
@@ -22,7 +30,7 @@
         <p class="muted">{{ $missa->igreja->cidade }} - {{ $missa->igreja->estado }}</p>
         <h2 style="margin-top: 10px;">{{ $missa->titulo }}</h2>
         <p class="muted">
-            {{ optional($missa->data_missa)->format('d/m/Y') }} â€¢ {{ substr((string) $missa->hora_inicio, 0, 5) }} - {{ substr((string) $missa->hora_fim, 0, 5) }}
+            {{ optional($missa->data_missa)->format('d/m/Y') }} • {{ substr((string) $missa->hora_inicio, 0, 5) }} - {{ substr((string) $missa->hora_fim, 0, 5) }}
         </p>
     </div>
 
@@ -54,14 +62,14 @@
             </tr>
         </thead>
         <tbody>
-            @forelse ($missa->missaMusicas as $item)
+            @forelse ($itensPdf as $item)
                 <tr>
-                    <td>{{ $item->ordem }}</td>
-                    <td>{{ $item->momentoLiturgico?->nome ?: '-' }}</td>
-                    <td>{{ $item->musica?->titulo ?: '-' }}</td>
-                    <td>{{ $item->versaoMusical?->titulo ?: 'Nao vinculada' }}</td>
-                    <td>{{ $item->versaoMusical?->tom_musical ?: '-' }}</td>
-                    <td>{{ $item->versaoMusical?->bpm ?: '-' }}</td>
+                    <td>{{ $item['ordem'] }}</td>
+                    <td>{{ $item['momento'] ?: '-' }}</td>
+                    <td>{{ $item['musica'] ?: '-' }}</td>
+                    <td>{{ $item['versao'] }}</td>
+                    <td>{{ $item['tom_exibicao'] ?: '-' }}</td>
+                    <td>{{ $item['bpm'] ?: '-' }}</td>
                 </tr>
             @empty
                 <tr>
@@ -77,5 +85,28 @@
             <p class="muted" style="margin-top: 8px; line-height: 1.6;">{{ $missa->observacoes }}</p>
         </div>
     @endif
+
+    @foreach ($itensPdf as $item)
+        @if ($item['html_cifra'])
+            <div class="cifra-bloco">
+                <h3>{{ $item['ordem'] }}. {{ $item['musica'] }}</h3>
+                <p class="muted" style="margin-top: 6px;">
+                    {{ $item['momento'] ?: 'Momento nao definido' }} • {{ $item['versao'] }}
+                    @if ($item['tom_exibicao'])
+                        • Tom da missa {{ $item['tom_exibicao'] }}
+                    @endif
+                    @if ($item['tom_original'] && $item['tom_original'] !== $item['tom_exibicao'])
+                        • Original {{ $item['tom_original'] }}
+                    @endif
+                    @if ($item['bpm'])
+                        • BPM {{ $item['bpm'] }}
+                    @endif
+                </p>
+                <div style="margin-top: 12px;">
+                    {!! $item['html_cifra'] !!}
+                </div>
+            </div>
+        @endif
+    @endforeach
 </body>
 </html>

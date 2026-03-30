@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\VersaoMusicalController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\LocalAdmin\MusicoController as LocalAdminMusicoController;
 use App\Http\Controllers\LocalAdmin\MissaController as LocalAdminMissaController;
+use App\Http\Controllers\Member\BibliotecaMusicalController;
 use App\Http\Controllers\LocalAdmin\PainelAdminLocalController;
 use App\Http\Controllers\Member\PainelMembroController;
 use App\Http\Controllers\Publico\IgrejaPublicaController;
@@ -51,7 +52,7 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
-Route::middleware(['auth', 'verified_custom', 'super.admin'])
+Route::middleware(['auth', 'verified_custom', 'super.admin', 'primeiro_acesso'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
@@ -122,7 +123,7 @@ Route::middleware(['auth', 'verified_custom', 'super.admin'])
         Route::delete('/musicas/{musica}/versoes/{versaoMusical}', [VersaoMusicalController::class, 'destroy'])->name('versoes-musicais.destroy');
     });
 
-Route::middleware(['auth', 'verified_custom', 'role:admin_local', 'local_admin.primeiro_acesso'])
+Route::middleware(['auth', 'verified_custom', 'role:admin_local', 'primeiro_acesso'])
     ->prefix('igreja')
     ->name('local-admin.')
     ->group(function () {
@@ -158,13 +159,16 @@ Route::middleware(['auth', 'verified_custom', 'role:admin_local', 'local_admin.p
         Route::get('/missas/{missa}/repertorio/{missaMusica}/cifra', [LocalAdminMissaController::class, 'showCifra'])->name('repertorio.cifra');
     });
 
-Route::middleware(['auth', 'verified_custom', 'role:member'])
+Route::middleware(['auth', 'verified_custom', 'role:member', 'primeiro_acesso'])
     ->prefix('musico')
     ->name('member.')
     ->group(function () {
         Route::get('/painel', [PainelMembroController::class, 'dashboard'])->name('dashboard');
         Route::get('/perfil', [PainelMembroController::class, 'profile'])->name('profile');
         Route::put('/perfil', [PainelMembroController::class, 'updateProfile'])->name('profile.update');
+        Route::get('/repertorio', [BibliotecaMusicalController::class, 'repertorio'])->name('repertorio');
+        Route::get('/musicas', [BibliotecaMusicalController::class, 'musicas'])->name('musicas.index');
+        Route::get('/musicas/{musica}/versoes/{versaoMusical}', [BibliotecaMusicalController::class, 'versao'])->name('versoes.show');
     });
 
 Route::get('/publico/igrejas/{slug}/status', [IgrejaPublicaController::class, 'status'])

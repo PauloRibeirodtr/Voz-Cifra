@@ -8,25 +8,6 @@
 @endpush
 
 @section('content')
-    @php
-        $itensApresentacao = $missa->missaMusicas
-            ->filter(fn ($item) => $item->versaoMusical !== null)
-            ->values()
-            ->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'ordem' => $item->ordem,
-                    'titulo' => $item->musica->titulo,
-                    'artista' => $item->musica->artista,
-                    'momento' => $item->momentoLiturgico?->nome,
-                    'versao' => $item->versaoMusical->titulo ?: 'Versao principal',
-                    'tom' => $item->versaoMusical->tom_musical,
-                    'bpm' => $item->versaoMusical->bpm,
-                    'letra' => $item->versaoMusical->letra_com_cifras,
-                ];
-            });
-    @endphp
-
     <div class="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
             <div class="flex flex-wrap items-center gap-2">
@@ -204,8 +185,8 @@
                     );
                     letra.style.setProperty('--escala-fonte', String(fonteAtual / 16));
                     tomBadge.textContent = 'Tom ' + (
-                        item.tom && helper.isChord(item.tom)
-                            ? helper.transposeChord(item.tom, transposicaoAtual)
+                        item.tom_exibicao && helper.isChord(item.tom_exibicao)
+                            ? helper.transposeChord(item.tom_exibicao, transposicaoAtual)
                             : 'Nao informado'
                     );
                     bpmBadge.textContent = 'BPM ' + (item.bpm || '-');

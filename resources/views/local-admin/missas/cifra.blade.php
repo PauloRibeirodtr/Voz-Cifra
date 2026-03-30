@@ -32,7 +32,7 @@
                         <div class="flex flex-wrap items-center gap-2">
                             <span class="inline-flex rounded-full bg-gray-900 px-3 py-1 text-xs font-semibold text-white">Leitura da igreja</span>
                             <span id="tom_atual_badge" class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
-                                Tom {{ $itemRepertorio->versaoMusical->tom_musical ?: 'Nao informado' }}
+                                Tom {{ $tomExibicao ?: 'Nao informado' }}
                             </span>
                         </div>
 
@@ -61,6 +61,9 @@
                     @if ($itemRepertorio->versaoMusical->tom_musical)
                         <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">Tom original {{ $itemRepertorio->versaoMusical->tom_musical }}</span>
                     @endif
+                    @if ($itemRepertorio->tom_usado)
+                        <span class="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Tom da missa {{ $itemRepertorio->tom_usado }}</span>
+                    @endif
                     @if ($itemRepertorio->versaoMusical->bpm)
                         <span class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">BPM {{ $itemRepertorio->versaoMusical->bpm }}</span>
                     @endif
@@ -77,6 +80,7 @@
                     <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Musica</span><span>{{ $itemRepertorio->musica->titulo }}</span></div>
                     <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Versao</span><span>{{ $itemRepertorio->versaoMusical->titulo ?: 'Versao principal' }}</span></div>
                     <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Tom original</span><span>{{ $itemRepertorio->versaoMusical->tom_musical ?: 'Nao informado' }}</span></div>
+                    <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Tom da missa</span><span>{{ $tomExibicao ?: 'Nao informado' }}</span></div>
                     <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">BPM</span><span>{{ $itemRepertorio->versaoMusical->bpm ?: 'Nao informado' }}</span></div>
                     <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Momento liturgico</span><span>{{ $itemRepertorio->momentoLiturgico?->nome ?: 'Nao definido' }}</span></div>
                 </div>
@@ -100,8 +104,8 @@
                 const helper = window.VozECifraChord;
                 const preview = document.getElementById('letra_com_cifras_preview');
                 const tomBadge = document.getElementById('tom_atual_badge');
-                const textoOriginal = @json($itemRepertorio->versaoMusical->letra_com_cifras, JSON_UNESCAPED_UNICODE);
-                const tomOriginal = @json($itemRepertorio->versaoMusical->tom_musical);
+                const textoOriginal = @json($textoCifraExibicao, JSON_UNESCAPED_UNICODE);
+                const tomOriginal = @json($tomExibicao);
                 let transposicaoAtual = 0;
                 let fonteAtual = 14;
 

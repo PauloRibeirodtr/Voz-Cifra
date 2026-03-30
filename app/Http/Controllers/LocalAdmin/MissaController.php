@@ -14,6 +14,8 @@ use App\Models\Usuario;
 use App\Models\VersaoMusical;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
+use App\Services\RenderizadorCifrasHtmlService;
+use App\Services\TranspositorCifrasService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +24,12 @@ use Illuminate\View\View;
 
 class MissaController extends Controller
 {
+    public function __construct(
+        private readonly TranspositorCifrasService $transpositorCifrasService,
+        private readonly RenderizadorCifrasHtmlService $renderizadorCifrasHtmlService
+    ) {
+    }
+
     public function index(): View
     {
         $igreja = $this->obterIgreja();
@@ -93,6 +101,7 @@ class MissaController extends Controller
                             'missa_id' => $missa->id,
                             'musica_id' => $itemOrigem->musica_id,
                             'versao_musical_id' => $itemOrigem->versao_musical_id,
+                            'tom_usado' => $itemOrigem->tom_usado,
                             'momento_liturgico_id' => $itemOrigem->momento_liturgico_id,
                             'ordem' => $itemOrigem->ordem,
                         ]);
@@ -225,6 +234,7 @@ class MissaController extends Controller
         $dados = $request->validate([
             'musica_id' => ['required', 'exists:musicas,id'],
             'versao_musical_id' => ['nullable', 'exists:versoes_musicais,id'],
+            'tom_usado' => ['nullable', 'string', 'max:20'],
             'momento_liturgico_id' => ['nullable', 'exists:momentos_liturgicos,id'],
         ], [
             'musica_id.required' => 'Selecione uma musica para adicionar ao repertorio.',
@@ -245,6 +255,7 @@ class MissaController extends Controller
             'missa_id' => $missa->id,
             'musica_id' => $dados['musica_id'],
             'versao_musical_id' => $dados['versao_musical_id'] ?? null,
+            'tom_usado' => $this->normalizarTomInformado($dados['tom_usado'] ?? null),
             'momento_liturgico_id' => $dados['momento_liturgico_id'] ?? null,
             'ordem' => $proximaOrdem,
         ]);
@@ -261,6 +272,7 @@ class MissaController extends Controller
 
         $dados = $request->validate([
             'versao_musical_id' => ['nullable', 'exists:versoes_musicais,id'],
+            'tom_usado' => ['nullable', 'string', 'max:20'],
             'momento_liturgico_id' => ['nullable', 'exists:momentos_liturgicos,id'],
         ]);
 
@@ -275,6 +287,7 @@ class MissaController extends Controller
 
         $missaMusica->update([
             'versao_musical_id' => $dados['versao_musical_id'] ?? null,
+            'tom_usado' => $this->normalizarTomInformado($dados['tom_usado'] ?? null),
             'momento_liturgico_id' => $dados['momento_liturgico_id'] ?? null,
         ]);
 
@@ -369,6 +382,9 @@ class MissaController extends Controller
             'igreja' => $this->adicionarDadosPublicos($igreja),
             'missa' => $missa,
             'itemRepertorio' => $missaMusica,
+            'textoCifraExibicao' => $this->obterTextoCifraExibicao($missaMusica),
+            'tomOriginal' => $missaMusica->versaoMusical?->tom_musical,
+            'tomExibicao' => $missaMusica->tom_exibicao,
         ]);
     }
 
@@ -387,9 +403,28 @@ class MissaController extends Controller
                 ->orderBy('ordem'),
         ]);
 
+        $itensApresentacao = $missa->missaMusicas
+            ->filter(fn (MissaMusica $item) => $item->versaoMusical !== null)
+            ->values()
+            ->map(function (MissaMusica $item): array {
+                return [
+                    'id' => $item->id,
+                    'ordem' => $item->ordem,
+                    'titulo' => $item->musica->titulo,
+                    'artista' => $item->musica->artista,
+                    'momento' => $item->momentoLiturgico?->nome,
+                    'versao' => $item->versaoMusical->titulo ?: 'Versao principal',
+                    'tom_original' => $item->versaoMusical->tom_musical,
+                    'tom_exibicao' => $item->tom_exibicao,
+                    'bpm' => $item->versaoMusical->bpm,
+                    'letra' => $this->obterTextoCifraExibicao($item),
+                ];
+            });
+
         return view('local-admin.missas.apresentacao', [
             'igreja' => $this->adicionarDadosPublicos($igreja),
             'missa' => $missa,
+            'itensApresentacao' => $itensApresentacao,
         ]);
     }
 
@@ -409,8 +444,24 @@ class MissaController extends Controller
                 ->orderBy('ordem'),
         ]);
 
+        $itensPdf = $missa->missaMusicas->map(function (MissaMusica $item): array {
+            $texto = $item->versaoMusical ? $this->obterTextoCifraExibicao($item) : '';
+
+            return [
+                'ordem' => $item->ordem,
+                'momento' => $item->momentoLiturgico?->nome,
+                'musica' => $item->musica?->titulo,
+                'versao' => $item->versaoMusical?->titulo ?: 'Nao vinculada',
+                'tom_original' => $item->versaoMusical?->tom_musical,
+                'tom_exibicao' => $item->tom_exibicao,
+                'bpm' => $item->versaoMusical?->bpm,
+                'html_cifra' => $texto !== '' ? $this->renderizadorCifrasHtmlService->renderizar($texto) : null,
+            ];
+        });
+
         $pdf = Pdf::loadView('local-admin.missas.pdf', [
             'missa' => $missa,
+            'itensPdf' => $itensPdf,
         ])->setPaper('a4', 'portrait');
 
         return $pdf->download('missa-' . $missa->id . '.pdf');
@@ -511,5 +562,23 @@ class MissaController extends Controller
         );
 
         return $dataHoraFim->lessThan($agora);
+    }
+
+    private function obterTextoCifraExibicao(MissaMusica $item): string
+    {
+        $textoOriginal = $item->versaoMusical?->letra_com_cifras ?? '';
+        $passos = $this->transpositorCifrasService->calcularPassos(
+            $item->versaoMusical?->tom_musical,
+            $item->tom_exibicao
+        );
+
+        return $this->transpositorCifrasService->transporTextoCifrado($textoOriginal, $passos);
+    }
+
+    private function normalizarTomInformado(?string $tom): ?string
+    {
+        $tom = trim((string) $tom);
+
+        return $tom !== '' ? $tom : null;
     }
 }
