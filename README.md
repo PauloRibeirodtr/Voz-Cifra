@@ -1,35 +1,38 @@
 # Voz & Cifra
 
+![Versao](https://img.shields.io/badge/versao-v0.7.0-blue)
 ![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4)
 ![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon%20Ready-336791)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4-06B6D4)
 ![Vite](https://img.shields.io/badge/Vite-7-646CFF)
-![Status](https://img.shields.io/badge/status-admin_master%20e%20admin_local%20funcionais-brightgreen)
+![Status](https://img.shields.io/badge/status-admin_master%2C%20admin_local%20e%20member%20funcionais-brightgreen)
 
-Sistema web em Laravel 12 para organizacao do ministerio musical e do nucleo liturgico, com cadastro centralizado, fluxo fechado e evolucao por etapas.
+Sistema web em Laravel 12 para organizacao do ministerio musical e do nucleo liturgico, com cadastro centralizado, operacao por perfis e evolucao por etapas sem abrir o fluxo para cadastro publico.
 
 ## Visao geral
 
-O projeto foi estruturado como um sistema administrativo fechado.
+A versao atual de referencia do projeto e `v0.7.0`.
 
-Nesta etapa, o foco esta no `admin_master` e em uma camada funcional mais madura do `admin_local`, mantendo a base central estavel e abrindo a operacao da igreja com seguranca.
+Nesta etapa, o sistema ja atende tres perfis reais de uso:
+
+- `admin_master` para administracao central
+- `admin_local` para operacao da igreja e das missas
+- `member` para leitura, estudo e acompanhamento do repertorio da propria igreja
 
 Hoje o projeto ja permite:
 
-- autenticar o `admin_master`
-- administrar igrejas e administradores locais
-- administrar outros `admin_master`
-- manter cadastro administrativo de padres
-- manter cadastro de musicos por igreja
-- manter biblioteca de acordes
-- manter tempos e momentos liturgicos
-- cadastrar musicas base
-- cadastrar versoes musicais com cifras
-- autenticar o `admin_local`
-- autenticar o `member`
-- operar missas e repertorio da igreja
-- reaproveitar repertorio de missas anteriores na criacao de nova missa
+- autenticar `admin_master`, `admin_local` e `member`
+- manter o fluxo de primeiro acesso com troca obrigatoria de senha
+- aplicar regra de senha forte na troca ou definicao manual da senha
+- administrar igrejas, administradores locais e outros `admin_master`
+- administrar musicos por igreja e no painel central
+- manter biblioteca de acordes, tempos liturgicos e momentos liturgicos
+- cadastrar musicas base e versoes musicais com cifras
+- montar missas e repertorios por igreja
+- visualizar cifras no contexto da missa
+- gerar PDF da missa com repertorio e blocos de cifra
+- permitir que o musico estude musicas e versoes fora de uma missa especifica
 - exibir a missa publica sem cifras no link fixo da igreja
 
 ## Tecnologias
@@ -40,32 +43,77 @@ Hoje o projeto ja permite:
 - Blade
 - Tailwind CSS 4
 - Vite
+- DomPDF
 
 ## Perfis do sistema
 
-- `admin_master`
-  Administrador central do sistema.
-- `admin_local`
-  Administrador vinculado a uma igreja.
-- `member`
-  Musico / membro da igreja.
+### `admin_master`
+
+Administrador central do sistema.
+
+Responsabilidades atuais:
+
+- dashboard central
+- configuracoes e perfil
+- cadastro de outros `admin_master`
+- gestao de igrejas e administradores locais
+- gestao global de musicos
+- gestao de padres
+- gestao da biblioteca de acordes
+- gestao de tempos e momentos liturgicos
+- gestao de musicas base
+- gestao de versoes musicais com cifra
+
+### `admin_local`
+
+Administrador vinculado a uma igreja.
+
+Responsabilidades atuais:
+
+- painel da igreja
+- perfil proprio
+- visualizacao da propria igreja
+- link publico fixo e QR Code da igreja
+- criacao, edicao e ativacao de missas
+- montagem e reordenacao do repertorio
+- escolha de versao musical por item do repertorio
+- definicao do `tom_usado` na missa sem sobrescrever o tom original da versao
+- visualizacao com cifra
+- modo de apresentacao
+- PDF da missa com cifras
+- gestao dos musicos da propria igreja
+
+### `member`
+
+Musico / membro vinculado a uma igreja.
+
+Responsabilidades atuais:
+
+- login e logout
+- troca obrigatoria de senha no primeiro acesso
+- painel proprio
+- perfil proprio
+- acesso ao repertorio da igreja
+- acesso a biblioteca musical para estudo
+- visualizacao completa de versoes musicais com cifras
+- uso do sistema para leitura e treino sem depender sempre de uma missa especifica
 
 ## O que ja funciona
 
-### Autenticacao
+### Autenticacao e seguranca
 
-- login do `admin_master`
-- login do `admin_local`
-- login do `member`
-- logout
-- protecao de rotas administrativas
-- bloqueio de acesso do `admin_local` ao painel do `admin_master`
-- primeiro acesso com troca obrigatoria de senha para o `admin_local`
-- primeiro acesso com troca obrigatoria de senha para o `member`
+- login de `admin_master`, `admin_local` e `member`
+- logout nas areas autenticadas
+- protecao de rotas por perfil
+- middleware de primeiro acesso para todos os perfis autenticados
+- troca obrigatoria de senha no primeiro acesso
+- regra de senha forte com validacao no backend
+- medidor visual de forca da senha nas telas relevantes
 - limitacao de tentativas no login com bloqueio temporario
 - mensagens genericas para falha de credenciais
 - regeneracao de sessao no login e invalidacao segura no logout
-- headers basicos de seguranca nas respostas HTTP
+- headers de seguranca nas respostas HTTP
+- ajuste de `session secure cookie` e `same site` no `.env.example`
 
 ### Painel do admin master
 
@@ -75,7 +123,7 @@ Hoje o projeto ja permite:
 - configuracoes
 - alteracao de email, telefone e senha
 - cadastro de outros `admin_master`
-- reset de senha do `admin_local` com obrigacao de troca no proximo acesso
+- reset de senha de `admin_local` com obrigacao de troca no proximo acesso
 - encerramento de sessao por `Configuracoes`
 
 ### Area do admin local
@@ -98,12 +146,14 @@ Hoje o projeto ja permite:
 - buscar musica por titulo, artista ou trecho da letra
 - associar momento liturgico ao item do repertorio
 - vincular versao musical existente ao item
+- definir `tom_usado` por item da missa
+- preservar o tom original da versao musical
 - reordenar repertorio com seguranca
 - visualizacao com cifra por item
 - modo de apresentacao da missa em sequencia
 - transposicao visual de tom para leitura
 - controles de fonte e auto rolagem nas telas de leitura
-- gerar PDF simples da missa
+- gerar PDF da missa com repertorio e cifra
 
 ### Musicos
 
@@ -116,7 +166,9 @@ Hoje o projeto ja permite:
 - restringir o `admin_local` aos musicos da propria igreja
 - permitir ao `admin_master` visualizar e administrar musicos de todas as igrejas
 - painel inicial do `member`
-- perfil proprio do `member`
+- repertorio da igreja para o `member`
+- biblioteca musical para estudo do `member`
+- visualizacao de cifras completas fora da missa
 - logout acessivel nas areas autenticadas
 
 ### Igrejas
@@ -196,14 +248,7 @@ Hoje o projeto ja permite:
 - metronomo simples baseado no BPM
 - dicionario lateral de acordes com shape
 
-### Seeders centrais
-
-- `AdminMasterSeeder`
-- `TempoLiturgicoSeeder`
-- `MomentoLiturgicoSeeder`
-- `AcordeSeeder`
-
-### Preparacao da area publica por igreja
+### Area publica por igreja
 
 - rota publica fixa por `slug`
 - pagina publica inicial da igreja
@@ -213,7 +258,17 @@ Hoje o projeto ja permite:
 - exibicao da missa publica sem cifras para o fiel
 - controles de fonte na tela publica
 - estrutura pronta para o QR Code fixo da igreja
-- base preparada para aprofundar a experiencia publica final da missa no mesmo link
+
+## Atualizacoes recentes da versao `v0.7.0`
+
+- senha forte padronizada nos fluxos de perfil, reset e criacao manual
+- medidor de forca da senha nas telas de senha manual
+- middleware unico de primeiro acesso para `admin_master`, `admin_local` e `member`
+- painel do `member` ampliado com repertorio e biblioteca musical
+- visualizacao individual de versao musical para estudo do musico
+- suporte a `tom_usado` no contexto da missa
+- PDF da missa preparado para repertorio com cifra
+- melhoria da leitura musical para `admin_local` e `member`
 
 ## Modulos fora do escopo atual
 
@@ -221,8 +276,8 @@ Ainda nao foram abertos nesta etapa:
 
 - biblioteca propria de arquivos por igreja
 - versao musical exclusiva por igreja
-- transposicao completa de tom em nivel de cadastro e persistencia
-- experiencia avancada do `member` com repertorio pessoal e leitura propria
+- transposicao completa de tom com persistencia da cifra transposta por contexto
+- dark mode por usuario com preferencia persistida
 - experiencia publica final completa da missa por igreja em tempo real
 
 ## O que saiu do fluxo
@@ -236,14 +291,23 @@ Ainda nao foram abertos nesta etapa:
 ```text
 app/
   Http/
-    Controllers/Admin/
+    Controllers/
+      Admin/
+      LocalAdmin/
+      Member/
+    Middleware/
   Models/
+  Rules/
   Services/
 database/
   migrations/
   seeders/
 resources/
-  views/admin/
+  views/
+    admin/
+    local-admin/
+    member/
+    publico/
 routes/
   web.php
 ```
@@ -263,6 +327,8 @@ DB_USERNAME=seu_usuario
 DB_PASSWORD=sua_senha
 DB_SCHEMA=public
 DB_SSLMODE=require
+SESSION_SECURE_COOKIE=false
+SESSION_SAME_SITE=lax
 ```
 
 Para desenvolvimento local:
@@ -284,7 +350,13 @@ npm install
 
 ```bash
 php artisan key:generate
-php artisan migrate:fresh --seed
+php artisan migrate --seed
+```
+
+Se voce estiver atualizando uma base que ja existia antes desta versao, confirme que a migration abaixo foi executada:
+
+```text
+database/migrations/2026_03_30_000018_add_tom_usado_to_missa_musicas_table.php
 ```
 
 ### 4. Limpar caches
@@ -322,23 +394,21 @@ Padrao atual:
 - `musicas` e `versoes_musicais` estao separadas por responsabilidade.
 - A musica base guarda letra limpa e classificacao liturgica.
 - A versao musical guarda cifra, tom, BPM e apoio de execucao.
+- `missa_musicas.tom_usado` define o tom usado naquela missa sem sobrescrever `versoes_musicais.tom_musical`.
 - Hoje nao existe relacao persistida entre `versoes_musicais` e `acordes`.
 - A biblioteca de acordes funciona como apoio visual, validacao e dicionario.
 - O modulo de `padres` e apenas administrativo; padre nao entra no sistema como usuario.
 - O modulo de `musicos` usa o perfil `member` como usuario do sistema, sempre vinculado a uma igreja.
-- O link publico da igreja ja e fixo e baseado no `slug`.
-- O QR Code da igreja ja pode apontar para esse link fixo.
-- A pagina publica da igreja ja identifica automaticamente a proxima missa e a celebracao em andamento.
-- A pagina publica da igreja ja pode exibir leitura sem cifras do repertorio preparado para o fiel.
-- A experiencia publica final ainda pode evoluir com mais contexto liturgico e sincronizacao em tempo real.
-- O foco atual do projeto esta no `admin_master`, na operacao funcional do `admin_local` e na base da missa publica.
+- O link publico da igreja e fixo e baseado no `slug`.
+- O QR Code da igreja pode apontar para esse link fixo.
+- A pagina publica da igreja identifica automaticamente a proxima missa e a celebracao em andamento.
+- O PDF da missa agora pode carregar repertorio com cifra, respeitando o tom exibido da missa.
+- Dark mode por usuario ainda nao foi implementado para evitar regressao visual ampla nesta etapa.
 
-## Proxima etapa
+## Proximos passos recomendados
 
-O proximo passo natural do projeto e aprofundar a experiencia do `admin_local`, abrir a camada publica final do fiel e avaliar com seguranca:
-
-- aprimorar o uso de padres por igreja e no contexto das missas
-- aprofundar a experiencia do `member` com repertorio e leitura musical
-- preferencia de versao musical por igreja
-- biblioteca interna de materiais da igreja
-- experiencia publica completa da missa sem cifra
+- revisar visualmente as telas novas do `member` com dados reais
+- aplicar a migration de `tom_usado` em todos os ambientes
+- adicionar PDF individual por musica ou versao, se fizer sentido para uso da igreja
+- criar testes automatizados para primeiro acesso, senha forte e fluxo musical do `member`
+- tratar dark mode por usuario em uma etapa dedicada
