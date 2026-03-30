@@ -28,7 +28,7 @@
                         @csrf
                         <button
                             type="submit"
-                            class="inline-flex h-11 items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
+                            class="inline-flex h-11 items-center justify-center rounded-2xl border border-red-900 bg-red-950 px-4 text-sm font-semibold text-red-100 shadow-sm transition hover:bg-red-900"
                             aria-label="Sair do sistema"
                         >
                             Sair
@@ -60,7 +60,7 @@
                     @csrf
                     <button
                         type="submit"
-                        class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
+                        class="inline-flex items-center justify-center rounded-2xl border border-red-900 bg-red-950 px-4 py-3 text-sm font-semibold text-red-100 shadow-sm transition hover:bg-red-900"
                     >
                         Sair
                     </button>

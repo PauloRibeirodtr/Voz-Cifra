@@ -5,6 +5,9 @@
 @section('desktop_subtitle', 'Estudo livre de musicas e versoes ativas')
 
 @section('header_actions')
+    <a href="{{ route('member.colecoes.index') }}" class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
+        Playlists salvas
+    </a>
     <a href="{{ route('member.repertorio') }}" class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
         Meu repertorio
     </a>
@@ -31,6 +34,34 @@
             </div>
         </form>
     </section>
+
+    @if ($colecoes->isNotEmpty())
+        <section class="mt-6 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900">Playlists do musico</h2>
+                    <p class="mt-1 text-sm text-gray-500">Acesse rapido suas colecoes para ensaio e estudo.</p>
+                </div>
+                <a href="{{ route('member.colecoes.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                    Ver todas
+                </a>
+            </div>
+
+            <div class="mt-5 grid grid-cols-1 gap-4 xl:grid-cols-3">
+                @foreach ($colecoes as $colecao)
+                    <a href="{{ route('member.colecoes.show', $colecao) }}" class="rounded-2xl border border-gray-200 bg-gray-50 p-4 transition hover:border-emerald-200 hover:bg-emerald-50">
+                        <p class="text-base font-bold text-gray-900">{{ $colecao->nome }}</p>
+                        <p class="mt-1 text-sm text-gray-500">{{ $colecao->itens_count }} itens</p>
+                        @if ($colecao->itens->isNotEmpty())
+                            <p class="mt-3 text-sm text-gray-600">
+                                {{ $colecao->itens->pluck('musica.titulo')->filter()->take(2)->join(' • ') }}
+                            </p>
+                        @endif
+                    </a>
+                @endforeach
+            </div>
+        </section>
+    @endif
 
     <div class="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-2">
         @forelse ($musicas as $musica)

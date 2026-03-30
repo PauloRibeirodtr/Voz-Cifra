@@ -94,7 +94,7 @@
 
     <div class="hidden shrink-0 border-t border-green-800 bg-green-950 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:block md:pb-4">
         @auth
-            <div class="flex items-center gap-3">
+            <div class="mb-4 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-3">
                 <div class="w-10 h-10 rounded-full bg-green-800 flex items-center justify-center text-white font-bold border border-green-600 shadow-sm">
                     {{ strtoupper(substr(auth()->user()->nome, 0, 1)) }}
                 </div>
@@ -104,5 +104,12 @@
                 </div>
             </div>
         @endauth
+
+        <form action="{{ route('logout') }}" method="POST">
+            @csrf
+            <button type="submit" class="inline-flex w-full items-center justify-center rounded-2xl border border-red-900 bg-red-950 px-4 py-3 text-sm font-semibold text-red-100 transition hover:bg-red-900">
+                Sair da conta
+            </button>
+        </form>
     </div>
 </aside>

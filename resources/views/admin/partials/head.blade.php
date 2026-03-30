@@ -36,10 +36,21 @@
         background-color: #162236 !important;
     }
 
+    body.theme-dark .bg-slate-900,
+    body.theme-dark .bg-slate-950,
+    body.theme-dark .bg-slate-950\/50,
+    body.theme-dark .bg-green-900,
+    body.theme-dark .bg-green-950,
+    body.theme-dark .bg-green-950\/50 {
+        background-color: #0b1424 !important;
+    }
+
     body.theme-dark .border-gray-100,
     body.theme-dark .border-gray-200,
     body.theme-dark .border-gray-300,
-    body.theme-dark .border-slate-700 {
+    body.theme-dark .border-slate-700,
+    body.theme-dark .border-green-800,
+    body.theme-dark .border-green-700 {
         border-color: #243247 !important;
     }
 
@@ -55,8 +66,18 @@
     body.theme-dark .text-gray-500,
     body.theme-dark .text-slate-700,
     body.theme-dark .text-slate-500,
-    body.theme-dark .text-slate-400 {
+    body.theme-dark .text-slate-400,
+    body.theme-dark .text-green-300,
+    body.theme-dark .text-green-400 {
         color: #94a3b8 !important;
+    }
+
+    body.theme-dark .text-green-700,
+    body.theme-dark .text-emerald-700,
+    body.theme-dark .text-blue-700,
+    body.theme-dark .text-amber-700,
+    body.theme-dark .text-red-700 {
+        color: #dbeafe !important;
     }
 
     body.theme-dark .shadow-sm,
@@ -76,6 +97,28 @@
     body.theme-dark input::placeholder,
     body.theme-dark textarea::placeholder {
         color: #64748b !important;
+    }
+
+    body.theme-dark .bg-emerald-50,
+    body.theme-dark .bg-green-50,
+    body.theme-dark .bg-blue-50,
+    body.theme-dark .bg-amber-50,
+    body.theme-dark .bg-red-50,
+    body.theme-dark .bg-indigo-50,
+    body.theme-dark .bg-indigo-100,
+    body.theme-dark .bg-blue-100,
+    body.theme-dark .bg-amber-100,
+    body.theme-dark .bg-green-100,
+    body.theme-dark .bg-gray-200 {
+        background-color: #162236 !important;
+    }
+
+    body.theme-dark .hover\:bg-gray-50:hover,
+    body.theme-dark .hover\:bg-gray-100:hover,
+    body.theme-dark .hover\:bg-emerald-50:hover,
+    body.theme-dark .hover\:bg-red-50:hover,
+    body.theme-dark .hover\:bg-green-800:hover {
+        background-color: #1d2a3d !important;
     }
 </style>
 <script>
