@@ -13,6 +13,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\LocalAdmin\MusicoController as LocalAdminMusicoController;
 use App\Http\Controllers\LocalAdmin\MissaController as LocalAdminMissaController;
 use App\Http\Controllers\Member\BibliotecaMusicalController;
+use App\Http\Controllers\Member\ColecaoEstudoController;
 use App\Http\Controllers\LocalAdmin\PainelAdminLocalController;
 use App\Http\Controllers\Member\PainelMembroController;
 use App\Http\Controllers\Publico\IgrejaPublicaController;
@@ -170,6 +171,11 @@ Route::middleware(['auth', 'verified_custom', 'role:member', 'primeiro_acesso'])
         Route::get('/repertorio', [BibliotecaMusicalController::class, 'repertorio'])->name('repertorio');
         Route::get('/musicas', [BibliotecaMusicalController::class, 'musicas'])->name('musicas.index');
         Route::get('/musicas/{musica}/versoes/{versaoMusical}', [BibliotecaMusicalController::class, 'versao'])->name('versoes.show');
+        Route::get('/colecoes', [ColecaoEstudoController::class, 'index'])->name('colecoes.index');
+        Route::post('/colecoes', [ColecaoEstudoController::class, 'store'])->name('colecoes.store');
+        Route::get('/colecoes/{colecao}', [ColecaoEstudoController::class, 'show'])->name('colecoes.show');
+        Route::post('/colecoes/{colecao}/itens', [ColecaoEstudoController::class, 'adicionarItem'])->name('colecoes.itens.store');
+        Route::delete('/colecoes/{colecao}/itens/{item}', [ColecaoEstudoController::class, 'removerItem'])->name('colecoes.itens.destroy');
     });
 
 Route::get('/publico/igrejas/{slug}/status', [IgrejaPublicaController::class, 'status'])

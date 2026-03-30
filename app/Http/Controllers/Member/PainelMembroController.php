@@ -61,6 +61,7 @@ class PainelMembroController extends Controller
             'email' => ['required', 'email', Rule::unique('usuarios', 'email')->ignore($usuario->id)],
             'telefone' => ['nullable', 'string', 'max:20'],
             'password' => [$primeiroAcesso ? 'required' : 'nullable', 'confirmed', new StrongPassword()],
+            'theme_preference' => ['required', Rule::in(['system', 'light', 'dark'])],
         ], [
             'password.required' => 'No primeiro acesso, defina uma nova senha para liberar o painel do músico.',
             'password.confirmed' => 'A confirmação da senha não confere.',
@@ -68,6 +69,7 @@ class PainelMembroController extends Controller
 
         $usuario->email = $dados['email'];
         $usuario->telefone = $dados['telefone'] ?? null;
+        $usuario->theme_preference = $dados['theme_preference'];
 
         if (!empty($dados['password'])) {
             $usuario->password = $dados['password'];

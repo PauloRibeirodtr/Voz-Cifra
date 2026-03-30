@@ -24,6 +24,7 @@ class Usuario extends Authenticatable
         'perfil_global',
         'ativo',
         'primeiro_acesso',
+        'theme_preference',
     ];
 
     protected $hidden = [
@@ -53,6 +54,11 @@ class Usuario extends Authenticatable
     public function versoesMusicaisCriadas(): HasMany
     {
         return $this->hasMany(VersaoMusical::class, 'criado_por');
+    }
+
+    public function colecoesEstudo(): HasMany
+    {
+        return $this->hasMany(ColecaoEstudo::class, 'usuario_id');
     }
 
     public function ehAdminMaster(): bool

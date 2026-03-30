@@ -64,6 +64,15 @@
                 <input type="password" name="password_confirmation" data-password-confirmation-input placeholder="Repita a nova senha" class="{{ $classeInput }}" />
             </div>
 
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Tema da interface</label>
+                <select name="theme_preference" class="{{ $classeInput }}">
+                    <option value="system" @selected(old('theme_preference', $user->theme_preference ?? 'system') === 'system')>Seguir o dispositivo</option>
+                    <option value="light" @selected(old('theme_preference', $user->theme_preference ?? 'system') === 'light')>Modo claro</option>
+                    <option value="dark" @selected(old('theme_preference', $user->theme_preference ?? 'system') === 'dark')>Modo escuro</option>
+                </select>
+            </div>
+
             <button class="px-4 py-2 bg-green-600 text-white rounded mt-2">Atualizar perfil</button>
         </div>
     </form>

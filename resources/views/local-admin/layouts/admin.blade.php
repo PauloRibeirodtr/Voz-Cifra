@@ -3,7 +3,10 @@
 <head>
     @include('admin.partials.head')
 </head>
-<body class="bg-gray-50 font-sans text-gray-900">
+@php
+    $themePreference = auth()->user()->theme_preference ?? 'system';
+@endphp
+<body class="bg-gray-50 font-sans text-gray-900" data-theme-preference="{{ $themePreference }}">
     <div
         id="local_sidebar_overlay"
         class="fixed inset-0 z-30 hidden bg-slate-950/45 backdrop-blur-[1px] md:hidden"
@@ -71,6 +74,19 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const preference = document.body.dataset.themePreference || 'system';
+            const mediaScheme = window.matchMedia('(prefers-color-scheme: dark)');
+            const aplicarTema = () => {
+                const resolved = preference === 'system' ? (mediaScheme.matches ? 'dark' : 'light') : preference;
+                document.body.classList.toggle('theme-dark', resolved === 'dark');
+                document.body.classList.toggle('theme-light', resolved !== 'dark');
+                document.documentElement.classList.toggle('theme-dark', resolved === 'dark');
+                document.documentElement.classList.toggle('theme-light', resolved !== 'dark');
+            };
+
+            aplicarTema();
+            mediaScheme.addEventListener?.('change', aplicarTema);
+
             const body = document.body;
             const sidebar = document.getElementById('local_sidebar');
             const toggle = document.getElementById('local_sidebar_toggle');

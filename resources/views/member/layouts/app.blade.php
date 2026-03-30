@@ -3,7 +3,10 @@
 <head>
     @include('admin.partials.head')
 </head>
-<body class="bg-gray-50 font-sans text-gray-900">
+@php
+    $themePreference = auth()->user()->theme_preference ?? 'system';
+@endphp
+<body class="bg-gray-50 font-sans text-gray-900" data-theme-preference="{{ $themePreference }}">
     <div
         id="member_sidebar_overlay"
         class="fixed inset-0 z-30 hidden bg-slate-950/45 backdrop-blur-[1px] md:hidden"
@@ -12,7 +15,7 @@
 
     @include('member.partials.sidebar')
 
-    <div class="min-h-screen md:pl-64">
+    <div class="min-h-screen md:pl-72">
         <header class="sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur md:hidden">
             <div class="flex items-center justify-between gap-3 px-4 py-3">
                 <div class="min-w-0">
@@ -75,6 +78,19 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const preference = document.body.dataset.themePreference || 'system';
+            const mediaScheme = window.matchMedia('(prefers-color-scheme: dark)');
+            const aplicarTema = () => {
+                const resolved = preference === 'system' ? (mediaScheme.matches ? 'dark' : 'light') : preference;
+                document.body.classList.toggle('theme-dark', resolved === 'dark');
+                document.body.classList.toggle('theme-light', resolved !== 'dark');
+                document.documentElement.classList.toggle('theme-dark', resolved === 'dark');
+                document.documentElement.classList.toggle('theme-light', resolved !== 'dark');
+            };
+
+            aplicarTema();
+            mediaScheme.addEventListener?.('change', aplicarTema);
+
             const body = document.body;
             const sidebar = document.getElementById('member_sidebar');
             const toggle = document.getElementById('member_sidebar_toggle');
@@ -134,6 +150,7 @@
             mediaQuery.addEventListener('change', sincronizarLayout);
         });
     </script>
+    @stack('scripts')
 </body>
 </html>
 

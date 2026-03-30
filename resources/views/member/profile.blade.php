@@ -79,6 +79,15 @@
                         <label class="block text-sm font-medium text-gray-700">Confirmar nova senha</label>
                         <input type="password" name="password_confirmation" data-password-confirmation-input class="{{ $classeInput }}" placeholder="Repita a nova senha">
                     </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700">Tema da interface</label>
+                        <select name="theme_preference" class="{{ $classeInput }}">
+                            <option value="system" @selected(old('theme_preference', $user->theme_preference ?? 'system') === 'system')>Seguir o dispositivo</option>
+                            <option value="light" @selected(old('theme_preference', $user->theme_preference ?? 'system') === 'light')>Modo claro</option>
+                            <option value="dark" @selected(old('theme_preference', $user->theme_preference ?? 'system') === 'dark')>Modo escuro</option>
+                        </select>
+                    </div>
                 </div>
             </section>
 
@@ -99,9 +108,9 @@
             </section>
 
             <section class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-bold text-gray-900">Configuracoes</h2>
+                <h2 class="text-lg font-bold text-gray-900">Preferencias</h2>
                 <div class="mt-4 space-y-3 text-sm text-gray-600">
-                    <p>Use esta tela para manter seu acesso atualizado. O logout fica disponivel no topo e tambem no rodape lateral.</p>
+                    <p>Use esta tela para manter o acesso atualizado e escolher o tema claro, escuro ou automatico para a sua conta.</p>
                     <a href="{{ route('member.repertorio') }}" class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 font-semibold text-gray-700 hover:bg-gray-50">
                         Ir para meu repertorio
                     </a>
