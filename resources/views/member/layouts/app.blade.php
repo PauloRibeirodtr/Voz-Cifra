@@ -58,16 +58,6 @@
 
                 <div class="flex items-center gap-3">
                     @yield('header_actions')
-
-                    <form action="{{ route('logout') }}" method="POST">
-                        @csrf
-                        <button
-                            type="submit"
-                            class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
-                        >
-                            Sair
-                        </button>
-                    </form>
                 </div>
             </div>
 

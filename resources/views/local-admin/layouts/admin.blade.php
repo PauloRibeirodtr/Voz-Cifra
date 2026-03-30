@@ -55,16 +55,6 @@
                     <p class="text-[11px] font-black uppercase tracking-[0.22em] text-green-700">Voz &amp; Cifra</p>
                     <p class="truncate text-sm text-slate-500">@yield('desktop_subtitle', 'Area administrativa da igreja')</p>
                 </div>
-
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button
-                        type="submit"
-                        class="inline-flex items-center justify-center rounded-2xl border border-red-900 bg-red-950 px-4 py-3 text-sm font-semibold text-red-100 shadow-sm transition hover:bg-red-900"
-                    >
-                        Sair
-                    </button>
-                </form>
             </div>
 
             @yield('content')
