@@ -14,9 +14,8 @@
 @endsection
 
 @push('styles')
+    @include('partials.cifra-viewer-styles')
     <style>
-        @include('partials.cifra-viewer-styles')
-
         .study-shell { display: grid; gap: 1.5rem; grid-template-columns: minmax(0, 1fr); }
         .study-panel { border-radius: 1.75rem; border: 1px solid rgba(148,163,184,.15); background: linear-gradient(180deg,#050816 0%,#0f172a 100%); color: #f8fafc; box-shadow: 0 20px 45px rgba(2,6,23,.28); }
         .study-surface { border-radius: 1.4rem; border: 1px solid rgba(148,163,184,.16); background: rgba(15,23,42,.88); }
@@ -54,7 +53,7 @@
             <div class="min-w-0">
                 <p class="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-300">Modo estudo</p>
                 <h1 class="mt-2 text-3xl font-black text-white">{{ $musica->titulo }}</h1>
-                <p class="mt-2 text-sm text-emerald-100">{{ $versaoMusical->titulo ?: 'Versao principal' }} @if ($missaAtiva) � Missa ativa: {{ $missaAtiva->titulo }} @endif</p>
+                <p class="mt-2 text-sm text-emerald-100">{{ $versaoMusical->titulo ?: 'Versao principal' }} @if ($missaAtiva) â€¢ Missa ativa: {{ $missaAtiva->titulo }} @endif</p>
             </div>
             <div class="grid grid-cols-2 gap-3 sm:flex">
                 <a href="{{ route('member.repertorio') }}" class="study-control px-4 text-sm">Meu repertorio</a>
