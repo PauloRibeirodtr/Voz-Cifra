@@ -107,7 +107,7 @@
                 const textoOriginal = @json($textoCifraExibicao, JSON_UNESCAPED_UNICODE);
                 const tomOriginal = @json($tomExibicao);
                 let transposicaoAtual = 0;
-                let fonteAtual = 14;
+                let fonteAtual = 18;
 
                 if (!preview || !helper) {
                     return;
@@ -131,7 +131,7 @@
                         helper.transposeBracketedText(textoOriginal, transposicaoAtual),
                         { chordAttribute: 'data-acorde-hover' }
                     );
-                    preview.style.setProperty('--escala-fonte', String(fonteAtual / 14));
+                    preview.style.setProperty('--escala-fonte', String(fonteAtual / 18));
                     atualizarTomBadge();
                 };
 
@@ -149,13 +149,13 @@
 
                 document.querySelectorAll('[data-font]').forEach((botao) => {
                     botao.addEventListener('click', () => {
-                        fonteAtual = Math.min(24, Math.max(12, fonteAtual + (Number(botao.dataset.font || 0) * 2)));
+                        fonteAtual = Math.min(32, Math.max(14, fonteAtual + (Number(botao.dataset.font || 0) * 2)));
                         renderizar();
                     });
                 });
 
                 document.querySelector('[data-font-reset]')?.addEventListener('click', () => {
-                    fonteAtual = 14;
+                    fonteAtual = 18;
                     renderizar();
                 });
 

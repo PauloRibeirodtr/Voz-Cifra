@@ -103,8 +103,8 @@
                                     <button type="button" id="toggle_autorrolagem" class="inline-flex items-center justify-center rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-800">Iniciar auto rolagem</button>
                                     <div class="flex items-center gap-3">
                                         <label for="velocidade_rolagem" class="text-sm font-medium text-gray-600">Velocidade</label>
-                                        <input id="velocidade_rolagem" type="range" min="1" max="10" value="3" step="1" class="accent-emerald-700">
-                                        <span id="valor_velocidade" class="min-w-[1.5rem] text-sm font-semibold text-gray-700">3</span>
+                                        <input id="velocidade_rolagem" type="range" min="0.25" max="6" value="1" step="0.25" class="accent-emerald-700">
+                                        <span id="valor_velocidade" class="min-w-[2.5rem] text-sm font-semibold text-gray-700">1.00</span>
                                     </div>
                                 </div>
                                 <div class="flex flex-wrap items-center gap-3">
@@ -268,7 +268,7 @@
             const abrirModalPlaylist = document.getElementById('abrir_modal_playlist');
             const fecharModalPlaylist = document.getElementById('fechar_modal_playlist');
             let transposicaoAtual = 0;
-            let fonteAtual = 16;
+            let fonteAtual = 18;
             let rolagemAtiva = false;
             let intervaloRolagem = null;
             let intervaloMetronomo = null;
@@ -347,13 +347,14 @@
             const renderizar = () => {
                 const textoTransposto = helper.transposeBracketedText(textoOriginal, transposicaoAtual);
                 preview.innerHTML = helper.renderChordSheetHtml(textoTransposto, { chordAttribute: 'data-acorde-hover' });
-                preview.style.setProperty('--escala-fonte', String(fonteAtual / 16));
+                preview.style.setProperty('--escala-fonte', String(fonteAtual / 18));
                 renderizarListaAcordes(textoTransposto);
                 atualizarTomBadge();
             };
 
             const pararRolagem = () => { if (intervaloRolagem) { window.clearInterval(intervaloRolagem); intervaloRolagem = null; } rolagemAtiva = false; if (botaoRolagem) botaoRolagem.textContent = 'Iniciar auto rolagem'; };
-            const iniciarRolagem = () => { const velocidade = Number(controleVelocidade?.value || 3); if (valorVelocidade) valorVelocidade.textContent = String(velocidade); intervaloRolagem = window.setInterval(() => { previewContainer.scrollTop += velocidade * 0.6; if (previewContainer.scrollTop + previewContainer.clientHeight >= previewContainer.scrollHeight) pararRolagem(); }, 60); };
+            const formatarVelocidade = (valor) => Number(valor || 0).toFixed(2);
+            const iniciarRolagem = () => { const velocidade = Number(controleVelocidade?.value || 1); if (valorVelocidade) valorVelocidade.textContent = formatarVelocidade(velocidade); intervaloRolagem = window.setInterval(() => { previewContainer.scrollTop += velocidade * 0.18; if (previewContainer.scrollTop + previewContainer.clientHeight >= previewContainer.scrollHeight) pararRolagem(); }, 60); };
             const tocarPulso = () => { try { contextoAudio = contextoAudio || new (window.AudioContext || window.webkitAudioContext)(); const oscilador = contextoAudio.createOscillator(); const ganho = contextoAudio.createGain(); oscilador.type = 'square'; oscilador.frequency.value = 880; ganho.gain.setValueAtTime(0.0001, contextoAudio.currentTime); ganho.gain.exponentialRampToValueAtTime(0.08, contextoAudio.currentTime + 0.01); ganho.gain.exponentialRampToValueAtTime(0.0001, contextoAudio.currentTime + 0.12); oscilador.connect(ganho); ganho.connect(contextoAudio.destination); oscilador.start(); oscilador.stop(contextoAudio.currentTime + 0.13); } catch (error) { console.error(error); } };
             const atualizarBpm = (novoBpm) => { bpmAtual = Math.max(20, Math.min(240, Number(novoBpm) || 72)); if (controleBpm) controleBpm.value = String(bpmAtual); if (intervaloMetronomo) { window.clearInterval(intervaloMetronomo); intervaloMetronomo = window.setInterval(tocarPulso, Math.round(60000 / bpmAtual)); } };
             const abrirModal = () => { modalPlaylist?.classList.remove('hidden'); modalPlaylistBackdrop?.classList.remove('hidden'); document.body.classList.add('overflow-hidden'); };
@@ -361,10 +362,10 @@
 
             document.querySelectorAll('[data-transpose]').forEach((botao) => { botao.addEventListener('click', () => { transposicaoAtual += Number(botao.dataset.transpose || 0); renderizar(); }); });
             document.querySelector('[data-transpose-reset]')?.addEventListener('click', () => { transposicaoAtual = 0; renderizar(); });
-            document.querySelectorAll('[data-font]').forEach((botao) => { botao.addEventListener('click', () => { fonteAtual = Math.min(26, Math.max(12, fonteAtual + (Number(botao.dataset.font || 0) * 2))); renderizar(); }); });
-            document.querySelector('[data-font-reset]')?.addEventListener('click', () => { fonteAtual = 16; renderizar(); });
+            document.querySelectorAll('[data-font]').forEach((botao) => { botao.addEventListener('click', () => { fonteAtual = Math.min(32, Math.max(14, fonteAtual + (Number(botao.dataset.font || 0) * 2))); renderizar(); }); });
+            document.querySelector('[data-font-reset]')?.addEventListener('click', () => { fonteAtual = 18; renderizar(); });
             botaoRolagem?.addEventListener('click', () => { if (rolagemAtiva) { pararRolagem(); return; } rolagemAtiva = true; botaoRolagem.textContent = 'Parar auto rolagem'; iniciarRolagem(); });
-            controleVelocidade?.addEventListener('input', () => { if (valorVelocidade) valorVelocidade.textContent = controleVelocidade.value; if (rolagemAtiva) { window.clearInterval(intervaloRolagem); iniciarRolagem(); } });
+            controleVelocidade?.addEventListener('input', () => { if (valorVelocidade) valorVelocidade.textContent = formatarVelocidade(controleVelocidade.value); if (rolagemAtiva) { window.clearInterval(intervaloRolagem); iniciarRolagem(); } });
             botaoMetronomo?.addEventListener('click', () => { if (intervaloMetronomo) { window.clearInterval(intervaloMetronomo); intervaloMetronomo = null; botaoMetronomo.textContent = 'Iniciar metronomo'; return; } tocarPulso(); intervaloMetronomo = window.setInterval(tocarPulso, Math.round(60000 / bpmAtual)); botaoMetronomo.textContent = 'Parar metronomo'; });
             botaoDiminuirBpm?.addEventListener('click', () => atualizarBpm(bpmAtual - 1));
             botaoAumentarBpm?.addEventListener('click', () => atualizarBpm(bpmAtual + 1));
@@ -378,7 +379,7 @@
             document.addEventListener('click', (event) => { const acorde = event.target.closest('[data-acorde-hover], [data-acorde-card]'); if (acorde) ativarAcorde(acorde.dataset.acordeHover || acorde.dataset.acordeCard); });
             document.addEventListener('keydown', (event) => { if (event.key === 'Escape') fecharModal(); });
             atualizarBpm(bpmInicial);
-            if (valorVelocidade && controleVelocidade) valorVelocidade.textContent = controleVelocidade.value;
+            if (valorVelocidade && controleVelocidade) valorVelocidade.textContent = formatarVelocidade(controleVelocidade.value);
             renderizar();
         });
     </script>

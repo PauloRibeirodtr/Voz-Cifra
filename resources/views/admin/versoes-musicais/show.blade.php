@@ -10,12 +10,12 @@
         .preview-admin-box { --admin-escala-fonte: 1; }
         .preview-musico-scroll { --escala-fonte: 1; max-height: 68vh; overflow-y: auto; scroll-behavior: smooth; }
         .preview-fiel { --escala-fonte: 1; }
-        .cifra-linha { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.15rem; margin-bottom: 0.65rem; }
-        .cifra-segmento { display: inline-flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; min-height: 3.5rem; }
-        .cifra-acordes { min-height: 1.4rem; margin-bottom: 0.1rem; color: #f97316; font-weight: 800; font-size: calc(0.95rem * var(--escala-fonte)); line-height: calc(1.1rem * var(--escala-fonte)); letter-spacing: 0.01em; white-space: pre; }
+        .cifra-linha { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.15rem; margin-bottom: 0.45rem; }
+        .cifra-segmento { display: inline-flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; min-height: 2.65rem; }
+        .cifra-acordes { min-height: 1.1rem; margin-bottom: 0.02rem; color: #f97316; font-weight: 800; font-size: calc(0.95rem * var(--escala-fonte)); line-height: calc(1rem * var(--escala-fonte)); letter-spacing: 0.01em; white-space: pre; }
         .cifra-acorde { display: inline-block; cursor: pointer; padding: 0 0.05rem; border-radius: 0.35rem; transition: background-color 0.15s ease, color 0.15s ease; }
         .cifra-acorde:hover, .cifra-acorde.ativa { background: rgba(249, 115, 22, 0.14); color: #c2410c; }
-        .cifra-letra { color: #111827; font-size: calc(1.08rem * var(--escala-fonte)); line-height: calc(1.85rem * var(--escala-fonte)); white-space: pre-wrap; }
+        .cifra-letra { color: #111827; font-size: calc(1.08rem * var(--escala-fonte)); line-height: calc(1.75rem * var(--escala-fonte)); white-space: pre-wrap; }
         .cifra-marcacao { display: inline-flex; align-items: center; border-radius: 9999px; background: #e5e7eb; color: #374151; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 0.85rem; margin: 1rem 0 0.75rem; }
         .preview-fiel p { margin-bottom: 0.95rem; color: #1f2937; font-size: calc(1.03rem * var(--escala-fonte)); line-height: calc(1.95rem * var(--escala-fonte)); }
         .preview-fiel .marcacao { display: inline-flex; align-items: center; border-radius: 9999px; background: #eef2ff; color: #4338ca; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 0.85rem; margin: 1.25rem 0 0.8rem; }
@@ -433,8 +433,8 @@
 
                         <div class="flex items-center gap-3">
                             <label for="velocidade_rolagem" class="text-sm font-medium text-gray-600">Velocidade</label>
-                            <input id="velocidade_rolagem" type="range" min="1" max="12" value="4" class="accent-green-700" />
-                            <span id="valor_velocidade" class="text-sm font-semibold text-gray-700">4</span>
+                            <input id="velocidade_rolagem" type="range" min="0.25" max="6" value="1" step="0.25" class="accent-green-700" />
+                            <span id="valor_velocidade" class="text-sm font-semibold text-gray-700">1.00</span>
                         </div>
 
                         <div class="flex items-center gap-3">
@@ -455,6 +455,9 @@
                             <button type="button" class="botao-pill" data-transpose-step="-1">Tom -</button>
                             <button type="button" class="botao-pill" data-transpose-reset>Tom original</button>
                             <button type="button" class="botao-pill" data-transpose-step="1">Tom +</button>
+                            <button type="button" class="botao-pill" data-font-step="-1">A-</button>
+                            <button type="button" class="botao-pill" data-font-reset>Fonte padrao</button>
+                            <button type="button" class="botao-pill" data-font-step="1">A+</button>
                         </div>
                     </div>
                 </div>
@@ -582,6 +585,7 @@
             let intervaloMetronomo = null;
             let contextoAudio = null;
             let bpmAtual = bpmInicial;
+            let fonteAtual = 18;
 
             const gruposAcorde = acordesDaVersao.reduce((grupos, acorde) => {
                 if (!grupos[acorde.nome]) {
@@ -637,6 +641,7 @@
 
                     return `<div class="cifra-linha">${segmentos}</div>`;
                 }).join('');
+                previewMusicoRender.style.setProperty('--escala-fonte', String(fonteAtual / 18));
             };
 
             const renderizarDiagrama = (shape) => {
@@ -762,12 +767,12 @@
 
             const iniciarAutoRolagem = () => {
                 if (!containerMusico) return;
-                const velocidade = Number(controleVelocidade?.value || 4);
+                const velocidade = Number(controleVelocidade?.value || 1);
                 if (valorVelocidade) {
-                    valorVelocidade.textContent = String(velocidade);
+                    valorVelocidade.textContent = velocidade.toFixed(2);
                 }
                 intervaloRolagem = window.setInterval(() => {
-                    containerMusico.scrollTop += velocidade * 0.6;
+                    containerMusico.scrollTop += velocidade * 0.18;
                     if (containerMusico.scrollTop + containerMusico.clientHeight >= containerMusico.scrollHeight) pararAutoRolagem();
                 }, 60);
             };
@@ -790,13 +795,25 @@
 
             controleVelocidade?.addEventListener('input', () => {
                 if (valorVelocidade) {
-                    valorVelocidade.textContent = controleVelocidade.value;
+                    valorVelocidade.textContent = Number(controleVelocidade.value).toFixed(2);
                 }
 
                 if (rolagemAtiva) {
                     window.clearInterval(intervaloRolagem);
                     iniciarAutoRolagem();
                 }
+            });
+
+            document.querySelectorAll('[data-font-step]').forEach((botao) => {
+                botao.addEventListener('click', () => {
+                    fonteAtual = Math.min(32, Math.max(14, fonteAtual + (Number(botao.dataset.fontStep || 0) * 2)));
+                    renderizarPreviewMusico();
+                });
+            });
+
+            document.querySelector('[data-font-reset]')?.addEventListener('click', () => {
+                fonteAtual = 18;
+                renderizarPreviewMusico();
             });
 
             const tocarPulso = () => {
@@ -857,7 +874,7 @@
             atualizarBpm(bpmInicial);
 
             if (valorVelocidade && controleVelocidade) {
-                valorVelocidade.textContent = controleVelocidade.value;
+                valorVelocidade.textContent = Number(controleVelocidade.value).toFixed(2);
             }
 
             document.addEventListener('mouseover', (event) => {

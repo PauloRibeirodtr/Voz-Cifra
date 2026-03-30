@@ -93,8 +93,8 @@
                         <div class="flex flex-wrap items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
                             <button type="button" id="toggle_autorrolagem_apresentacao" class="rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800">Iniciar auto rolagem</button>
                             <label for="velocidade_apresentacao" class="text-sm font-medium text-gray-600">Velocidade</label>
-                            <input id="velocidade_apresentacao" type="range" min="1" max="10" value="2" step="1" class="accent-green-700">
-                            <span id="velocidade_apresentacao_valor" class="text-sm font-semibold text-gray-700">2</span>
+                            <input id="velocidade_apresentacao" type="range" min="0.25" max="6" value="0.75" step="0.25" class="accent-green-700">
+                            <span id="velocidade_apresentacao_valor" class="text-sm font-semibold text-gray-700">0.75</span>
                         </div>
                     </div>
 
@@ -131,7 +131,7 @@
 
                 let indiceAtual = 0;
                 let transposicaoAtual = 0;
-                let fonteAtual = 16;
+                let fonteAtual = 18;
                 let rolagemAtiva = false;
                 let intervaloRolagem = null;
 
@@ -156,13 +156,13 @@
                         return;
                     }
 
-                    const velocidade = Number(controleVelocidade.value || 2);
+                    const velocidade = Number(controleVelocidade.value || 0.75);
                     if (valorVelocidade) {
-                        valorVelocidade.textContent = String(velocidade);
+                        valorVelocidade.textContent = velocidade.toFixed(2);
                     }
 
                     intervaloRolagem = window.setInterval(() => {
-                        container.scrollTop += velocidade * 0.35;
+                        container.scrollTop += velocidade * 0.18;
                         if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
                             pararRolagem();
                         }
@@ -183,7 +183,7 @@
                         helper.transposeBracketedText(item.letra || '', transposicaoAtual),
                         { chordAttribute: 'data-acorde-hover' }
                     );
-                    letra.style.setProperty('--escala-fonte', String(fonteAtual / 16));
+                    letra.style.setProperty('--escala-fonte', String(fonteAtual / 18));
                     tomBadge.textContent = 'Tom ' + (
                         item.tom_exibicao && helper.isChord(item.tom_exibicao)
                             ? helper.transposeChord(item.tom_exibicao, transposicaoAtual)
@@ -250,13 +250,13 @@
 
                 document.querySelectorAll('[data-font]').forEach((botao) => {
                     botao.addEventListener('click', () => {
-                        fonteAtual = Math.min(28, Math.max(12, fonteAtual + (Number(botao.dataset.font || 0) * 2)));
+                        fonteAtual = Math.min(34, Math.max(14, fonteAtual + (Number(botao.dataset.font || 0) * 2)));
                         renderizar();
                     });
                 });
 
                 document.querySelector('[data-font-reset]')?.addEventListener('click', () => {
-                    fonteAtual = 16;
+                    fonteAtual = 18;
                     renderizar();
                 });
 
@@ -273,7 +273,7 @@
 
                 controleVelocidade?.addEventListener('input', () => {
                     if (valorVelocidade) {
-                        valorVelocidade.textContent = controleVelocidade.value;
+                        valorVelocidade.textContent = Number(controleVelocidade.value).toFixed(2);
                     }
 
                     if (rolagemAtiva) {
@@ -283,7 +283,7 @@
                 });
 
                 if (valorVelocidade && controleVelocidade) {
-                    valorVelocidade.textContent = controleVelocidade.value;
+                    valorVelocidade.textContent = Number(controleVelocidade.value).toFixed(2);
                 }
 
                 renderizar();
