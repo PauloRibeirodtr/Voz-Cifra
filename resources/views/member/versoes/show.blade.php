@@ -26,6 +26,13 @@
         .tooltip-acorde { position:fixed; z-index:80; width:220px; pointer-events:none; border-radius:1rem; border:1px solid rgba(16,185,129,.35); background:rgba(15,23,42,.96); box-shadow:0 18px 50px rgba(2,6,23,.28); padding:.85rem; backdrop-filter:blur(8px); }
         .tooltip-acorde.hidden { display:none; }
         .playlist-card { border-radius:1.15rem; border:1px solid rgba(148,163,184,.15); background:rgba(15,23,42,.82); }
+        .study-action-button { display:inline-flex; align-items:center; gap:.6rem; border-radius:1rem; border:1px solid rgba(16,185,129,.28); background:rgba(16,185,129,.14); color:#d1fae5; padding:.85rem 1rem; font-weight:700; transition:.2s ease; }
+        .study-action-button:hover { background:rgba(16,185,129,.22); }
+        .playlist-modal-backdrop { position:fixed; inset:0; background:rgba(2,6,23,.72); backdrop-filter:blur(3px); z-index:90; }
+        .playlist-modal { position:fixed; inset:0; z-index:91; display:flex; align-items:center; justify-content:center; padding:1rem; }
+        .playlist-modal.hidden, .playlist-modal-backdrop.hidden { display:none; }
+        .playlist-modal-card { width:min(100%, 42rem); max-height:min(88vh, 900px); overflow:auto; border-radius:1.5rem; border:1px solid rgba(148,163,184,.18); background:#0f172a; color:#f8fafc; box-shadow:0 24px 60px rgba(2,6,23,.35); }
+        .playlist-existing-item { border-radius:1rem; border:1px solid rgba(148,163,184,.15); background:rgba(255,255,255,.04); }
         @media (min-width:1280px) { .study-shell { grid-template-columns: minmax(0, 1.2fr) 23rem; } }
         @media (max-width:767px) { .study-preview { max-height:none; } }
     </style>
@@ -56,6 +63,10 @@
                 <p class="mt-2 text-sm text-emerald-100">{{ $versaoMusical->titulo ?: 'Versao principal' }} @if ($missaAtiva) â€¢ Missa ativa: {{ $missaAtiva->titulo }} @endif</p>
             </div>
             <div class="grid grid-cols-2 gap-3 sm:flex">
+                <button type="button" id="abrir_modal_playlist" class="study-action-button px-4 text-sm">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Adicionar a playlist</span>
+                </button>
                 <a href="{{ route('member.repertorio') }}" class="study-control px-4 text-sm">Meu repertorio</a>
                 <a href="{{ route('member.dashboard') }}" class="study-control px-4 text-sm">Painel</a>
             </div>
@@ -129,36 +140,6 @@
                         @else
                             <div class="rounded-3xl border border-dashed border-gray-300 bg-gray-50 p-5 text-sm text-gray-500">Esta versao ainda nao possui video do YouTube vinculado.</div>
                         @endif
-
-                        <div class="playlist-card p-4 text-white">
-                            <h2 class="text-base font-bold">Salvar em playlist</h2>
-                            <p class="mt-1 text-sm text-slate-300">Crie uma nova playlist ou adicione esta versao em uma ja existente.</p>
-                            <form action="{{ route('member.colecoes.store') }}" method="POST" class="mt-4 space-y-3">
-                                @csrf
-                                <input type="hidden" name="musica_id" value="{{ $musica->id }}">
-                                <input type="hidden" name="versao_musical_id" value="{{ $versaoMusical->id }}">
-                                <input type="text" name="nome" class="block w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-slate-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" placeholder="Ex.: Louvor de domingo" required>
-                                <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-500">Criar playlist com esta musica</button>
-                            </form>
-
-                            @if ($colecoes->isNotEmpty())
-                                <div class="mt-4 space-y-3">
-                                    @foreach ($colecoes as $colecao)
-                                        <form action="{{ route('member.colecoes.itens.store', $colecao) }}" method="POST" class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-3">
-                                            @csrf
-                                            <input type="hidden" name="musica_id" value="{{ $musica->id }}">
-                                            <input type="hidden" name="versao_musical_id" value="{{ $versaoMusical->id }}">
-                                            <div class="min-w-0 flex-1"><p class="truncate text-sm font-semibold text-white">{{ $colecao->nome }}</p><p class="text-xs text-slate-400">{{ $colecao->itens_count }} itens</p></div>
-                                            @if ($colecaoIdsComVersao->contains($colecao->id))
-                                                <span class="inline-flex items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-300">Ja adicionada</span>
-                                            @else
-                                                <button type="submit" class="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold text-white hover:bg-white/20">Adicionar</button>
-                                            @endif
-                                        </form>
-                                    @endforeach
-                                </div>
-                            @endif
-                        </div>
                     </div>
                 </div>
             </div>
@@ -189,6 +170,68 @@
     </div>
 
     <div id="tooltip_acorde" class="tooltip-acorde hidden"><div class="text-center"><div id="tooltip_acorde_nome" class="text-sm font-black text-white">Acorde</div><div id="tooltip_acorde_diagrama" class="mt-3 diagrama-acorde"></div></div></div>
+    <div id="playlist_modal_backdrop" class="playlist-modal-backdrop hidden"></div>
+    <div id="playlist_modal" class="playlist-modal hidden" aria-hidden="true">
+        <div class="playlist-modal-card p-5 sm:p-6">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-300">Playlist</p>
+                    <h2 class="mt-2 text-2xl font-black text-white">Adicionar "{{ $musica->titulo }}"</h2>
+                    <p class="mt-2 text-sm text-slate-300">Escolha uma playlist existente ou crie uma nova sem sair da tela de estudo.</p>
+                </div>
+                <button type="button" id="fechar_modal_playlist" class="study-control" aria-label="Fechar modal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
+                <section class="playlist-card p-4">
+                    <h3 class="text-base font-bold text-white">Criar nova playlist</h3>
+                    <p class="mt-1 text-sm text-slate-300">Perfeito para separar por ensaio, missa ou repertorio pessoal.</p>
+                    <form action="{{ route('member.colecoes.store') }}" method="POST" class="mt-4 space-y-3">
+                        @csrf
+                        <input type="hidden" name="musica_id" value="{{ $musica->id }}">
+                        <input type="hidden" name="versao_musical_id" value="{{ $versaoMusical->id }}">
+                        <input type="text" name="nome" class="block w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-slate-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" placeholder="Ex.: Ensaio de quarta" required>
+                        <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-500">
+                            <i class="fa-solid fa-folder-plus mr-2"></i>
+                            Criar e adicionar
+                        </button>
+                    </form>
+                </section>
+
+                <section class="playlist-card p-4">
+                    <h3 class="text-base font-bold text-white">Adicionar em playlist existente</h3>
+                    <p class="mt-1 text-sm text-slate-300">Toque numa playlist para incluir esta versao rapidamente.</p>
+                    <div class="mt-4 space-y-3">
+                        @forelse ($colecoes as $colecao)
+                            <form action="{{ route('member.colecoes.itens.store', $colecao) }}" method="POST" class="playlist-existing-item flex items-center gap-3 px-3 py-3">
+                                @csrf
+                                <input type="hidden" name="musica_id" value="{{ $musica->id }}">
+                                <input type="hidden" name="versao_musical_id" value="{{ $versaoMusical->id }}">
+                                <div class="min-w-0 flex-1">
+                                    <p class="truncate text-sm font-semibold text-white">{{ $colecao->nome }}</p>
+                                    <p class="text-xs text-slate-400">{{ $colecao->itens_count }} itens</p>
+                                </div>
+                                @if ($colecaoIdsComVersao->contains($colecao->id))
+                                    <span class="inline-flex items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-300">Ja adicionada</span>
+                                @else
+                                    <button type="submit" class="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold text-white hover:bg-white/20">
+                                        <i class="fa-solid fa-plus mr-2"></i>
+                                        Adicionar
+                                    </button>
+                                @endif
+                            </form>
+                        @empty
+                            <div class="rounded-xl border border-dashed border-white/10 bg-white/5 p-4 text-sm text-slate-300">
+                                Nenhuma playlist criada ainda. Use o formulario ao lado para criar a primeira.
+                            </div>
+                        @endforelse
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -220,6 +263,10 @@
             const controleBpm = document.getElementById('controle_bpm');
             const botaoDiminuirBpm = document.getElementById('diminuir_bpm');
             const botaoAumentarBpm = document.getElementById('aumentar_bpm');
+            const modalPlaylist = document.getElementById('playlist_modal');
+            const modalPlaylistBackdrop = document.getElementById('playlist_modal_backdrop');
+            const abrirModalPlaylist = document.getElementById('abrir_modal_playlist');
+            const fecharModalPlaylist = document.getElementById('fechar_modal_playlist');
             let transposicaoAtual = 0;
             let fonteAtual = 16;
             let rolagemAtiva = false;
@@ -309,6 +356,8 @@
             const iniciarRolagem = () => { const velocidade = Number(controleVelocidade?.value || 3); if (valorVelocidade) valorVelocidade.textContent = String(velocidade); intervaloRolagem = window.setInterval(() => { previewContainer.scrollTop += velocidade * 0.6; if (previewContainer.scrollTop + previewContainer.clientHeight >= previewContainer.scrollHeight) pararRolagem(); }, 60); };
             const tocarPulso = () => { try { contextoAudio = contextoAudio || new (window.AudioContext || window.webkitAudioContext)(); const oscilador = contextoAudio.createOscillator(); const ganho = contextoAudio.createGain(); oscilador.type = 'square'; oscilador.frequency.value = 880; ganho.gain.setValueAtTime(0.0001, contextoAudio.currentTime); ganho.gain.exponentialRampToValueAtTime(0.08, contextoAudio.currentTime + 0.01); ganho.gain.exponentialRampToValueAtTime(0.0001, contextoAudio.currentTime + 0.12); oscilador.connect(ganho); ganho.connect(contextoAudio.destination); oscilador.start(); oscilador.stop(contextoAudio.currentTime + 0.13); } catch (error) { console.error(error); } };
             const atualizarBpm = (novoBpm) => { bpmAtual = Math.max(20, Math.min(240, Number(novoBpm) || 72)); if (controleBpm) controleBpm.value = String(bpmAtual); if (intervaloMetronomo) { window.clearInterval(intervaloMetronomo); intervaloMetronomo = window.setInterval(tocarPulso, Math.round(60000 / bpmAtual)); } };
+            const abrirModal = () => { modalPlaylist?.classList.remove('hidden'); modalPlaylistBackdrop?.classList.remove('hidden'); document.body.classList.add('overflow-hidden'); };
+            const fecharModal = () => { modalPlaylist?.classList.add('hidden'); modalPlaylistBackdrop?.classList.add('hidden'); document.body.classList.remove('overflow-hidden'); };
 
             document.querySelectorAll('[data-transpose]').forEach((botao) => { botao.addEventListener('click', () => { transposicaoAtual += Number(botao.dataset.transpose || 0); renderizar(); }); });
             document.querySelector('[data-transpose-reset]')?.addEventListener('click', () => { transposicaoAtual = 0; renderizar(); });
@@ -320,10 +369,14 @@
             botaoDiminuirBpm?.addEventListener('click', () => atualizarBpm(bpmAtual - 1));
             botaoAumentarBpm?.addEventListener('click', () => atualizarBpm(bpmAtual + 1));
             controleBpm?.addEventListener('input', () => atualizarBpm(controleBpm.value));
+            abrirModalPlaylist?.addEventListener('click', abrirModal);
+            fecharModalPlaylist?.addEventListener('click', fecharModal);
+            modalPlaylistBackdrop?.addEventListener('click', fecharModal);
             document.addEventListener('mouseover', (event) => { const acorde = event.target.closest('[data-acorde-hover]'); if (!acorde) return; ativarAcorde(acorde.dataset.acordeHover); mostrarTooltipAcorde(acorde.dataset.acordeHover, event.clientX, event.clientY); });
             document.addEventListener('mousemove', (event) => { const acorde = event.target.closest('[data-acorde-hover]'); if (!acorde) return; mostrarTooltipAcorde(acorde.dataset.acordeHover, event.clientX, event.clientY); });
             document.addEventListener('mouseout', (event) => { if (event.target.closest('[data-acorde-hover]')) tooltipAcorde?.classList.add('hidden'); });
             document.addEventListener('click', (event) => { const acorde = event.target.closest('[data-acorde-hover], [data-acorde-card]'); if (acorde) ativarAcorde(acorde.dataset.acordeHover || acorde.dataset.acordeCard); });
+            document.addEventListener('keydown', (event) => { if (event.key === 'Escape') fecharModal(); });
             atualizarBpm(bpmInicial);
             if (valorVelocidade && controleVelocidade) valorVelocidade.textContent = controleVelocidade.value;
             renderizar();
