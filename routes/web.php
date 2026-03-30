@@ -165,6 +165,7 @@ Route::middleware(['auth', 'verified_custom', 'role:member', 'primeiro_acesso'])
     ->group(function () {
         Route::get('/painel', [PainelMembroController::class, 'dashboard'])->name('dashboard');
         Route::get('/perfil', [PainelMembroController::class, 'profile'])->name('profile');
+        Route::get('/configuracoes', [PainelMembroController::class, 'profile'])->name('settings');
         Route::put('/perfil', [PainelMembroController::class, 'updateProfile'])->name('profile.update');
         Route::get('/repertorio', [BibliotecaMusicalController::class, 'repertorio'])->name('repertorio');
         Route::get('/musicas', [BibliotecaMusicalController::class, 'musicas'])->name('musicas.index');

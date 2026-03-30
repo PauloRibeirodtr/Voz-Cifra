@@ -1,66 +1,59 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Perfil do músico | Voz & Cifra</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="min-h-screen bg-gray-50 text-gray-900">
+@extends('member.layouts.app')
+
+@section('title', 'Meu perfil | Voz & Cifra')
+@section('mobile_title', 'Meu perfil')
+@section('desktop_subtitle', 'Perfil e configuracoes do musico')
+
+@section('header_actions')
+    <a href="{{ route('member.dashboard') }}" class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
+        Voltar ao painel
+    </a>
+@endsection
+
+@section('content')
     @php
-        $classeInput = 'mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-100';
+        $classeInput = 'mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 shadow-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100';
     @endphp
 
-    <div class="mx-auto max-w-3xl px-4 py-6 sm:px-6">
-        <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-                <h1 class="text-2xl font-black text-gray-900">Perfil do músico</h1>
-                <p class="mt-1 text-sm text-gray-500">Atualize seu acesso para continuar usando a área do músico com segurança.</p>
-            </div>
-            <div class="flex flex-col gap-3 sm:items-end">
-                <a href="{{ route('member.dashboard') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
-                    Voltar ao painel
-                </a>
-
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-red-50 hover:text-red-700">
-                        Sair
-                    </button>
-                </form>
-            </div>
+    @if (session('success'))
+        <div class="mb-6 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-sm text-green-800">
+            {{ session('success') }}
         </div>
+    @endif
 
-        @if (session('success'))
-            <div class="mb-6 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-sm text-green-800">
-                {{ session('success') }}
-            </div>
-        @endif
+    @if (session('status'))
+        <div class="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
+            {{ session('status') }}
+        </div>
+    @endif
 
-        @if (session('status'))
-            <div class="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
-                {{ session('status') }}
-            </div>
-        @endif
+    @if ($errors->any())
+        <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
+            <ul class="list-disc pl-5">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-        @if ($errors->any())
-            <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
-                <ul class="list-disc pl-5">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <form action="{{ route('member.profile.update') }}" method="POST" class="space-y-6">
             @csrf
             @method('PUT')
 
             <section class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-bold text-gray-900">Dados de acesso</h2>
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h1 class="text-2xl font-black text-gray-900">Meu perfil</h1>
+                        <p class="mt-1 text-sm text-gray-500">Atualize seus dados de acesso e mantenha a conta pronta para uso.</p>
+                    </div>
+                    @if ($user->primeiro_acesso ?? false)
+                        <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">Troca de senha pendente</span>
+                    @endif
+                </div>
 
-                <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700">Nome</label>
                         <input type="text" value="{{ $user->nome }}" class="{{ $classeInput }} bg-gray-50" disabled>
@@ -89,21 +82,36 @@
                 </div>
             </section>
 
-            <section class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-bold text-gray-900">Vínculo atual</h2>
-                <div class="mt-4 rounded-2xl bg-gray-50 p-4 text-sm text-gray-600">
-                    <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Igreja</span>
-                    <span class="mt-2 block text-base font-semibold text-gray-900">{{ $igreja?->nome ?: 'Não vinculada' }}</span>
-                </div>
-            </section>
-
             <div class="flex justify-end">
-                <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-5 py-3 font-semibold text-white hover:bg-green-800">
+                <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-emerald-700 px-5 py-3 font-semibold text-white hover:bg-emerald-800">
                     Salvar perfil
                 </button>
             </div>
         </form>
+
+        <aside class="space-y-6">
+            <section class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+                <h2 class="text-lg font-bold text-gray-900">Vinculo atual</h2>
+                <div class="mt-4 rounded-2xl bg-gray-50 p-4 text-sm text-gray-600">
+                    <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Igreja</span>
+                    <span class="mt-2 block text-base font-semibold text-gray-900">{{ $igreja?->nome ?: 'Nao vinculada' }}</span>
+                </div>
+            </section>
+
+            <section class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+                <h2 class="text-lg font-bold text-gray-900">Configuracoes</h2>
+                <div class="mt-4 space-y-3 text-sm text-gray-600">
+                    <p>Use esta tela para manter seu acesso atualizado. O logout fica disponivel no topo e tambem no rodape lateral.</p>
+                    <a href="{{ route('member.repertorio') }}" class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 font-semibold text-gray-700 hover:bg-gray-50">
+                        Ir para meu repertorio
+                    </a>
+                </div>
+            </section>
+        </aside>
     </div>
+@endsection
+
+@push('scripts')
     @include('partials.password-strength-script')
-</body>
-</html>
+@endpush
+

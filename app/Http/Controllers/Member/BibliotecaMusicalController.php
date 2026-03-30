@@ -11,6 +11,7 @@ use App\Services\TranspositorCifrasService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class BibliotecaMusicalController extends Controller
@@ -53,6 +54,9 @@ class BibliotecaMusicalController extends Controller
 
     public function musicas(Request $request): View
     {
+        $usuario = $this->obterUsuario();
+        $igreja = $usuario->igreja;
+
         $consulta = Musica::query()
             ->with([
                 'tempoLiturgico',
@@ -73,10 +77,22 @@ class BibliotecaMusicalController extends Controller
             });
         }
 
+        $musicas = $consulta
+            ->paginate(12)
+            ->through(function (Musica $musica): Musica {
+                $musica->setAttribute(
+                    'trecho_letra',
+                    Str::of($musica->letra ?? '')->squish()->limit(180)->value()
+                );
+
+                return $musica;
+            })
+            ->withQueryString();
+
         return view('member.musicas.index', [
-            'usuario' => $this->obterUsuario(),
-            'igreja' => $this->obterUsuario()->igreja,
-            'musicas' => $consulta->paginate(12)->withQueryString(),
+            'usuario' => $usuario,
+            'igreja' => $igreja,
+            'musicas' => $musicas,
             'busca' => (string) $request->input('busca', ''),
         ]);
     }
