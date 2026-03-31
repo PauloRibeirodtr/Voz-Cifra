@@ -266,6 +266,9 @@
                 <div class="w-full max-w-xs rounded-2xl border border-gray-200 bg-gray-50 p-4">
                     <span class="block text-xs font-bold uppercase tracking-wider text-gray-400">Previa do QR Code fixo</span>
                     <img src="{{ $igreja->qr_code_url }}" alt="QR Code da igreja {{ $igreja->nome }}" class="mt-4 w-full rounded-xl border border-gray-200 bg-white p-3" />
+                    <div class="mt-3 rounded-xl border border-green-100 bg-green-50 px-3 py-3 text-sm text-green-800">
+                        Aponte a camera para o QR Code para acompanhar a missa e acessar a pagina publica da igreja.
+                    </div>
                     <p class="mt-3 text-xs leading-5 text-gray-500">
                         O QR aponta sempre para a mesma URL da igreja. O que vai mudar depois e o conteudo exibido nessa pagina.
                     </p>

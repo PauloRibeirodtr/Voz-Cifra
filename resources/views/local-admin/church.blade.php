@@ -58,6 +58,9 @@
                     <div class="mt-4 rounded-2xl border border-gray-200 bg-white p-3">
                         <img src="{{ $igreja->qr_code_url }}" alt="QR da igreja {{ $igreja->nome }}" class="mx-auto h-auto w-full max-w-[220px] rounded-xl">
                     </div>
+                    <div class="mt-3 rounded-xl border border-green-100 bg-green-50 px-3 py-3 text-sm text-green-800">
+                        Aponte a camera para o QR Code para acompanhar a missa e abrir a pagina publica da igreja.
+                    </div>
                 </div>
             </div>
         </aside>

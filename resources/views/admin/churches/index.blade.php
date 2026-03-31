@@ -96,6 +96,9 @@
                                     <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="break-all text-green-700 hover:underline">
                                         {{ $igreja->link_publico }}
                                     </a>
+                                    <div class="mt-2 text-xs text-gray-500">
+                                        Aponte a camera para o QR para acompanhar a missa nesta igreja.
+                                    </div>
                                     <div class="mt-2 flex items-center gap-2">
                                         <a href="{{ $igreja->qr_code_url }}" target="_blank" rel="noopener noreferrer" class="inline-flex rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
                                             Ver QR
@@ -174,6 +177,7 @@
                                 <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="mt-1 block break-all text-sm font-medium text-green-700 hover:underline">
                                     {{ $igreja->link_publico }}
                                 </a>
+                                <p class="mt-2 text-xs text-gray-500">Aponte a camera para o QR e acompanhe a missa nesta igreja.</p>
                                 <a href="{{ $igreja->qr_code_url }}" target="_blank" rel="noopener noreferrer" class="mt-3 inline-flex items-center justify-center rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
                                     Ver QR fixo
                                 </a>
