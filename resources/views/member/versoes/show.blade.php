@@ -5,6 +5,12 @@
 @section('desktop_subtitle', 'Leitura musical para estudo, video e apoio')
 
 @section('header_actions')
+    <a href="{{ route('member.versoes.print', [$musica, $versaoMusical]) }}" class="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-100">
+        Imprimir
+    </a>
+    <a href="{{ route('member.versoes.pdf', [$musica, $versaoMusical]) }}" class="inline-flex items-center justify-center rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700 shadow-sm transition hover:border-amber-300 hover:bg-amber-100">
+        Baixar PDF
+    </a>
     <a href="{{ route('member.colecoes.index') }}" class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
         Playlists salvas
     </a>
@@ -67,6 +73,8 @@
                     <i class="fa-solid fa-plus"></i>
                     <span>Adicionar a playlist</span>
                 </button>
+                <a href="{{ route('member.versoes.print', [$musica, $versaoMusical]) }}" class="study-control px-4 text-sm">Imprimir</a>
+                <a href="{{ route('member.versoes.pdf', [$musica, $versaoMusical]) }}" class="study-control px-4 text-sm">PDF</a>
                 <a href="{{ route('member.repertorio') }}" class="study-control px-4 text-sm">Meu repertorio</a>
                 <a href="{{ route('member.dashboard') }}" class="study-control px-4 text-sm">Painel</a>
             </div>

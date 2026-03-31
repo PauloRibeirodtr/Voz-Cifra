@@ -8,7 +8,9 @@ use App\Models\Missa;
 use App\Models\Musica;
 use App\Models\Usuario;
 use App\Models\VersaoMusical;
+use App\Services\FolhaVersaoMusicalService;
 use App\Services\TranspositorCifrasService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +20,8 @@ use Illuminate\View\View;
 class BibliotecaMusicalController extends Controller
 {
     public function __construct(
-        private readonly TranspositorCifrasService $transpositorCifrasService
+        private readonly TranspositorCifrasService $transpositorCifrasService,
+        private readonly FolhaVersaoMusicalService $folhaVersaoMusicalService
     ) {
         $this->middleware(['auth', 'verified_custom', 'role:member']);
     }
@@ -112,23 +115,15 @@ class BibliotecaMusicalController extends Controller
 
     public function versao(Musica $musica, VersaoMusical $versaoMusical): View
     {
-        abort_unless((int) $versaoMusical->musica_id === (int) $musica->id, 404);
-        abort_unless($musica->ativo && $versaoMusical->ativo, 404);
-
         $usuario = $this->obterUsuario();
         $igreja = $usuario->igreja;
-
-        $missaAtiva = Missa::query()
-            ->with(['missaMusicas' => fn ($query) => $query->where('versao_musical_id', $versaoMusical->id)])
-            ->where('igreja_id', $igreja?->id)
-            ->where('ativo', true)
-            ->first();
-
-        $itemMissa = $missaAtiva?->missaMusicas?->first();
-        $tomOriginal = $versaoMusical->tom_musical;
-        $tomExibicao = $itemMissa?->tom_usado ?: $tomOriginal;
-        $passos = $this->transpositorCifrasService->calcularPassos($tomOriginal, $tomExibicao);
-        $textoCifraExibicao = $this->transpositorCifrasService->transporTextoCifrado($versaoMusical->letra_com_cifras, $passos);
+        [
+            'missaAtiva' => $missaAtiva,
+            'itemMissa' => $itemMissa,
+            'tomOriginal' => $tomOriginal,
+            'tomExibicao' => $tomExibicao,
+            'textoCifraExibicao' => $textoCifraExibicao,
+        ] = $this->montarContextoVersao($musica, $versaoMusical, $igreja?->id);
 
         return view('member.versoes.show', [
             'usuario' => $usuario,
@@ -163,6 +158,58 @@ class BibliotecaMusicalController extends Controller
         ]);
     }
 
+    public function imprimirVersao(Musica $musica, VersaoMusical $versaoMusical): View
+    {
+        $usuario = $this->obterUsuario();
+        $igreja = $usuario->igreja;
+        $contexto = $this->montarContextoVersao($musica, $versaoMusical, $igreja?->id);
+
+        $folha = $this->folhaVersaoMusicalService->montar(
+            $versaoMusical,
+            $contexto['textoCifraExibicao'],
+            $contexto['tomExibicao'],
+            [
+                'Musica' => $musica->titulo,
+                'Contexto' => $contexto['itemMissa'] ? 'Versao usada na missa ativa' : 'Biblioteca musical',
+                'Igreja' => $igreja?->nome,
+            ]
+        );
+
+        return view('shared.versao-print', [
+            'folha' => $folha,
+            'etiquetaFolha' => 'Folha do musico',
+            'pdfUrl' => route('member.versoes.pdf', [$musica, $versaoMusical]),
+            'backUrl' => route('member.versoes.show', [$musica, $versaoMusical]),
+            'pageTitle' => ($versaoMusical->titulo ?: $musica->titulo) . ' | Impressao',
+        ]);
+    }
+
+    public function pdfVersao(Musica $musica, VersaoMusical $versaoMusical)
+    {
+        $usuario = $this->obterUsuario();
+        $igreja = $usuario->igreja;
+        $contexto = $this->montarContextoVersao($musica, $versaoMusical, $igreja?->id);
+
+        $folha = $this->folhaVersaoMusicalService->montar(
+            $versaoMusical,
+            $contexto['textoCifraExibicao'],
+            $contexto['tomExibicao'],
+            [
+                'Musica' => $musica->titulo,
+                'Contexto' => $contexto['itemMissa'] ? 'Versao usada na missa ativa' : 'Biblioteca musical',
+                'Igreja' => $igreja?->nome,
+            ]
+        );
+
+        return Pdf::loadView('shared.versao-pdf', [
+            'folha' => $folha,
+            'etiquetaFolha' => 'Folha do musico',
+            'pageTitle' => ($versaoMusical->titulo ?: $musica->titulo) . ' | PDF',
+        ])
+            ->setPaper('a4', 'portrait')
+            ->download('musica-' . Str::slug($musica->titulo ?: 'versao') . '-versao-' . $versaoMusical->id . '.pdf');
+    }
+
     private function extrairAcordes(string $texto): array
     {
         preg_match_all('/\[([^\[\]\r\n]+)\]/', $texto, $matches);
@@ -183,5 +230,31 @@ class BibliotecaMusicalController extends Controller
         abort_unless($usuario && $usuario->ehMembro(), 403);
 
         return $usuario;
+    }
+
+    private function montarContextoVersao(Musica $musica, VersaoMusical $versaoMusical, ?int $igrejaId): array
+    {
+        abort_unless((int) $versaoMusical->musica_id === (int) $musica->id, 404);
+        abort_unless($musica->ativo && $versaoMusical->ativo, 404);
+
+        $missaAtiva = Missa::query()
+            ->with(['missaMusicas' => fn ($query) => $query->where('versao_musical_id', $versaoMusical->id)])
+            ->where('igreja_id', $igrejaId)
+            ->where('ativo', true)
+            ->first();
+
+        $itemMissa = $missaAtiva?->missaMusicas?->first();
+        $tomOriginal = $versaoMusical->tom_musical;
+        $tomExibicao = $itemMissa?->tom_usado ?: $tomOriginal;
+        $passos = $this->transpositorCifrasService->calcularPassos($tomOriginal, $tomExibicao);
+        $textoCifraExibicao = $this->transpositorCifrasService->transporTextoCifrado($versaoMusical->letra_com_cifras, $passos);
+
+        return [
+            'missaAtiva' => $missaAtiva,
+            'itemMissa' => $itemMissa,
+            'tomOriginal' => $tomOriginal,
+            'tomExibicao' => $this->transpositorCifrasService->transporTomExibicao($tomOriginal, $tomExibicao),
+            'textoCifraExibicao' => $textoCifraExibicao,
+        ];
     }
 }

@@ -158,6 +158,8 @@ Route::middleware(['auth', 'verified_custom', 'role:admin_local', 'primeiro_aces
         Route::post('/missas/{missa}/repertorio/{missaMusica}/descer', [LocalAdminMissaController::class, 'descerRepertorio'])->name('repertorio.down');
         Route::delete('/missas/{missa}/repertorio/{missaMusica}', [LocalAdminMissaController::class, 'destroyRepertorio'])->name('repertorio.destroy');
         Route::get('/missas/{missa}/repertorio/{missaMusica}/cifra', [LocalAdminMissaController::class, 'showCifra'])->name('repertorio.cifra');
+        Route::get('/missas/{missa}/repertorio/{missaMusica}/impressao', [LocalAdminMissaController::class, 'imprimirCifra'])->name('repertorio.print');
+        Route::get('/missas/{missa}/repertorio/{missaMusica}/pdf', [LocalAdminMissaController::class, 'pdfCifra'])->name('repertorio.pdf');
     });
 
 Route::middleware(['auth', 'verified_custom', 'role:member', 'primeiro_acesso'])
@@ -171,6 +173,8 @@ Route::middleware(['auth', 'verified_custom', 'role:member', 'primeiro_acesso'])
         Route::get('/repertorio', [BibliotecaMusicalController::class, 'repertorio'])->name('repertorio');
         Route::get('/musicas', [BibliotecaMusicalController::class, 'musicas'])->name('musicas.index');
         Route::get('/musicas/{musica}/versoes/{versaoMusical}', [BibliotecaMusicalController::class, 'versao'])->name('versoes.show');
+        Route::get('/musicas/{musica}/versoes/{versaoMusical}/impressao', [BibliotecaMusicalController::class, 'imprimirVersao'])->name('versoes.print');
+        Route::get('/musicas/{musica}/versoes/{versaoMusical}/pdf', [BibliotecaMusicalController::class, 'pdfVersao'])->name('versoes.pdf');
         Route::get('/colecoes', [ColecaoEstudoController::class, 'index'])->name('colecoes.index');
         Route::post('/colecoes', [ColecaoEstudoController::class, 'store'])->name('colecoes.store');
         Route::get('/colecoes/{colecao}', [ColecaoEstudoController::class, 'show'])->name('colecoes.show');

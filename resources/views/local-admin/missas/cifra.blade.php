@@ -19,9 +19,19 @@
             </p>
         </div>
 
-        <a href="{{ route('local-admin.missas.show', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 font-medium text-gray-700 hover:bg-gray-50">
-            Voltar para a missa
-        </a>
+        <div class="flex flex-wrap gap-3">
+            @if ($itemRepertorio->versaoMusical)
+                <a href="{{ route('local-admin.repertorio.print', [$missa, $itemRepertorio]) }}" class="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 font-medium text-emerald-800 hover:bg-emerald-100">
+                    Imprimir
+                </a>
+                <a href="{{ route('local-admin.repertorio.pdf', [$missa, $itemRepertorio]) }}" class="inline-flex items-center justify-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 font-medium text-amber-800 hover:bg-amber-100">
+                    Baixar PDF
+                </a>
+            @endif
+            <a href="{{ route('local-admin.missas.show', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 font-medium text-gray-700 hover:bg-gray-50">
+                Voltar para a missa
+            </a>
+        </div>
     </div>
 
     @if ($itemRepertorio->versaoMusical)

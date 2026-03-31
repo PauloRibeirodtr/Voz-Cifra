@@ -12,6 +12,7 @@ use App\Models\Padre;
 use App\Models\TempoLiturgico;
 use App\Models\Usuario;
 use App\Models\VersaoMusical;
+use App\Services\FolhaVersaoMusicalService;
 use App\Rules\ValidChord;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
@@ -28,7 +29,8 @@ class MissaController extends Controller
 {
     public function __construct(
         private readonly TranspositorCifrasService $transpositorCifrasService,
-        private readonly RenderizadorCifrasHtmlService $renderizadorCifrasHtmlService
+        private readonly RenderizadorCifrasHtmlService $renderizadorCifrasHtmlService,
+        private readonly FolhaVersaoMusicalService $folhaVersaoMusicalService
     ) {
     }
 
@@ -390,6 +392,40 @@ class MissaController extends Controller
         ]);
     }
 
+    public function imprimirCifra(Missa $missa, MissaMusica $missaMusica): View
+    {
+        $this->garantirMissaDaIgreja($missa);
+        $this->garantirItemDaMissa($missa, $missaMusica);
+        abort_unless($missaMusica->versaoMusical !== null, 404);
+
+        $folha = $this->montarFolhaItemRepertorio($missa, $missaMusica);
+
+        return view('shared.versao-print', [
+            'folha' => $folha,
+            'etiquetaFolha' => 'Folha da igreja',
+            'pdfUrl' => route('local-admin.repertorio.pdf', [$missa, $missaMusica]),
+            'backUrl' => route('local-admin.repertorio.cifra', [$missa, $missaMusica]),
+            'pageTitle' => ($missaMusica->musica?->titulo ?: 'Versao') . ' | Impressao',
+        ]);
+    }
+
+    public function pdfCifra(Missa $missa, MissaMusica $missaMusica)
+    {
+        $this->garantirMissaDaIgreja($missa);
+        $this->garantirItemDaMissa($missa, $missaMusica);
+        abort_unless($missaMusica->versaoMusical !== null, 404);
+
+        $folha = $this->montarFolhaItemRepertorio($missa, $missaMusica);
+
+        return Pdf::loadView('shared.versao-pdf', [
+            'folha' => $folha,
+            'etiquetaFolha' => 'Folha da igreja',
+            'pageTitle' => ($missaMusica->musica?->titulo ?: 'Versao') . ' | PDF',
+        ])
+            ->setPaper('a4', 'portrait')
+            ->download('missa-' . $missa->id . '-musica-' . $missaMusica->id . '.pdf');
+    }
+
     public function apresentacao(Missa $missa): View
     {
         $this->garantirMissaDaIgreja($missa);
@@ -596,5 +632,21 @@ class MissaController extends Controller
         $tom = trim((string) $tom);
 
         return $tom !== '' ? $tom : null;
+    }
+
+    private function montarFolhaItemRepertorio(Missa $missa, MissaMusica $missaMusica): array
+    {
+        $missaMusica->loadMissing(['musica', 'versaoMusical', 'momentoLiturgico']);
+
+        return $this->folhaVersaoMusicalService->montar(
+            $missaMusica->versaoMusical,
+            $this->obterTextoCifraExibicao($missaMusica),
+            $missaMusica->tom_exibicao,
+            [
+                'Missa' => $missa->titulo,
+                'Momento' => $missaMusica->momentoLiturgico?->nome,
+                'Igreja' => $missa->igreja?->nome ?? $this->obterIgreja()->nome,
+            ]
+        );
     }
 }
