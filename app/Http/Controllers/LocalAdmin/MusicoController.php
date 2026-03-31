@@ -20,9 +20,9 @@ class MusicoController extends Controller
 
         return view('local-admin.musicos.index', [
             'igreja' => $igreja,
-            'musicos' => Usuario::query()
-                ->where('perfil_global', 'member')
+            'usuariosIgreja' => Usuario::query()
                 ->where('igreja_id', $igreja->id)
+                ->whereIn('perfil_global', ['member', 'admin_local'])
                 ->orderBy('nome')
                 ->get(),
         ]);

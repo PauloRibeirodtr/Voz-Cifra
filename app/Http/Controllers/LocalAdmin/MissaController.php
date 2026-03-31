@@ -205,6 +205,18 @@ class MissaController extends Controller
             ->with('success', 'Missa atualizada com sucesso.');
     }
 
+    public function destroy(Missa $missa): RedirectResponse
+    {
+        $this->garantirMissaDaIgreja($missa);
+
+        $titulo = $missa->titulo;
+        $missa->delete();
+
+        return redirect()
+            ->route('local-admin.missas.index')
+            ->with('success', 'Missa "' . $titulo . '" excluida com sucesso.');
+    }
+
     public function toggle(Missa $missa): RedirectResponse
     {
         $this->garantirMissaDaIgreja($missa);

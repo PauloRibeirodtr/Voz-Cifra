@@ -21,6 +21,11 @@
             <a href="{{ route('local-admin.missas.edit', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 font-medium text-gray-700 hover:bg-gray-50">Editar</a>
             <a href="{{ route('local-admin.missas.apresentacao', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 font-medium text-indigo-800 hover:bg-indigo-100">Apresentacao</a>
             <a href="{{ route('local-admin.missas.pdf', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 font-medium text-amber-800 hover:bg-amber-100">Baixar PDF</a>
+            <form action="{{ route('local-admin.missas.destroy', $missa) }}" method="POST" onsubmit="return confirm('Deseja excluir esta missa e todo o repertorio vinculado?');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl border border-red-200 bg-red-50 px-4 py-3 font-medium text-red-700 hover:bg-red-100">Excluir missa</button>
+            </form>
             <a href="{{ route('local-admin.missas.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 font-medium text-gray-700 hover:bg-gray-50 sm:col-span-2 xl:col-span-1">Voltar</a>
         </div>
     </div>

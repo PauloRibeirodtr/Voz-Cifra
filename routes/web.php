@@ -68,6 +68,7 @@ Route::middleware(['auth', 'verified_custom', 'super.admin', 'primeiro_acesso'])
         Route::post('/igrejas', [IgrejaController::class, 'store'])->name('igrejas.store');
         Route::get('/igrejas/{igreja}/editar', [IgrejaController::class, 'edit'])->name('igrejas.edit');
         Route::put('/igrejas/{igreja}', [IgrejaController::class, 'update'])->name('igrejas.update');
+        Route::post('/igrejas/{igreja}/admins-locais', [IgrejaController::class, 'storeAdminLocal'])->name('igrejas.admins-locais.store');
         Route::post('/igrejas/{igreja}/admin-local/resetar-senha', [IgrejaController::class, 'resetAdminLocalPassword'])->name('igrejas.admin-local.password.reset');
 
         Route::get('/musicos', [AdminMusicoController::class, 'index'])->name('musicos.index');
@@ -149,6 +150,7 @@ Route::middleware(['auth', 'verified_custom', 'role:admin_local', 'primeiro_aces
         Route::get('/missas/{missa}', [LocalAdminMissaController::class, 'show'])->name('missas.show');
         Route::get('/missas/{missa}/editar', [LocalAdminMissaController::class, 'edit'])->name('missas.edit');
         Route::put('/missas/{missa}', [LocalAdminMissaController::class, 'update'])->name('missas.update');
+        Route::delete('/missas/{missa}', [LocalAdminMissaController::class, 'destroy'])->name('missas.destroy');
         Route::post('/missas/{missa}/toggle', [LocalAdminMissaController::class, 'toggle'])->name('missas.toggle');
         Route::get('/missas/{missa}/pdf', [LocalAdminMissaController::class, 'pdf'])->name('missas.pdf');
 

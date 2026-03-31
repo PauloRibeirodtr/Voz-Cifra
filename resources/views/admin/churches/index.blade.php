@@ -7,7 +7,7 @@
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Igrejas cadastradas</h1>
-            <p class="text-sm text-gray-500">Gerencie as igrejas e seus administradores locais.</p>
+            <p class="text-sm text-gray-500">Gerencie as igrejas e seus admins locais.</p>
         </div>
 
         <a href="{{ route('admin.igrejas.create') }}" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-medium text-white hover:bg-green-800 sm:w-auto">
@@ -49,7 +49,7 @@
                         <tr>
                             <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Igreja</th>
                             <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Localizacao</th>
-                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Admin local</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Admins locais</th>
                             <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Status</th>
                             <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Link publico</th>
                             <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-500">Acoes</th>
@@ -57,7 +57,8 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @foreach ($igrejas as $igreja)
-                            @php($adminLocal = $igreja->usuarios->first())
+                            @php($adminsLocais = $igreja->adminsLocais)
+                            @php($adminLocal = $adminsLocais->first())
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4">
                                     <div class="font-semibold text-gray-800">{{ $igreja->nome }}</div>
@@ -72,12 +73,16 @@
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-600">
                                     @if ($adminLocal)
-                                        <div class="font-medium text-gray-800">{{ $adminLocal->nome }}</div>
-                                        <div>{{ $adminLocal->email }}</div>
-                                        @if ($adminLocal->telefone)
-                                            <div>{{ $adminLocal->telefone }}</div>
-                                        @endif
-                                        <div class="text-xs text-gray-400">{{ $adminLocal->cpf }}</div>
+                                        @foreach ($adminsLocais as $admin)
+                                            <div class="@if(!$loop->first) mt-3 border-t border-gray-100 pt-3 @endif">
+                                                <div class="font-medium text-gray-800">{{ $admin->nome }}</div>
+                                                <div>{{ $admin->email }}</div>
+                                                @if ($admin->telefone)
+                                                    <div>{{ $admin->telefone }}</div>
+                                                @endif
+                                                <div class="text-xs text-gray-400">{{ $admin->cpf }}</div>
+                                            </div>
+                                        @endforeach
                                     @else
                                         <span class="text-amber-600 font-medium">Sem admin local</span>
                                     @endif
@@ -107,7 +112,7 @@
                                                 type="button"
                                                 class="inline-flex rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-800 hover:bg-amber-100"
                                                 data-reset-admin-local
-                                                data-modal-id="resetar-admin-local-{{ $igreja->id }}"
+                                                data-modal-id="resetar-admin-local-{{ $igreja->id }}-{{ $adminLocal->id }}"
                                             >
                                                 Resetar senha
                                             </button>
@@ -122,7 +127,8 @@
 
             <div class="space-y-4 p-4 md:hidden">
                 @foreach ($igrejas as $igreja)
-                    @php($adminLocal = $igreja->usuarios->first())
+                    @php($adminsLocais = $igreja->adminsLocais)
+                    @php($adminLocal = $adminsLocais->first())
                     <article class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
                         <div class="flex items-start justify-between gap-3">
                             <div class="min-w-0">
@@ -146,14 +152,18 @@
                             </div>
 
                             <div class="rounded-xl bg-gray-50 p-3">
-                                <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-400">Admin local</span>
+                                <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-400">Admins locais</span>
                                 @if ($adminLocal)
-                                    <div class="mt-1 font-semibold text-gray-800">{{ $adminLocal->nome }}</div>
-                                    <div class="break-all">{{ $adminLocal->email }}</div>
-                                    @if ($adminLocal->telefone)
-                                        <div>{{ $adminLocal->telefone }}</div>
-                                    @endif
-                                    <div class="text-xs text-gray-400">{{ $adminLocal->cpf }}</div>
+                                    @foreach ($adminsLocais as $admin)
+                                        <div class="@if(!$loop->first) mt-3 border-t border-gray-200 pt-3 @endif">
+                                            <div class="mt-1 font-semibold text-gray-800">{{ $admin->nome }}</div>
+                                            <div class="break-all">{{ $admin->email }}</div>
+                                            @if ($admin->telefone)
+                                                <div>{{ $admin->telefone }}</div>
+                                            @endif
+                                            <div class="text-xs text-gray-400">{{ $admin->cpf }}</div>
+                                        </div>
+                                    @endforeach
                                 @else
                                     <div class="mt-1 font-medium text-amber-600">Sem admin local</div>
                                 @endif
@@ -179,7 +189,7 @@
                                     type="button"
                                     class="inline-flex w-full items-center justify-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800 hover:bg-amber-100"
                                     data-reset-admin-local
-                                    data-modal-id="resetar-admin-local-{{ $igreja->id }}"
+                                    data-modal-id="resetar-admin-local-{{ $igreja->id }}-{{ $adminLocal->id }}"
                                 >
                                     Resetar senha do admin local
                                 </button>
@@ -190,9 +200,8 @@
             </div>
 
             @foreach ($igrejas as $igreja)
-                @php($adminLocal = $igreja->usuarios->first())
-                @if ($adminLocal)
-                    <div id="resetar-admin-local-{{ $igreja->id }}" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 px-4 py-6" data-reset-modal>
+                @foreach ($igreja->adminsLocais as $adminLocal)
+                    <div id="resetar-admin-local-{{ $igreja->id }}-{{ $adminLocal->id }}" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 px-4 py-6" data-reset-modal>
                         <div class="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl">
                             <div class="flex items-start justify-between gap-4">
                                 <div>
@@ -209,6 +218,7 @@
                             <form action="{{ route('admin.igrejas.admin-local.password.reset', $igreja) }}" method="POST" class="mt-6 space-y-4" onsubmit="return confirm('Confirma a redefinicao da senha deste admin local?');">
                                 @csrf
                                 <input type="hidden" name="origem" value="index">
+                                <input type="hidden" name="admin_local_id" value="{{ $adminLocal->id }}">
 
                                 <div class="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm text-amber-900">
                                     Se voce deixar a nova senha em branco, o sistema vai usar o CPF do admin local como senha padrao e obrigar a troca no proximo acesso.
@@ -236,7 +246,7 @@
                             </form>
                         </div>
                     </div>
-                @endif
+                @endforeach
             @endforeach
         @endif
     </div>
@@ -246,7 +256,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const abrirBotoes = document.querySelectorAll('[data-reset-admin-local]');
-            const modalInicialId = @json(session('abrir_reset_modal') ? 'resetar-admin-local-' . session('abrir_reset_modal') : null);
+            const modalInicialId = @json(session('abrir_reset_modal'));
 
             abrirBotoes.forEach((botao) => {
                 const modalId = botao.getAttribute('data-modal-id');

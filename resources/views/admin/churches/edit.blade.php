@@ -11,7 +11,7 @@
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Editar igreja</h1>
-            <p class="text-sm text-gray-500">Atualize os dados da igreja e do administrador local responsavel.</p>
+            <p class="text-sm text-gray-500">Atualize os dados da igreja e gerencie ate 2 admins locais por igreja.</p>
         </div>
 
         <a href="{{ route('admin.igrejas.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-700 font-medium hover:bg-gray-50 sm:w-auto">
@@ -105,12 +105,12 @@
         </div>
 
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <h2 class="text-lg font-bold text-gray-800 mb-4">Administrador local</h2>
+            <h2 class="text-lg font-bold text-gray-800 mb-4">Admin local principal</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700">Nome</label>
-                    <input type="text" name="admin_nome" value="{{ old('admin_nome', $adminLocal?->nome) }}" required placeholder="Nome completo do administrador local" class="{{ $classeInput }}" />
+                    <input type="text" name="admin_nome" value="{{ old('admin_nome', $adminLocal?->nome) }}" required placeholder="Nome completo do admin local principal" class="{{ $classeInput }}" />
                 </div>
 
                 <div>
@@ -129,47 +129,108 @@
                 </div>
 
                 <div class="md:col-span-2 bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800">
-                    Os dados principais do administrador local sao mantidos aqui. A redefinicao de senha fica disponivel logo abaixo, com troca obrigatoria no proximo acesso.
+                    Os dados do admin local principal sao mantidos aqui. Nas secoes abaixo voce escolhe exatamente qual admin local tera a senha resetada e, se houver vaga, pode adicionar um segundo admin local.
                 </div>
             </div>
         </div>
 
-        @if ($adminLocal)
+        @if (($adminsLocais ?? collect())->isNotEmpty())
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div class="max-w-2xl">
-                        <h2 class="text-lg font-bold text-gray-800">Acesso do admin local</h2>
+                        <h2 class="text-lg font-bold text-gray-800">Admins locais da igreja</h2>
                         <p class="mt-2 text-sm text-gray-500">
-                            Redefina a senha deste admin local com seguranca. Ao concluir, o sistema vai marcar o proximo login como primeiro acesso.
+                            Cada igreja pode ter ate 2 admins locais. Escolha exatamente qual admin tera a senha resetada.
                         </p>
                     </div>
-                    <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $adminLocal->primeiro_acesso ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-700' }}">
-                        {{ $adminLocal->primeiro_acesso ? 'Troca pendente no proximo login' : 'Acesso liberado' }}
+                    <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                        {{ ($adminsLocais ?? collect())->count() }}/2 admins locais
                     </span>
                 </div>
 
-                <form action="{{ route('admin.igrejas.admin-local.password.reset', $igreja) }}" method="POST" class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2" onsubmit="return confirm('Confirma a redefinicao da senha deste admin local?');">
+                <div class="mt-6 space-y-4">
+                    @foreach (($adminsLocais ?? collect()) as $admin)
+                        <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                            <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                                <div>
+                                    <h3 class="text-base font-bold text-gray-900">{{ $admin->nome }}</h3>
+                                    <p class="mt-1 text-sm text-gray-600">{{ $admin->email }}</p>
+                                    <p class="mt-1 text-xs text-gray-400">{{ $admin->cpf }} @if($admin->telefone) • {{ $admin->telefone }} @endif</p>
+                                </div>
+                                <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $admin->primeiro_acesso ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-700' }}">
+                                    {{ $admin->primeiro_acesso ? 'Troca pendente no proximo login' : 'Acesso liberado' }}
+                                </span>
+                            </div>
+
+                            <form action="{{ route('admin.igrejas.admin-local.password.reset', $igreja) }}" method="POST" class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2" onsubmit="return confirm('Confirma a redefinicao da senha de {{ $admin->nome }}?');">
+                                @csrf
+                                <input type="hidden" name="origem" value="edit">
+                                <input type="hidden" name="admin_local_id" value="{{ $admin->id }}">
+
+                                <div data-password-strength-container>
+                                    <label class="block text-sm font-medium text-gray-700">Nova senha manual para {{ $admin->nome }}</label>
+                                    <input type="password" name="password" data-password-strength-input class="{{ $classeInput }}" placeholder="Opcional">
+                                    @include('partials.password-strength-meter')
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Confirmar nova senha</label>
+                                    <input type="password" name="password_confirmation" data-password-confirmation-input class="{{ $classeInput }}" placeholder="Repita a nova senha">
+                                </div>
+
+                                <div class="lg:col-span-2 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm text-amber-900">
+                                    Se a nova senha ficar em branco, o sistema vai usar o CPF deste admin local como senha padrao e obrigar a troca no proximo acesso.
+                                </div>
+
+                                <div class="lg:col-span-2">
+                                    <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-amber-600 px-5 py-3 font-semibold text-white hover:bg-amber-700">
+                                        Resetar senha de {{ $admin->nome }}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
+        @if (($adminsLocais ?? collect())->count() < 2)
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <h2 class="text-lg font-bold text-gray-800">Adicionar segundo admin local</h2>
+                <p class="mt-2 text-sm text-gray-500">
+                    O admin master pode cadastrar mais um admin local para esta igreja. O limite e de 2 admins locais por igreja.
+                </p>
+
+                <form action="{{ route('admin.igrejas.admins-locais.store', $igreja) }}" method="POST" class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
                     @csrf
-                    <input type="hidden" name="origem" value="edit">
 
-                    <div class="lg:col-span-2 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm text-amber-900">
-                        Se a nova senha ficar em branco, o sistema vai usar o CPF do admin local como senha padrao. Em ambos os casos, ele sera obrigado a trocar a senha no proximo acesso.
-                    </div>
-
-                    <div data-password-strength-container>
-                        <label class="block text-sm font-medium text-gray-700">Nova senha manual</label>
-                        <input type="password" name="password" data-password-strength-input class="{{ $classeInput }}" placeholder="Opcional">
-                        @include('partials.password-strength-meter')
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Nome</label>
+                        <input type="text" name="nome" value="{{ old('nome') }}" required class="{{ $classeInput }}" placeholder="Nome completo do segundo admin local" />
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Confirmar nova senha</label>
-                        <input type="password" name="password_confirmation" data-password-confirmation-input class="{{ $classeInput }}" placeholder="Repita a nova senha">
+                        <label class="block text-sm font-medium text-gray-700">CPF</label>
+                        <input type="text" name="cpf" value="{{ old('cpf') }}" required data-cpf-input class="{{ $classeInput }}" placeholder="000.000.000-00" />
                     </div>
 
-                    <div class="lg:col-span-2 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-amber-600 px-5 py-3 font-semibold text-white hover:bg-amber-700">
-                            Resetar senha do admin local
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">E-mail</label>
+                        <input type="email" name="email" value="{{ old('email') }}" required class="{{ $classeInput }}" placeholder="admin.local.2@igreja.com" />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Telefone</label>
+                        <input type="text" name="telefone" value="{{ old('telefone') }}" data-telefone-input class="{{ $classeInput }}" placeholder="(65) 99999-9999" />
+                    </div>
+
+                    <div class="md:col-span-2 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm text-blue-800">
+                        A senha inicial sera o CPF informado, com troca obrigatoria no primeiro acesso.
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-5 py-3 font-semibold text-white hover:bg-green-800">
+                            Adicionar admin local
                         </button>
                     </div>
                 </form>
@@ -230,9 +291,9 @@
             const campoEndereco = document.querySelector('[data-endereco-input]');
             const campoCidade = document.querySelector('[data-cidade-input]');
             const campoEstado = document.querySelector('[data-estado-input]');
-            const campoCpf = document.querySelector('[data-cpf-input]');
+            const camposCpf = document.querySelectorAll('[data-cpf-input]');
             const campoCnpj = document.querySelector('[data-cnpj-input]');
-            const campoTelefone = document.querySelector('[data-telefone-input]');
+            const camposTelefone = document.querySelectorAll('[data-telefone-input]');
 
             if (!campoCep || !campoEndereco || !campoCidade || !campoEstado) {
                 return;
@@ -310,9 +371,9 @@
 
             campoCep.addEventListener('blur', preencherEnderecoPorCep);
             campoCep.addEventListener('input', () => campoCep.value = aplicarMascaraCep(campoCep.value));
-            campoCpf?.addEventListener('input', () => campoCpf.value = aplicarMascaraCpf(campoCpf.value));
+            camposCpf.forEach((campo) => campo.addEventListener('input', () => campo.value = aplicarMascaraCpf(campo.value)));
             campoCnpj?.addEventListener('input', () => campoCnpj.value = aplicarMascaraCnpj(campoCnpj.value));
-            campoTelefone?.addEventListener('input', () => campoTelefone.value = aplicarMascaraTelefone(campoTelefone.value));
+            camposTelefone.forEach((campo) => campo.addEventListener('input', () => campo.value = aplicarMascaraTelefone(campo.value)));
         });
     </script>
     @include('partials.password-strength-script')

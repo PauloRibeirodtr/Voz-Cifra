@@ -20,8 +20,7 @@ class IgrejaController extends Controller
     public function index(): View
     {
         $igrejas = Igreja::with([
-            'usuarios' => fn ($query) => $query
-                ->where('perfil_global', 'admin_local')
+            'adminsLocais' => fn ($query) => $query
                 ->orderBy('nome'),
         ])
             ->orderBy('nome')
@@ -94,12 +93,13 @@ class IgrejaController extends Controller
 
     public function edit(Igreja $igreja): View
     {
-        $adminLocal = $this->obterAdminLocal($igreja);
+        $adminsLocais = $this->obterAdminsLocais($igreja);
         $igreja = $this->adicionarDadosPublicos($igreja);
 
         return view('admin.churches.edit', [
             'igreja' => $igreja,
-            'adminLocal' => $adminLocal,
+            'adminLocal' => $adminsLocais->first(),
+            'adminsLocais' => $adminsLocais,
         ]);
     }
 
@@ -176,7 +176,9 @@ class IgrejaController extends Controller
 
     public function resetAdminLocalPassword(Request $request, Igreja $igreja): RedirectResponse
     {
-        $adminLocal = $this->obterAdminLocal($igreja);
+        $adminLocal = $request->filled('admin_local_id')
+            ? $this->obterAdminLocalPorId($igreja, (int) $request->input('admin_local_id'))
+            : $this->obterAdminLocal($igreja);
         $origem = $request->input('origem') === 'edit' ? 'edit' : 'index';
 
         if (!$adminLocal) {
@@ -198,7 +200,7 @@ class IgrejaController extends Controller
                 ->withInput();
 
             if ($origem === 'index') {
-                $redirecionamento->with('abrir_reset_modal', $igreja->id);
+                $redirecionamento->with('abrir_reset_modal', 'resetar-admin-local-' . $igreja->id . '-' . $adminLocal?->id);
             }
 
             return $redirecionamento;
@@ -218,11 +220,56 @@ class IgrejaController extends Controller
             ->with('success', 'Senha redefinida com sucesso. O usuario devera trocar no proximo acesso.');
     }
 
+    public function storeAdminLocal(Request $request, Igreja $igreja): RedirectResponse
+    {
+        if ($this->obterAdminsLocais($igreja)->count() >= 2) {
+            return redirect()
+                ->route('admin.igrejas.edit', $igreja)
+                ->with('error', 'Cada igreja pode ter no maximo 2 admins locais.');
+        }
+
+        $dados = $request->validate([
+            'nome' => ['required', 'string', 'max:255'],
+            'cpf' => ['required', 'string', 'max:14', Rule::unique('usuarios', 'cpf')],
+            'email' => ['required', 'email', 'max:255', Rule::unique('usuarios', 'email')],
+            'telefone' => ['nullable', 'string', 'max:20'],
+        ]);
+
+        Usuario::create([
+            'igreja_id' => $igreja->id,
+            'nome' => $dados['nome'],
+            'cpf' => $dados['cpf'],
+            'email' => $dados['email'],
+            'telefone' => $dados['telefone'] ?? null,
+            'password' => $this->gerarSenhaInicialPorCpf($dados['cpf']),
+            'perfil_global' => 'admin_local',
+            'ativo' => true,
+            'primeiro_acesso' => true,
+        ]);
+
+        return redirect()
+            ->route('admin.igrejas.edit', $igreja)
+            ->with('success', 'Admin local adicional cadastrado com sucesso.');
+    }
+
     protected function obterAdminLocal(Igreja $igreja): ?Usuario
+    {
+        return $this->obterAdminsLocais($igreja)->first();
+    }
+
+    protected function obterAdminsLocais(Igreja $igreja)
     {
         return $igreja->usuarios()
             ->where('perfil_global', 'admin_local')
             ->orderBy('id')
+            ->get();
+    }
+
+    protected function obterAdminLocalPorId(Igreja $igreja, int $adminLocalId): ?Usuario
+    {
+        return $igreja->usuarios()
+            ->where('perfil_global', 'admin_local')
+            ->whereKey($adminLocalId)
             ->first();
     }
 

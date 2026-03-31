@@ -35,6 +35,11 @@ class Igreja extends Model
         return $this->hasMany(Usuario::class, 'igreja_id');
     }
 
+    public function adminsLocais(): HasMany
+    {
+        return $this->usuarios()->where('perfil_global', 'admin_local');
+    }
+
     public function missas(): HasMany
     {
         return $this->hasMany(Missa::class, 'igreja_id');
