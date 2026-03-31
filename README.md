@@ -1,6 +1,6 @@
 # Voz & Cifra
 
-![Versao](https://img.shields.io/badge/versao-v0.7.0-blue)
+![Versao](https://img.shields.io/badge/versao-v0.8.0-blue)
 ![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4)
 ![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon%20Ready-336791)
@@ -12,7 +12,7 @@ Sistema web em Laravel 12 para organizacao do ministerio musical e do nucleo lit
 
 ## Visao geral
 
-A versao atual de referencia do projeto e `v0.7.0`.
+A versao atual de referencia do projeto e `v0.8.0`.
 
 Nesta etapa, o sistema ja atende tres perfis reais de uso:
 
@@ -30,9 +30,13 @@ Hoje o projeto ja permite:
 - manter biblioteca de acordes, tempos liturgicos e momentos liturgicos
 - cadastrar musicas base e versoes musicais com cifras
 - montar missas e repertorios por igreja
+- aceitar missa que atravessa a madrugada com encerramento automatico correto
+- limitar datas de missa a uma janela segura de 1 mes para tras e 1 mes para frente
+- validar tom musical e `tom_usado` com formato compativel com a leitura e transposicao
 - visualizar cifras no contexto da missa
 - gerar PDF da missa com repertorio e blocos de cifra
 - permitir que o musico estude musicas e versoes fora de uma missa especifica
+- permitir que o musico organize playlists / colecoes de estudo
 - exibir a missa publica sem cifras no link fixo da igreja
 
 ## Tecnologias
@@ -125,6 +129,7 @@ Responsabilidades atuais:
 - cadastro de outros `admin_master`
 - reset de senha de `admin_local` com obrigacao de troca no proximo acesso
 - encerramento de sessao por `Configuracoes`
+- tema por usuario com preferencia persistida
 
 ### Area do admin local
 
@@ -142,11 +147,14 @@ Responsabilidades atuais:
 - editar missa
 - ativar e desativar missa
 - desativacao automatica de missa encerrada pelo horario
+- suporte a missa atravessando a madrugada
+- validacao de janela de datas para evitar agendamentos absurdos
 - montar repertorio com a base central de musicas
 - buscar musica por titulo, artista ou trecho da letra
 - associar momento liturgico ao item do repertorio
 - vincular versao musical existente ao item
 - definir `tom_usado` por item da missa
+- validar `tom_usado` com formato de acorde / tom reconhecido
 - preservar o tom original da versao musical
 - reordenar repertorio com seguranca
 - visualizacao com cifra por item
@@ -169,6 +177,7 @@ Responsabilidades atuais:
 - repertorio da igreja para o `member`
 - biblioteca musical para estudo do `member`
 - visualizacao de cifras completas fora da missa
+- playlists / colecoes de estudo pessoais
 - logout acessivel nas areas autenticadas
 
 ### Igrejas
@@ -247,19 +256,21 @@ Responsabilidades atuais:
 - auto rolagem
 - metronomo simples baseado no BPM
 - dicionario lateral de acordes com shape
+- validacao de tom musical no backend
 
 ### Area publica por igreja
 
 - rota publica fixa por `slug`
 - pagina publica inicial da igreja
 - sincronizacao automatica de estado da missa publica
-- contagem regressiva real da proxima missa
+- contagem regressiva da proxima missa
 - estado automatico de celebracao em andamento
 - exibicao da missa publica sem cifras para o fiel
 - controles de fonte na tela publica
 - estrutura pronta para o QR Code fixo da igreja
+- favicon compartilhado com a logo principal da aplicacao
 
-## Atualizacoes recentes da versao `v0.7.0`
+## Atualizacoes recentes da versao `v0.8.0`
 
 - senha forte padronizada nos fluxos de perfil, reset e criacao manual
 - medidor de forca da senha nas telas de senha manual
@@ -269,6 +280,12 @@ Responsabilidades atuais:
 - suporte a `tom_usado` no contexto da missa
 - PDF da missa preparado para repertorio com cifra
 - melhoria da leitura musical para `admin_local` e `member`
+- suporte a missa atravessando a madrugada com encerramento correto
+- limitacao de datas absurdas ao cadastrar missa
+- validacao de tom musical e `tom_usado`
+- contagem publica mantida apenas para inicio da proxima missa
+- navegacao principal refinada com logo clicavel e cards de metricas clicaveis
+- tema por usuario com preferencia persistida
 
 ## Modulos fora do escopo atual
 
@@ -277,8 +294,9 @@ Ainda nao foram abertos nesta etapa:
 - biblioteca propria de arquivos por igreja
 - versao musical exclusiva por igreja
 - transposicao completa de tom com persistencia da cifra transposta por contexto
-- dark mode por usuario com preferencia persistida
 - experiencia publica final completa da missa por igreja em tempo real
+- telemetria / analytics de acesso publico por igreja
+- monitoramento de usuarios online com painel administrativo dedicado
 
 ## O que saiu do fluxo
 
@@ -331,12 +349,12 @@ SESSION_SECURE_COOKIE=false
 SESSION_SAME_SITE=lax
 ```
 
-Para desenvolvimento local:
+Para desenvolvimento local com a configuracao atual de exemplo:
 
 ```env
-CACHE_STORE=file
-SESSION_DRIVER=file
-QUEUE_CONNECTION=sync
+SESSION_DRIVER=database
+QUEUE_CONNECTION=database
+CACHE_STORE=database
 ```
 
 ### 2. Instalar dependencias
@@ -376,7 +394,7 @@ php artisan serve
 Acesso local:
 
 ```text
-http://127.0.0.1:8000/login
+http://127.0.0.1:8000
 ```
 
 ## Usuario inicial
@@ -395,6 +413,10 @@ Padrao atual:
 - A musica base guarda letra limpa e classificacao liturgica.
 - A versao musical guarda cifra, tom, BPM e apoio de execucao.
 - `missa_musicas.tom_usado` define o tom usado naquela missa sem sobrescrever `versoes_musicais.tom_musical`.
+- O sistema valida `tom_musical` e `tom_usado` com formato compativel com acordes e transposicao.
+- O cadastro de missas aceita celebracoes que atravessam a madrugada.
+- A desativacao automatica da missa considera o horario real de termino, inclusive quando a celebracao termina no dia seguinte.
+- O cadastro de missas limita a data a uma janela de 1 mes para tras e 1 mes para frente.
 - Hoje nao existe relacao persistida entre `versoes_musicais` e `acordes`.
 - A biblioteca de acordes funciona como apoio visual, validacao e dicionario.
 - O modulo de `padres` e apenas administrativo; padre nao entra no sistema como usuario.
@@ -402,8 +424,11 @@ Padrao atual:
 - O link publico da igreja e fixo e baseado no `slug`.
 - O QR Code da igreja pode apontar para esse link fixo.
 - A pagina publica da igreja identifica automaticamente a proxima missa e a celebracao em andamento.
+- A contagem publica aparece apenas para o inicio da proxima missa.
+- A pagina de login informa preventivamente o bloqueio temporario por excesso de tentativas invalidas.
+- A aplicacao usa a logo principal como favicon nas areas principais.
 - O PDF da missa agora pode carregar repertorio com cifra, respeitando o tom exibido da missa.
-- Dark mode por usuario ainda nao foi implementado para evitar regressao visual ampla nesta etapa.
+- O projeto ja possui preferencia de tema por usuario.
 
 ## Proximos passos recomendados
 
@@ -411,4 +436,4 @@ Padrao atual:
 - aplicar a migration de `tom_usado` em todos os ambientes
 - adicionar PDF individual por musica ou versao, se fizer sentido para uso da igreja
 - criar testes automatizados para primeiro acesso, senha forte e fluxo musical do `member`
-- tratar dark mode por usuario em uma etapa dedicada
+- evoluir o dashboard do `admin_master` para um painel de pendencias do sistema
