@@ -23,22 +23,22 @@
     @endif
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+        <a href="{{ route('local-admin.missas.index') }}" class="block rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
             <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Missas</span>
             <span class="mt-2 block text-3xl font-black text-gray-900">{{ $metricas['total_missas'] }}</span>
-        </div>
-        <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+        </a>
+        <a href="{{ route('local-admin.missas.index') }}" class="block rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
             <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Missas ativas</span>
             <span class="mt-2 block text-3xl font-black text-gray-900">{{ $metricas['missas_ativas'] }}</span>
-        </div>
-        <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+        </a>
+        <a href="{{ route('local-admin.musicos.index') }}" class="block rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
             <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Membros ativos</span>
             <span class="mt-2 block text-3xl font-black text-gray-900">{{ $metricas['membros_ativos'] }}</span>
-        </div>
-        <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+        </a>
+        <a href="{{ route('local-admin.musicos.index') }}" class="block rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
             <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Membros pendentes</span>
             <span class="mt-2 block text-3xl font-black text-gray-900">{{ $metricas['membros_pendentes'] }}</span>
-        </div>
+        </a>
     </div>
 
     <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3">

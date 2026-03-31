@@ -12,6 +12,7 @@ use App\Models\Padre;
 use App\Models\TempoLiturgico;
 use App\Models\Usuario;
 use App\Models\VersaoMusical;
+use App\Rules\ValidChord;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use App\Services\RenderizadorCifrasHtmlService;
@@ -20,6 +21,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
 class MissaController extends Controller
@@ -234,7 +236,7 @@ class MissaController extends Controller
         $dados = $request->validate([
             'musica_id' => ['required', 'exists:musicas,id'],
             'versao_musical_id' => ['nullable', 'exists:versoes_musicais,id'],
-            'tom_usado' => ['nullable', 'string', 'max:20'],
+            'tom_usado' => ['nullable', 'string', 'max:20', new ValidChord()],
             'momento_liturgico_id' => ['nullable', 'exists:momentos_liturgicos,id'],
         ], [
             'musica_id.required' => 'Selecione uma musica para adicionar ao repertorio.',
@@ -272,7 +274,7 @@ class MissaController extends Controller
 
         $dados = $request->validate([
             'versao_musical_id' => ['nullable', 'exists:versoes_musicais,id'],
-            'tom_usado' => ['nullable', 'string', 'max:20'],
+            'tom_usado' => ['nullable', 'string', 'max:20', new ValidChord()],
             'momento_liturgico_id' => ['nullable', 'exists:momentos_liturgicos,id'],
         ]);
 
@@ -469,13 +471,17 @@ class MissaController extends Controller
 
     private function validarDadosMissa(Request $request): array
     {
-        return $request->validate([
+        $hoje = CarbonImmutable::now('America/Cuiaba')->startOfDay();
+        $dataMinima = $hoje->subMonth()->toDateString();
+        $dataMaxima = $hoje->addMonth()->toDateString();
+
+        $validator = Validator::make($request->all(), [
             'titulo' => ['required', 'string', 'max:255'],
             'tempo_liturgico_id' => ['nullable', 'exists:tempos_liturgicos,id'],
             'padre_id' => ['nullable', 'exists:padres,id'],
-            'data_missa' => ['required', 'date'],
+            'data_missa' => ['required', 'date', 'after_or_equal:' . $dataMinima, 'before_or_equal:' . $dataMaxima],
             'hora_inicio' => ['required', 'date_format:H:i'],
-            'hora_fim' => ['required', 'date_format:H:i', 'after:hora_inicio'],
+            'hora_fim' => ['required', 'date_format:H:i'],
             'observacoes' => ['nullable', 'string'],
             'ativo' => ['nullable', 'boolean'],
             'reaproveitar_repertorio' => ['nullable', 'boolean'],
@@ -483,12 +489,27 @@ class MissaController extends Controller
         ], [
             'titulo.required' => 'Informe o titulo da missa.',
             'data_missa.required' => 'Informe a data da missa.',
+            'data_missa.after_or_equal' => 'A data da missa nao pode ser anterior a 1 mes atras.',
+            'data_missa.before_or_equal' => 'A data da missa nao pode ser posterior a 1 mes a frente.',
             'hora_inicio.required' => 'Informe o horario de inicio.',
             'hora_fim.required' => 'Informe o horario de termino.',
             'hora_inicio.date_format' => 'Informe o horario de inicio no formato HH:MM.',
             'hora_fim.date_format' => 'Informe o horario de termino no formato HH:MM.',
-            'hora_fim.after' => 'O horario de termino deve ser posterior ao horario de inicio.',
         ]);
+
+        $validator->after(function ($validator) use ($request): void {
+            $horaInicio = (string) $request->input('hora_inicio', '');
+            $horaFim = (string) $request->input('hora_fim', '');
+
+            if ($horaInicio !== '' && $horaFim !== '' && $horaInicio === $horaFim) {
+                $validator->errors()->add(
+                    'hora_fim',
+                    'O horario de termino deve ser diferente do horario de inicio.'
+                );
+            }
+        });
+
+        return $validator->validate();
     }
 
     private function obterUsuario(): Usuario
@@ -536,32 +557,27 @@ class MissaController extends Controller
     private function sincronizarMissasEncerradas(Igreja $igreja): void
     {
         $agora = CarbonImmutable::now('America/Cuiaba');
-
-        Missa::query()
+        $idsEncerrados = Missa::query()
             ->where('igreja_id', $igreja->id)
             ->where('ativo', true)
-            ->where(function ($query) use ($agora) {
-                $query
-                    ->whereDate('data_missa', '<', $agora->toDateString())
-                    ->orWhere(function ($subQuery) use ($agora) {
-                        $subQuery
-                            ->whereDate('data_missa', $agora->toDateString())
-                            ->where('hora_fim', '<', $agora->format('H:i:s'));
-                    });
-            })
+            ->get()
+            ->filter(fn (Missa $missa): bool => $missa->dataHoraFim('America/Cuiaba')->lessThan($agora))
+            ->pluck('id');
+
+        if ($idsEncerrados->isEmpty()) {
+            return;
+        }
+
+        Missa::query()
+            ->whereKey($idsEncerrados)
             ->update(['ativo' => false]);
     }
 
     private function missaJaEncerrada(Missa $missa): bool
     {
         $agora = CarbonImmutable::now('America/Cuiaba');
-        $dataHoraFim = CarbonImmutable::createFromFormat(
-            'Y-m-d H:i:s',
-            $missa->data_missa->format('Y-m-d') . ' ' . substr((string) $missa->hora_fim, 0, 8),
-            'America/Cuiaba'
-        );
 
-        return $dataHoraFim->lessThan($agora);
+        return $missa->dataHoraFim('America/Cuiaba')->lessThan($agora);
     }
 
     private function obterTextoCifraExibicao(MissaMusica $item): string

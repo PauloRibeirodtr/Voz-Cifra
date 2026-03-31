@@ -11,23 +11,23 @@
     @endphp
 
     <div class="border-b border-white/10 px-5 py-4 md:hidden">
-        <div class="flex items-center gap-3">
+        <a href="{{ route('member.dashboard') }}" class="flex items-center gap-3">
             <img src="{{ asset('logo/final.png') }}" alt="Logo Voz e Cifra" class="h-10 w-auto shrink-0">
             <div>
                 <p class="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-300">Voz &amp; Cifra</p>
                 <p class="text-sm font-semibold text-white/90">Menu do musico</p>
             </div>
-        </div>
+        </a>
     </div>
 
-    <div class="hidden shrink-0 border-b border-white/10 px-6 py-8 md:flex md:flex-col md:items-center md:justify-center">
+    <a href="{{ route('member.dashboard') }}" class="hidden shrink-0 border-b border-white/10 px-6 py-8 md:flex md:flex-col md:items-center md:justify-center">
         <img src="{{ asset('logo/final.png') }}" alt="Logo Voz e Cifra" class="mb-4 h-auto w-24 drop-shadow-2xl">
         <div class="text-center">
             <h1 class="text-xl font-extrabold tracking-widest text-white">VOZ</h1>
             <h2 class="text-lg font-bold tracking-wider text-slate-200">&amp; CIFRA</h2>
             <p class="mt-2 text-[11px] font-black uppercase tracking-[0.22em] text-emerald-300">Area do musico</p>
         </div>
-    </div>
+    </a>
 
     <nav class="flex-1 space-y-3 overflow-y-auto px-4 py-6">
         <a href="{{ route('member.dashboard') }}" class="{{ $itemMenuClasse(request()->routeIs('member.dashboard')) }}">

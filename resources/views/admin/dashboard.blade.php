@@ -10,35 +10,35 @@
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-        <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-blue-500">
+        <a href="{{ route('admin.musicos.index') }}" class="block bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-blue-500 transition hover:-translate-y-0.5 hover:shadow-md">
             <h3 class="font-bold text-sm text-gray-500 uppercase tracking-wider mb-1">Usuarios</h3>
             <div class="text-3xl sm:text-4xl font-black text-gray-800">{{ $metrics['total_usuarios'] ?? 0 }}</div>
-        </div>
+        </a>
 
-        <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-green-500">
+        <a href="{{ route('admin.igrejas.index') }}" class="block bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-green-500 transition hover:-translate-y-0.5 hover:shadow-md">
             <h3 class="font-bold text-sm text-gray-500 uppercase tracking-wider mb-1">Igrejas</h3>
             <div class="text-3xl sm:text-4xl font-black text-gray-800">{{ $metrics['total_igrejas'] ?? 0 }}</div>
-        </div>
+        </a>
 
-        <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-orange-500">
+        <a href="{{ route('admin.musicas.index') }}" class="block bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-orange-500 transition hover:-translate-y-0.5 hover:shadow-md">
             <h3 class="font-bold text-sm text-gray-500 uppercase tracking-wider mb-1">Musicas</h3>
             <div class="text-3xl sm:text-4xl font-black text-gray-800">{{ $metrics['total_musicas'] ?? 0 }}</div>
-        </div>
+        </a>
 
-        <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-purple-500">
+        <a href="{{ route('admin.igrejas.index') }}" class="block bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-purple-500 transition hover:-translate-y-0.5 hover:shadow-md">
             <h3 class="font-bold text-sm text-gray-500 uppercase tracking-wider mb-1">Missas</h3>
             <div class="text-3xl sm:text-4xl font-black text-gray-800">{{ $metrics['total_missas'] ?? 0 }}</div>
-        </div>
+        </a>
 
-        <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-yellow-500">
+        <a href="{{ route('admin.igrejas.index') }}" class="block bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-yellow-500 transition hover:-translate-y-0.5 hover:shadow-md">
             <h3 class="font-bold text-sm text-gray-500 uppercase tracking-wider mb-1">Admins locais</h3>
             <div class="text-3xl sm:text-4xl font-black text-gray-800">{{ $metrics['admins_locais'] ?? 0 }}</div>
-        </div>
+        </a>
 
-        <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-emerald-500">
+        <a href="{{ route('admin.musicos.index') }}" class="block bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-emerald-500 transition hover:-translate-y-0.5 hover:shadow-md">
             <h3 class="font-bold text-sm text-gray-500 uppercase tracking-wider mb-1">Membros</h3>
             <div class="text-3xl sm:text-4xl font-black text-gray-800">{{ $metrics['membros'] ?? 0 }}</div>
-        </div>
+        </a>
     </div>
 
     <div class="mb-6 sm:mb-8 rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-sm">

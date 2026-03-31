@@ -55,47 +55,32 @@ class IgrejaPublicaController extends Controller
     private function montarEstadoPublico(Igreja $igreja, string $timezone): array
     {
         $agora = CarbonImmutable::now($timezone);
-
-        Missa::query()
+        $idsEncerrados = Missa::query()
             ->where('igreja_id', $igreja->id)
             ->where('ativo', true)
-            ->where(function ($query) use ($agora) {
-                $query
-                    ->whereDate('data_missa', '<', $agora->toDateString())
-                    ->orWhere(function ($subQuery) use ($agora) {
-                        $subQuery
-                            ->whereDate('data_missa', $agora->toDateString())
-                            ->where('hora_fim', '<', $agora->format('H:i:s'));
-                    });
-            })
-            ->update(['ativo' => false]);
+            ->get()
+            ->filter(fn (Missa $missa): bool => $missa->dataHoraFim($timezone)->lessThan($agora))
+            ->pluck('id');
 
-        $missaEmAndamento = Missa::query()
+        if ($idsEncerrados->isNotEmpty()) {
+            Missa::query()
+                ->whereKey($idsEncerrados)
+                ->update(['ativo' => false]);
+        }
+
+        $missasOrdenadas = Missa::query()
             ->with($this->publicMissaRelations())
             ->where('igreja_id', $igreja->id)
-            ->whereDate('data_missa', $agora->toDateString())
-            ->where('hora_inicio', '<=', $agora->format('H:i:s'))
-            ->where('hora_fim', '>=', $agora->format('H:i:s'))
-            ->orderByRaw('case when ativo then 0 else 1 end')
-            ->orderBy('hora_inicio')
-            ->first();
-
-        $proximaMissa = Missa::query()
-            ->with($this->publicMissaRelations())
-            ->where('igreja_id', $igreja->id)
-            ->where(function ($query) use ($agora) {
-                $query
-                    ->whereDate('data_missa', '>', $agora->toDateString())
-                    ->orWhere(function ($subQuery) use ($agora) {
-                        $subQuery
-                            ->whereDate('data_missa', $agora->toDateString())
-                            ->where('hora_inicio', '>', $agora->format('H:i:s'));
-                    });
-            })
             ->orderByRaw('case when ativo then 0 else 1 end')
             ->orderBy('data_missa')
             ->orderBy('hora_inicio')
-            ->first();
+            ->get();
+
+        $missaEmAndamento = $missasOrdenadas
+            ->first(fn (Missa $missa): bool => $this->missaEstaEmAndamento($missa, $agora, $timezone));
+
+        $proximaMissa = $missasOrdenadas
+            ->first(fn (Missa $missa): bool => $missa->dataHoraInicio($timezone)->greaterThan($agora));
 
         $missaPublica = $missaEmAndamento ?: $proximaMissa;
         $this->anexarRepertorioPublico($missaPublica);
@@ -103,15 +88,10 @@ class IgrejaPublicaController extends Controller
         $countdownIso = null;
 
         if ($missaPublica) {
-            $horarioBase = $estadoCelebracao === 'em_andamento'
-                ? substr((string) $missaPublica->hora_fim, 0, 8)
-                : substr((string) $missaPublica->hora_inicio, 0, 8);
-
-            $countdownIso = CarbonImmutable::createFromFormat(
-                'Y-m-d H:i:s',
-                $missaPublica->data_missa->format('Y-m-d') . ' ' . $horarioBase,
-                $timezone
-            )->toIso8601String();
+            $countdownIso = ($estadoCelebracao === 'em_andamento'
+                ? $missaPublica->dataHoraFim($timezone)
+                : $missaPublica->dataHoraInicio($timezone))
+                ->toIso8601String();
         }
 
         return [
@@ -121,6 +101,12 @@ class IgrejaPublicaController extends Controller
             'proximaMissa' => $proximaMissa,
             'countdownIso' => $countdownIso,
         ];
+    }
+
+    private function missaEstaEmAndamento(Missa $missa, CarbonImmutable $agora, string $timezone): bool
+    {
+        return $missa->dataHoraInicio($timezone)->lessThanOrEqualTo($agora)
+            && $missa->dataHoraFim($timezone)->greaterThanOrEqualTo($agora);
     }
 
     private function publicMissaRelations(): array
@@ -171,9 +157,8 @@ class IgrejaPublicaController extends Controller
 
         return hash_hmac('sha256', implode('|', [
             $missa->id,
-            $missa->data_missa?->format('Y-m-d'),
-            substr((string) $missa->hora_inicio, 0, 8),
-            substr((string) $missa->hora_fim, 0, 8),
+            $missa->dataHoraInicio('America/Cuiaba')->format('Y-m-d H:i:s'),
+            $missa->dataHoraFim('America/Cuiaba')->format('Y-m-d H:i:s'),
         ]), (string) Config::get('app.key'));
     }
 }

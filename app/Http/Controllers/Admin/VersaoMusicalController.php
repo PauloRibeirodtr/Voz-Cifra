@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Acorde;
 use App\Models\Musica;
 use App\Models\VersaoMusical;
+use App\Rules\ValidChord;
 use App\Services\NormalizadorCifrasService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,7 +35,7 @@ class VersaoMusicalController extends Controller
     {
         $dados = $request->validate([
             'titulo' => ['nullable', 'string', 'max:255'],
-            'tom_musical' => ['nullable', 'string', 'max:50'],
+            'tom_musical' => ['nullable', 'string', 'max:50', new ValidChord()],
             'bpm' => ['nullable', 'integer', 'min:1', 'max:999'],
             'youtube_video_id' => ['nullable', 'string', 'max:255'],
             'letra_com_cifras' => ['required', 'string'],
@@ -50,7 +51,7 @@ class VersaoMusicalController extends Controller
         $versaoMusical = VersaoMusical::create([
             'musica_id' => $musica->id,
             'titulo' => $dados['titulo'] ?? null,
-            'tom_musical' => $dados['tom_musical'] ?? null,
+            'tom_musical' => $this->normalizarTomInformado($dados['tom_musical'] ?? null),
             'bpm' => $dados['bpm'] ?? null,
             'youtube_video_id' => $this->normalizarYoutubeVideoId($dados['youtube_video_id'] ?? null),
             'letra_com_cifras' => $resultadoCifras['texto_normalizado'],
@@ -127,7 +128,7 @@ class VersaoMusicalController extends Controller
 
         $dados = $request->validate([
             'titulo' => ['nullable', 'string', 'max:255'],
-            'tom_musical' => ['nullable', 'string', 'max:50'],
+            'tom_musical' => ['nullable', 'string', 'max:50', new ValidChord()],
             'bpm' => ['nullable', 'integer', 'min:1', 'max:999'],
             'youtube_video_id' => ['nullable', 'string', 'max:255'],
             'letra_com_cifras' => ['required', 'string'],
@@ -139,7 +140,7 @@ class VersaoMusicalController extends Controller
 
         $versaoMusical->update([
             'titulo' => $dados['titulo'] ?? null,
-            'tom_musical' => $dados['tom_musical'] ?? null,
+            'tom_musical' => $this->normalizarTomInformado($dados['tom_musical'] ?? null),
             'bpm' => $dados['bpm'] ?? null,
             'youtube_video_id' => $this->normalizarYoutubeVideoId($dados['youtube_video_id'] ?? null),
             'letra_com_cifras' => $resultadoCifras['texto_normalizado'],
@@ -194,6 +195,13 @@ class VersaoMusicalController extends Controller
         }
 
         return $valor;
+    }
+
+    private function normalizarTomInformado(?string $tom): ?string
+    {
+        $tom = trim((string) $tom);
+
+        return $tom !== '' ? $tom : null;
     }
 
     private function adaptarAcordeParaPreview(Acorde $acorde): array

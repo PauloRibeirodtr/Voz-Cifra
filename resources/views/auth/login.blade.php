@@ -14,7 +14,9 @@
 
     <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden relative z-10 p-8 m-4">
         <div class="text-center mb-8">
-            <img src="{{ asset('logo/final.png') }}" alt="Logo Voz e Cifra" class="w-24 mx-auto mb-4 drop-shadow-lg">
+            <a href="{{ route('root') }}" class="inline-block">
+                <img src="{{ asset('logo/final.png') }}" alt="Logo Voz e Cifra" class="w-24 mx-auto mb-4 drop-shadow-lg">
+            </a>
             <h2 class="text-2xl font-bold text-gray-800">Bem-vindo de volta!</h2>
             <p class="text-gray-400 text-sm mt-1">Acesse sua area do sistema com seguranca.</p>
         </div>
@@ -68,6 +70,10 @@
                         placeholder="Digite sua senha"
                     >
                 </div>
+            </div>
+
+            <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                Por seguranca, apos 5 tentativas de login invalidas o acesso fica temporariamente bloqueado por 5 minutos.
             </div>
 
             <button

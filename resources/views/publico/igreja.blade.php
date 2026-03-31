@@ -540,7 +540,7 @@
         <section class="shell">
             <div class="hero">
                 <div class="hero-main">
-                    <div class="brand">
+                    <a href="{{ route('igrejas.public.show', ['slug' => $igreja->slug]) }}" class="brand">
                         <img src="{{ asset('logo/final.png') }}" alt="Logo Voz &amp; Cifra">
                         <div>
                             <p class="brand-kicker">Voz &amp; Cifra</p>
@@ -552,7 +552,7 @@
                                 @endif
                             </p>
                         </div>
-                    </div>
+                    </a>
 
                     <span class="location">{{ $igreja->cidade }} - {{ $igreja->estado }}</span>
 
@@ -608,21 +608,17 @@
 
                 <aside class="hero-side">
                     <div class="panel">
-                        <p class="panel-title">
-                            @if ($estadoCelebracao === 'em_andamento')
-                                Contagem para o fim da missa
-                            @elseif ($proximaMissa)
-                                Contagem para a proxima missa
-                            @else
-                                Aguardando agendamento
-                            @endif
-                        </p>
-                        <div class="countdown" data-countdown data-state="{{ $estadoCelebracao }}" data-status-url="{{ route('igrejas.public.status', ['slug' => $igreja->slug]) }}" @if($countdownIso) data-target="{{ $countdownIso }}" @endif>
-                            <div class="count-item"><span class="count-number" data-days>00</span><span class="count-label">Dias</span></div>
-                            <div class="count-item"><span class="count-number" data-hours>00</span><span class="count-label">Horas</span></div>
-                            <div class="count-item"><span class="count-number" data-minutes>00</span><span class="count-label">Min</span></div>
-                            <div class="count-item"><span class="count-number" data-seconds>00</span><span class="count-label">Seg</span></div>
-                        </div>
+                        <div data-public-status-sync data-state="{{ $estadoCelebracao }}" data-status-url="{{ route('igrejas.public.status', ['slug' => $igreja->slug]) }}" @if($countdownIso) data-target="{{ $countdownIso }}" @endif></div>
+
+                        @if ($estadoCelebracao === 'proxima' && $missaPublica)
+                            <p class="panel-title">Contagem para o inicio da missa</p>
+                            <div class="countdown" data-countdown-display>
+                                <div class="count-item"><span class="count-number" data-days>00</span><span class="count-label">Dias</span></div>
+                                <div class="count-item"><span class="count-number" data-hours>00</span><span class="count-label">Horas</span></div>
+                                <div class="count-item"><span class="count-number" data-minutes>00</span><span class="count-label">Min</span></div>
+                                <div class="count-item"><span class="count-number" data-seconds>00</span><span class="count-label">Seg</span></div>
+                            </div>
+                        @endif
 
                         <div class="next-missa">
                             @if ($missaPublica)
@@ -749,7 +745,8 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const root = document.documentElement;
-            const countdown = document.querySelector('[data-countdown]');
+            const statusSync = document.querySelector('[data-public-status-sync]');
+            const countdown = document.querySelector('[data-countdown-display]');
             const dias = document.querySelector('[data-days]');
             const horas = document.querySelector('[data-hours]');
             const minutos = document.querySelector('[data-minutes]');
@@ -787,57 +784,50 @@
                 aplicarEscalaFonte();
             });
 
-            if (!countdown || !dias || !horas || !minutos || !segundos) {
+            if (!statusSync) {
                 return;
             }
 
-            const target = countdown.dataset.target;
-            const countdownState = countdown.dataset.state;
-            const statusUrl = countdown.dataset.statusUrl;
+            const target = statusSync.dataset.target;
+            const countdownState = statusSync.dataset.state;
+            const statusUrl = statusSync.dataset.statusUrl;
             let recargaAgendada = false;
             let ultimaChaveEstado = [countdownState, target || '', window.location.pathname].join('|');
 
             if (!target) {
-                dias.textContent = '--';
-                horas.textContent = '--';
-                minutos.textContent = '--';
-                segundos.textContent = '--';
                 return;
             }
 
             const destino = new Date(target);
 
-            const atualizar = () => {
+            window.setInterval(() => {
                 const agora = new Date().getTime();
                 const distancia = destino.getTime() - agora;
 
-                if (distancia <= 0) {
-                    dias.textContent = '00';
-                    horas.textContent = '00';
-                    minutos.textContent = '00';
-                    segundos.textContent = '00';
+                if (countdown && dias && horas && minutos && segundos) {
+                    if (distancia <= 0) {
+                        dias.textContent = '00';
+                        horas.textContent = '00';
+                        minutos.textContent = '00';
+                        segundos.textContent = '00';
+                    } else {
+                        const totalSegundos = Math.floor(distancia / 1000);
+                        const totalMinutos = Math.floor(totalSegundos / 60);
+                        const totalHoras = Math.floor(totalMinutos / 60);
+                        const totalDias = Math.floor(totalHoras / 24);
 
-                    if (!recargaAgendada && (countdownState === 'em_andamento' || countdownState === 'proxima')) {
-                        recargaAgendada = true;
-                        window.setTimeout(() => window.location.reload(), 1500);
+                        dias.textContent = String(totalDias).padStart(2, '0');
+                        horas.textContent = String(totalHoras % 24).padStart(2, '0');
+                        minutos.textContent = String(totalMinutos % 60).padStart(2, '0');
+                        segundos.textContent = String(totalSegundos % 60).padStart(2, '0');
                     }
-
-                    return;
                 }
 
-                const totalSegundos = Math.floor(distancia / 1000);
-                const totalMinutos = Math.floor(totalSegundos / 60);
-                const totalHoras = Math.floor(totalMinutos / 60);
-                const totalDias = Math.floor(totalHoras / 24);
-
-                dias.textContent = String(totalDias).padStart(2, '0');
-                horas.textContent = String(totalHoras % 24).padStart(2, '0');
-                minutos.textContent = String(totalMinutos % 60).padStart(2, '0');
-                segundos.textContent = String(totalSegundos % 60).padStart(2, '0');
-            };
-
-            atualizar();
-            setInterval(atualizar, 1000);
+                if (distancia <= 0 && !recargaAgendada && (countdownState === 'em_andamento' || countdownState === 'proxima')) {
+                    recargaAgendada = true;
+                    window.setTimeout(() => window.location.reload(), 1500);
+                }
+            }, 1000);
 
             if (statusUrl) {
                 window.setInterval(async () => {

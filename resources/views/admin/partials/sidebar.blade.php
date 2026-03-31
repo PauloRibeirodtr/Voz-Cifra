@@ -11,13 +11,13 @@
     @endphp
 
     <div class="flex items-center justify-between border-b border-green-800 px-4 py-3 md:hidden">
-        <div class="flex items-center gap-3">
+        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3">
             <img src="{{ asset('logo/final.png') }}" alt="Logo Voz e Cifra" class="h-9 w-auto shrink-0">
             <div>
                 <p class="text-[10px] font-black uppercase tracking-[0.22em] text-green-300">Voz &amp; Cifra</p>
                 <p class="text-sm font-semibold text-white/90">Menu administrativo</p>
             </div>
-        </div>
+        </a>
     </div>
 
     @auth
@@ -34,14 +34,14 @@
         </div>
     @endauth
 
-    <div class="hidden py-8 md:flex flex-col items-center justify-center border-b border-green-800 bg-green-900 shadow-md relative shrink-0">
+    <a href="{{ route('admin.dashboard') }}" class="hidden py-8 md:flex flex-col items-center justify-center border-b border-green-800 bg-green-900 shadow-md relative shrink-0">
         <div class="absolute bg-white opacity-5 w-24 h-24 rounded-full blur-xl top-8"></div>
         <img src="{{ asset('logo/final.png') }}" alt="Logo Voz e Cifra" class="w-28 h-auto mb-4 drop-shadow-2xl hover:scale-105 transition transform duration-300 relative z-10">
         <div class="text-center relative z-10">
             <h1 class="font-extrabold text-xl tracking-widest leading-none text-white drop-shadow-md">VOZ</h1>
             <h2 class="font-bold text-lg tracking-wider text-green-100 opacity-90 leading-tight">&amp; CIFRA</h2>
         </div>
-    </div>
+    </a>
 
     <nav class="flex-1 overflow-y-auto px-3 py-3 pb-24 space-y-1.5 md:px-4 md:py-6 md:pb-6 md:space-y-3">
         <a href="{{ route('admin.dashboard') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.dashboard')) }}">
