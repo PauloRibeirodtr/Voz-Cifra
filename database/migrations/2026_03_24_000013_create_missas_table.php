@@ -11,18 +11,21 @@ return new class extends Migration
         Schema::create('missas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('igreja_id')->constrained('igrejas')->cascadeOnDelete();
-            $table->foreignId('padre_id')->nullable()->constrained('padres')->nullOnDelete();
+            $table->foreignId('celebrante_usuario_id')->nullable()->constrained('usuarios')->nullOnDelete();
             $table->foreignId('tempo_liturgico_id')->nullable()->constrained('tempos_liturgicos')->nullOnDelete();
             $table->string('titulo');
             $table->date('data_missa');
             $table->time('hora_inicio');
             $table->time('hora_fim');
             $table->text('observacoes')->nullable();
+            $table->boolean('publica_para_fieis')->default(false);
+            $table->boolean('publica_para_musicos')->default(false);
             $table->boolean('ativo')->default(true);
             $table->timestamps();
 
             $table->index('ativo');
             $table->index(['igreja_id', 'data_missa']);
+            $table->index(['celebrante_usuario_id', 'data_missa']);
         });
     }
 

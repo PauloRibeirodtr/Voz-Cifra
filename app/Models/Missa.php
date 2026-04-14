@@ -16,13 +16,15 @@ class Missa extends Model
 
     protected $fillable = [
         'igreja_id',
-        'padre_id',
+        'celebrante_usuario_id',
         'tempo_liturgico_id',
         'titulo',
         'data_missa',
         'hora_inicio',
         'hora_fim',
         'observacoes',
+        'publica_para_fieis',
+        'publica_para_musicos',
         'ativo',
     ];
 
@@ -30,6 +32,8 @@ class Missa extends Model
     {
         return [
             'data_missa' => 'date',
+            'publica_para_fieis' => 'boolean',
+            'publica_para_musicos' => 'boolean',
             'ativo' => 'boolean',
         ];
     }
@@ -39,9 +43,14 @@ class Missa extends Model
         return $this->belongsTo(Igreja::class, 'igreja_id');
     }
 
+    public function celebrante(): BelongsTo
+    {
+        return $this->belongsTo(Usuario::class, 'celebrante_usuario_id');
+    }
+
     public function padre(): BelongsTo
     {
-        return $this->belongsTo(Padre::class, 'padre_id');
+        return $this->celebrante();
     }
 
     public function tempoLiturgico(): BelongsTo

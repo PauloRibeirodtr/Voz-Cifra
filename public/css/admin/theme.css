@@ -1,0 +1,80 @@
+body.theme-light,
+body:not(.theme-dark) {
+    background:
+        radial-gradient(circle at top, rgba(201, 161, 95, 0.12), transparent 28%),
+        radial-gradient(circle at right top, rgba(74, 31, 36, 0.22), transparent 26%),
+        linear-gradient(180deg, #160f0f 0%, #1d1313 100%);
+    color: #fff8ed;
+}
+
+body.theme-light .bg-white,
+body:not(.theme-dark) .bg-white,
+body.theme-light .bg-white\/95,
+body:not(.theme-dark) .bg-white\/95 {
+    background-color: rgba(29, 17, 17, 0.9) !important;
+}
+
+body.theme-light .bg-gray-50,
+body:not(.theme-dark) .bg-gray-50,
+body.theme-light .bg-slate-50,
+body:not(.theme-dark) .bg-slate-50 {
+    background-color: rgba(42, 27, 27, 0.92) !important;
+}
+
+body.theme-light .border-gray-100,
+body:not(.theme-dark) .border-gray-100,
+body.theme-light .border-gray-200,
+body:not(.theme-dark) .border-gray-200,
+body.theme-light .border-gray-300,
+body:not(.theme-dark) .border-gray-300 {
+    border-color: rgba(214, 173, 108, 0.14) !important;
+}
+
+body.theme-light .text-gray-900,
+body:not(.theme-dark) .text-gray-900,
+body.theme-light .text-gray-800,
+body:not(.theme-dark) .text-gray-800,
+body.theme-light .text-gray-700,
+body:not(.theme-dark) .text-gray-700,
+body.theme-light .text-slate-900,
+body:not(.theme-dark) .text-slate-900 {
+    color: #fff8ed !important;
+}
+
+body.theme-light .text-gray-600,
+body:not(.theme-dark) .text-gray-600,
+body.theme-light .text-gray-500,
+body:not(.theme-dark) .text-gray-500,
+body.theme-light .text-slate-500,
+body:not(.theme-dark) .text-slate-500,
+body.theme-light .text-gray-400,
+body:not(.theme-dark) .text-gray-400 {
+    color: #d4c2ab !important;
+}
+
+body.theme-light input,
+body:not(.theme-dark) input,
+body.theme-light select,
+body:not(.theme-dark) select,
+body.theme-light textarea,
+body:not(.theme-dark) textarea {
+    background-color: #f4efe6 !important;
+    color: #241616 !important;
+    border-color: rgba(214, 173, 108, 0.22) !important;
+}
+
+body.theme-light input::placeholder,
+body:not(.theme-dark) input::placeholder,
+body.theme-light textarea::placeholder,
+body:not(.theme-dark) textarea::placeholder {
+    color: #8f7a62 !important;
+}
+
+body.theme-light .shadow-sm,
+body:not(.theme-dark) .shadow-sm,
+body.theme-light .shadow-xl,
+body:not(.theme-dark) .shadow-xl,
+body.theme-light .shadow-2xl,
+body:not(.theme-dark) .shadow-2xl {
+    box-shadow: 0 24px 48px rgba(10, 5, 5, 0.22) !important;
+}

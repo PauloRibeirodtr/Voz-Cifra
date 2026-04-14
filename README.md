@@ -130,6 +130,7 @@ Responsabilidades atuais:
 - reset de senha de `admin_local` com obrigacao de troca no proximo acesso
 - encerramento de sessao por `Configuracoes`
 - tema por usuario com preferencia persistida
+- modelagem futura do `admin_master` nivel `7` em `docs/modelagem-admin-master-nivel-7.md`
 
 ### Area do admin local
 

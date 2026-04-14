@@ -1,94 +1,109 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Ministerio Musical</title>
+    <title>Login | Voz & Cifra</title>
     <link rel="icon" type="image/png" href="{{ asset('logo/final.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    @php
+        $loginImage = file_exists(public_path('images/login-liturgia.jpg'))
+            ? asset('images/login-liturgia.jpg')
+            : asset('images/missa1.jpg');
+    @endphp
 </head>
-<body class="bg-gray-50 h-screen flex items-center justify-center relative overflow-hidden">
+<body class="min-h-screen overflow-x-hidden bg-[#160f0f] text-[#fff8ed]">
+    <div class="relative min-h-screen">
+        <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('{{ $loginImage }}');"></div>
+        <div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(18,10,10,.52),rgba(18,10,10,.88)),linear-gradient(90deg,rgba(26,13,13,.82),rgba(26,13,13,.72))]"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(201,161,95,.14),transparent_28%),radial-gradient(circle_at_right_top,rgba(74,31,36,.28),transparent_24%)]"></div>
 
-    <div class="absolute top-0 left-0 w-full h-64 bg-green-900 rounded-b-[50%] scale-110 -translate-y-20 z-0"></div>
-    <div class="absolute bottom-10 right-10 w-64 h-64 bg-green-200 rounded-full blur-3xl opacity-30 z-0"></div>
+        <div class="relative z-10 flex min-h-screen items-center justify-center px-4 py-8 sm:px-6">
+            <div class="w-full max-w-md rounded-[28px] border border-[#c9a15f]/20 bg-[#1d1111]/88 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
+                <div class="text-center">
+                    <a href="{{ route('root') }}" class="inline-block">
+                        <img src="{{ asset('logo/final.png') }}" alt="Logo Voz e Cifra" class="mx-auto mb-4 w-20 drop-shadow-2xl">
+                    </a>
+                    <p class="text-xs font-black uppercase tracking-[0.28em] text-[#d8b071]">Voz &amp; Cifra</p>
+                    <h1 class="mt-3 font-serif text-3xl font-black text-[#fff8ed] sm:text-4xl">Entrar no sistema</h1>
+                    <p class="mx-auto mt-3 max-w-sm text-base leading-7 text-[#dbcab5]">
+                        Acesso interno para equipes autorizadas.
+                    </p>
+                </div>
 
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden relative z-10 p-8 m-4">
-        <div class="text-center mb-8">
-            <a href="{{ route('root') }}" class="inline-block">
-                <img src="{{ asset('logo/final.png') }}" alt="Logo Voz e Cifra" class="w-24 mx-auto mb-4 drop-shadow-lg">
-            </a>
-            <h2 class="text-2xl font-bold text-gray-800">Bem-vindo de volta!</h2>
-            <p class="text-gray-400 text-sm mt-1">Acesse sua area do sistema com seguranca.</p>
-        </div>
+                @if (session('status'))
+                    <div class="mt-8 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-4 text-base leading-7 text-emerald-100">
+                        {{ session('status') }}
+                    </div>
+                @endif
 
-        @if (session('status'))
-            <div class="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 text-sm rounded">
-                {{ session('status') }}
-            </div>
-        @endif
+                @if ($errors->any())
+                    <div class="mt-8 rounded-2xl border border-rose-500/20 bg-rose-500/10 px-5 py-4 text-base leading-7 text-rose-100">
+                        <ul class="space-y-2">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
-        @if ($errors->any())
-            <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 text-sm rounded">
-                <ul class="list-disc pl-4">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+                <form action="{{ route('login.attempt') }}" method="POST" class="mt-8 space-y-6">
+                    @csrf
 
-        <form action="{{ route('login.attempt') }}" method="POST" class="space-y-5">
-            @csrf
+                    <div>
+                        <label class="mb-2 block text-base font-bold text-[#f4ddb4]" for="email">E-mail</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-envelope pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#c9a15f]"></i>
+                            <input
+                                id="email"
+                                type="email"
+                                name="email"
+                                value="{{ old('email') }}"
+                                required
+                                autofocus
+                                class="w-full rounded-2xl border border-[#e8dcc8]/70 bg-[#f4efe6] py-4 pl-12 pr-4 text-lg text-[#241616] placeholder:text-[#8f7a62] focus:border-[#f4ddb4]/70 focus:outline-none focus:ring-4 focus:ring-[#c9a15f]/10"
+                                placeholder="seu@email.com"
+                            >
+                        </div>
+                    </div>
 
-            <div>
-                <label class="block text-sm font-bold text-gray-700 mb-1" for="email">E-mail</label>
-                <div class="relative">
-                    <i class="fa-solid fa-envelope absolute left-4 top-3.5 text-gray-400"></i>
-                    <input
-                        id="email"
-                        type="email"
-                        name="email"
-                        value="{{ old('email') }}"
-                        required
-                        autofocus
-                        class="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition"
-                        placeholder="seu@email.com"
+                    <div>
+                        <label class="mb-2 block text-base font-bold text-[#f4ddb4]" for="password">Senha</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#c9a15f]"></i>
+                            <input
+                                id="password"
+                                type="password"
+                                name="password"
+                                required
+                                class="w-full rounded-2xl border border-[#e8dcc8]/70 bg-[#f4efe6] py-4 pl-12 pr-4 text-lg text-[#241616] placeholder:text-[#8f7a62] focus:border-[#f4ddb4]/70 focus:outline-none focus:ring-4 focus:ring-[#c9a15f]/10"
+                                placeholder="Digite sua senha"
+                            >
+                        </div>
+                    </div>
+
+                    @if ($errors->has('email') && str_contains(strtolower((string) $errors->first('email')), 'muitas tentativas'))
+                        <div class="rounded-2xl border border-amber-400/20 bg-amber-400/10 px-5 py-4 text-base leading-7 text-amber-100">
+                            Por seguranca, apos 5 tentativas invalidas o acesso fica bloqueado temporariamente por 5 minutos.
+                        </div>
+                    @endif
+
+                    <button
+                        type="submit"
+                        class="w-full rounded-2xl bg-gradient-to-r from-[#d2aa66] to-[#b9884c] px-6 py-4 text-xl font-black text-[#1e130d] shadow-xl transition hover:-translate-y-0.5 hover:brightness-105"
                     >
+                        Entrar
+                    </button>
+                </form>
+
+                <div class="mt-8 border-t border-white/10 pt-5 text-center">
+                    <a href="{{ route('root') }}" class="text-sm font-semibold text-[#d8b071] hover:text-[#f4ddb4]">
+                        Voltar para a pagina publica
+                    </a>
                 </div>
             </div>
-
-            <div>
-                <label class="block text-sm font-bold text-gray-700 mb-1" for="password">Senha</label>
-                <div class="relative">
-                    <i class="fa-solid fa-lock absolute left-4 top-3.5 text-gray-400"></i>
-                    <input
-                        id="password"
-                        type="password"
-                        name="password"
-                        required
-                        class="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition"
-                        placeholder="Digite sua senha"
-                    >
-                </div>
-            </div>
-
-            <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                Por seguranca, apos 5 tentativas de login invalidas o acesso fica temporariamente bloqueado por 5 minutos.
-            </div>
-
-            <button
-                type="submit"
-                class="w-full bg-green-900 text-white font-bold py-3 rounded-lg hover:bg-green-800 transition transform hover:-translate-y-0.5 shadow-lg"
-            >
-                Entrar
-            </button>
-        </form>
-
-        <div class="text-center mt-8 pt-6 border-t border-gray-100">
-            <p class="text-sm text-gray-500">Acesso restrito aos perfis liberados no sistema.</p>
         </div>
     </div>
-
 </body>
 </html>

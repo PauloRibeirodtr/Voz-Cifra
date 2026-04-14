@@ -7,12 +7,14 @@ use App\Models\Igreja;
 use App\Models\Missa;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class IgrejaPublicaController extends Controller
 {
-    public function show(string $slug): View
+    public function show(Request $request, string $slug): View
     {
         $timezone = 'America/Cuiaba';
         $igreja = Igreja::query()
@@ -21,6 +23,8 @@ class IgrejaPublicaController extends Controller
             ->firstOrFail();
 
         $estado = $this->montarEstadoPublico($igreja, $timezone);
+        $historicoBusca = trim((string) $request->input('historico', ''));
+        $historicoMissas = $this->buscarHistorico($igreja, $timezone, $historicoBusca);
 
         return view('publico.igreja', [
             'igreja' => $igreja,
@@ -28,6 +32,9 @@ class IgrejaPublicaController extends Controller
             'estadoCelebracao' => $estado['estadoCelebracao'],
             'missaEmAndamento' => $estado['missaEmAndamento'],
             'proximaMissa' => $estado['proximaMissa'],
+            'proximasMissas' => $estado['proximasMissas'],
+            'historicoMissas' => $historicoMissas,
+            'historicoBusca' => $historicoBusca,
             'countdownIso' => $estado['countdownIso'],
             'timezoneExibicao' => $timezone,
         ]);
@@ -46,7 +53,7 @@ class IgrejaPublicaController extends Controller
 
         return response()->json([
             'estado' => $estado['estadoCelebracao'],
-            'missa_ref' => $this->publicMissaReference($missaPublica),
+            'missa_ref' => $this->publicMissaReference($missaPublica ?: $estado['proximaMissa']),
             'countdown_iso' => $estado['countdownIso'],
             'timezone' => $timezone,
         ]);
@@ -71,7 +78,6 @@ class IgrejaPublicaController extends Controller
         $missasOrdenadas = Missa::query()
             ->with($this->publicMissaRelations())
             ->where('igreja_id', $igreja->id)
-            ->orderByRaw('case when ativo then 0 else 1 end')
             ->orderBy('data_missa')
             ->orderBy('hora_inicio')
             ->get();
@@ -79,28 +85,61 @@ class IgrejaPublicaController extends Controller
         $missaEmAndamento = $missasOrdenadas
             ->first(fn (Missa $missa): bool => $this->missaEstaEmAndamento($missa, $agora, $timezone));
 
-        $proximaMissa = $missasOrdenadas
-            ->first(fn (Missa $missa): bool => $missa->dataHoraInicio($timezone)->greaterThan($agora));
+        $proximasMissasColecao = $missasOrdenadas
+            ->filter(fn (Missa $missa): bool => $missa->dataHoraInicio($timezone)->greaterThan($agora))
+            ->values();
 
-        $missaPublica = $missaEmAndamento ?: $proximaMissa;
+        $proximaMissa = $proximasMissasColecao->first();
+        $missaPublica = $missaEmAndamento;
+
         $this->anexarRepertorioPublico($missaPublica);
-        $estadoCelebracao = $missaEmAndamento ? 'em_andamento' : ($proximaMissa ? 'proxima' : 'aguardando');
-        $countdownIso = null;
 
-        if ($missaPublica) {
-            $countdownIso = ($estadoCelebracao === 'em_andamento'
-                ? $missaPublica->dataHoraFim($timezone)
-                : $missaPublica->dataHoraInicio($timezone))
-                ->toIso8601String();
-        }
+        $estadoCelebracao = $missaEmAndamento ? 'em_andamento' : ($proximaMissa ? 'proxima' : 'aguardando');
+        $countdownIso = $missaPublica?->dataHoraFim($timezone)->toIso8601String();
 
         return [
             'missaPublica' => $missaPublica,
             'estadoCelebracao' => $estadoCelebracao,
             'missaEmAndamento' => $missaEmAndamento,
             'proximaMissa' => $proximaMissa,
+            'proximasMissas' => $proximasMissasColecao
+                ->take(3)
+                ->map(fn (Missa $missa) => $this->mapearAgendaMissa($missa, $timezone))
+                ->values(),
             'countdownIso' => $countdownIso,
         ];
+    }
+
+    private function buscarHistorico(Igreja $igreja, string $timezone, string $busca)
+    {
+        $agora = CarbonImmutable::now($timezone);
+
+        return Missa::query()
+            ->with(['tempoLiturgico'])
+            ->where('igreja_id', $igreja->id)
+            ->orderByDesc('data_missa')
+            ->orderByDesc('hora_inicio')
+            ->get()
+            ->filter(fn (Missa $missa): bool => $missa->dataHoraFim($timezone)->lessThan($agora))
+            ->map(fn (Missa $missa) => $this->mapearHistoricoMissa($missa, $timezone))
+            ->filter(function (array $missa) use ($busca): bool {
+                if ($busca === '') {
+                    return true;
+                }
+
+                $buscaNormalizada = Str::lower(Str::ascii($busca));
+                $conteudo = Str::lower(Str::ascii(implode(' ', [
+                    $missa['titulo'],
+                    $missa['data'],
+                    $missa['dia_semana'],
+                    $missa['horario'],
+                    $missa['tempo_liturgico'] ?? '',
+                ])));
+
+                return str_contains($conteudo, $buscaNormalizada);
+            })
+            ->take(12)
+            ->values();
     }
 
     private function missaEstaEmAndamento(Missa $missa, CarbonImmutable $agora, string $timezone): bool
@@ -147,6 +186,32 @@ class IgrejaPublicaController extends Controller
         $textoNormalizado = preg_replace("/\n{3,}/", "\n\n", trim($textoSemEspacosExtras)) ?? trim($textoSemEspacosExtras);
 
         return $textoNormalizado;
+    }
+
+    private function mapearAgendaMissa(Missa $missa, string $timezone): array
+    {
+        $inicio = $missa->dataHoraInicio($timezone);
+
+        return [
+            'titulo' => $missa->titulo,
+            'data' => $inicio->format('d/m'),
+            'dia_semana' => mb_convert_case($inicio->locale('pt_BR')->isoFormat('dddd'), MB_CASE_TITLE, 'UTF-8'),
+            'horario' => $inicio->format('H:i'),
+            'tempo_liturgico' => $missa->tempoLiturgico?->nome,
+        ];
+    }
+
+    private function mapearHistoricoMissa(Missa $missa, string $timezone): array
+    {
+        $inicio = $missa->dataHoraInicio($timezone);
+
+        return [
+            'titulo' => $missa->titulo,
+            'data' => $inicio->format('d/m/Y'),
+            'dia_semana' => mb_convert_case($inicio->locale('pt_BR')->isoFormat('dddd'), MB_CASE_TITLE, 'UTF-8'),
+            'horario' => $inicio->format('H:i'),
+            'tempo_liturgico' => $missa->tempoLiturgico?->nome,
+        ];
     }
 
     private function publicMissaReference(?Missa $missa): ?string

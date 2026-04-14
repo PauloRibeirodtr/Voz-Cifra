@@ -6,7 +6,7 @@
 @php
     $themePreference = auth()->user()->theme_preference ?? 'system';
 @endphp
-<body class="bg-gray-50 font-sans text-gray-900" data-theme-preference="{{ $themePreference }}">
+<body class="font-sans text-gray-900" data-theme-preference="{{ $themePreference }}">
     <div
         id="admin_sidebar_overlay"
         class="fixed inset-0 z-30 hidden bg-slate-950/45 backdrop-blur-[1px] md:hidden"
@@ -16,11 +16,11 @@
     @include('admin.partials.sidebar')
 
     <div class="min-h-screen md:pl-64">
-        <header class="sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur md:hidden">
+        <header class="sticky top-0 z-20 border-b border-white/10 bg-[#1b1212]/95 backdrop-blur md:hidden">
             <div class="flex items-center justify-between gap-3 px-4 py-3">
                 <div class="min-w-0">
-                    <p class="text-[11px] font-black uppercase tracking-[0.22em] text-green-700">Voz &amp; Cifra</p>
-                    <h1 class="truncate text-base font-extrabold text-slate-900">@yield('mobile_title', 'Painel administrativo')</h1>
+                    <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#d6ad6c]">Voz &amp; Cifra</p>
+                    <h1 class="truncate text-base font-extrabold text-[#fff8ed]">@yield('mobile_title', 'Painel administrativo')</h1>
                 </div>
 
                 <div class="flex items-center gap-2">
@@ -28,7 +28,7 @@
                         @csrf
                         <button
                             type="submit"
-                            class="inline-flex h-11 items-center justify-center rounded-2xl border border-red-900 bg-red-950 px-4 text-sm font-semibold text-red-100 shadow-sm transition hover:bg-red-900"
+                            class="inline-flex h-11 items-center justify-center rounded-2xl border border-[#6f2f2f] bg-[#4a1717] px-4 text-sm font-semibold text-[#fff1ea] shadow-sm transition hover:bg-[#5c1c1c]"
                             aria-label="Sair do sistema"
                         >
                             Sair
@@ -38,7 +38,7 @@
                     <button
                         type="button"
                         id="admin_sidebar_toggle"
-                        class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 bg-white text-slate-700 shadow-sm transition hover:border-green-200 hover:bg-green-50 hover:text-green-700"
+                        class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-[#2a1b1b] text-[#f3dfbd] shadow-sm transition hover:border-[#c9a15f]/40 hover:bg-[#352121] hover:text-[#fff8ed]"
                         aria-controls="admin_sidebar"
                         aria-expanded="false"
                         aria-label="Abrir menu"
@@ -52,8 +52,8 @@
         <main class="relative overflow-x-hidden px-4 py-4 sm:px-6 sm:py-6 lg:px-8" id="mainContent">
             <div class="mb-6 hidden items-center justify-between gap-4 md:flex">
                 <div class="min-w-0">
-                    <p class="text-[11px] font-black uppercase tracking-[0.22em] text-green-700">Voz &amp; Cifra</p>
-                    <p class="truncate text-sm text-slate-500">@yield('desktop_subtitle', 'Area administrativa do sistema')</p>
+                    <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#d6ad6c]">Voz &amp; Cifra</p>
+                    <p class="truncate text-sm text-[#d4c2ab]">@yield('desktop_subtitle', 'Area administrativa do sistema')</p>
                 </div>
             </div>
 
@@ -62,80 +62,7 @@
         </main>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const preference = document.body.dataset.themePreference || 'system';
-            const mediaScheme = window.matchMedia('(prefers-color-scheme: dark)');
-            const aplicarTema = () => {
-                const resolved = preference === 'system' ? (mediaScheme.matches ? 'dark' : 'light') : preference;
-                document.body.classList.toggle('theme-dark', resolved === 'dark');
-                document.body.classList.toggle('theme-light', resolved !== 'dark');
-                document.documentElement.classList.toggle('theme-dark', resolved === 'dark');
-                document.documentElement.classList.toggle('theme-light', resolved !== 'dark');
-            };
-
-            aplicarTema();
-            mediaScheme.addEventListener?.('change', aplicarTema);
-
-            const body = document.body;
-            const sidebar = document.getElementById('admin_sidebar');
-            const toggle = document.getElementById('admin_sidebar_toggle');
-            const overlay = document.getElementById('admin_sidebar_overlay');
-            const mediaQuery = window.matchMedia('(min-width: 768px)');
-
-            if (!sidebar || !toggle || !overlay) {
-                return;
-            }
-
-            const abrirMenu = () => {
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.remove('hidden');
-                body.classList.add('overflow-hidden');
-                toggle.setAttribute('aria-expanded', 'true');
-            };
-
-            const fecharMenu = () => {
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.add('hidden');
-                body.classList.remove('overflow-hidden');
-                toggle.setAttribute('aria-expanded', 'false');
-            };
-
-            toggle.addEventListener('click', () => {
-                if (sidebar.classList.contains('-translate-x-full')) {
-                    abrirMenu();
-                    return;
-                }
-
-                fecharMenu();
-            });
-
-            overlay.addEventListener('click', fecharMenu);
-
-            sidebar.querySelectorAll('a').forEach((link) => {
-                link.addEventListener('click', () => {
-                    if (!mediaQuery.matches) {
-                        fecharMenu();
-                    }
-                });
-            });
-
-            const sincronizarLayout = () => {
-                if (mediaQuery.matches) {
-                    sidebar.classList.remove('-translate-x-full');
-                    overlay.classList.add('hidden');
-                    body.classList.remove('overflow-hidden');
-                    toggle.setAttribute('aria-expanded', 'false');
-                    return;
-                }
-
-                sidebar.classList.add('-translate-x-full');
-            };
-
-            sincronizarLayout();
-            mediaQuery.addEventListener('change', sincronizarLayout);
-        });
-    </script>
+    <script src="{{ asset('js/admin/layout.js') }}"></script>
     @stack('scripts')
 </body>
 </html>

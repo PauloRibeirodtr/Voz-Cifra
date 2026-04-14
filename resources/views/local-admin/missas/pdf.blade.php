@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -30,7 +30,7 @@
         <p class="muted">{{ $missa->igreja->cidade }} - {{ $missa->igreja->estado }}</p>
         <h2 style="margin-top: 10px;">{{ $missa->titulo }}</h2>
         <p class="muted">
-            {{ optional($missa->data_missa)->format('d/m/Y') }} • {{ substr((string) $missa->hora_inicio, 0, 5) }} - {{ substr((string) $missa->hora_fim, 0, 5) }}
+            {{ optional($missa->data_missa)->format('d/m/Y') }} â€¢ {{ substr((string) $missa->hora_inicio, 0, 5) }} - {{ substr((string) $missa->hora_fim, 0, 5) }}
         </p>
     </div>
 
@@ -43,7 +43,7 @@
                 </td>
                 <td width="50%">
                     <strong>Padre:</strong><br>
-                    <span class="muted">{{ $missa->padre?->nome ?: 'Nao vinculado' }}</span>
+                    <span class="muted">{{ $missa->celebrante?->nome ?: 'Nao vinculado' }}</span>
                 </td>
             </tr>
         </table>
@@ -91,15 +91,15 @@
             <div class="cifra-bloco">
                 <h3>{{ $item['ordem'] }}. {{ $item['musica'] }}</h3>
                 <p class="muted" style="margin-top: 6px;">
-                    {{ $item['momento'] ?: 'Momento nao definido' }} • {{ $item['versao'] }}
+                    {{ $item['momento'] ?: 'Momento nao definido' }} â€¢ {{ $item['versao'] }}
                     @if ($item['tom_exibicao'])
-                        • Tom da missa {{ $item['tom_exibicao'] }}
+                        â€¢ Tom da missa {{ $item['tom_exibicao'] }}
                     @endif
                     @if ($item['tom_original'] && $item['tom_original'] !== $item['tom_exibicao'])
-                        • Original {{ $item['tom_original'] }}
+                        â€¢ Original {{ $item['tom_original'] }}
                     @endif
                     @if ($item['bpm'])
-                        • BPM {{ $item['bpm'] }}
+                        â€¢ BPM {{ $item['bpm'] }}
                     @endif
                 </p>
                 <div style="margin-top: 12px;">
@@ -110,3 +110,4 @@
     @endforeach
 </body>
 </html>
+

@@ -1,0 +1,73 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const preference = document.body.dataset.themePreference || 'system';
+    const mediaScheme = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const aplicarTema = () => {
+        const resolved = preference === 'system' ? (mediaScheme.matches ? 'dark' : 'light') : preference;
+        document.body.classList.toggle('theme-dark', resolved === 'dark');
+        document.body.classList.toggle('theme-light', resolved !== 'dark');
+        document.documentElement.classList.toggle('theme-dark', resolved === 'dark');
+        document.documentElement.classList.toggle('theme-light', resolved !== 'dark');
+    };
+
+    aplicarTema();
+    mediaScheme.addEventListener?.('change', aplicarTema);
+
+    const body = document.body;
+    const sidebar = document.getElementById('admin_sidebar');
+    const toggle = document.getElementById('admin_sidebar_toggle');
+    const overlay = document.getElementById('admin_sidebar_overlay');
+    const mediaQuery = window.matchMedia('(min-width: 768px)');
+
+    if (!sidebar || !toggle || !overlay) {
+        return;
+    }
+
+    const abrirMenu = () => {
+        sidebar.classList.remove('-translate-x-full');
+        overlay.classList.remove('hidden');
+        body.classList.add('overflow-hidden');
+        toggle.setAttribute('aria-expanded', 'true');
+    };
+
+    const fecharMenu = () => {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+        body.classList.remove('overflow-hidden');
+        toggle.setAttribute('aria-expanded', 'false');
+    };
+
+    toggle.addEventListener('click', () => {
+        if (sidebar.classList.contains('-translate-x-full')) {
+            abrirMenu();
+            return;
+        }
+
+        fecharMenu();
+    });
+
+    overlay.addEventListener('click', fecharMenu);
+
+    sidebar.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => {
+            if (!mediaQuery.matches) {
+                fecharMenu();
+            }
+        });
+    });
+
+    const sincronizarLayout = () => {
+        if (mediaQuery.matches) {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.add('hidden');
+            body.classList.remove('overflow-hidden');
+            toggle.setAttribute('aria-expanded', 'false');
+            return;
+        }
+
+        sidebar.classList.add('-translate-x-full');
+    };
+
+    sincronizarLayout();
+    mediaQuery.addEventListener('change', sincronizarLayout);
+});

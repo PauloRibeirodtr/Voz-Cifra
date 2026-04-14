@@ -8,7 +8,6 @@ use App\Models\Missa;
 use App\Models\MissaMusica;
 use App\Models\MomentoLiturgico;
 use App\Models\Musica;
-use App\Models\Padre;
 use App\Models\TempoLiturgico;
 use App\Models\Usuario;
 use App\Models\VersaoMusical;
@@ -39,7 +38,7 @@ class MissaController extends Controller
         $igreja = $this->obterIgreja();
         $this->sincronizarMissasEncerradas($igreja);
 
-        $missas = Missa::with(['tempoLiturgico', 'padre'])
+        $missas = Missa::with(['tempoLiturgico', 'celebrante'])
             ->withCount('missaMusicas')
             ->where('igreja_id', $igreja->id)
             ->orderByDesc('data_missa')
@@ -61,7 +60,11 @@ class MissaController extends Controller
             'igreja' => $this->adicionarDadosPublicos($igreja),
             'missa' => new Missa(),
             'temposLiturgicos' => TempoLiturgico::where('ativo', true)->orderBy('nome')->get(),
-            'padres' => Padre::query()->orderBy('nome')->get(),
+            'padres' => Usuario::query()
+                ->where('eh_padre', true)
+                ->where('ativo', true)
+                ->orderBy('nome')
+                ->get(),
             'missasAnteriores' => Missa::query()
                 ->where('igreja_id', $igreja->id)
                 ->orderByDesc('data_missa')
@@ -82,13 +85,15 @@ class MissaController extends Controller
 
             $missa = Missa::create([
                 'igreja_id' => $igreja->id,
-                'padre_id' => $dados['padre_id'] ?? null,
+                'celebrante_usuario_id' => $dados['padre_id'] ?? null,
                 'tempo_liturgico_id' => $dados['tempo_liturgico_id'] ?? null,
                 'titulo' => $dados['titulo'],
                 'data_missa' => $dados['data_missa'],
                 'hora_inicio' => $dados['hora_inicio'],
                 'hora_fim' => $dados['hora_fim'],
                 'observacoes' => $dados['observacoes'] ?? null,
+                'publica_para_fieis' => (bool) ($dados['publica_para_fieis'] ?? false),
+                'publica_para_musicos' => (bool) ($dados['publica_para_musicos'] ?? false),
                 'ativo' => (bool) ($dados['ativo'] ?? true),
             ]);
 
@@ -132,7 +137,7 @@ class MissaController extends Controller
 
         $missa->load([
             'tempoLiturgico',
-            'padre',
+            'celebrante',
             'missaMusicas' => fn ($query) => $query
                 ->with([
                     'musica.tempoLiturgico',
@@ -172,7 +177,11 @@ class MissaController extends Controller
             'igreja' => $this->adicionarDadosPublicos($igreja),
             'missa' => $missa,
             'temposLiturgicos' => TempoLiturgico::where('ativo', true)->orderBy('nome')->get(),
-            'padres' => Padre::query()->orderBy('nome')->get(),
+            'padres' => Usuario::query()
+                ->where('eh_padre', true)
+                ->where('ativo', true)
+                ->orderBy('nome')
+                ->get(),
         ]);
     }
 
@@ -189,13 +198,15 @@ class MissaController extends Controller
             }
 
             $missa->update([
-                'padre_id' => $dados['padre_id'] ?? null,
+                'celebrante_usuario_id' => $dados['padre_id'] ?? null,
                 'tempo_liturgico_id' => $dados['tempo_liturgico_id'] ?? null,
                 'titulo' => $dados['titulo'],
                 'data_missa' => $dados['data_missa'],
                 'hora_inicio' => $dados['hora_inicio'],
                 'hora_fim' => $dados['hora_fim'],
                 'observacoes' => $dados['observacoes'] ?? null,
+                'publica_para_fieis' => (bool) ($dados['publica_para_fieis'] ?? false),
+                'publica_para_musicos' => (bool) ($dados['publica_para_musicos'] ?? false),
                 'ativo' => (bool) ($dados['ativo'] ?? false),
             ]);
         });
@@ -447,7 +458,7 @@ class MissaController extends Controller
 
         $missa->load([
             'tempoLiturgico',
-            'padre',
+            'celebrante',
             'missaMusicas' => fn ($query) => $query
                 ->with(['musica', 'versaoMusical', 'momentoLiturgico'])
                 ->orderBy('ordem'),
@@ -488,7 +499,7 @@ class MissaController extends Controller
         $missa->load([
             'igreja',
             'tempoLiturgico',
-            'padre',
+            'celebrante',
             'missaMusicas' => fn ($query) => $query
                 ->with(['musica', 'versaoMusical', 'momentoLiturgico'])
                 ->orderBy('ordem'),
@@ -526,11 +537,13 @@ class MissaController extends Controller
         $validator = Validator::make($request->all(), [
             'titulo' => ['required', 'string', 'max:255'],
             'tempo_liturgico_id' => ['nullable', 'exists:tempos_liturgicos,id'],
-            'padre_id' => ['nullable', 'exists:padres,id'],
+            'padre_id' => ['nullable', 'exists:usuarios,id'],
             'data_missa' => ['required', 'date', 'after_or_equal:' . $dataMinima, 'before_or_equal:' . $dataMaxima],
             'hora_inicio' => ['required', 'date_format:H:i'],
             'hora_fim' => ['required', 'date_format:H:i'],
             'observacoes' => ['nullable', 'string'],
+            'publica_para_fieis' => ['nullable', 'boolean'],
+            'publica_para_musicos' => ['nullable', 'boolean'],
             'ativo' => ['nullable', 'boolean'],
             'reaproveitar_repertorio' => ['nullable', 'boolean'],
             'missa_origem_id' => ['nullable', 'exists:missas,id'],
@@ -548,6 +561,7 @@ class MissaController extends Controller
         $validator->after(function ($validator) use ($request): void {
             $horaInicio = (string) $request->input('hora_inicio', '');
             $horaFim = (string) $request->input('hora_fim', '');
+            $celebranteId = $request->input('padre_id');
 
             if ($horaInicio !== '' && $horaFim !== '' && $horaInicio === $horaFim) {
                 $validator->errors()->add(
@@ -555,9 +569,34 @@ class MissaController extends Controller
                     'O horario de termino deve ser diferente do horario de inicio.'
                 );
             }
+
+            if (filled($celebranteId)) {
+                $celebrante = Usuario::query()->find($celebranteId);
+
+                if (!$celebrante?->eh_padre) {
+                    $validator->errors()->add(
+                        'padre_id',
+                        'Selecione um celebrante valido.'
+                    );
+                }
+            }
         });
 
-        return $validator->validate();
+        $dados = $validator->validate();
+
+        if ($this->celebranteTemConflitoHorario(
+            celebranteId: isset($dados['padre_id']) ? (int) $dados['padre_id'] : null,
+            dataMissa: (string) $dados['data_missa'],
+            horaInicio: (string) $dados['hora_inicio'],
+            horaFim: (string) $dados['hora_fim'],
+            ignorarMissaId: $request->route('missa')?->id
+        )) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'padre_id' => 'Este celebrante ja esta vinculado a outra missa no mesmo horario.',
+            ]);
+        }
+
+        return $dados;
     }
 
     private function obterUsuario(): Usuario
@@ -660,5 +699,49 @@ class MissaController extends Controller
                 'Igreja' => $missa->igreja?->nome ?? $this->obterIgreja()->nome,
             ]
         );
+    }
+
+    private function celebranteTemConflitoHorario(
+        ?int $celebranteId,
+        string $dataMissa,
+        string $horaInicio,
+        string $horaFim,
+        ?int $ignorarMissaId = null
+    ): bool {
+        if ($celebranteId === null) {
+            return false;
+        }
+
+        $missas = Missa::query()
+            ->where('celebrante_usuario_id', $celebranteId)
+            ->whereDate('data_missa', $dataMissa)
+            ->when($ignorarMissaId, fn ($query) => $query->whereKeyNot($ignorarMissaId))
+            ->get(['id', 'hora_inicio', 'hora_fim']);
+
+        if ($missas->isEmpty()) {
+            return false;
+        }
+
+        $novoInicio = CarbonImmutable::createFromFormat('H:i', $horaInicio, 'America/Cuiaba');
+        $novoFim = CarbonImmutable::createFromFormat('H:i', $horaFim, 'America/Cuiaba');
+
+        if ($novoFim->lessThanOrEqualTo($novoInicio)) {
+            $novoFim = $novoFim->addDay();
+        }
+
+        foreach ($missas as $missaExistente) {
+            $existenteInicio = CarbonImmutable::createFromFormat('H:i:s', substr((string) $missaExistente->hora_inicio, 0, 8), 'America/Cuiaba');
+            $existenteFim = CarbonImmutable::createFromFormat('H:i:s', substr((string) $missaExistente->hora_fim, 0, 8), 'America/Cuiaba');
+
+            if ($existenteFim->lessThanOrEqualTo($existenteInicio)) {
+                $existenteFim = $existenteFim->addDay();
+            }
+
+            if ($novoInicio->lessThan($existenteFim) && $novoFim->greaterThan($existenteInicio)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

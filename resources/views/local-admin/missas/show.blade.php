@@ -225,7 +225,9 @@
                 <h2 class="text-lg font-bold text-gray-900">Dados da missa</h2>
                 <div class="mt-4 space-y-4 text-sm text-gray-600">
                     <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Tempo liturgico</span><span>{{ $missa->tempoLiturgico?->nome ?: 'Nao definido' }}</span></div>
-                    <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Padre</span><span>{{ $missa->padre?->nome ?: 'Nao vinculado' }}</span></div>
+                    <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Padre</span><span>{{ $missa->celebrante?->nome ?: 'Nao vinculado' }}</span></div>
+                    <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Publicacao fiel</span><span>{{ $missa->publica_para_fieis ? 'Ativa' : 'Nao publicada' }}</span></div>
+                    <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Publicacao musico</span><span>{{ $missa->publica_para_musicos ? 'Ativa' : 'Nao publicada' }}</span></div>
                     <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Observacoes</span><span>{{ $missa->observacoes ?: 'Nenhuma observacao informada.' }}</span></div>
                 </div>
             </section>

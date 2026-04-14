@@ -172,11 +172,13 @@ class AcordeController extends Controller
 
     public function destroy(int $id): RedirectResponse
     {
-        Acorde::findOrFail($id)->delete();
+        Acorde::findOrFail($id)->update([
+            'ativo' => false,
+        ]);
 
         return redirect()
             ->route('admin.acordes.index')
-            ->with('success', 'Acorde excluido com sucesso.');
+            ->with('success', 'Acorde inativado com sucesso.');
     }
 
     protected function adaptarAcordeParaView(Acorde $acorde): Acorde

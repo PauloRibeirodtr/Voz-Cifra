@@ -4,6 +4,12 @@
 @section('mobile_title', 'Configuracoes')
 
 @section('content')
+    @php
+        /** @var \App\Models\Usuario|null $usuarioAutenticado */
+        $usuarioAutenticado = auth()->user();
+        $nivelUsuarioAutenticado = method_exists($usuarioAutenticado, 'nivelGlobal') ? $usuarioAutenticado->nivelGlobal() : 1;
+    @endphp
+
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Configuracoes</h1>
         <p class="text-sm text-gray-500 mt-1">Organize sua conta, acompanhe o estado atual do sistema e acesse os ajustes disponiveis nesta etapa.</p>
@@ -13,6 +19,16 @@
         @if (session('success'))
             <div class="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-sm text-green-800">
                 {{ session('success') }}
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800">
+                <ul class="list-disc pl-5 space-y-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
         @endif
 
@@ -170,6 +186,19 @@
                             @enderror
                         </div>
 
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Nivel global</label>
+                            <select name="nivel_global" class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-green-600 focus:ring-2 focus:ring-green-100">
+                                <option value="6" @selected((string) old('nivel_global', '6') === '6')>6 - Admin master</option>
+                                @if ($nivelUsuarioAutenticado >= 7)
+                                    <option value="7" @selected((string) old('nivel_global') === '7')>7 - Super admin</option>
+                                @endif
+                            </select>
+                            @error('nivel_global')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div data-password-strength-container>
                                 <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Senha inicial</label>
@@ -240,6 +269,9 @@
                                         <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $adminMaster->ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                                             {{ $adminMaster->ativo ? 'Ativo' : 'Inativo' }}
                                         </span>
+                                        <span class="inline-flex rounded-full bg-indigo-100 px-3 py-1 text-[11px] font-semibold text-indigo-700">
+                                            Nivel {{ method_exists($adminMaster, 'nivelGlobal') ? $adminMaster->nivelGlobal() : ($adminMaster->nivel_global ?? 1) }}
+                                        </span>
                                         @if ($adminMaster->primeiro_acesso)
                                             <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold text-amber-700">
                                                 Primeiro acesso
@@ -247,6 +279,36 @@
                                         @endif
                                     </div>
                                 </div>
+
+                                @if ($nivelUsuarioAutenticado >= 7)
+                                    <form action="{{ route('admin.admins-master.nivel-global.update', $adminMaster) }}" method="POST" class="mt-3 flex flex-wrap items-center gap-2">
+                                        @csrf
+                                        <label class="text-xs font-semibold text-gray-500">Ajustar nivel:</label>
+                                        <select name="nivel_global" class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700">
+                                            <option value="6" @selected((method_exists($adminMaster, 'nivelGlobal') ? $adminMaster->nivelGlobal() : ($adminMaster->nivel_global ?? 1)) == 6)>6</option>
+                                            <option value="7" @selected((method_exists($adminMaster, 'nivelGlobal') ? $adminMaster->nivelGlobal() : ($adminMaster->nivel_global ?? 1)) == 7)>7</option>
+                                        </select>
+                                        <button type="submit" class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+                                            Salvar nivel
+                                        </button>
+                                    </form>
+
+                                    <div class="mt-3 flex flex-wrap gap-2">
+                                        <form action="{{ route('admin.admins-master.toggle', $adminMaster) }}" method="POST" onsubmit="return confirm('Confirma alterar o status deste admin master?');">
+                                            @csrf
+                                            <button type="submit" class="rounded-lg {{ $adminMaster->ativo ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700' }} px-3 py-2 text-sm font-semibold text-white">
+                                                {{ $adminMaster->ativo ? 'Inativar conta' : 'Reativar conta' }}
+                                            </button>
+                                        </form>
+
+                                        <form action="{{ route('admin.admins-master.password.reset', $adminMaster) }}" method="POST" onsubmit="return confirm('Deseja resetar a senha deste admin master para o CPF sem pontuacao?');">
+                                            @csrf
+                                            <button type="submit" class="rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white hover:bg-amber-700">
+                                                Resetar senha
+                                            </button>
+                                        </form>
+                                    </div>
+                                @endif
                             </div>
                         @endforeach
                     </div>

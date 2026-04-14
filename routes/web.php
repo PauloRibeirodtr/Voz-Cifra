@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AcordeController;
 use App\Http\Controllers\Admin\AdminMasterController;
+use App\Http\Controllers\Admin\AuditoriaController;
 use App\Http\Controllers\Admin\IgrejaController;
 use App\Http\Controllers\Admin\MomentoLiturgicoController;
 use App\Http\Controllers\Admin\MusicoController as AdminMusicoController;
@@ -16,33 +17,12 @@ use App\Http\Controllers\Member\BibliotecaMusicalController;
 use App\Http\Controllers\Member\ColecaoEstudoController;
 use App\Http\Controllers\LocalAdmin\PainelAdminLocalController;
 use App\Http\Controllers\Member\PainelMembroController;
+use App\Http\Controllers\Publico\HomeController;
 use App\Http\Controllers\Publico\IgrejaPublicaController;
-use App\Models\Usuario;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    if (!Auth::check()) {
-        return redirect()->route('login');
-    }
-
-    /** @var Usuario|null $usuario */
-    $usuario = Auth::user();
-
-    if (method_exists($usuario, 'ehAdminMaster') && $usuario->ehAdminMaster()) {
-        return redirect()->route('admin.dashboard');
-    }
-
-    if (method_exists($usuario, 'ehAdminLocal') && $usuario->ehAdminLocal()) {
-        return redirect()->route('local-admin.dashboard');
-    }
-
-    if (method_exists($usuario, 'ehMembro') && $usuario->ehMembro()) {
-        return redirect()->route('member.dashboard');
-    }
-
-    return redirect()->route('login');
-})->name('root');
+Route::get('/', [HomeController::class, 'index'])->name('root');
+Route::get('/desenvolvedores', [HomeController::class, 'desenvolvedores'])->name('developers');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -123,8 +103,11 @@ Route::middleware(['auth', 'verified_custom', 'super.admin', 'primeiro_acesso'])
         Route::get('/musicas/{musica}/versoes/{versaoMusical}/editar', [VersaoMusicalController::class, 'edit'])->name('versoes-musicais.edit');
         Route::put('/musicas/{musica}/versoes/{versaoMusical}', [VersaoMusicalController::class, 'update'])->name('versoes-musicais.update');
         Route::delete('/musicas/{musica}/versoes/{versaoMusical}', [VersaoMusicalController::class, 'destroy'])->name('versoes-musicais.destroy');
-    });
 
+        Route::get('/auditoria', [AuditoriaController::class, 'index'])->name('auditoria.index');
+        Route::get('/auditoria/{auditoria}', [AuditoriaController::class, 'show'])->name('auditoria.show');
+    });
+/*
 Route::middleware(['auth', 'verified_custom', 'role:admin_local', 'primeiro_acesso'])
     ->prefix('igreja')
     ->name('local-admin.')
@@ -184,6 +167,8 @@ Route::middleware(['auth', 'verified_custom', 'role:member', 'primeiro_acesso'])
         Route::delete('/colecoes/{colecao}/itens/{item}', [ColecaoEstudoController::class, 'removerItem'])->name('colecoes.itens.destroy');
     });
 
+    ainda falta ajustes
+*/
 Route::get('/publico/igrejas/{slug}/status', [IgrejaPublicaController::class, 'status'])
     ->where('slug', '[A-Za-z0-9\-]+')
     ->name('igrejas.public.status');
@@ -191,3 +176,8 @@ Route::get('/publico/igrejas/{slug}/status', [IgrejaPublicaController::class, 's
 Route::get('/{slug}', [IgrejaPublicaController::class, 'show'])
     ->where('slug', '[A-Za-z0-9\-]+')
     ->name('igrejas.public.show');
+
+
+Route::fallback(function () {
+    return response()->view('errors.404', [], 404);
+});

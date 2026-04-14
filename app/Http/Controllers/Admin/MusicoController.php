@@ -6,13 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Models\Igreja;
 use App\Models\Usuario;
 use App\Rules\StrongPassword;
+use App\Services\NotificacaoSegurancaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class MusicoController extends Controller
 {
+    public function __construct(
+        private readonly NotificacaoSegurancaService $notificacaoSegurancaService
+    ) {
+    }
+
     public function index(): View
     {
         return view('admin.musicos.index', [
@@ -50,7 +57,7 @@ class MusicoController extends Controller
 
         return redirect()
             ->route('admin.musicos.index')
-            ->with('success', 'Músico cadastrado com sucesso.');
+            ->with('success', 'Musico cadastrado com sucesso.');
     }
 
     public function edit(Usuario $musico): View
@@ -80,34 +87,61 @@ class MusicoController extends Controller
 
         return redirect()
             ->route('admin.musicos.index')
-            ->with('success', 'Músico atualizado com sucesso.');
+            ->with('success', 'Musico atualizado com sucesso.');
     }
 
     public function toggle(Usuario $musico): RedirectResponse
     {
         $this->garantirMusico($musico);
 
+        /** @var \App\Models\Usuario|null $ator */
+        $ator = Auth::user();
+        $novoStatus = !$musico->ativo;
+
         $musico->update([
-            'ativo' => !$musico->ativo,
+            'ativo' => $novoStatus,
         ]);
+
+        $this->notificacaoSegurancaService->enviarEventoConta(
+            alvo: $musico,
+            evento: $novoStatus ? 'conta_reativada' : 'conta_inativada',
+            ator: $ator,
+            contexto: [
+                'origem' => 'admin_musicos_toggle',
+                'perfil' => $musico->perfil_global,
+            ]
+        );
 
         return redirect()
             ->route('admin.musicos.index')
-            ->with('success', $musico->ativo ? 'Músico ativado com sucesso.' : 'Músico inativado com sucesso.');
+            ->with('success', $musico->ativo ? 'Musico ativado com sucesso.' : 'Musico inativado com sucesso.');
     }
 
     public function resetPassword(Usuario $musico): RedirectResponse
     {
         $this->garantirMusico($musico);
 
+        /** @var \App\Models\Usuario|null $ator */
+        $ator = Auth::user();
+
         $musico->update([
             'password' => $this->senhaPadraoPorCpf($musico->cpf),
             'primeiro_acesso' => true,
         ]);
 
+        $this->notificacaoSegurancaService->enviarEventoConta(
+            alvo: $musico,
+            evento: 'reset_senha',
+            ator: $ator,
+            contexto: [
+                'origem' => 'admin_musicos_reset',
+                'senha_inicial' => 'cpf_sem_pontuacao',
+            ]
+        );
+
         return redirect()
             ->route('admin.musicos.index')
-            ->with('success', 'Senha redefinida com sucesso. O usuário deverá trocar no próximo acesso.');
+            ->with('success', 'Senha redefinida com sucesso. O usuario devera trocar no proximo acesso.');
     }
 
     public function destroy(Usuario $musico): RedirectResponse
@@ -117,7 +151,7 @@ class MusicoController extends Controller
 
         return redirect()
             ->route('admin.musicos.index')
-            ->with('success', 'Músico excluído com sucesso.');
+            ->with('success', 'Musico excluido com sucesso.');
     }
 
     protected function validarMusico(Request $request, ?Usuario $musico = null): array

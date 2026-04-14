@@ -85,11 +85,12 @@
                 <select name="padre_id" class="{{ $classeInput }}">
                     <option value="">Nao vincular agora</option>
                     @foreach ($padres as $padre)
-                        <option value="{{ $padre->id }}" @selected((string) old('padre_id', $missa->padre_id) === (string) $padre->id)>
+                        <option value="{{ $padre->id }}" @selected((string) old('padre_id', $missa->celebrante_usuario_id ?? null) === (string) $padre->id)>
                             {{ $padre->nome }}
                         </option>
                     @endforeach
                 </select>
+                <p class="mt-1 text-xs text-gray-500">Selecione um padre cadastrado. O sistema evita conflito do mesmo padre em duas missas no mesmo horario.</p>
             </div>
 
             <div>
@@ -107,6 +108,18 @@
             <input type="hidden" name="ativo" value="0">
             <input type="checkbox" name="ativo" value="1" {{ old('ativo', $missa->exists ? (int) $missa->ativo : 1) ? 'checked' : '' }} class="mt-1 rounded border-gray-300 text-green-700 focus:ring-green-500">
             <span>Deixar esta missa ativa para a igreja</span>
+        </label>
+
+        <label class="mt-5 inline-flex items-start gap-3 text-sm font-medium text-gray-700">
+            <input type="hidden" name="publica_para_fieis" value="0">
+            <input type="checkbox" name="publica_para_fieis" value="1" {{ old('publica_para_fieis', $missa->publica_para_fieis ?? false) ? 'checked' : '' }} class="mt-1 rounded border-gray-300 text-green-700 focus:ring-green-500">
+            <span>Publicar esta missa para os fieis no link publico</span>
+        </label>
+
+        <label class="mt-4 inline-flex items-start gap-3 text-sm font-medium text-gray-700">
+            <input type="hidden" name="publica_para_musicos" value="0">
+            <input type="checkbox" name="publica_para_musicos" value="1" {{ old('publica_para_musicos', $missa->publica_para_musicos ?? false) ? 'checked' : '' }} class="mt-1 rounded border-gray-300 text-green-700 focus:ring-green-500">
+            <span>Publicar esta missa para os musicos com cifras e estudo</span>
         </label>
 
         <div class="mt-6 space-y-3">

@@ -166,11 +166,13 @@ class VersaoMusicalController extends Controller
     {
         $this->garantirVinculoComMusica($musica, $versaoMusical);
 
-        $versaoMusical->delete();
+        $versaoMusical->update([
+            'ativo' => false,
+        ]);
 
         return redirect()
             ->route('admin.musicas.show', $musica)
-            ->with('success', 'Versao musical excluida com sucesso.');
+            ->with('success', 'Versao musical inativada com sucesso.');
     }
 
     private function garantirVinculoComMusica(Musica $musica, VersaoMusical $versaoMusical): void

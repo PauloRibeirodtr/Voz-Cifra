@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -14,16 +15,36 @@ return new class extends Migration
             $table->string('nome');
             $table->string('cpf', 14)->unique();
             $table->string('email')->unique();
+            $table->string('telefone', 20)->nullable();
             $table->string('password');
-            $table->string('perfil_global', 20)->default('member');
+            $table->string('perfil_global', 20)->default('usuario');
+            $table->smallInteger('nivel_global')->default(1);
+            $table->boolean('eh_padre')->default(false);
             $table->boolean('ativo')->default(true);
+            $table->boolean('primeiro_acesso')->default(false);
+            $table->string('theme_preference', 16)->default('system');
             $table->rememberToken();
             $table->timestamps();
 
             $table->index('perfil_global');
+            $table->index('nivel_global');
             $table->index('ativo');
+            $table->index('primeiro_acesso');
+            $table->index('eh_padre');
             $table->index(['igreja_id', 'perfil_global']);
         });
+
+        DB::statement("
+            ALTER TABLE usuarios
+            ADD CONSTRAINT usuarios_perfil_global_check
+            CHECK (perfil_global IN ('admin_master', 'usuario'))
+        ");
+
+        DB::statement("
+            ALTER TABLE usuarios
+            ADD CONSTRAINT usuarios_nivel_global_check
+            CHECK (nivel_global BETWEEN 1 AND 6)
+        ");
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
@@ -45,6 +66,8 @@ return new class extends Migration
     {
         Schema::dropIfExists('sessions');
         Schema::dropIfExists('password_reset_tokens');
+        DB::statement('ALTER TABLE usuarios DROP CONSTRAINT IF EXISTS usuarios_nivel_global_check');
+        DB::statement('ALTER TABLE usuarios DROP CONSTRAINT IF EXISTS usuarios_perfil_global_check');
         Schema::dropIfExists('usuarios');
     }
 };

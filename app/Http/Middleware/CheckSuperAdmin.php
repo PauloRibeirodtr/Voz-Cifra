@@ -24,6 +24,10 @@ class CheckSuperAdmin
             return $next($request);
         }
 
+        if (method_exists($usuario, 'nivelGlobal') && $usuario->nivelGlobal() >= 6) {
+            return $next($request);
+        }
+
         abort(403, 'Acesso restrito ao administrador master.');
     }
 }

@@ -48,7 +48,7 @@
 
                             <div class="mt-3 flex flex-wrap gap-3 text-sm text-gray-600">
                                 <span>Tempo: {{ $missa->tempoLiturgico?->nome ?: 'Nao definido' }}</span>
-                                <span>Padre: {{ $missa->padre?->nome ?: 'Nao vinculado' }}</span>
+                                <span>Padre: {{ $missa->celebrante?->nome ?: 'Nao vinculado' }}</span>
                                 <span>Repertorio: {{ $missa->missa_musicas_count }} item(ns)</span>
                             </div>
                         </div>

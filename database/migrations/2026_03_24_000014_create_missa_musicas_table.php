@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('missa_id')->constrained('missas')->cascadeOnDelete();
             $table->foreignId('musica_id')->constrained('musicas')->restrictOnDelete();
             $table->foreignId('versao_musical_id')->nullable()->constrained('versoes_musicais')->nullOnDelete();
+            $table->string('tom_usado', 20)->nullable();
             $table->foreignId('momento_liturgico_id')->nullable()->constrained('momentos_liturgicos')->nullOnDelete();
             $table->integer('ordem');
             $table->timestamps();

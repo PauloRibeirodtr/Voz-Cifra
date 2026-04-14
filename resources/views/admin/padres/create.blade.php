@@ -7,7 +7,7 @@
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Novo padre</h1>
-            <p class="text-sm text-gray-500">Cadastre um padre para uso administrativo no sistema.</p>
+            <p class="text-sm text-gray-500">Cadastre um padre para uso administrativo nas missas do sistema.</p>
         </div>
 
         <a href="{{ route('admin.padres.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-700 font-medium hover:bg-gray-50 sm:w-auto">

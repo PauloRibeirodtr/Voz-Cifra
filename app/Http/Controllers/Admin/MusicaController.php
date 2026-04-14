@@ -107,11 +107,13 @@ class MusicaController extends Controller
 
     public function destroy(Musica $musica): RedirectResponse
     {
-        $musica->delete();
+        $musica->update([
+            'ativo' => false,
+        ]);
 
         return redirect()
             ->route('admin.musicas.index')
-            ->with('success', 'Musica excluida com sucesso.');
+            ->with('success', 'Musica inativada com sucesso.');
     }
 
     private function validarDados(Request $request): array

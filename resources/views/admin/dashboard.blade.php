@@ -5,76 +5,80 @@
 
 @section('content')
     <div class="mb-6 sm:mb-8">
-        <h1 class="text-2xl sm:text-3xl font-black text-gray-800">Painel do administrador principal</h1>
-        <p class="text-gray-500">Resumo geral da base central do sistema.</p>
+        <h1 class="text-2xl font-black text-[#fff8ed] sm:text-3xl">Painel do administrador principal</h1>
+        <p class="text-[#d4c2ab]">Visao central da base, com foco nas igrejas, musicas e acessos desta etapa.</p>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-        <a href="{{ route('admin.musicos.index') }}" class="block bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-blue-500 transition hover:-translate-y-0.5 hover:shadow-md">
-            <h3 class="font-bold text-sm text-gray-500 uppercase tracking-wider mb-1">Usuarios</h3>
-            <div class="text-3xl sm:text-4xl font-black text-gray-800">{{ $metrics['total_usuarios'] ?? 0 }}</div>
+    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3 sm:mb-8">
+        <a href="{{ route('admin.musicos.index') }}" class="block rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-6">
+            <h3 class="mb-1 text-sm font-bold uppercase tracking-wider text-[#d6ad6c]">Usuarios</h3>
+            <div class="text-3xl font-black text-[#fff8ed] sm:text-4xl">{{ $metrics['total_usuarios'] ?? 0 }}</div>
         </a>
 
-        <a href="{{ route('admin.igrejas.index') }}" class="block bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-green-500 transition hover:-translate-y-0.5 hover:shadow-md">
-            <h3 class="font-bold text-sm text-gray-500 uppercase tracking-wider mb-1">Igrejas</h3>
-            <div class="text-3xl sm:text-4xl font-black text-gray-800">{{ $metrics['total_igrejas'] ?? 0 }}</div>
+        <a href="{{ route('admin.igrejas.index') }}" class="block rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-6">
+            <h3 class="mb-1 text-sm font-bold uppercase tracking-wider text-[#d6ad6c]">Igrejas</h3>
+            <div class="text-3xl font-black text-[#fff8ed] sm:text-4xl">{{ $metrics['total_igrejas'] ?? 0 }}</div>
         </a>
 
-        <a href="{{ route('admin.musicas.index') }}" class="block bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-orange-500 transition hover:-translate-y-0.5 hover:shadow-md">
-            <h3 class="font-bold text-sm text-gray-500 uppercase tracking-wider mb-1">Musicas</h3>
-            <div class="text-3xl sm:text-4xl font-black text-gray-800">{{ $metrics['total_musicas'] ?? 0 }}</div>
+        <a href="{{ route('admin.musicas.index') }}" class="block rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-6">
+            <h3 class="mb-1 text-sm font-bold uppercase tracking-wider text-[#d6ad6c]">Musicas</h3>
+            <div class="text-3xl font-black text-[#fff8ed] sm:text-4xl">{{ $metrics['total_musicas'] ?? 0 }}</div>
         </a>
 
-        <a href="{{ route('admin.igrejas.index') }}" class="block bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-purple-500 transition hover:-translate-y-0.5 hover:shadow-md">
-            <h3 class="font-bold text-sm text-gray-500 uppercase tracking-wider mb-1">Missas</h3>
-            <div class="text-3xl sm:text-4xl font-black text-gray-800">{{ $metrics['total_missas'] ?? 0 }}</div>
+        <a href="{{ route('admin.igrejas.index') }}" class="block rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-6">
+            <h3 class="mb-1 text-sm font-bold uppercase tracking-wider text-[#d6ad6c]">Missas</h3>
+            <div class="text-3xl font-black text-[#fff8ed] sm:text-4xl">{{ $metrics['total_missas'] ?? 0 }}</div>
         </a>
 
-        <a href="{{ route('admin.igrejas.index') }}" class="block bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-yellow-500 transition hover:-translate-y-0.5 hover:shadow-md">
-            <h3 class="font-bold text-sm text-gray-500 uppercase tracking-wider mb-1">Admins locais</h3>
-            <div class="text-3xl sm:text-4xl font-black text-gray-800">{{ $metrics['admins_locais'] ?? 0 }}</div>
+        <a href="{{ route('admin.igrejas.index') }}" class="block rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-6">
+            <h3 class="mb-1 text-sm font-bold uppercase tracking-wider text-[#d6ad6c]">Admins locais</h3>
+            <div class="text-3xl font-black text-[#fff8ed] sm:text-4xl">{{ $metrics['admins_locais'] ?? 0 }}</div>
         </a>
 
-        <a href="{{ route('admin.musicos.index') }}" class="block bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-emerald-500 transition hover:-translate-y-0.5 hover:shadow-md">
-            <h3 class="font-bold text-sm text-gray-500 uppercase tracking-wider mb-1">Membros</h3>
-            <div class="text-3xl sm:text-4xl font-black text-gray-800">{{ $metrics['membros'] ?? 0 }}</div>
+        <a href="{{ route('admin.musicos.index') }}" class="block rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-6">
+            <h3 class="mb-1 text-sm font-bold uppercase tracking-wider text-[#d6ad6c]">Membros</h3>
+            <div class="text-3xl font-black text-[#fff8ed] sm:text-4xl">{{ $metrics['membros'] ?? 0 }}</div>
         </a>
     </div>
 
-    <div class="mb-6 sm:mb-8 rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-sm">
+    <div class="mb-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:mb-8 sm:p-6">
         <div class="mb-4">
-            <h2 class="text-lg font-bold text-gray-800">Acessos rapidos</h2>
-            <p class="mt-1 text-sm text-gray-500">Atalhos para os modulos centrais mais usados nesta etapa.</p>
+            <h2 class="text-lg font-bold text-[#fff8ed]">Acessos rapidos</h2>
+            <p class="mt-1 text-sm text-[#d4c2ab]">Atalhos centrais para manter a base organizada sem espalhar o fluxo.</p>
         </div>
 
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <a href="{{ route('admin.igrejas.index') }}" class="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 transition hover:border-green-200 hover:bg-green-50">
-                <span class="block text-xs font-black uppercase tracking-wider text-green-700">Igrejas</span>
-                <span class="mt-2 block text-base font-bold text-gray-800">Gerenciar igrejas</span>
+            <a href="{{ route('admin.igrejas.index') }}" class="rounded-2xl border border-white/10 bg-[#2a1b1b] px-4 py-4 transition hover:border-[#c9a15f]/30 hover:bg-[#352121]">
+                <span class="block text-xs font-black uppercase tracking-wider text-[#d6ad6c]">Igrejas</span>
+                <span class="mt-2 block text-base font-bold text-[#fff8ed]">Gerenciar igrejas</span>
             </a>
 
-            <a href="{{ route('admin.musicas.index') }}" class="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 transition hover:border-green-200 hover:bg-green-50">
-                <span class="block text-xs font-black uppercase tracking-wider text-green-700">Musicas</span>
-                <span class="mt-2 block text-base font-bold text-gray-800">Biblioteca musical</span>
+            <a href="{{ route('admin.musicas.index') }}" class="rounded-2xl border border-white/10 bg-[#2a1b1b] px-4 py-4 transition hover:border-[#c9a15f]/30 hover:bg-[#352121]">
+                <span class="block text-xs font-black uppercase tracking-wider text-[#d6ad6c]">Musicas</span>
+                <span class="mt-2 block text-base font-bold text-[#fff8ed]">Biblioteca musical</span>
             </a>
 
-            <a href="{{ route('admin.acordes.index') }}" class="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 transition hover:border-green-200 hover:bg-green-50">
-                <span class="block text-xs font-black uppercase tracking-wider text-green-700">Acordes</span>
-                <span class="mt-2 block text-base font-bold text-gray-800">Dicionario de acordes</span>
+            <a href="{{ route('admin.acordes.index') }}" class="rounded-2xl border border-white/10 bg-[#2a1b1b] px-4 py-4 transition hover:border-[#c9a15f]/30 hover:bg-[#352121]">
+                <span class="block text-xs font-black uppercase tracking-wider text-[#d6ad6c]">Acordes</span>
+                <span class="mt-2 block text-base font-bold text-[#fff8ed]">Dicionario de acordes</span>
             </a>
 
-            <a href="{{ route('admin.settings') }}" class="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 transition hover:border-green-200 hover:bg-green-50">
-                <span class="block text-xs font-black uppercase tracking-wider text-green-700">Configuracoes</span>
-                <span class="mt-2 block text-base font-bold text-gray-800">Conta e sistema</span>
+            <a href="{{ route('admin.auditoria.index') }}" class="rounded-2xl border border-white/10 bg-[#2a1b1b] px-4 py-4 transition hover:border-[#c9a15f]/30 hover:bg-[#352121]">
+                <span class="block text-xs font-black uppercase tracking-wider text-[#d6ad6c]">Auditoria</span>
+                <span class="mt-2 block text-base font-bold text-[#fff8ed]">Protocolos e acoes sensiveis</span>
+            </a>
+
+            <a href="{{ route('admin.settings') }}" class="rounded-2xl border border-white/10 bg-[#2a1b1b] px-4 py-4 transition hover:border-[#c9a15f]/30 hover:bg-[#352121]">
+                <span class="block text-xs font-black uppercase tracking-wider text-[#d6ad6c]">Configuracoes</span>
+                <span class="mt-2 block text-base font-bold text-[#fff8ed]">Conta e sistema</span>
             </a>
         </div>
     </div>
 
-    <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100">
-        <h2 class="font-bold text-lg text-gray-700 mb-4">Visao geral desta etapa</h2>
-        <p class="text-gray-600 leading-7">
-            O fluxo inicial do admin master esta ativo. A partir daqui podemos evoluir com seguranca
-            as funcionalidades centrais, mantendo o sistema fechado e alinhado com a documentacao.
+    <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
+        <h2 class="mb-4 text-lg font-bold text-[#fff8ed]">Visao geral desta etapa</h2>
+        <p class="leading-7 text-[#d4c2ab]">
+            O admin master concentra a base principal do sistema. A partir daqui vamos evoluir por blocos, mantendo a experiencia interna mais coerente com a home e com o login.
         </p>
     </div>
 @endsection
