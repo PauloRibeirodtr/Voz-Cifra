@@ -107,7 +107,7 @@ Route::middleware(['auth', 'verified_custom', 'super.admin', 'primeiro_acesso'])
         Route::get('/auditoria', [AuditoriaController::class, 'index'])->name('auditoria.index');
         Route::get('/auditoria/{auditoria}', [AuditoriaController::class, 'show'])->name('auditoria.show');
     });
-/*
+
 Route::middleware(['auth', 'verified_custom', 'role:admin_local', 'primeiro_acesso'])
     ->prefix('igreja')
     ->name('local-admin.')
@@ -167,8 +167,7 @@ Route::middleware(['auth', 'verified_custom', 'role:member', 'primeiro_acesso'])
         Route::delete('/colecoes/{colecao}/itens/{item}', [ColecaoEstudoController::class, 'removerItem'])->name('colecoes.itens.destroy');
     });
 
-    ainda falta ajustes
-*/
+
 Route::get('/publico/igrejas/{slug}/status', [IgrejaPublicaController::class, 'status'])
     ->where('slug', '[A-Za-z0-9\-]+')
     ->name('igrejas.public.status');
