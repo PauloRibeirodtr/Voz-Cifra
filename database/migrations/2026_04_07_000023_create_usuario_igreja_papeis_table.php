@@ -23,16 +23,20 @@ return new class extends Migration
             $table->index(['usuario_igreja_id', 'ativo'], 'usuario_igreja_papeis_vinculo_ativo_index');
         });
 
-        DB::statement("
-            ALTER TABLE usuario_igreja_papeis
-            ADD CONSTRAINT usuario_igreja_papeis_papel_check
-            CHECK (papel IN ('admin_local', 'coordenador', 'musico'))
-        ");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("
+                ALTER TABLE usuario_igreja_papeis
+                ADD CONSTRAINT usuario_igreja_papeis_papel_check
+                CHECK (papel IN ('admin_local', 'coordenador', 'musico'))
+            ");
+        }
     }
 
     public function down(): void
     {
-        DB::statement('ALTER TABLE usuario_igreja_papeis DROP CONSTRAINT IF EXISTS usuario_igreja_papeis_papel_check');
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE usuario_igreja_papeis DROP CONSTRAINT IF EXISTS usuario_igreja_papeis_papel_check');
+        }
         Schema::dropIfExists('usuario_igreja_papeis');
     }
 };

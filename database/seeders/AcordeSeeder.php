@@ -319,15 +319,15 @@ class AcordeSeeder extends Seeder
         ];
 
         foreach ($acordes as $item) {
-            $nome = $item['nome'];
-            $descricao = $item['descricao'] ?? 'Acorde gerado pelo seeder';
+            $nome = trim((string) $item['nome']);
+            $descricao = trim((string) ($item['descricao'] ?? 'Acorde gerado pelo seeder'));
             $shape = $item['shape'] ?? null;
 
             Acorde::updateOrCreate(
                 ['nome' => $nome, 'descricao' => $descricao],
                 [
                     'descricao' => $descricao,
-                    'dados_diagrama' => $shape ? json_encode($shape, JSON_UNESCAPED_UNICODE) : null,
+                    'dados_diagrama' => $shape,
                     'ativo' => true,
                 ]
             );

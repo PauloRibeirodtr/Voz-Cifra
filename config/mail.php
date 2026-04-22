@@ -1,8 +1,11 @@
 <?php
 
 $mailScheme = env('MAIL_SCHEME');
+$mailAutoTls = env('MAIL_AUTO_TLS', true);
 
-if ($mailScheme === 'tls') {
+if ($mailScheme === null || $mailScheme === '' || $mailScheme === 'null') {
+    $mailScheme = null;
+} elseif ($mailScheme === 'tls') {
     $mailScheme = 'smtp';
 } elseif ($mailScheme === 'ssl') {
     $mailScheme = 'smtps';
@@ -50,10 +53,11 @@ return [
             'scheme' => $mailScheme,
             'url' => env('MAIL_URL'),
             'host' => env('MAIL_HOST', '127.0.0.1'),
-            'port' => env('MAIL_PORT', 2525),
+            'port' => env('MAIL_PORT', 587),
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
             'timeout' => env('MAIL_TIMEOUT', 10),
+            'auto_tls' => filter_var($mailAutoTls, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE) ?? true,
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 

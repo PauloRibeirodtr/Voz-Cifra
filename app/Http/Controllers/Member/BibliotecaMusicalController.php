@@ -4,14 +4,13 @@ namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
 use App\Models\Acorde;
-use App\Models\Missa;
 use App\Models\Musica;
 use App\Models\Usuario;
 use App\Models\VersaoMusical;
 use App\Services\FolhaVersaoMusicalService;
+use App\Services\RepertorioMusicoService;
 use App\Services\TranspositorCifrasService;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -21,7 +20,8 @@ class BibliotecaMusicalController extends Controller
 {
     public function __construct(
         private readonly TranspositorCifrasService $transpositorCifrasService,
-        private readonly FolhaVersaoMusicalService $folhaVersaoMusicalService
+        private readonly FolhaVersaoMusicalService $folhaVersaoMusicalService,
+        private readonly RepertorioMusicoService $repertorioMusicoService
     ) {
         $this->middleware(['auth', 'verified_custom', 'role:member']);
     }
@@ -29,25 +29,8 @@ class BibliotecaMusicalController extends Controller
     public function repertorio(): View
     {
         $usuario = $this->obterUsuario();
-        $igreja = $usuario->igreja;
-        $hoje = CarbonImmutable::now('America/Cuiaba')->toDateString();
-
-        $missa = Missa::query()
-            ->with([
-                'tempoLiturgico',
-                'missaMusicas' => fn ($query) => $query
-                    ->with(['musica', 'versaoMusical', 'momentoLiturgico'])
-                    ->orderBy('ordem'),
-            ])
-            ->where('igreja_id', $igreja?->id)
-            ->where(function ($query) use ($hoje) {
-                $query->where('ativo', true)
-                    ->orWhereDate('data_missa', '>=', $hoje);
-            })
-            ->orderByRaw('case when ativo then 0 else 1 end')
-            ->orderBy('data_missa')
-            ->orderBy('hora_inicio')
-            ->first();
+        $igreja = $usuario->igrejaAtiva() ?? $usuario->igreja;
+        $missa = $this->repertorioMusicoService->obterMissaDisponivelParaUsuario($usuario);
 
         return view('member.repertorio', [
             'usuario' => $usuario,
@@ -60,7 +43,7 @@ class BibliotecaMusicalController extends Controller
     public function musicas(Request $request): View
     {
         $usuario = $this->obterUsuario();
-        $igreja = $usuario->igreja;
+        $igreja = $usuario->igrejaAtiva() ?? $usuario->igreja;
 
         $consulta = Musica::query()
             ->with([
@@ -116,14 +99,14 @@ class BibliotecaMusicalController extends Controller
     public function versao(Musica $musica, VersaoMusical $versaoMusical): View
     {
         $usuario = $this->obterUsuario();
-        $igreja = $usuario->igreja;
+        $igreja = $usuario->igrejaAtiva() ?? $usuario->igreja;
         [
             'missaAtiva' => $missaAtiva,
             'itemMissa' => $itemMissa,
             'tomOriginal' => $tomOriginal,
             'tomExibicao' => $tomExibicao,
             'textoCifraExibicao' => $textoCifraExibicao,
-        ] = $this->montarContextoVersao($musica, $versaoMusical, $igreja?->id);
+        ] = $this->montarContextoVersao($musica, $versaoMusical);
 
         return view('member.versoes.show', [
             'usuario' => $usuario,
@@ -161,8 +144,8 @@ class BibliotecaMusicalController extends Controller
     public function imprimirVersao(Musica $musica, VersaoMusical $versaoMusical): View
     {
         $usuario = $this->obterUsuario();
-        $igreja = $usuario->igreja;
-        $contexto = $this->montarContextoVersao($musica, $versaoMusical, $igreja?->id);
+        $igreja = $usuario->igrejaAtiva() ?? $usuario->igreja;
+        $contexto = $this->montarContextoVersao($musica, $versaoMusical);
 
         $folha = $this->folhaVersaoMusicalService->montar(
             $versaoMusical,
@@ -187,8 +170,8 @@ class BibliotecaMusicalController extends Controller
     public function pdfVersao(Musica $musica, VersaoMusical $versaoMusical)
     {
         $usuario = $this->obterUsuario();
-        $igreja = $usuario->igreja;
-        $contexto = $this->montarContextoVersao($musica, $versaoMusical, $igreja?->id);
+        $igreja = $usuario->igrejaAtiva() ?? $usuario->igreja;
+        $contexto = $this->montarContextoVersao($musica, $versaoMusical);
 
         $folha = $this->folhaVersaoMusicalService->montar(
             $versaoMusical,
@@ -232,16 +215,13 @@ class BibliotecaMusicalController extends Controller
         return $usuario;
     }
 
-    private function montarContextoVersao(Musica $musica, VersaoMusical $versaoMusical, ?int $igrejaId): array
+    private function montarContextoVersao(Musica $musica, VersaoMusical $versaoMusical): array
     {
         abort_unless((int) $versaoMusical->musica_id === (int) $musica->id, 404);
         abort_unless($musica->ativo && $versaoMusical->ativo, 404);
 
-        $missaAtiva = Missa::query()
-            ->with(['missaMusicas' => fn ($query) => $query->where('versao_musical_id', $versaoMusical->id)])
-            ->where('igreja_id', $igrejaId)
-            ->where('ativo', true)
-            ->first();
+        $usuario = $this->obterUsuario();
+        $missaAtiva = $this->repertorioMusicoService->obterMissaComVersaoParaUsuario($usuario, $versaoMusical);
 
         $itemMissa = $missaAtiva?->missaMusicas?->first();
         $tomOriginal = $versaoMusical->tom_musical;

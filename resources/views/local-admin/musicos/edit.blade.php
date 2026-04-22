@@ -1,17 +1,22 @@
 @extends('local-admin.layouts.admin')
 
-@section('title', 'Editar músico | Voz & Cifra')
-@section('mobile_title', 'Editar músico')
+@php($rotaPrefixo = request()->routeIs('coordenador.*') ? 'coordenador' : 'local-admin')
+@php($contextoTitulo = $rotaPrefixo === 'coordenador' ? 'Editar musico da igreja' : 'Editar musico')
+
+@section('title', $contextoTitulo . ' | Voz & Cifra')
+@section('mobile_title', $contextoTitulo)
 
 @section('content')
     <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Editar músico</h1>
-        <p class="mt-1 text-sm text-gray-500">Atualize os dados do músico sem sair do contexto da sua igreja.</p>
+        <h1 class="text-2xl font-bold text-gray-900">{{ $contextoTitulo }}</h1>
+        <p class="mt-1 text-sm text-gray-500">
+            Atualize os dados operacionais sem perder o vinculo atual com {{ $igreja->nome }} nem criar cadastro duplicado.
+        </p>
     </div>
 
-    <form action="{{ route('local-admin.musicos.update', $musico) }}" method="POST">
+    <form action="{{ route($rotaPrefixo . '.musicos.update', $musico) }}" method="POST">
         @csrf
         @method('PUT')
-        @include('musicos._form', ['mostrarCampoIgreja' => false, 'rotaVoltar' => route('local-admin.musicos.index')])
+        @include('musicos._form', ['mostrarCampoIgreja' => false, 'rotaVoltar' => route($rotaPrefixo . '.musicos.index')])
     </form>
 @endsection

@@ -56,11 +56,11 @@ class VersaoMusicalController extends Controller
             'youtube_video_id' => $this->normalizarYoutubeVideoId($dados['youtube_video_id'] ?? null),
             'letra_com_cifras' => $resultadoCifras['texto_normalizado'],
             'criado_por' => $usuario->id,
-            'ativo' => (bool) ($dados['ativo'] ?? true),
+            'ativo' => $this->podeInativarRegistros() ? (bool) ($dados['ativo'] ?? true) : true,
         ]);
 
         $redirecionamento = redirect()
-            ->route('admin.versoes-musicais.show', [$musica, $versaoMusical])
+            ->route($this->routeName('versoes-musicais.show'), [$musica, $versaoMusical])
             ->with('success', 'Versao musical cadastrada com sucesso.');
 
         if ($resultadoCifras['houve_conversao']) {
@@ -144,11 +144,11 @@ class VersaoMusicalController extends Controller
             'bpm' => $dados['bpm'] ?? null,
             'youtube_video_id' => $this->normalizarYoutubeVideoId($dados['youtube_video_id'] ?? null),
             'letra_com_cifras' => $resultadoCifras['texto_normalizado'],
-            'ativo' => (bool) ($dados['ativo'] ?? false),
+            'ativo' => $this->podeInativarRegistros() ? (bool) ($dados['ativo'] ?? false) : (bool) $versaoMusical->ativo,
         ]);
 
         $redirecionamento = redirect()
-            ->route('admin.versoes-musicais.show', [$musica, $versaoMusical])
+            ->route($this->routeName('versoes-musicais.show'), [$musica, $versaoMusical])
             ->with('success', 'Versao musical atualizada com sucesso.');
 
         if ($resultadoCifras['houve_conversao']) {
@@ -171,8 +171,26 @@ class VersaoMusicalController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.musicas.show', $musica)
+            ->route($this->routeName('musicas.show'), $musica)
             ->with('success', 'Versao musical inativada com sucesso.');
+    }
+
+    private function routeName(string $sufixo): string
+    {
+        $nomeAtual = request()->route()?->getName() ?? '';
+
+        if (str_starts_with($nomeAtual, 'coordenador.')) {
+            return 'coordenador.' . $sufixo;
+        }
+
+        return 'admin.' . $sufixo;
+    }
+
+    private function podeInativarRegistros(): bool
+    {
+        $nomeAtual = request()->route()?->getName() ?? '';
+
+        return !str_starts_with($nomeAtual, 'coordenador.');
     }
 
     private function garantirVinculoComMusica(Musica $musica, VersaoMusical $versaoMusical): void

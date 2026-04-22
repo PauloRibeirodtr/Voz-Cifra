@@ -1,11 +1,15 @@
 @extends('member.layouts.app')
 
-@section('title', 'Meu perfil | Voz & Cifra')
-@section('mobile_title', 'Meu perfil')
-@section('desktop_subtitle', 'Perfil e configuracoes do musico')
+@php($isCoordenadorArea = request()->routeIs('coordenador.*'))
+@php($routePrefix = $isCoordenadorArea ? 'coordenador' : 'member')
+@php($tituloPerfil = $isCoordenadorArea ? 'Perfil do coordenador' : 'Meu perfil')
+
+@section('title', $tituloPerfil . ' | Voz & Cifra')
+@section('mobile_title', $tituloPerfil)
+@section('desktop_subtitle', $isCoordenadorArea ? 'Perfil e acesso operacional da igreja' : 'Perfil e configuracoes do musico')
 
 @section('header_actions')
-    <a href="{{ route('member.dashboard') }}" class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
+    <a href="{{ route($routePrefix . '.dashboard') }}" class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
         Voltar ao painel
     </a>
 @endsection
@@ -13,6 +17,7 @@
 @section('content')
     @php
         $classeInput = 'mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 shadow-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100';
+        $papeisAtivos = $igreja ? $user->listarPapeisNaIgreja($igreja) : collect();
     @endphp
 
     @if (session('success'))
@@ -38,14 +43,14 @@
     @endif
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <form action="{{ route('member.profile.update') }}" method="POST" class="space-y-6">
+        <form action="{{ route($routePrefix . '.profile.update') }}" method="POST" class="space-y-6">
             @csrf
             @method('PUT')
 
             <section class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
                 <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 class="text-2xl font-black text-gray-900">Meu perfil</h1>
+                        <h1 class="text-2xl font-black text-gray-900">{{ $tituloPerfil }}</h1>
                         <p class="mt-1 text-sm text-gray-500">Atualize seus dados de acesso e mantenha a conta pronta para uso.</p>
                     </div>
                     @if ($user->primeiro_acesso ?? false)
@@ -105,14 +110,30 @@
                     <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Igreja</span>
                     <span class="mt-2 block text-base font-semibold text-gray-900">{{ $igreja?->nome ?: 'Nao vinculada' }}</span>
                 </div>
+
+                @if ($papeisAtivos->isNotEmpty())
+                    <div class="mt-4">
+                        <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Papeis ativos</span>
+                        <div class="mt-3 flex flex-wrap gap-2">
+                            @foreach ($papeisAtivos as $papel)
+                                @php($corBadge = match($papel->value) {
+                                    'admin_local' => 'bg-indigo-100 text-indigo-700',
+                                    'coordenador' => 'bg-amber-100 text-amber-800',
+                                    default => 'bg-green-100 text-green-700',
+                                })
+                                <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $corBadge }}">{{ $papel->label() }}</span>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </section>
 
             <section class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
                 <h2 class="text-lg font-bold text-gray-900">Preferencias</h2>
                 <div class="mt-4 space-y-3 text-sm text-gray-600">
                     <p>Use esta tela para manter o acesso atualizado e escolher o tema claro, escuro ou automatico para a sua conta.</p>
-                    <a href="{{ route('member.repertorio') }}" class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 font-semibold text-gray-700 hover:bg-gray-50">
-                        Ir para meu repertorio
+                    <a href="{{ route($isCoordenadorArea ? 'coordenador.musicas.index' : 'member.repertorio') }}" class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 font-semibold text-gray-700 hover:bg-gray-50">
+                        {{ $isCoordenadorArea ? 'Ir para musicas da igreja' : 'Ir para meu repertorio' }}
                     </a>
                 </div>
             </section>
@@ -123,4 +144,3 @@
 @push('scripts')
     @include('partials.password-strength-script')
 @endpush
-

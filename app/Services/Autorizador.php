@@ -149,6 +149,8 @@ class Autorizador
             'gerir_manutencao', 'enviar_notificacao_global', 'vincular_usuario_igreja',
             'remover_vinculo_usuario', 'inativar_musica', 'inativar_versao_musical',
             'inativar_acorde' => $this->ehAdminMaster(),
+            'cadastrar_musico', 'editar_musico', 'vincular_musico_existente', 'resetar_senha_musico' => $this->ehAdminMaster()
+                || $this->temAlgumPapelNaIgreja([PapelIgreja::ADMIN_LOCAL->value, PapelIgreja::COORDENADOR->value], $igrejaId),
             'conceder_papel_local_admin_local' => $this->ehAdminMaster()
                 || $this->temPapelNaIgreja(PapelIgreja::COORDENADOR->value, $igrejaId),
             'conceder_papel_local', 'revogar_papel_local' => $this->ehAdminMaster()
@@ -157,9 +159,7 @@ class Autorizador
                 || $this->temPapelNaIgreja(PapelIgreja::ADMIN_LOCAL->value, $igrejaId),
             'cadastrar_musica', 'editar_musica', 'cadastrar_acorde', 'editar_acorde',
             'cadastrar_versao_musical', 'editar_versao_musical' => $this->ehAdminMaster()
-                || $this->temAlgumPapelNaIgreja([PapelIgreja::ADMIN_LOCAL->value, PapelIgreja::COORDENADOR->value], $igrejaId),
-            'resetar_senha_musico' => $this->ehAdminMaster()
-                || $this->temAlgumPapelNaIgreja([PapelIgreja::ADMIN_LOCAL->value, PapelIgreja::COORDENADOR->value], $igrejaId),
+                || $this->temPapelNaIgreja(PapelIgreja::COORDENADOR->value, $igrejaId),
             'resetar_senha_admin_local', 'resetar_senha_coordenador' => $this->ehAdminMaster(),
             'acessar_suporte' => (bool) ($this->usuario->ativo ?? false),
             'acessar_painel_global' => $this->ehAdminMaster(),
@@ -212,7 +212,8 @@ class Autorizador
         $registros = DB::table('usuario_igreja as ui')
             ->leftJoin('usuario_igreja_papeis as uip', function ($join): void {
                 $join->on('uip.usuario_igreja_id', '=', 'ui.id')
-                    ->where('uip.ativo', '=', true);
+                    ->where('uip.ativo', '=', true)
+                    ->whereNull('uip.revogado_em');
             })
             ->where('ui.usuario_id', $this->usuario->id)
             ->where('ui.ativo', true)

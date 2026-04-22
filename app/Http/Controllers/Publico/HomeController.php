@@ -21,16 +21,22 @@ class HomeController extends Controller
             /** @var Usuario|null $usuario */
             $usuario = Auth::user();
 
-            if ($usuario?->ehAdminMaster()) {
-                return redirect()->route('admin.dashboard');
+            if ($usuario?->primeiro_acesso && method_exists($usuario, 'rotaDestinoPrimeiroAcesso')) {
+                $rotaPrimeiroAcesso = $usuario->rotaDestinoPrimeiroAcesso();
+
+                if ($rotaPrimeiroAcesso !== null) {
+                    return redirect()
+                        ->route($rotaPrimeiroAcesso)
+                        ->with('status', $usuario->mensagemPrimeiroAcesso());
+                }
             }
 
-            if ($usuario?->ehAdminLocal()) {
-                return redirect()->route('local-admin.dashboard');
-            }
+            if (method_exists($usuario, 'rotaDestinoAposLogin')) {
+                $rotaDestino = $usuario->rotaDestinoAposLogin();
 
-            if ($usuario?->ehMembro()) {
-                return redirect()->route('member.dashboard');
+                if ($rotaDestino !== null) {
+                    return redirect()->route($rotaDestino);
+                }
             }
 
             return redirect()->route('login');
@@ -51,6 +57,8 @@ class HomeController extends Controller
 
         $tiposCelebracao = Missa::query()
             ->select('titulo')
+            ->where('ativo', true)
+            ->where('publica_para_fieis', true)
             ->whereNotNull('titulo')
             ->where('titulo', '!=', '')
             ->distinct()
@@ -60,6 +68,8 @@ class HomeController extends Controller
         $baseQuery = Missa::query()
             ->with(['igreja:id,nome,slug,cidade,estado', 'tempoLiturgico:id,nome'])
             ->withCount('missaMusicas')
+            ->where('ativo', true)
+            ->where('publica_para_fieis', true)
             ->whereHas('igreja', fn ($query) => $query->where('ativo', true));
 
         $missasVisiveis = (clone $baseQuery)
@@ -81,12 +91,14 @@ class HomeController extends Controller
         $igrejasDestaque = $igrejas
             ->map(function (Igreja $igreja) use ($agora, $timezone): array {
                 $proximaMissa = Missa::query()
+                    ->where('ativo', true)
+                    ->where('publica_para_fieis', true)
                     ->where('igreja_id', $igreja->id)
                     ->orderBy('data_missa')
                     ->orderBy('hora_inicio')
                     ->get()
                     ->map(fn (Missa $missa) => $this->mapearMissaPublica($missa, $agora, $timezone))
-                    ->first(fn (array $missa) => in_array($missa['status']['slug'], ['acontecendo_agora', 'preparada', 'publicada', 'rascunho'], true));
+                    ->first(fn (array $missa) => in_array($missa['status']['slug'], ['acontecendo_agora', 'preparada', 'publicada'], true));
 
                 return [
                     'nome' => $igreja->nome,

@@ -23,7 +23,7 @@ class PainelMembroController extends Controller
     public function dashboard(): View
     {
         $usuario = $this->obterUsuario();
-        $igreja = $usuario?->igreja;
+        $igreja = $usuario->igrejaAtiva() ?? $usuario->igreja;
         $hoje = CarbonImmutable::now('America/Cuiaba')->toDateString();
         $proximaMissa = $igreja
             ? Missa::query()
@@ -48,7 +48,7 @@ class PainelMembroController extends Controller
 
         return view('member.profile', [
             'user' => $usuario,
-            'igreja' => $usuario->igreja,
+            'igreja' => $usuario->igrejaAtiva() ?? $usuario->igreja,
         ]);
     }
 

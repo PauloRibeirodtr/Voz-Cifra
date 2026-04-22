@@ -4,12 +4,19 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Acorde;
+use App\Services\NotificacaoSistemaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class AcordeController extends Controller
 {
+    public function __construct(
+        private readonly NotificacaoSistemaService $notificacaoSistemaService
+    ) {
+    }
+
     public function index(Request $request): View
     {
         $consulta = Acorde::query();
@@ -81,12 +88,39 @@ class AcordeController extends Controller
             ])->withInput();
         }
 
-        Acorde::create([
+        /** @var \App\Models\Usuario|null $ator */
+        $ator = Auth::user();
+
+        $acorde = Acorde::create([
             'nome' => $nome,
             'descricao' => $descricao !== '' ? $descricao : null,
             'dados_diagrama' => $this->normalizarDadosDiagrama($dados['dados_diagrama'] ?? $dados['shape'] ?? null),
             'ativo' => true,
         ]);
+
+        $this->notificacaoSistemaService->enviarParaTodosUsuariosAtivos(
+            evento: 'acorde_cadastrado',
+            ator: $ator,
+            contexto: [
+                'origem' => 'admin_acordes_store',
+                'origem_id' => $acorde->id,
+                'nome' => $acorde->nome,
+            ]
+        );
+
+        $totalAcordesAtivos = Acorde::query()->where('ativo', true)->count();
+        if ($totalAcordesAtivos > 0 && $totalAcordesAtivos % 100 === 0) {
+            $this->notificacaoSistemaService->enviarParaTodosUsuariosAtivos(
+                evento: 'acordes_marco_alcancado',
+                ator: $ator,
+                contexto: [
+                    'origem' => 'admin_acordes_store_marco',
+                    'origem_id' => $acorde->id,
+                    'nome' => $acorde->nome,
+                    'quantidade' => $totalAcordesAtivos,
+                ]
+            );
+        }
 
         return redirect()
             ->route('admin.acordes.index')
@@ -172,9 +206,22 @@ class AcordeController extends Controller
 
     public function destroy(int $id): RedirectResponse
     {
-        Acorde::findOrFail($id)->update([
+        $acorde = Acorde::findOrFail($id);
+        $acorde->update([
             'ativo' => false,
         ]);
+
+        /** @var \App\Models\Usuario|null $ator */
+        $ator = Auth::user();
+        $this->notificacaoSistemaService->enviarParaTodosUsuariosAtivos(
+            evento: 'acorde_inativado',
+            ator: $ator,
+            contexto: [
+                'origem' => 'admin_acordes_destroy',
+                'origem_id' => $acorde->id,
+                'nome' => $acorde->nome,
+            ]
+        );
 
         return redirect()
             ->route('admin.acordes.index')

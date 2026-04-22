@@ -11,8 +11,8 @@
             'conta_inativada' => 'Conta inativada',
             'conta_reativada' => 'Conta reativada',
             'troca_nivel_global' => 'Nivel global alterado',
-            'papel_local_concedido' => 'Papel local concedido',
-            'papel_local_revogado' => 'Papel local revogado',
+            'papel_local_concedido' => 'Papel por igreja concedido',
+            'papel_local_revogado' => 'Papel por igreja revogado',
             default => 'Atualizacao de seguranca',
         };
 
@@ -21,8 +21,8 @@
             'conta_inativada' => 'Sua conta foi temporariamente inativada no sistema.',
             'conta_reativada' => 'Sua conta foi reativada no sistema.',
             'troca_nivel_global' => 'O nivel de acesso global da sua conta foi alterado.',
-            'papel_local_concedido' => 'Um novo papel local foi concedido para a sua conta.',
-            'papel_local_revogado' => 'Um papel local foi removido da sua conta.',
+            'papel_local_concedido' => 'Um novo papel por igreja foi concedido para a sua conta.',
+            'papel_local_revogado' => 'Um papel por igreja foi removido da sua conta.',
             default => 'Registramos uma atualizacao de seguranca relacionada a sua conta.',
         };
 
@@ -34,6 +34,13 @@
 
         if (!empty($contexto['igreja_nome'])) {
             $detalhes['Igreja'] = $contexto['igreja_nome'];
+        }
+
+        $rotuloPapel = $evento === 'papel_local_revogado' ? 'Papel alterado' : 'Papel por igreja';
+        if (!empty($contexto['papel_label'])) {
+            $detalhes[$rotuloPapel] = $contexto['papel_label'];
+        } elseif (!empty($contexto['papel'])) {
+            $detalhes[$rotuloPapel] = $contexto['papel'];
         }
 
         if (!empty($contexto['nivel_anterior']) || array_key_exists('nivel_anterior', $contexto)) {
@@ -112,7 +119,7 @@
                         href="{{ $canalSuporteUrl }}"
                         style="display:inline-block; border-radius:12px; background:#2563eb; color:#ffffff; text-decoration:none; font-weight:700; padding:12px 18px;"
                     >
-                        Falar com o suporte no Telegram
+                        Abrir canal de suporte
                     </a>
                     <p style="margin:12px 0 0; word-break:break-all; color:#475569; font-size:12px;">
                         Link direto: <a href="{{ $canalSuporteUrl }}" style="color:#2563eb;">{{ $canalSuporteUrl }}</a>

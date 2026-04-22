@@ -11,7 +11,7 @@
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Editar igreja</h1>
-            <p class="text-sm text-gray-500">Atualize os dados da igreja e gerencie os admins locais apenas quando a unidade realmente precisar deles.</p>
+            <p class="text-sm text-gray-500">Atualize os dados da igreja e gerencie coordenadores, admins locais e links publicos sem depender do modelo legado.</p>
         </div>
 
         <a href="{{ route('admin.igrejas.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-700 font-medium hover:bg-gray-50 sm:w-auto">
@@ -122,7 +122,7 @@
                 </div>
 
                 <div class="md:col-span-2 bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800">
-                    Os dados do admin local principal sao mantidos aqui. Nas secoes abaixo voce escolhe exatamente qual admin local tera a senha resetada e, se houver vaga, pode adicionar um segundo admin local.
+                    Os dados do admin local principal sao mantidos aqui. Nas secoes abaixo voce pode adicionar outros admins locais e coordenadores para a mesma igreja, reaproveitando usuarios ja existentes quando os dados coincidirem.
                 </div>
             </div>
         </div>
@@ -133,11 +133,11 @@
                     <div class="max-w-2xl">
                         <h2 class="text-lg font-bold text-gray-800">Admins locais da igreja</h2>
                         <p class="mt-2 text-sm text-gray-500">
-                            Cada igreja pode ter ate 2 admins locais. Escolha exatamente qual admin tera a senha resetada.
+                            Escolha exatamente qual admin local tera a senha resetada. A igreja pode acumular mais de um admin local.
                         </p>
                     </div>
                     <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                        {{ ($adminsLocais ?? collect())->count() }}/2 admins locais
+                        {{ ($adminsLocais ?? collect())->count() }} admins locais
                     </span>
                 </div>
 
@@ -187,11 +187,10 @@
             </div>
         @endif
 
-        @if (($adminsLocais ?? collect())->count() < 2)
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h2 class="text-lg font-bold text-gray-800">Adicionar segundo admin local</h2>
+                <h2 class="text-lg font-bold text-gray-800">Adicionar ou promover admin local</h2>
                 <p class="mt-2 text-sm text-gray-500">
-                    O admin master pode cadastrar mais um admin local para esta igreja. O limite e de 2 admins locais por igreja.
+                    Se os dados abaixo corresponderem a uma conta existente, o sistema apenas adiciona o papel de admin local nesta igreja sem criar outro usuario.
                 </p>
 
                 <form action="{{ route('admin.igrejas.admins-locais.store', $igreja) }}" method="POST" class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -218,7 +217,7 @@
                     </div>
 
                     <div class="md:col-span-2 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm text-blue-800">
-                        A senha inicial sera o CPF informado, com troca obrigatoria no primeiro acesso.
+                        A senha inicial sera o CPF informado para contas novas. Quando a pessoa ja existir, o sistema reaproveita a conta e concede o novo papel nesta igreja.
                     </div>
 
                     <div class="md:col-span-2">
@@ -228,42 +227,110 @@
                     </div>
                 </form>
             </div>
-        @endif
 
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div class="max-w-2xl">
-                    <h2 class="text-lg font-bold text-gray-800">Link publico e QR fixo</h2>
+                    <h2 class="text-lg font-bold text-gray-800">Coordenadores da igreja</h2>
                     <p class="mt-2 text-sm text-gray-500">
-                        Este link e permanente para a igreja e servira como base da area publica e do QR Code fixo.
-                        No futuro, o conteudo desta URL mudara conforme a missa ativa organizada pelo admin local.
+                        Coordenadores podem acumular papeis com musico ou admin local. Se os dados corresponderem a um usuario existente, a conta sera reaproveitada.
+                    </p>
+                </div>
+                <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                    {{ ($coordenadores ?? collect())->count() }} coordenadores
+                </span>
+            </div>
+
+            @if (($coordenadores ?? collect())->isNotEmpty())
+                <div class="mt-6 space-y-4">
+                    @foreach (($coordenadores ?? collect()) as $coordenador)
+                        <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                            <h3 class="text-base font-bold text-gray-900">{{ $coordenador->nome }}</h3>
+                            <p class="mt-1 text-sm text-gray-600">{{ $coordenador->email }}</p>
+                            <p class="mt-1 text-xs text-gray-400">{{ $coordenador->cpf }} @if($coordenador->telefone) • {{ $coordenador->telefone }} @endif</p>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+
+            <form action="{{ route('admin.igrejas.coordenadores.store', $igreja) }}" method="POST" class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                @csrf
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Nome</label>
+                    <input type="text" name="nome" value="{{ old('nome') }}" required class="{{ $classeInput }}" placeholder="Nome completo do coordenador" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">CPF</label>
+                    <input type="text" name="cpf" value="{{ old('cpf') }}" required data-cpf-input class="{{ $classeInput }}" placeholder="000.000.000-00" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">E-mail</label>
+                    <input type="email" name="email" value="{{ old('email') }}" required class="{{ $classeInput }}" placeholder="coordenador@igreja.com" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Telefone</label>
+                    <input type="text" name="telefone" value="{{ old('telefone') }}" data-telefone-input class="{{ $classeInput }}" placeholder="(65) 99999-9999" />
+                </div>
+
+                <div class="md:col-span-2 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm text-amber-900">
+                    Use os mesmos dados da conta ja existente quando quiser apenas adicionar o papel de coordenador a uma pessoa que ja participa do sistema.
+                </div>
+
+                <div class="md:col-span-2">
+                    <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 font-semibold text-white hover:bg-slate-800">
+                        Adicionar coordenador
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div class="max-w-2xl">
+                    <h2 class="text-lg font-bold text-gray-800">Links publicos e QR fixos</h2>
+                    <p class="mt-2 text-sm text-gray-500">
+                        Cada igreja possui um link publico para fieis e outro link publico especifico para musicos. Os dois podem ser compartilhados separadamente conforme a missa for publicada.
                     </p>
 
                     <div class="mt-5 rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                        <span class="block text-xs font-bold uppercase tracking-wider text-gray-400">Link publico da igreja</span>
+                        <span class="block text-xs font-bold uppercase tracking-wider text-gray-400">Link publico dos fieis</span>
                         <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="mt-2 block break-all text-sm font-semibold text-green-700 hover:underline">
                             {{ $igreja->link_publico }}
                         </a>
                     </div>
 
+                    <div class="mt-4 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                        <span class="block text-xs font-bold uppercase tracking-wider text-gray-400">Link publico dos musicos</span>
+                        <a href="{{ $igreja->link_publico_musicos }}" target="_blank" rel="noopener noreferrer" class="mt-2 block break-all text-sm font-semibold text-slate-900 hover:underline">
+                            {{ $igreja->link_publico_musicos }}
+                        </a>
+                    </div>
+
                     <div class="mt-4 flex flex-col gap-3 sm:flex-row">
                         <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
-                            Abrir pagina publica
+                            Abrir pagina dos fieis
                         </a>
                         <a href="{{ $igreja->qr_code_url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
-                            Abrir QR fixo
+                            Abrir QR dos fieis
+                        </a>
+                        <a href="{{ $igreja->link_publico_musicos }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                            Abrir pagina dos musicos
                         </a>
                     </div>
                 </div>
 
                 <div class="w-full max-w-xs rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                    <span class="block text-xs font-bold uppercase tracking-wider text-gray-400">Previa do QR Code fixo</span>
+                    <span class="block text-xs font-bold uppercase tracking-wider text-gray-400">Previa do QR dos fieis</span>
                     <img src="{{ $igreja->qr_code_url }}" alt="QR Code da igreja {{ $igreja->nome }}" class="mt-4 w-full rounded-xl border border-gray-200 bg-white p-3" />
                     <div class="mt-3 rounded-xl border border-green-100 bg-green-50 px-3 py-3 text-sm text-green-800">
-                        Aponte a camera para o QR Code para acompanhar a missa e acessar a pagina publica da igreja.
+                        Aponte a camera para o QR Code e acompanhe a pagina publica dos fieis.
                     </div>
                     <p class="mt-3 text-xs leading-5 text-gray-500">
-                        O QR aponta sempre para a mesma URL da igreja. O que vai mudar depois e o conteudo exibido nessa pagina.
+                        O QR aponta sempre para o link publico dos fieis. O link dos musicos pode ser compartilhado separadamente para leitura com cifras.
                     </p>
                 </div>
             </div>

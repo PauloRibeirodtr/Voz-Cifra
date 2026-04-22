@@ -24,23 +24,27 @@ return new class extends Migration
             $table->index(['igreja_id', 'created_at']);
         });
 
-        DB::statement("
-            ALTER TABLE feedbacks
-            ADD CONSTRAINT feedbacks_tipo_check
-            CHECK (tipo IN ('critica', 'sugestao', 'ajuste', 'elogio'))
-        ");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("
+                ALTER TABLE feedbacks
+                ADD CONSTRAINT feedbacks_tipo_check
+                CHECK (tipo IN ('critica', 'sugestao', 'ajuste', 'elogio'))
+            ");
 
-        DB::statement("
-            ALTER TABLE feedbacks
-            ADD CONSTRAINT feedbacks_status_check
-            CHECK (status IN ('novo', 'lido', 'arquivado'))
-        ");
+            DB::statement("
+                ALTER TABLE feedbacks
+                ADD CONSTRAINT feedbacks_status_check
+                CHECK (status IN ('novo', 'lido', 'arquivado'))
+            ");
+        }
     }
 
     public function down(): void
     {
-        DB::statement('ALTER TABLE feedbacks DROP CONSTRAINT IF EXISTS feedbacks_status_check');
-        DB::statement('ALTER TABLE feedbacks DROP CONSTRAINT IF EXISTS feedbacks_tipo_check');
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE feedbacks DROP CONSTRAINT IF EXISTS feedbacks_status_check');
+            DB::statement('ALTER TABLE feedbacks DROP CONSTRAINT IF EXISTS feedbacks_tipo_check');
+        }
         Schema::dropIfExists('feedbacks');
     }
 };

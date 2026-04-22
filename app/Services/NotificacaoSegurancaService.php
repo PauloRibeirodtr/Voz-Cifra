@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Mail\NotificacaoSegurancaMail;
+use App\Enums\PapelIgreja;
 use App\Models\AuditoriaEvento;
+use App\Models\HistoricoEnvioEmail;
 use App\Models\Igreja;
 use App\Models\Usuario;
 use Illuminate\Support\Arr;
@@ -15,11 +17,6 @@ use Throwable;
 
 class NotificacaoSegurancaService
 {
-    public function __construct(
-        private readonly TelegramNotificacaoService $telegramNotificacaoService,
-    ) {
-    }
-
     public function enviarEventoConta(
         Usuario $alvo,
         string $evento,
@@ -30,12 +27,22 @@ class NotificacaoSegurancaService
             return;
         }
 
+        $contexto = $this->normalizarContexto($alvo, $evento, $ator, $contexto);
+
         if (!filter_var((string) $alvo->email, FILTER_VALIDATE_EMAIL)) {
+            $this->registrarHistoricoEmailCancelado($alvo, $evento, $contexto, 'Email invalido ou ausente.');
+
             return;
         }
 
-        $contexto = $this->normalizarContexto($alvo, $evento, $ator, $contexto);
         $auditoriaEvento = $this->registrarAuditoria($alvo, $evento, $ator, $contexto);
+        $mailable = new NotificacaoSegurancaMail(
+            evento: $evento,
+            alvo: $alvo,
+            ator: $ator,
+            contexto: $contexto
+        );
+        $historicoEmail = $this->registrarHistoricoEmail($alvo, $evento, $contexto, $auditoriaEvento, $mailable);
 
         try {
             $mensagem = Mail::to($alvo->email);
@@ -45,24 +52,19 @@ class NotificacaoSegurancaService
                 $mensagem->cc($ccAdmin);
             }
 
-            $mensagem->send(new NotificacaoSegurancaMail(
-                evento: $evento,
-                alvo: $alvo,
-                ator: $ator,
-                contexto: $contexto
-            ));
+            $mensagem->send($mailable);
 
             $this->marcarAuditoriaComoEnviada($auditoriaEvento);
+            $this->marcarHistoricoComoEnviado($historicoEmail);
 
             Log::info('Notificacao de seguranca enviada.', [
                 'evento' => $evento,
                 'alvo_id' => $alvo->id,
                 'protocolo' => $contexto['protocolo'] ?? null,
             ]);
-
-            $this->telegramNotificacaoService->notificarEventoConta($alvo, $evento, $contexto);
         } catch (Throwable $e) {
             $this->marcarAuditoriaComoFalha($auditoriaEvento, $e);
+            $this->marcarHistoricoComoFalha($historicoEmail, $e);
 
             Log::warning('Falha ao enviar notificacao de seguranca.', [
                 'evento' => $evento,
@@ -70,8 +72,6 @@ class NotificacaoSegurancaService
                 'protocolo' => $contexto['protocolo'] ?? null,
                 'erro' => $e->getMessage(),
             ]);
-
-            $this->telegramNotificacaoService->notificarEventoConta($alvo, $evento, $contexto);
         }
     }
 
@@ -94,7 +94,7 @@ class NotificacaoSegurancaService
     ): array {
         $contexto['protocolo'] = $contexto['protocolo'] ?? $this->gerarProtocolo($evento);
         $contexto['canal_suporte'] = $contexto['canal_suporte'] ?? (string) config('notificacoes.canal_suporte');
-        $contexto['canal_suporte_url'] = $contexto['canal_suporte_url'] ?? $this->gerarCanalSuporteUrl($contexto['protocolo']);
+        $contexto['canal_suporte_url'] = $contexto['canal_suporte_url'] ?? trim((string) config('notificacoes.canal_suporte_url', ''));
 
         if ($ator) {
             $contexto['responsavel_nome'] = $contexto['responsavel_nome'] ?? $ator->nome;
@@ -106,7 +106,7 @@ class NotificacaoSegurancaService
             $contexto['igreja_nome'] = $contexto['igreja_nome'] ?? $igrejaNome;
         }
 
-        unset($contexto['igreja_id'], $contexto['ator_email']);
+        unset($contexto['ator_email']);
 
         return $contexto;
     }
@@ -125,44 +125,28 @@ class NotificacaoSegurancaService
         );
     }
 
-    private function gerarCanalSuporteUrl(?string $protocolo): ?string
-    {
-        $baseUrl = trim((string) config('notificacoes.telegram_bot_base_url', ''));
-        $username = trim((string) config('notificacoes.telegram_bot_username', ''));
-        $protocolo = is_string($protocolo) ? trim($protocolo) : '';
-
-        if ($baseUrl !== '') {
-            return $this->anexarProtocoloNaUrl($baseUrl, $protocolo);
-        }
-
-        if ($username === '') {
-            return null;
-        }
-
-        return $this->anexarProtocoloNaUrl('https://t.me/' . ltrim($username, '@'), $protocolo);
-    }
-
-    private function anexarProtocoloNaUrl(string $baseUrl, string $protocolo): string
-    {
-        $baseUrl = trim($baseUrl);
-
-        if ($protocolo === '') {
-            return $baseUrl;
-        }
-
-        $separador = str_contains($baseUrl, '?') ? '&' : '?';
-
-        return $baseUrl . $separador . 'start=' . urlencode($protocolo);
-    }
-
     private function descreverFuncao(Usuario $usuario): string
     {
-        return match ($usuario->perfil_global) {
-            'admin_master' => 'Admin master nivel ' . $usuario->nivelGlobal(),
-            'admin_local' => 'Administrador local',
-            'member' => 'Musico',
-            default => 'Usuario do sistema',
-        };
+        if ($usuario->ehAdminMaster()) {
+            return 'Admin master nivel ' . $usuario->nivelGlobal();
+        }
+
+        $papeis = $usuario->listarPapeisNaIgreja($usuario->igrejaAtiva()?->id)
+            ->map(fn (PapelIgreja $papel): string => $papel->label())
+            ->values();
+
+        if ($usuario->ehPadre()) {
+            $papeis->prepend('Padre');
+        }
+
+        return $papeis->isNotEmpty()
+            ? $papeis->unique()->implode(' / ')
+            : 'Usuario do sistema';
+    }
+
+    public function descreverFuncaoPublica(Usuario $usuario): string
+    {
+        return $this->descreverFuncao($usuario);
     }
 
     private function resolverNomeIgreja(Usuario $alvo, array $contexto): ?string
@@ -177,7 +161,7 @@ class NotificacaoSegurancaService
             return Igreja::query()->whereKey($igrejaId)->value('nome');
         }
 
-        return $alvo->igreja?->nome;
+        return $alvo->igrejaAtiva()?->nome ?? $alvo->igreja?->nome;
     }
 
     private function registrarAuditoria(
@@ -201,8 +185,8 @@ class NotificacaoSegurancaService
                 'alvo_id' => $alvo->id,
                 'alvo_nome' => $alvo->nome,
                 'alvo_email' => $alvo->email,
-                'igreja_id' => $contexto['igreja_id'] ?? $alvo->igreja_id,
-                'igreja_nome' => $contexto['igreja_nome'] ?? $alvo->igreja?->nome,
+                'igreja_id' => $contexto['igreja_id'] ?? $alvo->igrejaAtiva()?->id ?? $alvo->igreja_id,
+                'igreja_nome' => $contexto['igreja_nome'] ?? $alvo->igrejaAtiva()?->nome ?? $alvo->igreja?->nome,
                 'contexto' => $contexto,
                 'resultado' => 'registrado',
                 'ip' => request()?->ip(),
@@ -242,6 +226,108 @@ class NotificacaoSegurancaService
         $auditoriaEvento->forceFill([
             'resultado' => 'email_falhou',
             'erro_envio' => $e->getMessage(),
+        ])->save();
+    }
+
+    private function registrarHistoricoEmail(
+        Usuario $alvo,
+        string $evento,
+        array $contexto,
+        ?AuditoriaEvento $auditoriaEvento,
+        NotificacaoSegurancaMail $mailable
+    ): ?HistoricoEnvioEmail {
+        if (!Schema::hasTable('historico_envios_email')) {
+            return null;
+        }
+
+        try {
+            return HistoricoEnvioEmail::create([
+                'usuario_id' => $alvo->id,
+                'auditoria_evento_id' => $auditoriaEvento?->id,
+                'origem_tipo' => $contexto['origem_tipo'] ?? $contexto['origem'] ?? null,
+                'origem_id' => $contexto['origem_id'] ?? null,
+                'destinatario_email' => $alvo->email,
+                'destinatario_nome' => $alvo->nome,
+                'tipo_email' => $evento,
+                'assunto' => (string) ($mailable->envelope()->subject ?? 'Notificacao do sistema'),
+                'status_envio' => 'pendente',
+                'mailer' => (string) config('mail.default'),
+                'payload' => [
+                    'protocolo' => $contexto['protocolo'] ?? null,
+                    'igreja_nome' => $contexto['igreja_nome'] ?? null,
+                    'papel' => $contexto['papel'] ?? null,
+                    'origem' => $contexto['origem'] ?? null,
+                ],
+            ]);
+        } catch (Throwable $e) {
+            Log::warning('Falha ao registrar historico de envio de email.', [
+                'evento' => $evento,
+                'alvo_id' => $alvo->id,
+                'erro' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    private function registrarHistoricoEmailCancelado(
+        Usuario $alvo,
+        string $evento,
+        array $contexto,
+        string $motivo
+    ): void {
+        if (!Schema::hasTable('historico_envios_email')) {
+            return;
+        }
+
+        try {
+            HistoricoEnvioEmail::create([
+                'usuario_id' => $alvo->id,
+                'origem_tipo' => $contexto['origem_tipo'] ?? $contexto['origem'] ?? null,
+                'origem_id' => $contexto['origem_id'] ?? null,
+                'destinatario_email' => (string) $alvo->email,
+                'destinatario_nome' => $alvo->nome,
+                'tipo_email' => $evento,
+                'assunto' => 'Notificacao nao enviada',
+                'status_envio' => 'cancelado',
+                'mensagem_retorno' => $motivo,
+                'mailer' => (string) config('mail.default'),
+                'payload' => [
+                    'protocolo' => $contexto['protocolo'] ?? null,
+                    'origem' => $contexto['origem'] ?? null,
+                ],
+            ]);
+        } catch (Throwable $e) {
+            Log::warning('Falha ao registrar historico cancelado de email.', [
+                'evento' => $evento,
+                'alvo_id' => $alvo->id,
+                'erro' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    private function marcarHistoricoComoEnviado(?HistoricoEnvioEmail $historico): void
+    {
+        if (!$historico) {
+            return;
+        }
+
+        $historico->forceFill([
+            'status_envio' => 'enviado',
+            'mensagem_retorno' => null,
+            'enviado_em' => now(),
+        ])->save();
+    }
+
+    private function marcarHistoricoComoFalha(?HistoricoEnvioEmail $historico, Throwable $e): void
+    {
+        if (!$historico) {
+            return;
+        }
+
+        $historico->forceFill([
+            'status_envio' => 'falhou',
+            'mensagem_retorno' => $e->getMessage(),
         ])->save();
     }
 }

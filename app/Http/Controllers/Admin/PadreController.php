@@ -5,14 +5,19 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Igreja;
 use App\Models\Usuario;
+use App\Services\GestaoUsuariosIgrejaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class PadreController extends Controller
 {
+    public function __construct(
+        private readonly GestaoUsuariosIgrejaService $gestaoUsuariosIgrejaService
+    ) {
+    }
+
     public function index(): View
     {
         return view('admin.padres.index', [
@@ -40,19 +45,11 @@ class PadreController extends Controller
     {
         $dados = $this->validarPadre($request);
 
-        Usuario::create([
-            'igreja_id' => $dados['igreja_id'] ?? null,
-            'nome' => $dados['nome'],
-            'cpf' => $dados['cpf'],
-            'email' => $this->gerarEmailTecnicoPadre($dados['cpf']),
-            'telefone' => null,
-            'password' => Str::password(24),
-            'perfil_global' => 'usuario',
-            'nivel_global' => 1,
-            'eh_padre' => true,
-            'ativo' => (bool) ($dados['ativo'] ?? true),
-            'primeiro_acesso' => false,
-        ]);
+        $this->gestaoUsuariosIgrejaService->criarOuAtualizarPadre(
+            dados: $dados,
+            ator: Auth::user(),
+            origem: 'admin_padres_store'
+        );
 
         return redirect()
             ->route('admin.padres.index')
@@ -72,16 +69,14 @@ class PadreController extends Controller
     public function update(Request $request, Usuario $padre): RedirectResponse
     {
         abort_unless($padre->eh_padre, 404);
-        $dados = $this->validarPadre($request, $padre);
+        $dados = $this->validarPadre($request);
 
-        $padre->update([
-            'igreja_id' => $dados['igreja_id'] ?? null,
-            'nome' => $dados['nome'],
-            'cpf' => $dados['cpf'],
-            'eh_padre' => true,
-            'perfil_global' => $padre->perfil_global ?: 'usuario',
-            'ativo' => (bool) ($dados['ativo'] ?? false),
-        ]);
+        $this->gestaoUsuariosIgrejaService->criarOuAtualizarPadre(
+            dados: $dados,
+            ator: Auth::user(),
+            usuarioBase: $padre,
+            origem: 'admin_padres_update'
+        );
 
         return redirect()
             ->route('admin.padres.index')
@@ -92,29 +87,29 @@ class PadreController extends Controller
     {
         abort_unless($padre->eh_padre, 404);
 
-        $padre->update([
-            'ativo' => !$padre->ativo,
-        ]);
+        $padre = $this->gestaoUsuariosIgrejaService->alterarStatusConta(
+            usuario: $padre,
+            ativo: !$padre->ativo,
+            ator: Auth::user(),
+            contexto: [
+                'origem' => 'admin_padres_toggle',
+                'igreja_id' => $padre->igrejaAtiva()?->id ?? $padre->igreja_id,
+                'igreja_nome' => $padre->igrejaAtiva()?->nome ?? $padre->igreja?->nome,
+            ]
+        );
 
         return redirect()
             ->route('admin.padres.index')
             ->with('success', $padre->ativo ? 'Celebrante ativado com sucesso.' : 'Celebrante inativado com sucesso.');
     }
 
-    protected function validarPadre(Request $request, ?Usuario $padre = null): array
+    protected function validarPadre(Request $request): array
     {
         return $request->validate([
             'nome' => ['required', 'string', 'max:255'],
-            'cpf' => ['required', 'string', 'max:14', Rule::unique('usuarios', 'cpf')->ignore($padre?->id)],
+            'cpf' => ['required', 'string', 'max:14'],
             'igreja_id' => ['nullable', 'exists:igrejas,id'],
             'ativo' => ['nullable', 'boolean'],
         ]);
-    }
-
-    protected function gerarEmailTecnicoPadre(string $cpf): string
-    {
-        $cpfNumerico = preg_replace('/\D+/', '', $cpf) ?? '';
-
-        return 'celebrante.' . $cpfNumerico . '@sem-login.local';
     }
 }

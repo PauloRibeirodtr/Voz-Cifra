@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AcordeController;
+use App\Http\Controllers\Admin\AdminLocalController;
 use App\Http\Controllers\Admin\AdminMasterController;
 use App\Http\Controllers\Admin\AuditoriaController;
 use App\Http\Controllers\Admin\IgrejaController;
@@ -9,8 +10,10 @@ use App\Http\Controllers\Admin\MusicoController as AdminMusicoController;
 use App\Http\Controllers\Admin\MusicaController;
 use App\Http\Controllers\Admin\PadreController;
 use App\Http\Controllers\Admin\TempoLiturgicoController;
+use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\Admin\VersaoMusicalController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Coordenador\GestaoIgrejaController as CoordenadorGestaoIgrejaController;
 use App\Http\Controllers\LocalAdmin\MusicoController as LocalAdminMusicoController;
 use App\Http\Controllers\LocalAdmin\MissaController as LocalAdminMissaController;
 use App\Http\Controllers\Member\BibliotecaMusicalController;
@@ -42,6 +45,23 @@ Route::middleware(['auth', 'verified_custom', 'super.admin', 'primeiro_acesso'])
         Route::put('/perfil', [AdminMasterController::class, 'updateProfile'])->name('profile.update');
         Route::get('/configuracoes', [AdminMasterController::class, 'settings'])->name('settings');
         Route::post('/configuracoes/admins-master', [AdminMasterController::class, 'storeAdminMaster'])->name('admins-master.store');
+        Route::post('/configuracoes/admins-master/{usuario}/nivel-global', [AdminMasterController::class, 'updateNivelGlobal'])->name('admins-master.nivel-global.update');
+        Route::post('/configuracoes/admins-master/{usuario}/toggle', [AdminMasterController::class, 'toggleAdminMaster'])->name('admins-master.toggle');
+        Route::post('/configuracoes/admins-master/{usuario}/resetar-senha', [AdminMasterController::class, 'resetAdminMasterPassword'])->name('admins-master.password.reset');
+
+        Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
+        Route::get('/usuarios/criar', [UsuarioController::class, 'create'])->name('usuarios.create');
+        Route::post('/usuarios', [UsuarioController::class, 'store'])->name('usuarios.store');
+        Route::get('/usuarios/hierarquia', [UsuarioController::class, 'hierarchy'])->name('usuarios.hierarquia');
+        Route::get('/usuarios/{usuario}/editar', [UsuarioController::class, 'edit'])->name('usuarios.edit');
+        Route::put('/usuarios/{usuario}', [UsuarioController::class, 'update'])->name('usuarios.update');
+        Route::post('/usuarios/{usuario}/toggle', [UsuarioController::class, 'toggle'])->name('usuarios.toggle');
+        Route::post('/usuarios/{usuario}/resetar-senha', [UsuarioController::class, 'resetPassword'])->name('usuarios.password.reset');
+        Route::post('/usuarios/{usuario}/vinculos', [UsuarioController::class, 'storeVinculo'])->name('usuarios.vinculos.store');
+
+        Route::get('/admins-locais', [AdminLocalController::class, 'index'])->name('admins-locais.index');
+        Route::post('/admins-locais/{usuario}/toggle', [AdminLocalController::class, 'toggle'])->name('admins-locais.toggle');
+        Route::post('/admins-locais/{usuario}/resetar-senha', [AdminLocalController::class, 'resetPassword'])->name('admins-locais.password.reset');
 
         Route::get('/igrejas', [IgrejaController::class, 'index'])->name('igrejas.index');
         Route::get('/igrejas/criar', [IgrejaController::class, 'create'])->name('igrejas.create');
@@ -49,6 +69,7 @@ Route::middleware(['auth', 'verified_custom', 'super.admin', 'primeiro_acesso'])
         Route::get('/igrejas/{igreja}/editar', [IgrejaController::class, 'edit'])->name('igrejas.edit');
         Route::put('/igrejas/{igreja}', [IgrejaController::class, 'update'])->name('igrejas.update');
         Route::post('/igrejas/{igreja}/admins-locais', [IgrejaController::class, 'storeAdminLocal'])->name('igrejas.admins-locais.store');
+        Route::post('/igrejas/{igreja}/coordenadores', [IgrejaController::class, 'storeCoordenador'])->name('igrejas.coordenadores.store');
         Route::post('/igrejas/{igreja}/admin-local/resetar-senha', [IgrejaController::class, 'resetAdminLocalPassword'])->name('igrejas.admin-local.password.reset');
 
         Route::get('/musicos', [AdminMusicoController::class, 'index'])->name('musicos.index');
@@ -120,6 +141,7 @@ Route::middleware(['auth', 'verified_custom', 'role:admin_local', 'primeiro_aces
         Route::get('/musicos', [LocalAdminMusicoController::class, 'index'])->name('musicos.index');
         Route::get('/musicos/criar', [LocalAdminMusicoController::class, 'create'])->name('musicos.create');
         Route::post('/musicos', [LocalAdminMusicoController::class, 'store'])->name('musicos.store');
+        Route::post('/musicos/vincular-existente', [LocalAdminMusicoController::class, 'vincularExistente'])->name('musicos.vincular-existente');
         Route::get('/musicos/{musico}/editar', [LocalAdminMusicoController::class, 'edit'])->name('musicos.edit');
         Route::put('/musicos/{musico}', [LocalAdminMusicoController::class, 'update'])->name('musicos.update');
         Route::post('/musicos/{musico}/toggle', [LocalAdminMusicoController::class, 'toggle'])->name('musicos.toggle');
@@ -147,6 +169,38 @@ Route::middleware(['auth', 'verified_custom', 'role:admin_local', 'primeiro_aces
         Route::get('/missas/{missa}/repertorio/{missaMusica}/pdf', [LocalAdminMissaController::class, 'pdfCifra'])->name('repertorio.pdf');
     });
 
+Route::middleware(['auth', 'verified_custom', 'role:coordenador', 'primeiro_acesso'])
+    ->prefix('coordenacao')
+    ->name('coordenador.')
+    ->group(function () {
+        Route::get('/painel', [PainelMembroController::class, 'dashboard'])->name('dashboard');
+        Route::get('/perfil', [PainelMembroController::class, 'profile'])->name('profile');
+        Route::put('/perfil', [PainelMembroController::class, 'updateProfile'])->name('profile.update');
+
+        Route::get('/musicos', [LocalAdminMusicoController::class, 'index'])->name('musicos.index');
+        Route::get('/musicos/criar', [LocalAdminMusicoController::class, 'create'])->name('musicos.create');
+        Route::post('/musicos', [LocalAdminMusicoController::class, 'store'])->name('musicos.store');
+        Route::post('/musicos/vincular-existente', [LocalAdminMusicoController::class, 'vincularExistente'])->name('musicos.vincular-existente');
+        Route::get('/musicos/{musico}/editar', [LocalAdminMusicoController::class, 'edit'])->name('musicos.edit');
+        Route::put('/musicos/{musico}', [LocalAdminMusicoController::class, 'update'])->name('musicos.update');
+        Route::post('/musicos/{musico}/resetar-senha', [LocalAdminMusicoController::class, 'resetPassword'])->name('musicos.password.reset');
+
+        Route::post('/igreja/admins-locais', [CoordenadorGestaoIgrejaController::class, 'storeAdminLocal'])->name('igreja.admins-locais.store');
+
+        Route::get('/musicas', [MusicaController::class, 'index'])->name('musicas.index');
+        Route::get('/musicas/criar', [MusicaController::class, 'create'])->name('musicas.create');
+        Route::post('/musicas', [MusicaController::class, 'store'])->name('musicas.store');
+        Route::get('/musicas/{musica}', [MusicaController::class, 'show'])->name('musicas.show');
+        Route::get('/musicas/{musica}/editar', [MusicaController::class, 'edit'])->name('musicas.edit');
+        Route::put('/musicas/{musica}', [MusicaController::class, 'update'])->name('musicas.update');
+
+        Route::get('/musicas/{musica}/versoes/criar', [VersaoMusicalController::class, 'create'])->name('versoes-musicais.create');
+        Route::post('/musicas/{musica}/versoes', [VersaoMusicalController::class, 'store'])->name('versoes-musicais.store');
+        Route::get('/musicas/{musica}/versoes/{versaoMusical}', [VersaoMusicalController::class, 'show'])->name('versoes-musicais.show');
+        Route::get('/musicas/{musica}/versoes/{versaoMusical}/editar', [VersaoMusicalController::class, 'edit'])->name('versoes-musicais.edit');
+        Route::put('/musicas/{musica}/versoes/{versaoMusical}', [VersaoMusicalController::class, 'update'])->name('versoes-musicais.update');
+    });
+
 Route::middleware(['auth', 'verified_custom', 'role:member', 'primeiro_acesso'])
     ->prefix('musico')
     ->name('member.')
@@ -171,6 +225,14 @@ Route::middleware(['auth', 'verified_custom', 'role:member', 'primeiro_acesso'])
 Route::get('/publico/igrejas/{slug}/status', [IgrejaPublicaController::class, 'status'])
     ->where('slug', '[A-Za-z0-9\-]+')
     ->name('igrejas.public.status');
+
+Route::get('/publico/musicos/{slug}/status', [IgrejaPublicaController::class, 'statusMusicos'])
+    ->where('slug', '[A-Za-z0-9\-]+')
+    ->name('igrejas.public.musicos.status');
+
+Route::get('/publico/musicos/{slug}', [IgrejaPublicaController::class, 'showMusicos'])
+    ->where('slug', '[A-Za-z0-9\-]+')
+    ->name('igrejas.public.musicos.show');
 
 Route::get('/{slug}', [IgrejaPublicaController::class, 'show'])
     ->where('slug', '[A-Za-z0-9\-]+')

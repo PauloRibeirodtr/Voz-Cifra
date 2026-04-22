@@ -220,38 +220,18 @@ class MissaController extends Controller
     {
         $this->garantirMissaDaIgreja($missa);
 
-        $titulo = $missa->titulo;
-        $missa->delete();
-
-        return redirect()
-            ->route('local-admin.missas.index')
-            ->with('success', 'Missa "' . $titulo . '" excluida com sucesso.');
+        return back()->withErrors([
+            'missa' => 'Somente o admin master pode inativar ou remover registros de missa.',
+        ]);
     }
 
     public function toggle(Missa $missa): RedirectResponse
     {
         $this->garantirMissaDaIgreja($missa);
-        $igreja = $this->obterIgreja();
-        $this->sincronizarMissasEncerradas($igreja);
-        $missa->refresh();
 
-        if ($this->missaJaEncerrada($missa)) {
-            return back()->withErrors([
-                'missa' => 'Nao e possivel ativar uma missa cujo horario de termino ja passou.',
-            ]);
-        }
-
-        DB::transaction(function () use ($missa): void {
-            $novoStatus = !$missa->ativo;
-
-            if ($novoStatus) {
-                Missa::where('igreja_id', $missa->igreja_id)->update(['ativo' => false]);
-            }
-
-            $missa->update(['ativo' => $novoStatus]);
-        });
-
-        return back()->with('success', $missa->ativo ? 'Missa ativada com sucesso.' : 'Missa desativada com sucesso.');
+        return back()->withErrors([
+            'missa' => 'Somente o admin master pode inativar ou reativar registros de missa.',
+        ]);
     }
 
     public function storeRepertorio(Request $request, Missa $missa): RedirectResponse
@@ -611,7 +591,7 @@ class MissaController extends Controller
 
     private function obterIgreja(): Igreja
     {
-        $igreja = $this->obterUsuario()->igreja;
+        $igreja = $this->obterUsuario()->igrejaAtiva() ?? $this->obterUsuario()->igreja;
 
         abort_unless($igreja !== null, 404, 'Igreja nao encontrada para este administrador local.');
 

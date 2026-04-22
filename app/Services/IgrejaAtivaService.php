@@ -64,17 +64,10 @@ class IgrejaAtivaService
             session()->forget(self::SESSION_KEY);
         }
 
-        $igrejaIdLegada = $usuario->igreja_id !== null ? (int) $usuario->igreja_id : null;
-
-        if ($igrejaIdLegada !== null && $igrejaIdLegada > 0 && $this->usuarioPertenceIgreja($usuario, $igrejaIdLegada)) {
-            session([self::SESSION_KEY => $igrejaIdLegada]);
-
-            return $igrejaIdLegada;
-        }
-
         if ($this->tabelaVinculosDisponivel()) {
             $primeiroVinculoAtivo = $usuario->vinculosIgreja()
                 ->where('ativo', true)
+                ->orderByDesc('responsavel_principal')
                 ->orderBy('id')
                 ->value('igreja_id');
 
@@ -84,6 +77,14 @@ class IgrejaAtivaService
 
                 return $igrejaId;
             }
+        }
+
+        $igrejaIdLegada = $usuario->igreja_id !== null ? (int) $usuario->igreja_id : null;
+
+        if ($igrejaIdLegada !== null && $igrejaIdLegada > 0 && $this->usuarioPertenceIgreja($usuario, $igrejaIdLegada)) {
+            session([self::SESSION_KEY => $igrejaIdLegada]);
+
+            return $igrejaIdLegada;
         }
 
         return null;
@@ -133,4 +134,3 @@ class IgrejaAtivaService
         return $this->tabelaVinculosDisponivel;
     }
 }
-

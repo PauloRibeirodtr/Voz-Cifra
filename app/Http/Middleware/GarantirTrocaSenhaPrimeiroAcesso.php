@@ -16,12 +16,9 @@ class GarantirTrocaSenhaPrimeiroAcesso
             return $next($request);
         }
 
-        $rotaPerfil = match (true) {
-            method_exists($usuario, 'ehAdminMaster') && $usuario->ehAdminMaster() => 'admin.profile',
-            method_exists($usuario, 'ehAdminLocal') && $usuario->ehAdminLocal() => 'local-admin.profile',
-            method_exists($usuario, 'ehMembro') && $usuario->ehMembro() => 'member.profile',
-            default => null,
-        };
+        $rotaPerfil = method_exists($usuario, 'rotaDestinoPrimeiroAcesso')
+            ? $usuario->rotaDestinoPrimeiroAcesso()
+            : null;
 
         if ($rotaPerfil === null) {
             return $next($request);

@@ -23,8 +23,8 @@ class PainelAdminLocalController extends Controller
         $metricas = [
             'total_missas' => Missa::where('igreja_id', $igreja->id)->count(),
             'missas_ativas' => Missa::where('igreja_id', $igreja->id)->where('ativo', true)->count(),
-            'membros_ativos' => Usuario::where('igreja_id', $igreja->id)->where('perfil_global', 'member')->where('ativo', true)->count(),
-            'membros_pendentes' => Usuario::where('igreja_id', $igreja->id)->where('perfil_global', 'member')->where('ativo', false)->count(),
+            'membros_ativos' => $igreja->musicos()->where('usuarios.ativo', true)->count(),
+            'membros_pendentes' => $igreja->musicos()->where('usuarios.ativo', false)->count(),
         ];
 
         $proximasMissas = Missa::with('tempoLiturgico')
@@ -104,7 +104,7 @@ class PainelAdminLocalController extends Controller
 
     private function obterIgreja(Usuario $usuario): Igreja
     {
-        $igreja = $usuario->igreja;
+        $igreja = $usuario->igrejaAtiva() ?? $usuario->igreja;
 
         abort_unless($igreja !== null, 404, 'Igreja nao encontrada para este administrador local.');
 

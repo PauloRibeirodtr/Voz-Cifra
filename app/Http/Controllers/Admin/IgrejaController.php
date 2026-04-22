@@ -6,10 +6,8 @@ use App\Enums\PapelIgreja;
 use App\Http\Controllers\Controller;
 use App\Models\Igreja;
 use App\Models\Usuario;
-use App\Models\UsuarioIgreja;
-use App\Models\UsuarioIgrejaPapel;
 use App\Rules\StrongPassword;
-use App\Services\NotificacaoSegurancaService;
+use App\Services\GestaoUsuariosIgrejaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,15 +21,15 @@ use Illuminate\View\View;
 class IgrejaController extends Controller
 {
     public function __construct(
-        private readonly NotificacaoSegurancaService $notificacaoSegurancaService
+        private readonly GestaoUsuariosIgrejaService $gestaoUsuariosIgrejaService
     ) {
     }
 
     public function index(): View
     {
         $igrejas = Igreja::with([
-            'adminsLocais' => fn ($query) => $query
-                ->orderBy('nome'),
+            'adminsLocais' => fn ($query) => $query->orderBy('nome'),
+            'coordenadores' => fn ($query) => $query->orderBy('nome'),
         ])
             ->orderBy('nome')
             ->get()
@@ -59,8 +57,8 @@ class IgrejaController extends Controller
             'estado' => ['required', 'string', 'size:2'],
             'ativo' => ['nullable', 'boolean'],
             'admin_nome' => ['nullable', 'string', 'max:255'],
-            'admin_cpf' => ['nullable', 'string', 'max:14', Rule::unique('usuarios', 'cpf')],
-            'admin_email' => ['nullable', 'email', 'max:255', Rule::unique('usuarios', 'email')],
+            'admin_cpf' => ['nullable', 'string', 'max:14'],
+            'admin_email' => ['nullable', 'email', 'max:255'],
             'admin_telefone' => ['nullable', 'string', 'max:20'],
         ]);
 
@@ -70,7 +68,7 @@ class IgrejaController extends Controller
         $ator = Auth::user();
         $adminLocalCriado = null;
 
-        $igreja = DB::transaction(function () use ($dados, &$adminLocalCriado): Igreja {
+        $igreja = DB::transaction(function () use ($dados, $ator, &$adminLocalCriado): Igreja {
             $slug = $this->resolverSlug(
                 $dados['slug'] ?? null,
                 $dados['nome']
@@ -88,24 +86,11 @@ class IgrejaController extends Controller
             ]);
 
             if ($this->dadosDeAdminLocalPreenchidos($dados)) {
-                $adminLocalCriado = $this->criarAdminLocalDaIgreja($igreja, $dados);
+                $adminLocalCriado = $this->criarAdminLocalDaIgreja($igreja, $dados, $ator, 'admin_igrejas_store');
             }
 
             return $igreja;
         });
-
-        if ($adminLocalCriado instanceof Usuario) {
-            $this->notificacaoSegurancaService->enviarEventoConta(
-                alvo: $adminLocalCriado,
-                evento: 'papel_local_concedido',
-                ator: $ator,
-                contexto: [
-                    'origem' => 'admin_igrejas_store',
-                    'igreja_id' => $igreja->id,
-                    'papel' => 'admin_local',
-                ]
-            );
-        }
 
         return redirect()
             ->route('admin.igrejas.edit', $igreja)
@@ -117,12 +102,14 @@ class IgrejaController extends Controller
     public function edit(Igreja $igreja): View
     {
         $adminsLocais = $this->obterAdminsLocais($igreja);
+        $coordenadores = $this->obterCoordenadores($igreja);
         $igreja = $this->adicionarDadosPublicos($igreja);
 
         return view('admin.churches.edit', [
             'igreja' => $igreja,
             'adminLocal' => $adminsLocais->first(),
             'adminsLocais' => $adminsLocais,
+            'coordenadores' => $coordenadores,
         ]);
     }
 
@@ -140,14 +127,17 @@ class IgrejaController extends Controller
             'estado' => ['required', 'string', 'size:2'],
             'ativo' => ['nullable', 'boolean'],
             'admin_nome' => ['nullable', 'string', 'max:255'],
-            'admin_cpf' => ['nullable', 'string', 'max:14', Rule::unique('usuarios', 'cpf')->ignore($adminLocal?->id)],
-            'admin_email' => ['nullable', 'email', 'max:255', Rule::unique('usuarios', 'email')->ignore($adminLocal?->id)],
+            'admin_cpf' => ['nullable', 'string', 'max:14'],
+            'admin_email' => ['nullable', 'email', 'max:255'],
             'admin_telefone' => ['nullable', 'string', 'max:20'],
         ]);
 
         $this->validarConjuntoAdminLocal($request);
 
-        DB::transaction(function () use ($dados, $igreja, $adminLocal): void {
+        /** @var \App\Models\Usuario|null $ator */
+        $ator = Auth::user();
+
+        DB::transaction(function () use ($dados, $igreja, $adminLocal, $ator): void {
             $slug = $this->resolverSlug(
                 $dados['slug'] ?? null,
                 $dados['nome'],
@@ -169,25 +159,13 @@ class IgrejaController extends Controller
                 return;
             }
 
-            if (!$adminLocal) {
-                $this->criarAdminLocalDaIgreja($igreja, $dados);
-
-                return;
-            }
-
-            $dadosAdmin = [
-                'igreja_id' => $igreja->id,
-                'nome' => $dados['admin_nome'],
-                'cpf' => $dados['admin_cpf'],
-                'email' => $dados['admin_email'],
-                'telefone' => $dados['admin_telefone'] ?? null,
-                'perfil_global' => 'usuario',
-                'nivel_global' => 5,
-                'ativo' => true,
-            ];
-
-            $adminLocal->update($dadosAdmin);
-            $this->sincronizarVinculoAdminLocal($adminLocal, $igreja);
+            $this->criarAdminLocalDaIgreja(
+                igreja: $igreja,
+                dados: $dados,
+                ator: $ator,
+                origem: 'admin_igrejas_update',
+                usuarioBase: $adminLocal
+            );
         });
 
         return redirect()
@@ -229,23 +207,14 @@ class IgrejaController extends Controller
 
         $dados = $validator->validated();
 
-        $adminLocal->update([
-            'password' => filled($dados['password'] ?? null)
-                ? $dados['password']
-                : $this->gerarSenhaInicialPorCpf($adminLocal->cpf),
-            'primeiro_acesso' => true,
-        ]);
-
-        /** @var \App\Models\Usuario|null $ator */
-        $ator = Auth::user();
-        $this->notificacaoSegurancaService->enviarEventoConta(
-            alvo: $adminLocal,
-            evento: 'reset_senha',
-            ator: $ator,
+        $this->gestaoUsuariosIgrejaService->redefinirSenhaProvisoria(
+            usuario: $adminLocal,
+            senha: $dados['password'] ?? null,
+            ator: Auth::user(),
             contexto: [
                 'origem' => 'admin_igrejas_reset_admin_local',
                 'igreja_id' => $igreja->id,
-                'senha_inicial' => filled($dados['password'] ?? null) ? 'definida_manual' : 'cpf_sem_pontuacao',
+                'igreja_nome' => $igreja->nome,
             ]
         );
 
@@ -256,16 +225,10 @@ class IgrejaController extends Controller
 
     public function storeAdminLocal(Request $request, Igreja $igreja): RedirectResponse
     {
-        if ($this->obterAdminsLocais($igreja)->count() >= 2) {
-            return redirect()
-                ->route('admin.igrejas.edit', $igreja)
-                ->with('error', 'Cada igreja pode ter no maximo 2 admins locais.');
-        }
-
         $dados = $request->validate([
             'nome' => ['required', 'string', 'max:255'],
-            'cpf' => ['required', 'string', 'max:14', Rule::unique('usuarios', 'cpf')],
-            'email' => ['required', 'email', 'max:255', Rule::unique('usuarios', 'email')],
+            'cpf' => ['required', 'string', 'max:14'],
+            'email' => ['required', 'email', 'max:255'],
             'telefone' => ['nullable', 'string', 'max:20'],
         ]);
 
@@ -274,24 +237,39 @@ class IgrejaController extends Controller
             'admin_cpf' => $dados['cpf'],
             'admin_email' => $dados['email'],
             'admin_telefone' => $dados['telefone'] ?? null,
-        ]);
-
-        /** @var \App\Models\Usuario|null $ator */
-        $ator = Auth::user();
-        $this->notificacaoSegurancaService->enviarEventoConta(
-            alvo: $adminLocal,
-            evento: 'papel_local_concedido',
-            ator: $ator,
-            contexto: [
-                'origem' => 'admin_igrejas_store_admin_local',
-                'igreja_id' => $igreja->id,
-                'papel' => 'admin_local',
-            ]
-        );
+        ], Auth::user(), 'admin_igrejas_store_admin_local');
 
         return redirect()
             ->route('admin.igrejas.edit', $igreja)
             ->with('success', 'Admin local adicional cadastrado com sucesso.');
+    }
+
+    public function storeCoordenador(Request $request, Igreja $igreja): RedirectResponse
+    {
+        $dados = $request->validate([
+            'nome' => ['required', 'string', 'max:255'],
+            'cpf' => ['required', 'string', 'max:14'],
+            'email' => ['required', 'email', 'max:255'],
+            'telefone' => ['nullable', 'string', 'max:20'],
+        ]);
+
+        $this->gestaoUsuariosIgrejaService->criarOuAtualizarContaOperacional(
+            dados: [
+                'nome' => $dados['nome'],
+                'cpf' => $dados['cpf'],
+                'email' => $dados['email'],
+                'telefone' => $dados['telefone'] ?? null,
+                'ativo' => true,
+            ],
+            igreja: $igreja,
+            papeis: [PapelIgreja::COORDENADOR],
+            ator: Auth::user(),
+            origem: 'admin_igrejas_store_coordenador'
+        );
+
+        return redirect()
+            ->route('admin.igrejas.edit', $igreja)
+            ->with('success', 'Coordenador vinculado a igreja com sucesso.');
     }
 
     protected function obterAdminLocal(Igreja $igreja): ?Usuario
@@ -301,8 +279,8 @@ class IgrejaController extends Controller
 
     protected function obterAdminsLocais(Igreja $igreja)
     {
-        $adminsLocais = $igreja->usuariosComPapelAdminLocal()
-            ->orderBy('id')
+        $adminsLocais = $igreja->usuariosComPapel(PapelIgreja::ADMIN_LOCAL)
+            ->orderBy('nome')
             ->get();
 
         if ($adminsLocais->isNotEmpty()) {
@@ -311,7 +289,7 @@ class IgrejaController extends Controller
 
         return $igreja->usuarios()
             ->where('perfil_global', 'admin_local')
-            ->orderBy('id')
+            ->orderBy('nome')
             ->get();
     }
 
@@ -319,6 +297,13 @@ class IgrejaController extends Controller
     {
         return $this->obterAdminsLocais($igreja)
             ->firstWhere('id', $adminLocalId);
+    }
+
+    protected function obterCoordenadores(Igreja $igreja)
+    {
+        return $igreja->usuariosComPapel(PapelIgreja::COORDENADOR)
+            ->orderBy('nome')
+            ->get();
     }
 
     protected function resolverSlug(?string $slugInformado, string $nome, ?int $ignorarIgrejaId = null): string
@@ -348,81 +333,45 @@ class IgrejaController extends Controller
             ->exists();
     }
 
-    protected function gerarSenhaInicialPorCpf(string $cpf): string
-    {
-        $cpfNumerico = $this->somenteDigitos($cpf);
-
-        if (strlen($cpfNumerico) < 8) {
-            throw ValidationException::withMessages([
-                'admin_cpf' => 'Informe um CPF valido para gerar a senha inicial.',
-            ]);
-        }
-
-        return $cpfNumerico;
-    }
-
-    protected function somenteDigitos(string $valor): string
-    {
-        return preg_replace('/\D+/', '', $valor) ?? '';
-    }
-
     protected function adicionarDadosPublicos(Igreja $igreja): Igreja
     {
         $linkPublico = route('igrejas.public.show', ['slug' => $igreja->slug]);
+        $linkPublicoMusicos = route('igrejas.public.musicos.show', ['slug' => $igreja->slugPublicoMusicos()]);
 
         $igreja->setAttribute('link_publico', $linkPublico);
+        $igreja->setAttribute('link_publico_musicos', $linkPublicoMusicos);
         $igreja->setAttribute(
             'qr_code_url',
             'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' . urlencode($linkPublico)
+        );
+        $igreja->setAttribute(
+            'qr_code_url_musicos',
+            'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' . urlencode($linkPublicoMusicos)
         );
 
         return $igreja;
     }
 
-    protected function criarAdminLocalDaIgreja(Igreja $igreja, array $dados): Usuario
-    {
-        $adminLocal = Usuario::create([
-            'igreja_id' => $igreja->id,
-            'nome' => $dados['admin_nome'],
-            'cpf' => $dados['admin_cpf'],
-            'email' => $dados['admin_email'],
-            'telefone' => $dados['admin_telefone'] ?? null,
-            'password' => $this->gerarSenhaInicialPorCpf($dados['admin_cpf']),
-            'perfil_global' => 'usuario',
-            'nivel_global' => 5,
-            'ativo' => true,
-            'primeiro_acesso' => true,
-        ]);
-
-        $this->sincronizarVinculoAdminLocal($adminLocal, $igreja);
-
-        return $adminLocal;
-    }
-
-    protected function sincronizarVinculoAdminLocal(Usuario $usuario, Igreja $igreja): void
-    {
-        $vinculo = UsuarioIgreja::updateOrCreate(
-            [
-                'usuario_id' => $usuario->id,
-                'igreja_id' => $igreja->id,
-            ],
-            [
+    protected function criarAdminLocalDaIgreja(
+        Igreja $igreja,
+        array $dados,
+        ?Usuario $ator = null,
+        string $origem = 'admin_igrejas_admin_local',
+        ?Usuario $usuarioBase = null
+    ): Usuario {
+        return $this->gestaoUsuariosIgrejaService->criarOuAtualizarContaOperacional(
+            dados: [
+                'nome' => $dados['admin_nome'],
+                'cpf' => $dados['admin_cpf'],
+                'email' => $dados['admin_email'],
+                'telefone' => $dados['admin_telefone'] ?? null,
                 'ativo' => true,
-                'desvinculado_em' => null,
-                'responsavel_principal' => false,
-                'vinculado_em' => now(),
-            ]
-        );
-
-        UsuarioIgrejaPapel::updateOrCreate(
-            [
-                'usuario_igreja_id' => $vinculo->id,
-                'papel' => PapelIgreja::ADMIN_LOCAL->value,
             ],
-            [
-                'ativo' => true,
-                'concedido_em' => now(),
-            ]
+            igreja: $igreja,
+            papeis: [PapelIgreja::ADMIN_LOCAL],
+            ator: $ator,
+            usuarioBase: $usuarioBase,
+            origem: $origem
         );
     }
 

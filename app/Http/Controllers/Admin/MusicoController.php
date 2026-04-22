@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\PapelIgreja;
 use App\Http\Controllers\Controller;
 use App\Models\Igreja;
 use App\Models\Usuario;
 use App\Rules\StrongPassword;
-use App\Services\NotificacaoSegurancaService;
+use App\Services\GestaoUsuariosIgrejaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +17,7 @@ use Illuminate\View\View;
 class MusicoController extends Controller
 {
     public function __construct(
-        private readonly NotificacaoSegurancaService $notificacaoSegurancaService
+        private readonly GestaoUsuariosIgrejaService $gestaoUsuariosIgrejaService
     ) {
     }
 
@@ -25,7 +26,10 @@ class MusicoController extends Controller
         return view('admin.musicos.index', [
             'musicos' => Usuario::query()
                 ->with('igreja')
-                ->where('perfil_global', 'member')
+                ->where(function ($query): void {
+                    $query->whereHas('papeisAtivosPorIgreja', fn ($subQuery) => $subQuery->where('papel', PapelIgreja::MUSICO->value))
+                        ->orWhere('perfil_global', 'member');
+                })
                 ->orderBy('nome')
                 ->get(),
         ]);
@@ -42,18 +46,15 @@ class MusicoController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $dados = $this->validarMusico($request);
+        $igreja = Igreja::query()->findOrFail((int) $dados['igreja_id']);
 
-        Usuario::create([
-            'igreja_id' => $dados['igreja_id'],
-            'nome' => $dados['nome'],
-            'cpf' => $dados['cpf'],
-            'email' => $dados['email'],
-            'telefone' => $dados['telefone'] ?? null,
-            'password' => $dados['password'] ?: $this->senhaPadraoPorCpf($dados['cpf']),
-            'perfil_global' => 'member',
-            'ativo' => (bool) ($dados['ativo'] ?? true),
-            'primeiro_acesso' => true,
-        ]);
+        $this->gestaoUsuariosIgrejaService->criarOuAtualizarContaOperacional(
+            dados: $dados,
+            igreja: $igreja,
+            papeis: [PapelIgreja::MUSICO],
+            ator: Auth::user(),
+            origem: 'admin_musicos_store'
+        );
 
         return redirect()
             ->route('admin.musicos.index')
@@ -74,16 +75,16 @@ class MusicoController extends Controller
     {
         $this->garantirMusico($musico);
         $dados = $this->validarMusico($request, $musico);
+        $igreja = Igreja::query()->findOrFail((int) $dados['igreja_id']);
 
-        $musico->update([
-            'igreja_id' => $dados['igreja_id'],
-            'nome' => $dados['nome'],
-            'cpf' => $dados['cpf'],
-            'email' => $dados['email'],
-            'telefone' => $dados['telefone'] ?? null,
-            'ativo' => (bool) ($dados['ativo'] ?? false),
-            'perfil_global' => 'member',
-        ]);
+        $this->gestaoUsuariosIgrejaService->criarOuAtualizarContaOperacional(
+            dados: $dados,
+            igreja: $igreja,
+            papeis: [PapelIgreja::MUSICO],
+            ator: Auth::user(),
+            usuarioBase: $musico,
+            origem: 'admin_musicos_update'
+        );
 
         return redirect()
             ->route('admin.musicos.index')
@@ -94,21 +95,16 @@ class MusicoController extends Controller
     {
         $this->garantirMusico($musico);
 
-        /** @var \App\Models\Usuario|null $ator */
-        $ator = Auth::user();
-        $novoStatus = !$musico->ativo;
-
-        $musico->update([
-            'ativo' => $novoStatus,
-        ]);
-
-        $this->notificacaoSegurancaService->enviarEventoConta(
-            alvo: $musico,
-            evento: $novoStatus ? 'conta_reativada' : 'conta_inativada',
-            ator: $ator,
+        $musico = $this->gestaoUsuariosIgrejaService->alterarStatusConta(
+            usuario: $musico,
+            ativo: !$musico->ativo,
+            ator: Auth::user(),
             contexto: [
                 'origem' => 'admin_musicos_toggle',
-                'perfil' => $musico->perfil_global,
+                'igreja_id' => $musico->igrejaAtiva()?->id ?? $musico->igreja_id,
+                'igreja_nome' => $musico->igrejaAtiva()?->nome ?? $musico->igreja?->nome,
+                'papel' => PapelIgreja::MUSICO->value,
+                'papel_label' => PapelIgreja::MUSICO->label(),
             ]
         );
 
@@ -121,21 +117,14 @@ class MusicoController extends Controller
     {
         $this->garantirMusico($musico);
 
-        /** @var \App\Models\Usuario|null $ator */
-        $ator = Auth::user();
-
-        $musico->update([
-            'password' => $this->senhaPadraoPorCpf($musico->cpf),
-            'primeiro_acesso' => true,
-        ]);
-
-        $this->notificacaoSegurancaService->enviarEventoConta(
-            alvo: $musico,
-            evento: 'reset_senha',
-            ator: $ator,
+        $this->gestaoUsuariosIgrejaService->redefinirSenhaProvisoria(
+            usuario: $musico,
+            senha: null,
+            ator: Auth::user(),
             contexto: [
                 'origem' => 'admin_musicos_reset',
-                'senha_inicial' => 'cpf_sem_pontuacao',
+                'igreja_id' => $musico->igrejaAtiva()?->id ?? $musico->igreja_id,
+                'igreja_nome' => $musico->igrejaAtiva()?->nome ?? $musico->igreja?->nome,
             ]
         );
 
@@ -147,11 +136,23 @@ class MusicoController extends Controller
     public function destroy(Usuario $musico): RedirectResponse
     {
         $this->garantirMusico($musico);
-        $musico->delete();
+
+        $this->gestaoUsuariosIgrejaService->alterarStatusConta(
+            usuario: $musico,
+            ativo: false,
+            ator: Auth::user(),
+            contexto: [
+                'origem' => 'admin_musicos_destroy',
+                'igreja_id' => $musico->igrejaAtiva()?->id ?? $musico->igreja_id,
+                'igreja_nome' => $musico->igrejaAtiva()?->nome ?? $musico->igreja?->nome,
+                'papel' => PapelIgreja::MUSICO->value,
+                'papel_label' => PapelIgreja::MUSICO->label(),
+            ]
+        );
 
         return redirect()
             ->route('admin.musicos.index')
-            ->with('success', 'Musico excluido com sucesso.');
+            ->with('success', 'Conta do musico inativada com sucesso.');
     }
 
     protected function validarMusico(Request $request, ?Usuario $musico = null): array
@@ -159,8 +160,8 @@ class MusicoController extends Controller
         return $request->validate([
             'igreja_id' => ['required', 'exists:igrejas,id'],
             'nome' => ['required', 'string', 'max:255'],
-            'cpf' => ['required', 'string', 'max:14', Rule::unique('usuarios', 'cpf')->ignore($musico?->id)],
-            'email' => ['required', 'email', 'max:255', Rule::unique('usuarios', 'email')->ignore($musico?->id)],
+            'cpf' => ['required', 'string', 'max:14'],
+            'email' => ['required', 'email', 'max:255'],
             'telefone' => ['nullable', 'string', 'max:20'],
             'password' => ['nullable', 'confirmed', new StrongPassword()],
             'ativo' => ['nullable', 'boolean'],
@@ -169,11 +170,9 @@ class MusicoController extends Controller
 
     protected function garantirMusico(Usuario $musico): void
     {
-        abort_unless($musico->ehMembro(), 404);
-    }
-
-    protected function senhaPadraoPorCpf(string $cpf): string
-    {
-        return preg_replace('/\D+/', '', $cpf) ?: $cpf;
+        abort_unless(
+            $musico->temPapelNaIgreja(PapelIgreja::MUSICO) || $musico->perfil_global === 'member',
+            404
+        );
     }
 }

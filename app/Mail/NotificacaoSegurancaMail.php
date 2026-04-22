@@ -42,8 +42,8 @@ class NotificacaoSegurancaMail extends Mailable
             'conta_inativada' => 'Aviso de seguranca: conta inativada',
             'conta_reativada' => 'Aviso de seguranca: conta reativada',
             'troca_nivel_global' => 'Aviso de seguranca: nivel global alterado',
-            'papel_local_concedido' => 'Aviso de seguranca: papel local concedido',
-            'papel_local_revogado' => 'Aviso de seguranca: papel local revogado',
+            'papel_local_concedido' => 'Aviso de seguranca: papel por igreja concedido',
+            'papel_local_revogado' => 'Aviso de seguranca: papel por igreja revogado',
             default => 'Aviso de seguranca da conta',
         };
 

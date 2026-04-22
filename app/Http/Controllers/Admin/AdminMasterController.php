@@ -11,6 +11,7 @@ use App\Models\Musica;
 use App\Models\Usuario;
 use App\Models\UsuarioIgrejaPapel;
 use App\Rules\StrongPassword;
+use App\Services\GestaoUsuariosIgrejaService;
 use App\Services\NotificacaoSegurancaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,7 +22,8 @@ use Illuminate\View\View;
 class AdminMasterController extends Controller
 {
     public function __construct(
-        private readonly NotificacaoSegurancaService $notificacaoSegurancaService
+        private readonly NotificacaoSegurancaService $notificacaoSegurancaService,
+        private readonly GestaoUsuariosIgrejaService $gestaoUsuariosIgrejaService
     ) {
     }
 
@@ -36,7 +38,7 @@ class AdminMasterController extends Controller
                 ->where('papel', PapelIgreja::ADMIN_LOCAL->value)
                 ->where('ativo', true)
                 ->count(),
-            'membros' => UsuarioIgrejaPapel::query()
+            'musicos' => UsuarioIgrejaPapel::query()
                 ->where('papel', PapelIgreja::MUSICO->value)
                 ->where('ativo', true)
                 ->count(),
@@ -121,12 +123,16 @@ class AdminMasterController extends Controller
     {
         /** @var \App\Models\Usuario $usuario */
         $usuario = Auth::user();
+        $primeiroAcesso = (bool) ($usuario->primeiro_acesso ?? false);
 
         $dados = $request->validate([
             'email' => ['required', 'email', Rule::unique('usuarios', 'email')->ignore($usuario->id)],
             'telefone' => ['nullable', 'string', 'max:20'],
-            'password' => ['nullable', 'confirmed', new StrongPassword()],
+            'password' => [$primeiroAcesso ? 'required' : 'nullable', 'confirmed', new StrongPassword()],
             'theme_preference' => ['required', Rule::in(['system', 'light', 'dark'])],
+        ], [
+            'password.required' => 'No primeiro acesso, defina uma nova senha forte para liberar o painel administrativo.',
+            'password.confirmed' => 'A confirmacao da senha nao confere.',
         ]);
 
         $usuario->email = $dados['email'];
@@ -140,7 +146,9 @@ class AdminMasterController extends Controller
 
         $usuario->save();
 
-        return back()->with('success', 'Perfil atualizado com sucesso.');
+        return back()->with('success', $primeiroAcesso
+            ? 'Senha atualizada com sucesso. O painel administrativo foi liberado.'
+            : 'Perfil atualizado com sucesso.');
     }
 
     public function storeAdminMaster(Request $request): RedirectResponse
@@ -160,31 +168,22 @@ class AdminMasterController extends Controller
             'nivel_global' => ['nullable', Rule::in($niveisPermitidos)],
         ]);
 
-        $cpfNumerico = preg_replace('/\D+/', '', $dados['cpf']) ?: $dados['cpf'];
         $nivelGlobal = isset($dados['nivel_global']) ? (int) $dados['nivel_global'] : 6;
 
-        $novoAdminMaster = Usuario::create([
-            'igreja_id' => null,
-            'nome' => $dados['nome'],
-            'cpf' => $dados['cpf'],
-            'email' => $dados['email'],
-            'telefone' => $dados['telefone'] ?? null,
-            'password' => $dados['password'] ?: $cpfNumerico,
-            'perfil_global' => 'admin_master',
-            'nivel_global' => $nivelGlobal,
-            'ativo' => (bool) ($dados['ativo'] ?? true),
-            'primeiro_acesso' => true,
-        ]);
-
-        $this->notificacaoSegurancaService->enviarEventoConta(
-            alvo: $novoAdminMaster,
-            evento: 'troca_nivel_global',
+        $this->gestaoUsuariosIgrejaService->criarOuAtualizarContaBase(
+            dados: [
+                'nome' => $dados['nome'],
+                'cpf' => $dados['cpf'],
+                'email' => $dados['email'],
+                'telefone' => $dados['telefone'] ?? null,
+                'password' => $dados['password'] ?? null,
+                'perfil_global' => 'admin_master',
+                'nivel_global' => $nivelGlobal,
+                'ativo' => (bool) ($dados['ativo'] ?? true),
+                'eh_padre' => false,
+            ],
             ator: $ator,
-            contexto: [
-                'origem' => 'admin_settings_store_admin_master',
-                'nivel_anterior' => null,
-                'nivel_novo' => $nivelGlobal,
-            ]
+            origem: 'admin_settings_store_admin_master'
         );
 
         return redirect()

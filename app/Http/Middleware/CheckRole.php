@@ -36,28 +36,32 @@ class CheckRole
 
         $igrejaAtivaId = app(IgrejaAtivaService::class)->getId();
 
-        if ($papel === 'admin_local' && method_exists($usuario, 'possuiPapel')) {
-            if ($usuario->possuiPapel(PapelIgreja::ADMIN_LOCAL->value, $igrejaAtivaId)) {
-                return $next($request);
+        if (method_exists($usuario, 'possuiPapel') && $this->usuarioTemPapelSolicitado($usuario, $papel, $igrejaAtivaId)) {
+            return $next($request);
+        }
+
+        if (method_exists($usuario, 'rotaDestinoAposLogin')) {
+            $rotaDestino = $usuario->rotaDestinoAposLogin();
+
+            if ($rotaDestino !== null) {
+                return redirect()->route($rotaDestino);
             }
-        }
-
-        if ($papel === 'member' && method_exists($usuario, 'possuiPapel')) {
-            foreach ([PapelIgreja::MUSICO->value, PapelIgreja::COORDENADOR->value, PapelIgreja::ADMIN_LOCAL->value] as $papelLocal) {
-                if ($usuario->possuiPapel($papelLocal, $igrejaAtivaId)) {
-                    return $next($request);
-                }
-            }
-        }
-
-        if (method_exists($usuario, 'ehAdminLocal') && $usuario->ehAdminLocal()) {
-            return redirect()->route('local-admin.dashboard');
-        }
-
-        if (method_exists($usuario, 'ehMembro') && $usuario->ehMembro()) {
-            return redirect()->route('member.dashboard');
         }
 
         return redirect()->route('root');
+    }
+
+    private function usuarioTemPapelSolicitado(mixed $usuario, string $papel, ?int $igrejaAtivaId): bool
+    {
+        return match ($papel) {
+            'admin_local' => $usuario->possuiPapel(PapelIgreja::ADMIN_LOCAL->value, $igrejaAtivaId),
+            'coordenador' => $usuario->possuiPapel(PapelIgreja::COORDENADOR->value, $igrejaAtivaId),
+            'member', 'musico' => collect([
+                PapelIgreja::MUSICO->value,
+                PapelIgreja::COORDENADOR->value,
+                PapelIgreja::ADMIN_LOCAL->value,
+            ])->contains(fn (string $papelLocal) => $usuario->possuiPapel($papelLocal, $igrejaAtivaId)),
+            default => false,
+        };
     }
 }

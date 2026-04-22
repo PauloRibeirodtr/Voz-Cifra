@@ -34,17 +34,19 @@ return new class extends Migration
             $table->index(['igreja_id', 'perfil_global']);
         });
 
-        DB::statement("
-            ALTER TABLE usuarios
-            ADD CONSTRAINT usuarios_perfil_global_check
-            CHECK (perfil_global IN ('admin_master', 'usuario'))
-        ");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("
+                ALTER TABLE usuarios
+                ADD CONSTRAINT usuarios_perfil_global_check
+                CHECK (perfil_global IN ('admin_master', 'usuario'))
+            ");
 
-        DB::statement("
-            ALTER TABLE usuarios
-            ADD CONSTRAINT usuarios_nivel_global_check
-            CHECK (nivel_global BETWEEN 1 AND 6)
-        ");
+            DB::statement("
+                ALTER TABLE usuarios
+                ADD CONSTRAINT usuarios_nivel_global_check
+                CHECK (nivel_global BETWEEN 1 AND 6)
+            ");
+        }
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
@@ -66,8 +68,10 @@ return new class extends Migration
     {
         Schema::dropIfExists('sessions');
         Schema::dropIfExists('password_reset_tokens');
-        DB::statement('ALTER TABLE usuarios DROP CONSTRAINT IF EXISTS usuarios_nivel_global_check');
-        DB::statement('ALTER TABLE usuarios DROP CONSTRAINT IF EXISTS usuarios_perfil_global_check');
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE usuarios DROP CONSTRAINT IF EXISTS usuarios_nivel_global_check');
+            DB::statement('ALTER TABLE usuarios DROP CONSTRAINT IF EXISTS usuarios_perfil_global_check');
+        }
         Schema::dropIfExists('usuarios');
     }
 };

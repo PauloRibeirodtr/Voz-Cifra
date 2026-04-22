@@ -533,7 +533,15 @@
                     <h1 class="title">{{ $igreja->nome }}</h1>
 
                     <p class="lead">
-                        @if ($estadoCelebracao === 'em_andamento' && $missaPublica)
+                        @if (($modoPublico ?? 'fieis') === 'musicos')
+                            @if ($missaPublica)
+                                Este link foi preparado para leitura musical. Quando a missa estiver publicada para musicos, as musicas aparecem em sequencia com cifras e mais foco no estudo da celebracao.
+                            @elseif ($proximasMissas->isNotEmpty())
+                                Aqui os musicos encontram os proximos horarios publicados para estudo. Quando a celebracao for liberada para musicos, o repertorio aparecera nesta mesma pagina.
+                            @else
+                                Este link ficara pronto para estudo musical assim que uma nova missa for publicada para musicos nesta igreja.
+                            @endif
+                        @elseif ($estadoCelebracao === 'em_andamento' && $missaPublica)
                             Esta pagina esta aberta para acompanhar a missa atual com leitura limpa, letras grandes e menos distracao na tela.
                         @elseif ($proximasMissas->isNotEmpty())
                             Aqui voce encontra os proximos horarios de missa desta comunidade. Quando chegar o momento da celebracao, o repertorio publico aparecera nesta mesma pagina.
@@ -543,7 +551,9 @@
                     </p>
 
                     <div class="status-strip">
-                        @if ($estadoCelebracao === 'em_andamento')
+                        @if (($modoPublico ?? 'fieis') === 'musicos' && $missaPublica)
+                            Repertorio musical disponivel
+                        @elseif ($estadoCelebracao === 'em_andamento')
                             Celebracao aberta agora
                         @elseif ($proximasMissas->isNotEmpty())
                             Proximos horarios disponiveis
@@ -554,7 +564,7 @@
 
                     @if ($missaPublica)
                         <div class="summary-block">
-                            <p class="section-kicker">Missa aberta</p>
+                            <p class="section-kicker">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Leitura do musico' : 'Missa aberta' }}</p>
                             <h2 class="summary-title">{{ $missaPublica->titulo }}</h2>
                             <p class="summary-meta">
                                 {{ $missaPublica->data_missa->format('d/m/Y') }} as {{ substr((string) $missaPublica->hora_inicio, 0, 5) }}
@@ -604,7 +614,11 @@
                     <div class="panel">
                         <p class="panel-title">Como funciona este link</p>
                         <p class="panel-text">
-                            Este e o link publico oficial desta igreja. Ele mostra os horarios da comunidade e abre o repertorio somente quando a missa estiver disponivel para acompanhamento.
+                            @if (($modoPublico ?? 'fieis') === 'musicos')
+                                Este e o link publico oficial dos musicos desta igreja. Ele mostra apenas missas publicadas para musicos e reaproveita a mesma base de repertorio da celebracao.
+                            @else
+                                Este e o link publico oficial desta igreja. Ele mostra os horarios da comunidade e abre o repertorio somente quando a missa estiver disponivel para acompanhamento.
+                            @endif
                         </p>
                     </div>
                 </aside>
@@ -622,7 +636,7 @@
                 </div>
             </div>
 
-            <form method="GET" action="{{ route('igrejas.public.show', ['slug' => $igreja->slug]) }}" class="history-form">
+            <form method="GET" action="{{ ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slugPublicoMusicos()]) : route('igrejas.public.show', ['slug' => $igreja->slug]) }}" class="history-form">
                 <div>
                     <label for="historico">Buscar no historico</label>
                     <input
@@ -634,7 +648,7 @@
                     >
                 </div>
                 <button type="submit">Buscar</button>
-                <a href="{{ route('igrejas.public.show', ['slug' => $igreja->slug]) }}">Limpar</a>
+                <a href="{{ ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slugPublicoMusicos()]) : route('igrejas.public.show', ['slug' => $igreja->slug]) }}">Limpar</a>
             </form>
 
             <p class="history-note">
@@ -671,13 +685,17 @@
             <section class="content-section">
                 <div class="celebration-header">
                     <div>
-                        <p class="section-kicker">Leitura publica</p>
-                        <h2 class="celebration-title">Acompanhe a missa atual</h2>
+                        <p class="section-kicker">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Leitura musical' : 'Leitura publica' }}</p>
+                        <h2 class="celebration-title">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Repertorio publicado para musicos' : 'Acompanhe a missa atual' }}</h2>
                         <p class="section-lead">
-                            Esta area foi preparada para leitura tranquila durante a celebracao, com menos elementos na tela e foco no canto que esta sendo acompanhado.
+                            @if (($modoPublico ?? 'fieis') === 'musicos')
+                                Esta area foi preparada para estudo e execucao do repertorio com a sequencia publicada para os musicos da igreja.
+                            @else
+                                Esta area foi preparada para leitura tranquila durante a celebracao, com menos elementos na tela e foco no canto que esta sendo acompanhado.
+                            @endif
                         </p>
                     </div>
-                    <span class="celebration-badge">Celebracao em andamento</span>
+                    <span class="celebration-badge">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Modo musico' : 'Celebracao em andamento' }}</span>
                 </div>
 
                 @php($itensPublicos = collect($missaPublica->itens_publicos ?? []))
@@ -693,13 +711,15 @@
                                     @endif
                                 </div>
                                 <h3 class="celebration-song">{{ $item['titulo'] }}</h3>
-                                <div class="celebration-lyrics">{{ $item['letra_publica'] !== '' ? $item['letra_publica'] : 'A letra deste canto ainda nao foi preparada para exibicao publica.' }}</div>
+                                <div class="celebration-lyrics">{{ $item['letra_publica'] !== '' ? $item['letra_publica'] : (($modoPublico ?? 'fieis') === 'musicos' ? 'A cifra e a letra desta musica ainda nao foram preparadas para o link publico do musico.' : 'A letra deste canto ainda nao foi preparada para exibicao publica.') }}</div>
                             </article>
                         @endforeach
                     </div>
                 @else
                     <div class="empty-box">
-                        O repertorio desta missa ainda nao foi preparado para exibicao publica. Assim que a equipe concluir a organizacao, os cantos aparecerao aqui.
+                        {{ ($modoPublico ?? 'fieis') === 'musicos'
+                            ? 'O repertorio desta missa ainda nao foi preparado para o link publico do musico. Assim que a equipe concluir a organizacao, as musicas aparecerao aqui.'
+                            : 'O repertorio desta missa ainda nao foi preparado para exibicao publica. Assim que a equipe concluir a organizacao, os cantos aparecerao aqui.' }}
                     </div>
                 @endif
             </section>

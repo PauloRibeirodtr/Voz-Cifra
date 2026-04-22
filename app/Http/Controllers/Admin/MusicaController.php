@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\MomentoLiturgico;
 use App\Models\Musica;
 use App\Models\TempoLiturgico;
+use App\Services\NotificacaoSistemaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +14,11 @@ use Illuminate\View\View;
 
 class MusicaController extends Controller
 {
+    public function __construct(
+        private readonly NotificacaoSistemaService $notificacaoSistemaService
+    ) {
+    }
+
     public function index(Request $request): View
     {
         $consulta = Musica::with(['tempoLiturgico', 'momentoLiturgico', 'criadoPor'])->latest();
@@ -56,11 +62,21 @@ class MusicaController extends Controller
             'tempo_liturgico_id' => $dados['tempo_liturgico_id'] ?? null,
             'momento_liturgico_id' => $dados['momento_liturgico_id'] ?? null,
             'criado_por' => $usuario->id,
-            'ativo' => (bool) ($dados['ativo'] ?? true),
+            'ativo' => $this->podeInativarRegistros() ? (bool) ($dados['ativo'] ?? true) : true,
         ]);
 
+        $this->notificacaoSistemaService->enviarParaTodosUsuariosAtivos(
+            evento: 'musica_cadastrada',
+            ator: $usuario,
+            contexto: [
+                'origem' => 'admin_musicas_store',
+                'origem_id' => $musica->id,
+                'titulo' => $musica->titulo,
+            ]
+        );
+
         return redirect()
-            ->route('admin.versoes-musicais.create', $musica)
+            ->route($this->routeName('versoes-musicais.create'), $musica)
             ->with('success', 'Musica cadastrada com sucesso. Agora cadastre a versao musical com cifras, tom e bpm.');
     }
 
@@ -97,11 +113,11 @@ class MusicaController extends Controller
             'letra' => $dados['letra'],
             'tempo_liturgico_id' => $dados['tempo_liturgico_id'] ?? null,
             'momento_liturgico_id' => $dados['momento_liturgico_id'] ?? null,
-            'ativo' => (bool) ($dados['ativo'] ?? false),
+            'ativo' => $this->podeInativarRegistros() ? (bool) ($dados['ativo'] ?? false) : (bool) $musica->ativo,
         ]);
 
         return redirect()
-            ->route('admin.musicas.index')
+            ->route($this->routeName('musicas.index'))
             ->with('success', 'Musica atualizada com sucesso.');
     }
 
@@ -111,9 +127,39 @@ class MusicaController extends Controller
             'ativo' => false,
         ]);
 
+        /** @var \App\Models\Usuario|null $usuario */
+        $usuario = Auth::user();
+        $this->notificacaoSistemaService->enviarParaTodosUsuariosAtivos(
+            evento: 'musica_inativada',
+            ator: $usuario,
+            contexto: [
+                'origem' => 'admin_musicas_destroy',
+                'origem_id' => $musica->id,
+                'titulo' => $musica->titulo,
+            ]
+        );
+
         return redirect()
-            ->route('admin.musicas.index')
+            ->route($this->routeName('musicas.index'))
             ->with('success', 'Musica inativada com sucesso.');
+    }
+
+    private function routeName(string $sufixo): string
+    {
+        $nomeAtual = request()->route()?->getName() ?? '';
+
+        if (str_starts_with($nomeAtual, 'coordenador.')) {
+            return 'coordenador.' . $sufixo;
+        }
+
+        return 'admin.' . $sufixo;
+    }
+
+    private function podeInativarRegistros(): bool
+    {
+        $nomeAtual = request()->route()?->getName() ?? '';
+
+        return !str_starts_with($nomeAtual, 'coordenador.');
     }
 
     private function validarDados(Request $request): array
@@ -201,6 +247,3 @@ class MusicaController extends Controller
         return preg_match('/^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\\+|-|[0-9#b])|\\([^\\)\\]]+\\))*(?:\\/[A-G](?:#|b)?)?$/', $token) === 1;
     }
 }
-
-
-

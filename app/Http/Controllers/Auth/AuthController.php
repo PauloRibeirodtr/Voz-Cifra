@@ -58,34 +58,19 @@ class AuthController extends Controller
         /** @var \App\Models\Usuario $usuarioAutenticado */
         $usuarioAutenticado = Auth::user();
 
-        if ($usuarioAutenticado->ehAdminMaster()) {
-            if ($usuarioAutenticado->primeiro_acesso) {
+        if (method_exists($usuarioAutenticado, 'rotaDestinoAposLogin')) {
+            $rotaPrimeiroAcesso = $usuarioAutenticado->rotaDestinoPrimeiroAcesso();
+            $rotaDestino = $usuarioAutenticado->rotaDestinoAposLogin();
+
+            if ($usuarioAutenticado->primeiro_acesso && $rotaPrimeiroAcesso !== null) {
                 return redirect()
-                    ->route('admin.profile')
-                    ->with('status', 'No primeiro acesso, atualize sua senha para continuar usando o sistema com seguranca.');
+                    ->route($rotaPrimeiroAcesso)
+                    ->with('status', $usuarioAutenticado->mensagemPrimeiroAcesso());
             }
 
-            return redirect()->route('admin.dashboard');
-        }
-
-        if (method_exists($usuarioAutenticado, 'ehAdminLocal') && $usuarioAutenticado->ehAdminLocal()) {
-            if ($usuarioAutenticado->primeiro_acesso) {
-                return redirect()
-                    ->route('local-admin.profile')
-                    ->with('status', 'No primeiro acesso, atualize sua senha para continuar usando o painel da igreja com seguranca.');
+            if ($rotaDestino !== null) {
+                return redirect()->route($rotaDestino);
             }
-
-            return redirect()->route('local-admin.dashboard');
-        }
-
-        if (method_exists($usuarioAutenticado, 'ehMembro') && $usuarioAutenticado->ehMembro()) {
-            if ($usuarioAutenticado->primeiro_acesso) {
-                return redirect()
-                    ->route('member.profile')
-                    ->with('status', 'No primeiro acesso, atualize sua senha para liberar o painel do músico com segurança.');
-            }
-
-            return redirect()->route('member.dashboard');
         }
 
         Auth::logout();
