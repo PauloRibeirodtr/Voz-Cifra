@@ -38,9 +38,9 @@
         </div>
     @endif
 
-    <div class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(20rem,1fr)]">
+    <div class="grid grid-cols-1 gap-6 2xl:grid-cols-[minmax(0,1.7fr)_minmax(20rem,0.95fr)]">
         <div class="space-y-6">
-            <section class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+            <section class="admin-section-card p-5 sm:p-6 lg:p-7">
                 <div class="mb-5">
                     <h2 class="text-lg font-bold text-gray-800">Conta base</h2>
                     <p class="mt-1 text-sm text-gray-500">Aqui ficam os dados da pessoa. Os papéis por igreja sao gerenciados no bloco abaixo.</p>
@@ -50,7 +50,7 @@
                     @csrf
                     @method('PUT')
 
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
                         <div>
                             <label class="mb-1 block text-xs font-bold uppercase tracking-wider text-gray-400">Perfil global</label>
                             <select name="perfil_global" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-800">
@@ -71,7 +71,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
                         <div>
                             <label class="mb-1 block text-xs font-bold uppercase tracking-wider text-gray-400">Nome</label>
                             <input type="text" name="nome" value="{{ old('nome', $usuario->nome) }}" required class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-800">
@@ -83,7 +83,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
                         <div>
                             <label class="mb-1 block text-xs font-bold uppercase tracking-wider text-gray-400">E-mail</label>
                             <input type="email" name="email" value="{{ old('email', $emailTecnico ? '' : $usuario->email) }}" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-800" placeholder="{{ $emailTecnico ? 'Padre sem login tecnico' : '' }}">
@@ -95,7 +95,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
                         <div data-password-strength-container>
                             <label class="mb-1 block text-xs font-bold uppercase tracking-wider text-gray-400">Nova senha provisoria</label>
                             <input type="password" name="password" data-password-strength-input class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-800" placeholder="Opcional">
@@ -137,7 +137,7 @@
                 </form>
             </section>
 
-            <section class="admin-highlight-surface rounded-3xl p-6 shadow-sm">
+            <section class="admin-highlight-surface rounded-3xl p-5 shadow-sm sm:p-6">
                 <div class="mb-5">
                     <h2 class="text-lg font-bold text-gray-800">Adicionar papel por igreja</h2>
                     <p class="mt-1 text-sm text-gray-500">Use este fluxo para promover a mesma conta em outra igreja ou acumular funcoes.</p>
@@ -181,7 +181,7 @@
         </div>
 
         <aside class="space-y-6">
-            <section class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+            <section class="admin-section-card p-5 shadow-sm sm:p-6 2xl:sticky 2xl:top-6">
                 <h2 class="text-lg font-bold text-gray-800">Resumo atual</h2>
                 <div class="mt-4 space-y-3 text-sm text-gray-600">
                     <p><strong>Status:</strong> {{ $usuario->ativo ? 'Ativo' : 'Inativo' }}</p>
@@ -194,7 +194,7 @@
                 </div>
             </section>
 
-            <section class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+            <section class="admin-section-card p-5 shadow-sm sm:p-6">
                 <h2 class="text-lg font-bold text-gray-800">Vinculos atuais</h2>
                 <div class="mt-4 space-y-4">
                     @forelse ($usuario->vinculosIgreja->where('ativo', true) as $vinculo)

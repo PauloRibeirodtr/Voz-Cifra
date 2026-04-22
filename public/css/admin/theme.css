@@ -211,10 +211,18 @@ body:not(.theme-dark) .hover\:bg-gray-100:hover {
     display: flex;
     align-items: center;
     gap: 1rem;
+    width: 100%;
+    min-height: 3rem;
     border-radius: 1rem;
     padding: 0.8rem 1rem;
     color: var(--admin-sidebar-text);
     transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease, color 0.18s ease;
+}
+
+.admin-sidebar-link span {
+    flex: 1 1 auto;
+    min-width: 0;
+    line-height: 1.25;
 }
 
 .admin-sidebar-link:hover {
@@ -253,7 +261,23 @@ body:not(.theme-dark) .hover\:bg-gray-100:hover {
 }
 
 .admin-shell {
+    min-width: 0;
     min-height: 100vh;
+}
+
+.admin-app {
+    min-height: 100vh;
+}
+
+.admin-main {
+    min-width: 0;
+    min-height: 100vh;
+}
+
+.admin-main-content {
+    width: 100%;
+    max-width: 112rem;
+    margin: 0 auto;
 }
 
 .admin-section-card {
@@ -432,24 +456,40 @@ body.theme-dark .admin-sidebar-link:hover {
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
-    .admin-shell {
-        padding-left: 18rem;
+    .admin-app {
+        display: grid;
+        grid-template-columns: 18rem minmax(0, 1fr);
     }
 
     .admin-sidebar {
-        width: 18rem;
+        width: 100%;
+        max-width: none;
     }
 }
 
 @media (min-width: 1024px) {
-    .admin-shell {
-        padding-left: 18rem;
+    .admin-app {
+        display: grid;
+        grid-template-columns: 18rem minmax(0, 1fr);
+    }
+
+    .admin-sidebar {
+        width: 100%;
+        max-width: none;
     }
 }
 
 @media (max-width: 767px) {
     .admin-sidebar {
         width: min(88vw, 22rem);
+    }
+
+    .admin-sidebar-link {
+        padding: 0.9rem 1rem;
+    }
+
+    .admin-sidebar-section-label {
+        padding-left: 1rem;
     }
 
     .admin-topbar-card,
@@ -466,5 +506,9 @@ body.theme-dark .admin-sidebar-link:hover {
 
     .admin-page-copy {
         line-height: 1.65;
+    }
+
+    .admin-main-content {
+        max-width: 100%;
     }
 }

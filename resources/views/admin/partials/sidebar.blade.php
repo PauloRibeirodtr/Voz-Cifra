@@ -1,6 +1,6 @@
 <aside
     id="admin_sidebar"
-    class="admin-sidebar fixed inset-y-0 left-0 z-40 flex h-[100dvh] w-[78vw] max-w-[22rem] -translate-x-full flex-col overflow-hidden text-white shadow-2xl transition-transform duration-300 md:h-screen md:w-72 md:max-w-none md:translate-x-0"
+    class="admin-sidebar fixed inset-y-0 left-0 z-40 flex h-[100dvh] w-[78vw] max-w-[22rem] -translate-x-full flex-col overflow-hidden text-white shadow-2xl transition-transform duration-300 md:sticky md:top-0 md:z-10 md:h-screen md:w-full md:max-w-none md:translate-x-0"
 >
     @php
         $itemMenuClasse = static function (bool $ativo): string {

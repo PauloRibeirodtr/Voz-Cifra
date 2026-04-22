@@ -29,12 +29,12 @@
         </div>
     @endif
 
-    <div class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
-        <div class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+    <div class="grid grid-cols-1 gap-6 2xl:grid-cols-[minmax(0,1.75fr)_minmax(20rem,0.95fr)]">
+        <div class="admin-section-card p-5 sm:p-6 lg:p-7">
             <form action="{{ route('admin.usuarios.store') }}" method="POST" class="space-y-5">
                 @csrf
 
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
                     <div>
                         <label class="mb-1 block text-xs font-bold uppercase tracking-wider text-gray-400">Tipo inicial</label>
                         <select name="tipo_cadastro" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-800">
@@ -57,7 +57,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
                     <div>
                         <label class="mb-1 block text-xs font-bold uppercase tracking-wider text-gray-400">Nome</label>
                         <input type="text" name="nome" value="{{ old('nome') }}" required class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-800">
@@ -69,7 +69,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
                     <div>
                         <label class="mb-1 block text-xs font-bold uppercase tracking-wider text-gray-400">E-mail</label>
                         <input type="email" name="email" value="{{ old('email') }}" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-800" placeholder="Padre sem login pode ficar em branco">
@@ -81,7 +81,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
                     <div data-password-strength-container>
                         <label class="mb-1 block text-xs font-bold uppercase tracking-wider text-gray-400">Senha inicial</label>
                         <input type="password" name="password" data-password-strength-input class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-800" placeholder="Se ficar em branco, usa CPF">
@@ -123,7 +123,7 @@
             </form>
         </div>
 
-        <aside class="admin-highlight-surface rounded-3xl p-6 shadow-sm">
+        <aside class="admin-highlight-surface rounded-3xl p-5 shadow-sm sm:p-6 2xl:sticky 2xl:top-6">
             <h2 class="text-lg font-bold text-gray-800">Como este cadastro funciona</h2>
             <div class="mt-4 space-y-3 text-sm text-gray-600">
                 <p><strong>Admin master:</strong> ja nasce com acesso global.</p>
