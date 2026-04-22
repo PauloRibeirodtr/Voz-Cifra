@@ -15,7 +15,7 @@
 
     @include('admin.partials.sidebar')
 
-    <div class="min-h-screen md:pl-72">
+    <div class="admin-shell">
         <header class="admin-mobile-header sticky top-0 z-20 border-b border-white/10 backdrop-blur md:hidden">
             <div class="flex items-center justify-between gap-3 px-4 py-3">
                 <div class="min-w-0">

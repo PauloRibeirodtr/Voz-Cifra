@@ -19,6 +19,10 @@
         </a>
     </div>
 
+    <div class="admin-inline-note mb-6 px-5 py-4 text-sm leading-7">
+        Igreja sem admin local continua valida no cadastro. O admin local entra depois, quando a comunidade estiver pronta para operar missas e repertorios.
+    </div>
+
     @if ($errors->any())
         <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 text-sm rounded">
             <ul class="list-disc pl-4">
@@ -32,7 +36,7 @@
     <form action="{{ route('admin.igrejas.store') }}" method="POST" class="space-y-6">
         @csrf
 
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <div class="admin-section-card p-6">
             <h2 class="text-lg font-bold text-gray-800 mb-4">Dados da igreja</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -83,7 +87,7 @@
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <div class="admin-section-card p-6">
             <h2 class="text-lg font-bold text-gray-800 mb-4">Administrador local</h2>
             <p class="mb-4 text-sm text-gray-500">Este bloco e opcional. Se preferir, a igreja pode ser criada agora e o admin local ser definido depois.</p>
 
@@ -108,7 +112,7 @@
                     <input type="text" name="admin_telefone" value="{{ old('admin_telefone') }}" placeholder="(65) 99999-9999" data-telefone-input class="{{ $classeInput }}" />
                 </div>
 
-                <div class="md:col-span-2 bg-green-50 border border-green-100 rounded-xl p-4 text-sm text-green-800">
+                <div class="admin-inline-note-warm md:col-span-2 p-4 text-sm">
                     Se voce preencher os dados acima, o admin local acessara o sistema com o e-mail informado e a senha inicial sera o CPF digitado, usando apenas os numeros.
                     No primeiro acesso, ele devera trocar a senha.
                 </div>

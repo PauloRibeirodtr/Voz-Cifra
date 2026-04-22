@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const body = document.body;
     const sidebar = document.getElementById('admin_sidebar');
     const toggle = document.getElementById('admin_sidebar_toggle');
+    const closeButton = document.getElementById('admin_sidebar_close');
     const overlay = document.getElementById('admin_sidebar_overlay');
     const mediaQuery = window.matchMedia('(min-width: 768px)');
 
@@ -47,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     overlay.addEventListener('click', fecharMenu);
+    closeButton?.addEventListener('click', fecharMenu);
 
     sidebar.querySelectorAll('a').forEach((link) => {
         link.addEventListener('click', () => {

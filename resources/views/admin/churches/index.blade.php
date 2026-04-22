@@ -15,6 +15,10 @@
         </a>
     </div>
 
+    <div class="admin-inline-note mb-6 px-5 py-4 text-sm leading-7">
+        Uma igreja pode existir sem admin local. O papel local so precisa ser vinculado quando alguem for assumir a operacao da igreja e o cadastro de missas.
+    </div>
+
     @if (session('success'))
         <div class="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 text-sm rounded">
             {{ session('success') }}
@@ -37,7 +41,7 @@
         </div>
     @endif
 
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="admin-section-card overflow-hidden">
         @if ($igrejas->isEmpty())
             <div class="p-8 text-center text-gray-500">
                 Nenhuma igreja cadastrada ate o momento.

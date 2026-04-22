@@ -10,7 +10,7 @@
         };
     @endphp
 
-    <div class="flex items-center justify-between border-b border-white/10 px-4 py-3 md:hidden">
+    <div class="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3 md:hidden">
         <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3">
             <img src="{{ asset('logo/final.png') }}" alt="Logo Voz e Cifra" class="h-9 w-auto shrink-0">
             <div>
@@ -18,6 +18,15 @@
                 <p class="text-sm font-semibold text-white/90">Menu administrativo</p>
             </div>
         </a>
+
+        <button
+            type="button"
+            id="admin_sidebar_close"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-[#f3dfbd] transition hover:bg-white/10"
+            aria-label="Fechar menu"
+        >
+            <i class="fa-solid fa-xmark text-base"></i>
+        </button>
     </div>
 
     @auth

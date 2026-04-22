@@ -13,6 +13,10 @@
         </p>
     </section>
 
+    <section class="admin-inline-note mb-6 px-5 py-4 text-sm leading-7 sm:px-6">
+        A igreja pode ser cadastrada sem admin local. O papel de <strong>admin local</strong> so passa a ser obrigatorio quando alguem for operar a igreja e criar missas.
+    </section>
+
     <section class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <a href="{{ route('admin.usuarios.index') }}" class="admin-stat-card block p-5 sm:p-6">
             <div class="admin-stat-label text-sm font-bold uppercase tracking-[0.18em]">Usuarios</div>
@@ -57,7 +61,7 @@
                 <p class="admin-page-kicker">Fluxo recomendado</p>
                 <h2 class="mt-2 text-xl font-black text-gray-800 sm:text-2xl">Comece pelo cadastro central de usuarios</h2>
                 <p class="mt-3 text-sm leading-7 text-gray-600 sm:text-base">
-                    O novo fluxo do master permite criar a conta primeiro e so depois decidir a igreja e os papéis. Isso reduz duplicidade,
+                    O novo fluxo do master permite criar a conta primeiro e so depois decidir a igreja e os papeis. Isso reduz duplicidade,
                     facilita promocao de padre para usuario operacional e deixa a base mais previsivel.
                 </p>
             </div>
@@ -89,7 +93,7 @@
 
             <a href="{{ route('admin.usuarios.index') }}" class="admin-quick-link px-4 py-4">
                 <span class="admin-quick-link-label block text-xs font-black uppercase tracking-[0.18em]">Usuarios</span>
-                <span class="mt-2 block text-base font-bold">Cadastros e papéis</span>
+                <span class="mt-2 block text-base font-bold">Cadastros e papeis</span>
                 <span class="mt-2 block text-sm text-gray-500">Criar conta, promover perfil e vincular igreja.</span>
             </a>
 

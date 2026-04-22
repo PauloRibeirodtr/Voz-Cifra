@@ -19,6 +19,10 @@
         </a>
     </div>
 
+    <div class="admin-inline-note mb-6 px-5 py-4 text-sm leading-7">
+        Esta igreja pode continuar ativa mesmo sem admin local vinculado. O papel local so se torna necessario quando uma pessoa vai operar missas, repertorios e a rotina da comunidade.
+    </div>
+
     @if (session('success'))
         <div class="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 text-sm rounded">
             {{ session('success') }}
@@ -45,7 +49,7 @@
         @csrf
         @method('PUT')
 
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <div class="admin-section-card p-6">
             <h2 class="text-lg font-bold text-gray-800 mb-4">Dados da igreja</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -96,7 +100,7 @@
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <div class="admin-section-card p-6">
             <h2 class="text-lg font-bold text-gray-800 mb-4">Admin local principal</h2>
             <p class="mb-4 text-sm text-gray-500">Este bloco pode ficar vazio. A igreja pode continuar ativa mesmo sem admin local definido neste momento.</p>
 
@@ -128,7 +132,7 @@
         </div>
 
         @if (($adminsLocais ?? collect())->isNotEmpty())
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div class="admin-section-card p-6">
                 <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div class="max-w-2xl">
                         <h2 class="text-lg font-bold text-gray-800">Admins locais da igreja</h2>
@@ -187,7 +191,7 @@
             </div>
         @endif
 
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div class="admin-section-card p-6">
                 <h2 class="text-lg font-bold text-gray-800">Adicionar ou promover admin local</h2>
                 <p class="mt-2 text-sm text-gray-500">
                     Se os dados abaixo corresponderem a uma conta existente, o sistema apenas adiciona o papel de admin local nesta igreja sem criar outro usuario.
@@ -228,7 +232,7 @@
                 </form>
             </div>
 
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <div class="admin-section-card p-6">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div class="max-w-2xl">
                     <h2 class="text-lg font-bold text-gray-800">Coordenadores da igreja</h2>
@@ -288,7 +292,7 @@
             </form>
         </div>
 
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <div class="admin-section-card p-6">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div class="max-w-2xl">
                     <h2 class="text-lg font-bold text-gray-800">Links publicos e QR fixos</h2>
