@@ -37,11 +37,35 @@
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <section class="xl:col-span-2 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-            <form action="{{ route('local-admin.profile.update') }}" method="POST">
+            <form action="{{ route('local-admin.profile.update') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
                 <div class="grid grid-cols-1 gap-4">
+                    <div class="rounded-3xl border border-gray-200 bg-gray-50 p-5">
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+                            <img
+                                id="local-admin-profile-preview"
+                                src="{{ $user->fotoPerfilUrl() }}"
+                                alt="Foto de perfil de {{ $user->nome }}"
+                                class="h-24 w-24 rounded-3xl border border-gray-200 object-cover bg-white shadow-sm"
+                            >
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700">Foto de perfil</label>
+                                <input
+                                    type="file"
+                                    name="foto_perfil"
+                                    accept="image/*"
+                                    class="{{ $classeInput }}"
+                                    data-image-preview-input
+                                    data-image-preview-target="#local-admin-profile-preview"
+                                    data-default-src="{{ $user->fotoPerfilUrl() }}"
+                                >
+                                <p class="mt-2 text-xs text-gray-500">A foto ajuda a identificar o administrador local na barra lateral e no acesso da igreja.</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Nome</label>
                         <input type="text" value="{{ $user->nome }}" class="{{ $classeInput }} bg-gray-100 text-gray-500" disabled>
@@ -116,6 +140,7 @@
 @endsection
 
 @push('scripts')
+    @include('partials.image-preview-script')
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const campoTelefone = document.querySelector('[data-telefone-input]');

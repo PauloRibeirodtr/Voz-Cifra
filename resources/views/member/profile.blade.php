@@ -43,7 +43,7 @@
     @endif
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <form action="{{ route($routePrefix . '.profile.update') }}" method="POST" class="space-y-6">
+        <form action="{{ route($routePrefix . '.profile.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PUT')
 
@@ -59,6 +59,30 @@
                 </div>
 
                 <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div class="md:col-span-2 rounded-3xl border border-gray-200 bg-gray-50 p-5">
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+                            <img
+                                id="member-profile-preview"
+                                src="{{ $user->fotoPerfilUrl() }}"
+                                alt="Foto de perfil de {{ $user->nome }}"
+                                class="h-24 w-24 rounded-3xl border border-gray-200 object-cover bg-white shadow-sm"
+                            >
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700">Foto de perfil</label>
+                                <input
+                                    type="file"
+                                    name="foto_perfil"
+                                    accept="image/*"
+                                    class="{{ $classeInput }}"
+                                    data-image-preview-input
+                                    data-image-preview-target="#member-profile-preview"
+                                    data-default-src="{{ $user->fotoPerfilUrl() }}"
+                                >
+                                <p class="mt-2 text-xs text-gray-500">A foto aparece na sua navegação lateral e ajuda a identificar a conta ativa.</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700">Nome</label>
                         <input type="text" value="{{ $user->nome }}" class="{{ $classeInput }} bg-gray-50" disabled>
@@ -142,5 +166,6 @@
 @endsection
 
 @push('scripts')
+    @include('partials.image-preview-script')
     @include('partials.password-strength-script')
 @endpush

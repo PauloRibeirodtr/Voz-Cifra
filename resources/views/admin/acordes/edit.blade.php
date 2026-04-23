@@ -17,7 +17,7 @@
 @endpush
 
 @section('content')
-<div class="max-w-6xl mx-auto">
+<div class="w-full">
     <div class="bg-white w-full rounded-3xl shadow p-6 flex flex-col md:flex-row gap-8">
         <div class="w-full md:w-1/2">
             <div class="flex justify-between items-center mb-6 border-b pb-4">

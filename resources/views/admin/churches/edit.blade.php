@@ -20,7 +20,13 @@
     </div>
 
     <div class="admin-inline-note mb-6 px-5 py-4 text-sm leading-7">
-        Esta igreja pode continuar ativa mesmo sem admin local vinculado. O papel local so se torna necessario quando uma pessoa vai operar missas, repertorios e a rotina da comunidade.
+        Esta igreja pode continuar ativa mesmo sem admin local vinculado. O papel local so se torna necessario quando alguem vai operar missas, repertorios e a rotina da comunidade.
+    </div>
+
+    <div class="mb-6">
+        <span class="inline-flex rounded-full px-4 py-2 text-sm font-semibold {{ $igreja->estaOperacional() ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700' }}">
+            Status operacional: {{ $igreja->statusOperacionalLabel() }}
+        </span>
     </div>
 
     @if (session('success'))
@@ -35,6 +41,12 @@
         </div>
     @endif
 
+    @if (session('info'))
+        <div class="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 text-sm rounded">
+            {{ session('info') }}
+        </div>
+    @endif
+
     @if ($errors->any())
         <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 text-sm rounded">
             <ul class="list-disc pl-4">
@@ -45,7 +57,7 @@
         </div>
     @endif
 
-    <form action="{{ route('admin.igrejas.update', $igreja) }}" method="POST" class="space-y-6">
+    <form action="{{ route('admin.igrejas.update', $igreja) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
         @csrf
         @method('PUT')
 
@@ -53,6 +65,30 @@
             <h2 class="text-lg font-bold text-gray-800 mb-4">Dados da igreja</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2 rounded-3xl border border-gray-200 bg-gray-50 p-5">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+                        <img
+                            id="church-image-edit-preview"
+                            src="{{ $igreja->imagemUrl() }}"
+                            alt="Imagem da igreja {{ $igreja->nome }}"
+                            class="h-24 w-24 rounded-3xl border border-gray-200 object-cover bg-white shadow-sm"
+                        />
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700">Imagem ou logo da igreja</label>
+                            <input
+                                type="file"
+                                name="imagem"
+                                accept="image/*"
+                                class="{{ $classeInput }}"
+                                data-image-preview-input
+                                data-image-preview-target="#church-image-edit-preview"
+                                data-default-src="{{ $igreja->imagemUrl() }}"
+                            />
+                            <p class="mt-2 text-xs text-gray-500">Troque a imagem quando precisar atualizar a identidade visual usada no painel e nos links publicos.</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700">Nome</label>
                     <input type="text" name="nome" value="{{ old('nome', $igreja->nome) }}" required placeholder="Ex.: Paroquia Sao Jose" class="{{ $classeInput }}" />
@@ -101,35 +137,71 @@
         </div>
 
         <div class="admin-section-card p-6">
-            <h2 class="text-lg font-bold text-gray-800 mb-4">Admin local principal</h2>
-            <p class="mb-4 text-sm text-gray-500">Este bloco pode ficar vazio. A igreja pode continuar ativa mesmo sem admin local definido neste momento.</p>
+            @php($criarAdminLocalAgora = (bool) old('criar_admin_local_agora', (bool) $adminLocal))
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700">Nome</label>
-                    <input type="text" name="admin_nome" value="{{ old('admin_nome', $adminLocal?->nome) }}" placeholder="Nome completo do admin local principal" class="{{ $classeInput }}" />
-                </div>
+            <h2 class="text-lg font-bold text-gray-800 mb-4">Administrador local</h2>
+            <p class="mb-4 text-sm text-gray-500">Use a mesma regra do cadastro: a igreja pode existir sem admin local, mas a operacao local depende desse vinculo ativo.</p>
 
+            <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">CPF</label>
-                    <input type="text" name="admin_cpf" value="{{ old('admin_cpf', $adminLocal?->cpf) }}" placeholder="000.000.000-00" data-cpf-input class="{{ $classeInput }}" />
+                    <input type="hidden" name="criar_admin_local_agora" value="0">
+                    <label class="flex items-start gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-4 text-sm text-gray-700">
+                        <input
+                            type="checkbox"
+                            name="criar_admin_local_agora"
+                            value="1"
+                            {{ $criarAdminLocalAgora ? 'checked' : '' }}
+                            data-admin-local-toggle
+                            class="mt-1 rounded border-gray-300 text-green-700 focus:ring-green-500"
+                        >
+                        <span>
+                            <strong class="block text-gray-900">Cadastrar ou atualizar admin local agora</strong>
+                            Se marcado, o bloco abaixo fica disponivel para revisar o admin local principal. Se desmarcado, nada sera alterado nessa parte.
+                        </span>
+                    </label>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">E-mail</label>
-                    <input type="email" name="admin_email" value="{{ old('admin_email', $adminLocal?->email) }}" placeholder="admin.local@igreja.com" class="{{ $classeInput }}" />
+                <div class="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm text-blue-900">
+                    Se a caixa ficar desmarcada, o bloco abaixo fica oculto e nenhum admin local sera alterado neste formulario. Os admins locais ja vinculados continuam preservados.
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Telefone</label>
-                    <input type="text" name="admin_telefone" value="{{ old('admin_telefone', $adminLocal?->telefone) }}" placeholder="(65) 99999-9999" data-telefone-input class="{{ $classeInput }}" />
-                </div>
+                <div data-admin-local-panel class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700">Nome</label>
+                        <input type="text" name="admin_nome" value="{{ old('admin_nome', $adminLocal?->nome) }}" placeholder="Nome completo do admin local principal" class="{{ $classeInput }}" />
+                    </div>
 
-                <div class="md:col-span-2 bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800">
-                    Os dados do admin local principal sao mantidos aqui. Nas secoes abaixo voce pode adicionar outros admins locais e coordenadores para a mesma igreja, reaproveitando usuarios ja existentes quando os dados coincidirem.
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">CPF</label>
+                        <input type="text" name="admin_cpf" value="{{ old('admin_cpf', $adminLocal?->cpf) }}" placeholder="000.000.000-00" data-cpf-input class="{{ $classeInput }}" />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">E-mail</label>
+                        <input type="email" name="admin_email" value="{{ old('admin_email', $adminLocal?->email) }}" placeholder="admin.local@igreja.com" class="{{ $classeInput }}" />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Telefone</label>
+                        <input type="text" name="admin_telefone" value="{{ old('admin_telefone', $adminLocal?->telefone) }}" placeholder="(65) 99999-9999" data-telefone-input class="{{ $classeInput }}" />
+                    </div>
+
+                    <div class="md:col-span-2 bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800">
+                        Os dados do admin local principal ficam aqui. Nas secoes abaixo voce pode adicionar outros admins locais e coordenadores para a mesma igreja, reaproveitando usuarios ja existentes quando os dados coincidirem.
+                    </div>
                 </div>
             </div>
         </div>
+
+        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <a href="{{ route('admin.igrejas.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 text-gray-700 font-medium hover:bg-gray-50">
+                Cancelar
+            </a>
+            <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-5 py-3 font-semibold text-white hover:bg-green-800">
+                Salvar dados da igreja
+            </button>
+        </div>
+    </form>
 
         @if (($adminsLocais ?? collect())->isNotEmpty())
             <div class="admin-section-card p-6">
@@ -191,10 +263,145 @@
             </div>
         @endif
 
+        <div class="admin-section-card p-6">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div class="max-w-3xl">
+                    <h2 class="text-lg font-bold text-gray-800">Usuarios vinculados a esta igreja</h2>
+                    <p class="mt-2 text-sm text-gray-500">
+                        Esta e a forma mais segura de promover ou revogar `admin local`, `coordenador` e `musico`: escolha apenas usuarios ja vinculados a esta igreja e aplique a acao desejada.
+                    </p>
+                </div>
+                <div class="w-full max-w-md">
+                    <label class="block text-xs font-black uppercase tracking-[0.16em] text-gray-400">Buscar vinculado</label>
+                    <input
+                        type="text"
+                        class="{{ $classeInput }}"
+                        placeholder="Pesquisar por nome, CPF ou e-mail"
+                        data-vinculos-search-input
+                    />
+                </div>
+            </div>
+
+            <div class="mt-6 space-y-4" data-vinculos-search-list>
+                @forelse (($usuariosVinculados ?? collect()) as $vinculo)
+                    @php($usuarioVinculado = $vinculo->usuario)
+                    @php($papeisAtivos = $vinculo->listarPapeisAtivos())
+                    @php($termoBusca = mb_strtolower(trim(($usuarioVinculado->nome ?? '') . ' ' . ($usuarioVinculado->cpf ?? '') . ' ' . ($usuarioVinculado->email ?? ''))))
+
+                    <article
+                        class="rounded-2xl border border-gray-200 bg-gray-50 p-4"
+                        data-vinculo-item
+                        data-vinculo-search="{{ $termoBusca }}"
+                    >
+                        <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                            <div class="min-w-0 flex-1">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <h3 class="text-base font-bold text-gray-900">{{ $usuarioVinculado->nome }}</h3>
+                                    @if ($vinculo->responsavel_principal)
+                                        <span class="admin-badge admin-badge-info">Vinculo principal</span>
+                                    @endif
+                                </div>
+                                <p class="mt-1 text-sm text-gray-600">{{ $usuarioVinculado->email }}</p>
+                                <p class="mt-1 text-xs text-gray-400">{{ $usuarioVinculado->cpf }} @if($usuarioVinculado->telefone) • {{ $usuarioVinculado->telefone }} @endif</p>
+
+                                <div class="mt-3 flex flex-wrap gap-2">
+                                    @forelse ($papeisAtivos as $papelAtivo)
+                                        <span class="admin-badge {{ $papelAtivo->value === 'admin_local' ? 'admin-badge-success' : ($papelAtivo->value === 'coordenador' ? 'admin-badge-warning' : ($papelAtivo->value === 'musico' ? 'admin-badge-info' : 'admin-badge-neutral')) }}">
+                                            {{ $papelAtivo->label() }}
+                                        </span>
+                                    @empty
+                                        <span class="admin-badge admin-badge-neutral">Sem papel operacional ativo</span>
+                                    @endforelse
+                                </div>
+                            </div>
+
+                            <div class="grid gap-3 sm:grid-cols-2 xl:w-[38rem]">
+                                <form action="{{ route('admin.igrejas.usuarios.papeis.store', [$igreja, $usuarioVinculado]) }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="papel" value="admin_local">
+                                    <button
+                                        type="submit"
+                                        class="inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'admin_local') ? 'bg-green-100 text-green-800' : 'bg-green-700 text-white hover:bg-green-800' }}"
+                                        {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'admin_local') ? 'disabled' : '' }}
+                                    >
+                                        {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'admin_local') ? 'Ja e admin local' : 'Tornar admin local' }}
+                                    </button>
+                                </form>
+
+                                <form action="{{ route('admin.igrejas.usuarios.papeis.destroy', [$igreja, $usuarioVinculado]) }}" method="POST" onsubmit="return confirm('Remover o papel de admin local de {{ $usuarioVinculado->nome }}?');">
+                                    @csrf
+                                    <input type="hidden" name="papel" value="admin_local">
+                                    <button
+                                        type="submit"
+                                        class="inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'admin_local') ? 'bg-amber-600 text-white hover:bg-amber-700' : 'bg-gray-100 text-gray-400' }}"
+                                        {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'admin_local') ? '' : 'disabled' }}
+                                    >
+                                        Remover admin local
+                                    </button>
+                                </form>
+
+                                <form action="{{ route('admin.igrejas.usuarios.papeis.store', [$igreja, $usuarioVinculado]) }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="papel" value="coordenador">
+                                    <button
+                                        type="submit"
+                                        class="inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'coordenador') ? 'bg-slate-200 text-slate-700' : 'bg-slate-900 text-white hover:bg-slate-800' }}"
+                                        {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'coordenador') ? 'disabled' : '' }}
+                                    >
+                                        {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'coordenador') ? 'Ja e coordenador' : 'Tornar coordenador' }}
+                                    </button>
+                                </form>
+
+                                <form action="{{ route('admin.igrejas.usuarios.papeis.destroy', [$igreja, $usuarioVinculado]) }}" method="POST" onsubmit="return confirm('Remover o papel de coordenador de {{ $usuarioVinculado->nome }}?');">
+                                    @csrf
+                                    <input type="hidden" name="papel" value="coordenador">
+                                    <button
+                                        type="submit"
+                                        class="inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'coordenador') ? 'bg-orange-600 text-white hover:bg-orange-700' : 'bg-gray-100 text-gray-400' }}"
+                                        {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'coordenador') ? '' : 'disabled' }}
+                                    >
+                                        Remover coordenador
+                                    </button>
+                                </form>
+
+                                <form action="{{ route('admin.igrejas.usuarios.papeis.store', [$igreja, $usuarioVinculado]) }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="papel" value="musico">
+                                    <button
+                                        type="submit"
+                                        class="inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'musico') ? 'bg-indigo-100 text-indigo-800' : 'bg-indigo-700 text-white hover:bg-indigo-800' }}"
+                                        {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'musico') ? 'disabled' : '' }}
+                                    >
+                                        {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'musico') ? 'Ja e musico' : 'Tornar musico' }}
+                                    </button>
+                                </form>
+
+                                <form action="{{ route('admin.igrejas.usuarios.papeis.destroy', [$igreja, $usuarioVinculado]) }}" method="POST" onsubmit="return confirm('Remover o papel de musico de {{ $usuarioVinculado->nome }}?');">
+                                    @csrf
+                                    <input type="hidden" name="papel" value="musico">
+                                    <button
+                                        type="submit"
+                                        class="inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'musico') ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-gray-100 text-gray-400' }}"
+                                        {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'musico') ? '' : 'disabled' }}
+                                    >
+                                        Remover musico
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </article>
+                @empty
+                    <div class="rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-4 py-5 text-sm text-gray-500">
+                        Esta igreja ainda nao possui usuarios vinculados para promover por busca.
+                    </div>
+                @endforelse
+            </div>
+        </div>
+
             <div class="admin-section-card p-6">
                 <h2 class="text-lg font-bold text-gray-800">Adicionar ou promover admin local</h2>
                 <p class="mt-2 text-sm text-gray-500">
-                    Se os dados abaixo corresponderem a uma conta existente, o sistema apenas adiciona o papel de admin local nesta igreja sem criar outro usuario.
+                    Use este formulario apenas quando a pessoa ainda nao estiver vinculada a esta igreja ou quando voce realmente precisar cadastrar manualmente.
                 </p>
 
                 <form action="{{ route('admin.igrejas.admins-locais.store', $igreja) }}" method="POST" class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -237,8 +444,11 @@
                 <div class="max-w-2xl">
                     <h2 class="text-lg font-bold text-gray-800">Coordenadores da igreja</h2>
                     <p class="mt-2 text-sm text-gray-500">
-                        Coordenadores podem acumular papeis com musico ou admin local. Se os dados corresponderem a um usuario existente, a conta sera reaproveitada.
+                        Coordenadores podem acumular papeis com musico ou admin local. Prefira usar a busca acima quando o usuario ja estiver vinculado a esta igreja.
                     </p>
+                    <div class="mt-4 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm text-amber-900">
+                        O comportamento regional por cidade ou CEP ainda nao foi implementado. Hoje o coordenador continua sendo um papel por igreja, mesmo quando a mesma pessoa acumula varias igrejas.
+                    </div>
                 </div>
                 <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
                     {{ ($coordenadores ?? collect())->count() }} coordenadores
@@ -340,18 +550,31 @@
             </div>
         </div>
 
-        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <a href="{{ route('admin.igrejas.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 text-gray-700 font-medium hover:bg-gray-50">
-                Cancelar
-            </a>
-            <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-5 py-3 font-semibold text-white hover:bg-green-800">
-                Atualizar igreja
-            </button>
-        </div>
-    </form>
 @endsection
 
 @push('scripts')
+    @include('partials.image-preview-script')
     <script src="{{ asset('js/admin/church-form.js') }}"></script>
     @include('partials.password-strength-script')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const campoBusca = document.querySelector('[data-vinculos-search-input]');
+            const itens = document.querySelectorAll('[data-vinculo-item]');
+
+            if (!campoBusca || itens.length === 0) {
+                return;
+            }
+
+            campoBusca.addEventListener('input', () => {
+                const termo = campoBusca.value.trim().toLowerCase();
+
+                itens.forEach((item) => {
+                    const base = item.dataset.vinculoSearch || '';
+                    const exibir = termo === '' || base.includes(termo);
+
+                    item.classList.toggle('hidden', !exibir);
+                });
+            });
+        });
+    </script>
 @endpush

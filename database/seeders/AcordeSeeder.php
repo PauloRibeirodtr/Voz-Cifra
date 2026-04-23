@@ -9,328 +9,161 @@ class AcordeSeeder extends Seeder
 {
     public function run(): void
     {
-        
-        //
-        // Formato do `shape` (compatível com o editor visual):
-        // - baseFret: inteiro, casa inicial do desenho (1 = primeira casa)
-        // - variation_name: string opcional para identificar a variação/descrição visual
-        // - root_note: nota raiz (ex: 'C', 'G#') — usado apenas para referência
-        // - topMarkers: array com 6 posições representando as cordas de baixo->alto
-        //     ordem: [string6, string5, string4, string3, string2, string1]
-        //     valores: 'open' | 'muted' | null
-        // - positions: array de objetos { string: 1..6, fret: inteiro, finger: 1..4 (opcional) }
-        //     observe: `string` usa 1 = corda mais fina (mi agudo) até 6 = corda mais grossa (mi baixo)
-        // - barres: array de objetos { fret: inteiro, fromString: 6..1, toString: 6..1 }
-        //     fromString >= toString (ex: pestana completa: fromString=6, toString=1)
-        //
-        // O campo `dados_diagrama` é salvo como JSON (string) e o Controller decodifica automaticamente.
         $acordes = [
-            [
-                'nome' => 'C',
-                'descricao' => 'C (aberto)',
-                'shape' => [
-                    'baseFret' => 1,
-                    'variation_name' => 'open',
-                    'root_note' => 'C',
-                    'topMarkers' => ['muted', null, null, 'open', null, 'open'],
-                    'positions' => [
-                        ['string' => 5, 'fret' => 3, 'finger' => 3],
-                        ['string' => 4, 'fret' => 2, 'finger' => 2],
-                        ['string' => 2, 'fret' => 1, 'finger' => 1],
-                    ],
-                    'barres' => [],
-                ],
-            ],
-            [
-                'nome' => 'Am',
-                'descricao' => 'A menor (aberto)',
-                'shape' => [
-                    'baseFret' => 1,
-                    'variation_name' => 'open',
-                    'root_note' => 'A',
-                    'topMarkers' => ['open', 'open', 'open', null, null, 'open'],
-                    'positions' => [
-                        ['string' => 3, 'fret' => 2, 'finger' => 2],
-                        ['string' => 2, 'fret' => 1, 'finger' => 1],
-                        ['string' => 4, 'fret' => 2, 'finger' => 3],
-                    ],
-                    'barres' => [],
-                ],
-            ],
-            [
-                'nome' => 'G',
-                'descricao' => 'G (aberto)',
-                'shape' => [
-                    'baseFret' => 1,
-                    'variation_name' => 'open',
-                    'root_note' => 'G',
-                    'topMarkers' => [null, null, null, 'open', null, 'open'],
-                    'positions' => [
-                        ['string' => 6, 'fret' => 3, 'finger' => 2],
-                        ['string' => 1, 'fret' => 3, 'finger' => 3],
-                        ['string' => 2, 'fret' => 3, 'finger' => 4],
-                    ],
-                    'barres' => [],
-                ],
-            ],
-            [
-                'nome' => 'D',
-                'descricao' => 'D (aberto)',
-                'shape' => [
-                    'baseFret' => 1,
-                    'variation_name' => 'open',
-                    'root_note' => 'D',
-                    'topMarkers' => ['open', null, null, null, 'open', 'open'],
-                    'positions' => [
-                        ['string' => 3, 'fret' => 2, 'finger' => 1],
-                        ['string' => 1, 'fret' => 2, 'finger' => 2],
-                        ['string' => 2, 'fret' => 3, 'finger' => 3],
-                    ],
-                    'barres' => [],
-                ],
-            ],
-            [
-                'nome' => 'E',
-                'descricao' => 'E (aberto)',
-                'shape' => [
-                    'baseFret' => 1,
-                    'variation_name' => 'open',
-                    'root_note' => 'E',
-                    'topMarkers' => ['open', 'open', 'open', 'open', 'open', 'open'],
-                    'positions' => [
-                        ['string' => 5, 'fret' => 2, 'finger' => 2],
-                        ['string' => 4, 'fret' => 2, 'finger' => 3],
-                        ['string' => 3, 'fret' => 1, 'finger' => 1],
-                    ],
-                    'barres' => [],
-                ],
-            ],
-            [
-                'nome' => 'Em',
-                'descricao' => 'E menor (aberto)',
-                'shape' => [
-                    'baseFret' => 1,
-                    'variation_name' => 'open',
-                    'root_note' => 'E',
-                    'topMarkers' => ['open', 'open', 'open', 'open', 'open', 'open'],
-                    'positions' => [
-                        ['string' => 5, 'fret' => 2, 'finger' => 2],
-                        ['string' => 4, 'fret' => 2, 'finger' => 3],
-                    ],
-                    'barres' => [],
-                ],
-            ],
-            [
-                'nome' => 'A',
-                'descricao' => 'A (aberto)',
-                'shape' => [
-                    'baseFret' => 1,
-                    'variation_name' => 'open',
-                    'root_note' => 'A',
-                    'topMarkers' => ['open', 'open', 'open', 'open', 'open', 'open'],
-                    'positions' => [
-                        ['string' => 4, 'fret' => 2, 'finger' => 1],
-                        ['string' => 3, 'fret' => 2, 'finger' => 2],
-                        ['string' => 2, 'fret' => 2, 'finger' => 3],
-                    ],
-                    'barres' => [],
-                ],
-            ],
-            [
-                'nome' => 'Dm',
-                'descricao' => 'D menor (aberto)',
-                'shape' => [
-                    'baseFret' => 1,
-                    'variation_name' => 'open',
-                    'root_note' => 'D',
-                    'topMarkers' => ['open', null, null, null, 'open', 'open'],
-                    'positions' => [
-                        ['string' => 1, 'fret' => 1, 'finger' => 1],
-                        ['string' => 3, 'fret' => 2, 'finger' => 2],
-                        ['string' => 2, 'fret' => 3, 'finger' => 3],
-                    ],
-                    'barres' => [],
-                ],
-            ],
-            [
-                'nome' => 'G7',
-                'descricao' => 'G7 (variação)',
-                'shape' => [
-                    'baseFret' => 1,
-                    'variation_name' => 'open',
-                    'root_note' => 'G',
-                    'topMarkers' => [null, null, null, 'open', null, 'open'],
-                    'positions' => [
-                        ['string' => 1, 'fret' => 1, 'finger' => 1],
-                        ['string' => 6, 'fret' => 3, 'finger' => 2],
-                    ],
-                    'barres' => [],
-                ],
-            ],
-            [
-                'nome' => 'C7',
-                'descricao' => 'C7 (aberto)',
-                'shape' => [
-                    'baseFret' => 1,
-                    'variation_name' => 'open',
-                    'root_note' => 'C',
-                    'topMarkers' => ['muted', null, null, 'open', null, 'open'],
-                    'positions' => [
-                        ['string' => 2, 'fret' => 1, 'finger' => 1],
-                        ['string' => 5, 'fret' => 3, 'finger' => 3],
-                    ],
-                    'barres' => [],
-                ],
-            ],
-            [
-                'nome' => 'A7',
-                'descricao' => 'A7 (aberto)',
-                'shape' => [
-                    'baseFret' => 1,
-                    'variation_name' => 'open',
-                    'root_note' => 'A',
-                    'topMarkers' => ['open', 'open', 'open', 'open', 'open', 'open'],
-                    'positions' => [
-                        ['string' => 2, 'fret' => 2, 'finger' => 2],
-                        ['string' => 4, 'fret' => 2, 'finger' => 1],
-                    ],
-                    'barres' => [],
-                ],
-            ],
-            [
-                'nome' => 'E7',
-                'descricao' => 'E7 (aberto)',
-                'shape' => [
-                    'baseFret' => 1,
-                    'variation_name' => 'open',
-                    'root_note' => 'E',
-                    'topMarkers' => ['open', 'open', 'open', 'open', 'open', 'open'],
-                    'positions' => [
-                        ['string' => 3, 'fret' => 1, 'finger' => 1],
-                        ['string' => 5, 'fret' => 2, 'finger' => 2],
-                    ],
-                    'barres' => [],
-                ],
-            ],
-            [
-                'nome' => 'Bm',
-                'descricao' => 'B menor (pestana em 2)',
-                'shape' => [
-                    'baseFret' => 1,
-                    'variation_name' => 'barre',
-                    'root_note' => 'B',
-                    'topMarkers' => [null, null, null, null, null, null],
-                    'positions' => [
-                        ['string' => 2, 'fret' => 3, 'finger' => 3],
-                        ['string' => 3, 'fret' => 4, 'finger' => 4],
-                    ],
-                    'barres' => [
-                        ['fret' => 2, 'fromString' => 5, 'toString' => 1],
-                    ],
-                ],
-            ],
-            [
-                'nome' => 'F',
-                'descricao' => 'F (pestana completa 1)',
-                'shape' => [
-                    'baseFret' => 1,
-                    'variation_name' => 'barre',
-                    'root_note' => 'F',
-                    'topMarkers' => [null, null, null, null, null, null],
-                    'positions' => [
-                        ['string' => 2, 'fret' => 1, 'finger' => 1],
-                        ['string' => 3, 'fret' => 2, 'finger' => 2],
-                        ['string' => 4, 'fret' => 3, 'finger' => 4],
-                    ],
-                    'barres' => [
-                        ['fret' => 1, 'fromString' => 6, 'toString' => 1],
-                    ],
-                ],
-            ],
-            [
-                'nome' => 'Fm',
-                'descricao' => 'F menor (pestana)',
-                'shape' => [
-                    'baseFret' => 1,
-                    'variation_name' => 'barre',
-                    'root_note' => 'F',
-                    'topMarkers' => [null, null, null, null, null, null],
-                    'positions' => [
-                        ['string' => 3, 'fret' => 1, 'finger' => 1],
-                        ['string' => 4, 'fret' => 3, 'finger' => 3],
-                    ],
-                    'barres' => [
-                        ['fret' => 1, 'fromString' => 6, 'toString' => 1],
-                    ],
-                ],
-            ],
-            [
-                'nome' => 'Cmaj7',
-                'descricao' => 'Cmaj7 (aberto)',
-                'shape' => [
-                    'baseFret' => 1,
-                    'variation_name' => 'open',
-                    'root_note' => 'C',
-                    'topMarkers' => ['muted', null, null, 'open', null, 'open'],
-                    'positions' => [
-                        ['string' => 2, 'fret' => 1, 'finger' => 1],
-                        ['string' => 4, 'fret' => 2, 'finger' => 2],
-                    ],
-                    'barres' => [],
-                ],
-            ],
-            [
-                'nome' => 'Bb',
-                'descricao' => 'Bb (pestana 1, variação)',
-                'shape' => [
-                    'baseFret' => 1,
-                    'variation_name' => 'barre',
-                    'root_note' => 'Bb',
-                    'topMarkers' => [null, null, null, null, null, null],
-                    'positions' => [
-                        ['string' => 3, 'fret' => 3, 'finger' => 3],
-                    ],
-                    'barres' => [
-                        ['fret' => 1, 'fromString' => 5, 'toString' => 1],
-                    ],
-                ],
-            ],
-            // 20 acordes adicionais
-            [ 'nome' => 'C#', 'descricao' => 'C# (variação)', 'shape' => ['baseFret'=>1,'variation_name'=>'open','root_note'=>'C#','topMarkers'=>['muted',null,null,'open',null,'open'],'positions'=>[['string'=>5,'fret'=>4,'finger'=>3],['string'=>4,'fret'=>6,'finger'=>4]],'barres'=>[]] ],
-            [ 'nome' => 'C#m', 'descricao' => 'C# menor', 'shape' => ['baseFret'=>1,'variation_name'=>'barre','root_note'=>'C#','topMarkers'=>[null,null,null,null,null,null],'positions'=>[['string'=>4,'fret'=>6,'finger'=>2],['string'=>3,'fret'=>6,'finger'=>3]],'barres'=>[['fret'=>4,'fromString'=>6,'toString'=>1]]] ],
-            [ 'nome' => 'F#', 'descricao' => 'F# (variação)', 'shape' => ['baseFret'=>1,'variation_name'=>'open','root_note'=>'F#','topMarkers'=>[null,'open',null,null,'open',null],'positions'=>[['string'=>6,'fret'=>2,'finger'=>1]],'barres'=>[]] ],
-            [ 'nome' => 'F#m', 'descricao' => 'F# menor', 'shape' => ['baseFret'=>1,'variation_name'=>'barre','root_note'=>'F#','topMarkers'=>[null,null,null,null,null,null],'positions'=>[['string'=>5,'fret'=>4,'finger'=>2]],'barres'=>[['fret'=>2,'fromString'=>6,'toString'=>1]]] ],
-            [ 'nome' => 'G#', 'descricao' => 'G# (variação)', 'shape' => ['baseFret'=>1,'variation_name'=>'open','root_note'=>'G#','topMarkers'=>[null,null,null,'open',null,'open'],'positions'=>[['string'=>5,'fret'=>6,'finger'=>3]],'barres'=>[]] ],
-            [ 'nome' => 'G#m', 'descricao' => 'G# menor', 'shape' => ['baseFret'=>1,'variation_name'=>'barre','root_note'=>'G#','topMarkers'=>[null,null,null,null,null,null],'positions'=>[['string'=>4,'fret'=>6,'finger'=>2]],'barres'=>[['fret'=>4,'fromString'=>6,'toString'=>1]]] ],
-            [ 'nome' => 'D#', 'descricao' => 'D# (variação)', 'shape' => ['baseFret'=>1,'variation_name'=>'open','root_note'=>'D#','topMarkers'=>['open',null,null,'open',null,'open'],'positions'=>[['string'=>4,'fret'=>1,'finger'=>1]],'barres'=>[]] ],
-            [ 'nome' => 'D#m', 'descricao' => 'D# menor', 'shape' => ['baseFret'=>1,'variation_name'=>'barre','root_note'=>'D#','topMarkers'=>[null,null,null,null,null,null],'positions'=>[['string'=>3,'fret'=>6,'finger'=>3]],'barres'=>[['fret'=>6,'fromString'=>5,'toString'=>1]]] ],
-            [ 'nome' => 'Bbmaj7', 'descricao' => 'Bb maj7', 'shape' => ['baseFret'=>1,'variation_name'=>'open','root_note'=>'Bb','topMarkers'=>[null,null,null,null,'open','open'],'positions'=>[['string'=>2,'fret'=>3,'finger'=>1]],'barres'=>[]] ],
-            [ 'nome' => 'Amaj7', 'descricao' => 'A maj7', 'shape' => ['baseFret'=>1,'variation_name'=>'open','root_note'=>'A','topMarkers'=>['open','open','open','open','open','open'],'positions'=>[['string'=>2,'fret'=>1,'finger'=>1]],'barres'=>[]] ],
-            [ 'nome' => 'Asus2', 'descricao' => 'A sus2', 'shape' => ['baseFret'=>1,'variation_name'=>'open','root_note'=>'A','topMarkers'=>['open','open','open','open','open','open'],'positions'=>[['string'=>2,'fret'=>2,'finger'=>2]],'barres'=>[]] ],
-            [ 'nome' => 'Csus2', 'descricao' => 'C sus2', 'shape' => ['baseFret'=>1,'variation_name'=>'open','root_note'=>'C','topMarkers'=>['muted',null,null,'open',null,'open'],'positions'=>[['string'=>2,'fret'=>1,'finger'=>1]],'barres'=>[]] ],
-            [ 'nome' => 'Csus4', 'descricao' => 'C sus4', 'shape' => ['baseFret'=>1,'variation_name'=>'open','root_note'=>'C','topMarkers'=>['muted',null,null,'open',null,'open'],'positions'=>[['string'=>3,'fret'=>5,'finger'=>3]],'barres'=>[]] ],
-            [ 'nome' => 'Dsus2', 'descricao' => 'D sus2', 'shape' => ['baseFret'=>1,'variation_name'=>'open','root_note'=>'D','topMarkers'=>['open',null,null,null,'open','open'],'positions'=>[['string'=>3,'fret'=>2,'finger'=>1]],'barres'=>[]] ],
-            [ 'nome' => 'Esus4', 'descricao' => 'E sus4', 'shape' => ['baseFret'=>1,'variation_name'=>'open','root_note'=>'E','topMarkers'=>['open','open','open','open','open','open'],'positions'=>[['string'=>3,'fret'=>2,'finger'=>2]],'barres'=>[]] ],
-            [ 'nome' => 'Am7', 'descricao' => 'A menor 7', 'shape' => ['baseFret'=>1,'variation_name'=>'open','root_note'=>'A','topMarkers'=>['open','open','open',null,'open','open'],'positions'=>[['string'=>2,'fret'=>1,'finger'=>1],['string'=>4,'fret'=>2,'finger'=>2]],'barres'=>[]] ],
-            [ 'nome' => 'Em7', 'descricao' => 'E menor 7', 'shape' => ['baseFret'=>1,'variation_name'=>'open','root_note'=>'E','topMarkers'=>['open','open','open','open','open','open'],'positions'=>[['string'=>5,'fret'=>2,'finger'=>2],['string'=>4,'fret'=>2,'finger'=>3]],'barres'=>[]] ],
-            [ 'nome' => 'B7', 'descricao' => 'B7 (variação)', 'shape' => ['baseFret'=>1,'variation_name'=>'open','root_note'=>'B','topMarkers'=>[null,null,null,null,'open','open'],'positions'=>[['string'=>3,'fret'=>2,'finger'=>1],['string'=>5,'fret'=>2,'finger'=>2]],'barres'=>[]] ],
-            [ 'nome' => 'D7sus4', 'descricao' => 'D7 sus4', 'shape' => ['baseFret'=>1,'variation_name'=>'open','root_note'=>'D','topMarkers'=>['open',null,null,null,'open','open'],'positions'=>[['string'=>3,'fret'=>2,'finger'=>1],['string'=>2,'fret'=>3,'finger'=>2]],'barres'=>[]] ],
-            [ 'nome' => 'Gsus4', 'descricao' => 'G sus4', 'shape' => ['baseFret'=>1,'variation_name'=>'open','root_note'=>'G','topMarkers'=>[null,null,null,'open',null,'open'],'positions'=>[['string'=>3,'fret'=>5,'finger'=>1]],'barres'=>[]] ],
+            $this->acorde('A', 'A maior aberto', 1, 'A', ['muted', 'open', null, null, null, 'open'], [
+                ['string' => 4, 'fret' => 2, 'finger' => 1],
+                ['string' => 3, 'fret' => 2, 'finger' => 2],
+                ['string' => 2, 'fret' => 2, 'finger' => 3],
+            ]),
+            $this->acorde('Am', 'A menor aberto', 1, 'A', ['muted', 'open', null, null, null, 'open'], [
+                ['string' => 4, 'fret' => 2, 'finger' => 2],
+                ['string' => 3, 'fret' => 2, 'finger' => 3],
+                ['string' => 2, 'fret' => 1, 'finger' => 1],
+            ]),
+            $this->acorde('A7', 'A7 aberto', 1, 'A', ['muted', 'open', null, 'open', null, 'open'], [
+                ['string' => 4, 'fret' => 2, 'finger' => 2],
+                ['string' => 2, 'fret' => 2, 'finger' => 3],
+            ]),
+            $this->acorde('Asus2', 'A sus2 aberto', 1, 'A', ['muted', 'open', null, null, 'open', 'open'], [
+                ['string' => 4, 'fret' => 2, 'finger' => 2],
+                ['string' => 3, 'fret' => 2, 'finger' => 3],
+            ]),
+            $this->acorde('B7', 'B7 aberto', 1, 'B', ['muted', null, null, null, 'open', 'open'], [
+                ['string' => 5, 'fret' => 2, 'finger' => 2],
+                ['string' => 4, 'fret' => 1, 'finger' => 1],
+                ['string' => 3, 'fret' => 2, 'finger' => 3],
+                ['string' => 1, 'fret' => 2, 'finger' => 4],
+            ]),
+            $this->acorde('Bm', 'B menor com pestana na segunda casa', 2, 'B', ['muted', null, null, null, null, null], [
+                ['string' => 4, 'fret' => 4, 'finger' => 3],
+                ['string' => 3, 'fret' => 4, 'finger' => 4],
+                ['string' => 2, 'fret' => 3, 'finger' => 2],
+            ], [
+                ['fret' => 2, 'fromString' => 5, 'toString' => 1],
+            ]),
+            $this->acorde('C', 'C maior aberto', 1, 'C', ['muted', null, null, 'open', null, 'open'], [
+                ['string' => 5, 'fret' => 3, 'finger' => 3],
+                ['string' => 4, 'fret' => 2, 'finger' => 2],
+                ['string' => 2, 'fret' => 1, 'finger' => 1],
+            ]),
+            $this->acorde('Cmaj7', 'C maior com setima maior', 1, 'C', ['muted', null, null, 'open', 'open', 'open'], [
+                ['string' => 5, 'fret' => 3, 'finger' => 3],
+                ['string' => 4, 'fret' => 2, 'finger' => 2],
+            ]),
+            $this->acorde('D', 'D maior aberto', 1, 'D', ['muted', 'muted', 'open', null, null, null], [
+                ['string' => 3, 'fret' => 2, 'finger' => 1],
+                ['string' => 1, 'fret' => 2, 'finger' => 2],
+                ['string' => 2, 'fret' => 3, 'finger' => 3],
+            ]),
+            $this->acorde('D7', 'D7 aberto', 1, 'D', ['muted', 'muted', 'open', null, null, null], [
+                ['string' => 2, 'fret' => 1, 'finger' => 1],
+                ['string' => 3, 'fret' => 2, 'finger' => 2],
+                ['string' => 1, 'fret' => 2, 'finger' => 3],
+            ]),
+            $this->acorde('Dm', 'D menor aberto', 1, 'D', ['muted', 'muted', 'open', null, null, null], [
+                ['string' => 1, 'fret' => 1, 'finger' => 1],
+                ['string' => 3, 'fret' => 2, 'finger' => 2],
+                ['string' => 2, 'fret' => 3, 'finger' => 3],
+            ]),
+            $this->acorde('D/F#', 'D com baixo em F#', 1, 'D', [null, 'muted', 'open', null, null, null], [
+                ['string' => 6, 'fret' => 2, 'finger' => 1],
+                ['string' => 3, 'fret' => 2, 'finger' => 2],
+                ['string' => 2, 'fret' => 3, 'finger' => 3],
+                ['string' => 1, 'fret' => 2, 'finger' => 4],
+            ]),
+            $this->acorde('Dsus2', 'D sus2 aberto', 1, 'D', ['muted', 'muted', 'open', null, 'open', null], [
+                ['string' => 1, 'fret' => 2, 'finger' => 1],
+                ['string' => 2, 'fret' => 3, 'finger' => 3],
+            ]),
+            $this->acorde('D7sus4', 'D7 sus4 aberto', 1, 'D', ['muted', 'muted', 'open', null, null, null], [
+                ['string' => 3, 'fret' => 2, 'finger' => 1],
+                ['string' => 2, 'fret' => 3, 'finger' => 2],
+                ['string' => 1, 'fret' => 3, 'finger' => 3],
+            ]),
+            $this->acorde('E', 'E maior aberto', 1, 'E', ['open', 'open', null, null, null, 'open'], [
+                ['string' => 5, 'fret' => 2, 'finger' => 2],
+                ['string' => 4, 'fret' => 2, 'finger' => 3],
+                ['string' => 3, 'fret' => 1, 'finger' => 1],
+            ]),
+            $this->acorde('Em', 'E menor aberto', 1, 'E', ['open', 'open', null, null, 'open', 'open'], [
+                ['string' => 5, 'fret' => 2, 'finger' => 2],
+                ['string' => 4, 'fret' => 2, 'finger' => 3],
+            ]),
+            $this->acorde('E7', 'E7 aberto', 1, 'E', ['open', 'open', null, 'open', 'open', 'open'], [
+                ['string' => 5, 'fret' => 2, 'finger' => 2],
+                ['string' => 3, 'fret' => 1, 'finger' => 1],
+            ]),
+            $this->acorde('Esus4', 'E sus4 aberto', 1, 'E', ['open', 'open', null, null, 'open', 'open'], [
+                ['string' => 5, 'fret' => 2, 'finger' => 2],
+                ['string' => 4, 'fret' => 2, 'finger' => 3],
+                ['string' => 3, 'fret' => 2, 'finger' => 4],
+            ]),
+            $this->acorde('F', 'F maior com pestana na primeira casa', 1, 'F', [null, null, null, null, null, null], [
+                ['string' => 5, 'fret' => 3, 'finger' => 4],
+                ['string' => 4, 'fret' => 3, 'finger' => 3],
+                ['string' => 3, 'fret' => 2, 'finger' => 2],
+            ], [
+                ['fret' => 1, 'fromString' => 6, 'toString' => 1],
+            ]),
+            $this->acorde('F#m', 'F# menor com pestana na segunda casa', 2, 'F#', [null, null, null, null, null, null], [
+                ['string' => 5, 'fret' => 4, 'finger' => 3],
+                ['string' => 4, 'fret' => 4, 'finger' => 4],
+            ], [
+                ['fret' => 2, 'fromString' => 6, 'toString' => 1],
+            ]),
+            $this->acorde('G', 'G maior aberto', 1, 'G', [null, null, 'open', 'open', null, null], [
+                ['string' => 6, 'fret' => 3, 'finger' => 2],
+                ['string' => 2, 'fret' => 3, 'finger' => 3],
+                ['string' => 1, 'fret' => 3, 'finger' => 4],
+            ]),
+            $this->acorde('G/B', 'G com baixo em B', 1, 'G', ['muted', null, 'open', 'open', null, null], [
+                ['string' => 5, 'fret' => 2, 'finger' => 1],
+                ['string' => 2, 'fret' => 3, 'finger' => 3],
+                ['string' => 1, 'fret' => 3, 'finger' => 4],
+            ]),
+            $this->acorde('G7', 'G7 aberto', 1, 'G', [null, null, 'open', 'open', 'open', null], [
+                ['string' => 6, 'fret' => 3, 'finger' => 2],
+                ['string' => 1, 'fret' => 1, 'finger' => 1],
+            ]),
+            $this->acorde('Gsus4', 'G sus4 aberto', 1, 'G', [null, null, 'open', 'open', null, null], [
+                ['string' => 6, 'fret' => 3, 'finger' => 2],
+                ['string' => 2, 'fret' => 1, 'finger' => 1],
+                ['string' => 1, 'fret' => 3, 'finger' => 4],
+            ]),
         ];
 
         foreach ($acordes as $item) {
-            $nome = trim((string) $item['nome']);
-            $descricao = trim((string) ($item['descricao'] ?? 'Acorde gerado pelo seeder'));
-            $shape = $item['shape'] ?? null;
-
             Acorde::updateOrCreate(
-                ['nome' => $nome, 'descricao' => $descricao],
+                ['nome' => $item['nome']],
                 [
-                    'descricao' => $descricao,
-                    'dados_diagrama' => $shape,
+                    'descricao' => $item['descricao'],
+                    'dados_diagrama' => $item['dados_diagrama'],
                     'ativo' => true,
                 ]
             );
         }
+    }
+
+    private function acorde(
+        string $nome,
+        string $descricao,
+        int $baseFret,
+        string $rootNote,
+        array $topMarkers,
+        array $positions,
+        array $barres = []
+    ): array {
+        return [
+            'nome' => $nome,
+            'descricao' => $descricao,
+            'dados_diagrama' => [
+                'baseFret' => $baseFret,
+                'variation_name' => $baseFret > 1 || $barres !== [] ? 'barre' : 'open',
+                'root_note' => $rootNote,
+                'topMarkers' => $topMarkers,
+                'positions' => $positions,
+                'barres' => $barres,
+            ],
+        ];
     }
 }

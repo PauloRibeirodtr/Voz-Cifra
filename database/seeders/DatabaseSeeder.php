@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             TempoLiturgicoSeeder::class,
             MomentoLiturgicoSeeder::class,
             AcordeSeeder::class,
+            MusicaExemploSeeder::class,
         ]);
     }
 }

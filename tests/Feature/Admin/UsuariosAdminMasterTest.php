@@ -7,7 +7,9 @@ use App\Mail\ConviteAcessoInicialMail;
 use App\Models\Igreja;
 use App\Models\HistoricoEnvioEmail;
 use App\Models\Usuario;
+use Database\Seeders\AdminMasterSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
@@ -138,5 +140,162 @@ class UsuariosAdminMasterTest extends TestCase
         $adminMaster->refresh();
 
         $this->assertFalse($adminMaster->primeiro_acesso);
+    }
+
+    public function test_admin_master_nao_pode_resetar_senha_de_outro_admin_master(): void
+    {
+        $ator = Usuario::factory()->adminMaster()->create([
+            'primeiro_acesso' => false,
+        ]);
+        $alvo = Usuario::factory()->adminMaster()->create([
+            'primeiro_acesso' => false,
+            'email' => 'outro.master@example.com',
+        ]);
+
+        $this
+            ->actingAs($ator)
+            ->post(route('admin.usuarios.password.reset', $alvo))
+            ->assertForbidden();
+    }
+
+    public function test_admin_master_nao_pode_inativar_outro_admin_master(): void
+    {
+        $ator = Usuario::factory()->adminMaster()->create([
+            'primeiro_acesso' => false,
+        ]);
+        $alvo = Usuario::factory()->adminMaster()->create([
+            'primeiro_acesso' => false,
+            'email' => 'master.status@example.com',
+        ]);
+
+        $this
+            ->actingAs($ator)
+            ->post(route('admin.usuarios.toggle', $alvo))
+            ->assertForbidden();
+    }
+
+    public function test_igreja_sem_admin_local_fica_aguardando_admin_local(): void
+    {
+        $adminMaster = Usuario::factory()->adminMaster()->create([
+            'primeiro_acesso' => false,
+        ]);
+
+        $this
+            ->actingAs($adminMaster)
+            ->post(route('admin.igrejas.store'), [
+                'nome' => 'Paroquia Sao Miguel',
+                'cnpj' => '12.345.678/0001-90',
+                'cidade' => 'Corumba',
+                'estado' => 'MS',
+                'ativo' => '1',
+                'criar_admin_local_agora' => 'nao',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $igreja = Igreja::query()->where('nome', 'Paroquia Sao Miguel')->first();
+
+        $this->assertNotNull($igreja);
+        $this->assertSame('aguardando_admin_local', $igreja->status_operacional);
+    }
+
+    public function test_igreja_com_admin_local_ja_nasce_operacional(): void
+    {
+        Mail::fake();
+
+        $adminMaster = Usuario::factory()->adminMaster()->create([
+            'primeiro_acesso' => false,
+        ]);
+
+        $this
+            ->actingAs($adminMaster)
+            ->post(route('admin.igrejas.store'), [
+                'nome' => 'Paroquia Nossa Senhora',
+                'cnpj' => '98.765.432/0001-10',
+                'cidade' => 'Ladario',
+                'estado' => 'MS',
+                'ativo' => '1',
+                'criar_admin_local_agora' => 'sim',
+                'admin_nome' => 'Maria Coordenadora',
+                'admin_cpf' => '456.789.123-00',
+                'admin_email' => 'maria.admin@example.com',
+                'admin_telefone' => '(67) 99999-2222',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $igreja = Igreja::query()->where('nome', 'Paroquia Nossa Senhora')->first();
+        $adminLocal = Usuario::query()->where('email', 'maria.admin@example.com')->first();
+
+        $this->assertNotNull($igreja);
+        $this->assertNotNull($adminLocal);
+        $this->assertSame('operacional', $igreja->fresh()->status_operacional);
+        $this->assertTrue($adminLocal->temPapelNaIgreja(PapelIgreja::ADMIN_LOCAL, $igreja->id));
+    }
+
+    public function test_atualizacao_da_igreja_sem_admin_local_agora_permanece_valida(): void
+    {
+        $adminMaster = Usuario::factory()->adminMaster()->create([
+            'primeiro_acesso' => false,
+        ]);
+        $igreja = Igreja::factory()->create([
+            'status_operacional' => 'aguardando_admin_local',
+        ]);
+
+        $this
+            ->actingAs($adminMaster)
+            ->put(route('admin.igrejas.update', $igreja), [
+                'nome' => 'Paroquia Atualizada',
+                'cnpj' => $igreja->cnpj,
+                'cep' => $igreja->cep,
+                'endereco' => $igreja->endereco,
+                'cidade' => $igreja->cidade,
+                'estado' => $igreja->estado,
+                'ativo' => '1',
+                'criar_admin_local_agora' => 'nao',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $igreja->refresh();
+
+        $this->assertSame('Paroquia Atualizada', $igreja->nome);
+        $this->assertSame('aguardando_admin_local', $igreja->status_operacional);
+    }
+
+    public function test_admin_master_pode_se_autovincular_a_papeis_operacionais_no_proprio_perfil(): void
+    {
+        $adminMaster = Usuario::factory()->adminMaster()->create([
+            'primeiro_acesso' => false,
+        ]);
+        $igreja = Igreja::factory()->create();
+
+        $this
+            ->actingAs($adminMaster)
+            ->post(route('admin.profile.vinculos.store'), [
+                'igreja_id' => $igreja->id,
+                'papeis' => [
+                    PapelIgreja::ADMIN_LOCAL->value,
+                    PapelIgreja::COORDENADOR->value,
+                ],
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('admin.profile'));
+
+        $adminMaster->refresh();
+
+        $this->assertTrue($adminMaster->ehAdminMaster());
+        $this->assertTrue($adminMaster->temPapelNaIgreja(PapelIgreja::ADMIN_LOCAL, $igreja->id));
+        $this->assertTrue($adminMaster->temPapelNaIgreja(PapelIgreja::COORDENADOR, $igreja->id));
+    }
+
+    public function test_admin_master_seeder_usa_senha_padrao_e_primeiro_acesso_ativo(): void
+    {
+        $this->seed(AdminMasterSeeder::class);
+
+        $adminMaster = Usuario::query()
+            ->where('perfil_global', 'admin_master')
+            ->first();
+
+        $this->assertNotNull($adminMaster);
+        $this->assertTrue((bool) $adminMaster->primeiro_acesso);
+        $this->assertTrue(Hash::check('admin123456', (string) $adminMaster->password));
     }
 }

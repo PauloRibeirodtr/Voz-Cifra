@@ -4,134 +4,150 @@
 @section('mobile_title', 'Novo usuario')
 
 @section('content')
-    <div class="admin-page-intro flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-            <p class="admin-page-kicker">Cadastro central</p>
-            <h1 class="admin-page-title mt-2 text-2xl font-black sm:text-3xl">Novo usuario</h1>
-            <p class="admin-page-copy mt-3 max-w-3xl text-sm sm:text-base">
-                Cadastre uma conta central e, se quiser, ja aplique o primeiro papel por igreja. Se a igreja ficar em branco,
-                a conta sera criada e podera ser vinculada depois.
-            </p>
-        </div>
-
-        <a href="{{ route('admin.usuarios.index') }}" class="inline-flex items-center rounded-xl border border-gray-300 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
-            Voltar
-        </a>
-    </div>
-
-    @if ($errors->any())
-        <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800">
-            <ul class="list-disc pl-5 space-y-1">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-    <div class="grid grid-cols-1 gap-6 2xl:grid-cols-[minmax(0,1.75fr)_minmax(20rem,0.95fr)]">
-        <div class="admin-section-card p-5 sm:p-6 lg:p-7">
-            <form action="{{ route('admin.usuarios.store') }}" method="POST" class="space-y-5">
-                @csrf
-
-                <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
-                    <div>
-                        <label class="mb-1 block text-xs font-bold uppercase tracking-wider text-gray-400">Tipo inicial</label>
-                        <select name="tipo_cadastro" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-800">
-                            <option value="admin_master" @selected(old('tipo_cadastro') === 'admin_master')>Admin master</option>
-                            <option value="coordenador" @selected(old('tipo_cadastro') === 'coordenador')>Coordenador</option>
-                            <option value="admin_local" @selected(old('tipo_cadastro') === 'admin_local')>Admin local</option>
-                            <option value="musico" @selected(old('tipo_cadastro', 'musico') === 'musico')>Musico</option>
-                            <option value="padre" @selected(old('tipo_cadastro') === 'padre')>Padre</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="mb-1 block text-xs font-bold uppercase tracking-wider text-gray-400">Igreja inicial</label>
-                        <select name="igreja_id" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-800">
-                            <option value="">Criar sem vinculo inicial</option>
-                            @foreach ($igrejas as $igreja)
-                                <option value="{{ $igreja->id }}" @selected((string) old('igreja_id') === (string) $igreja->id)>{{ $igreja->nome }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
-                    <div>
-                        <label class="mb-1 block text-xs font-bold uppercase tracking-wider text-gray-400">Nome</label>
-                        <input type="text" name="nome" value="{{ old('nome') }}" required class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-800">
-                    </div>
-
-                    <div>
-                        <label class="mb-1 block text-xs font-bold uppercase tracking-wider text-gray-400">CPF</label>
-                        <input type="text" name="cpf" value="{{ old('cpf') }}" required data-cpf-input class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-800" placeholder="000.000.000-00">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
-                    <div>
-                        <label class="mb-1 block text-xs font-bold uppercase tracking-wider text-gray-400">E-mail</label>
-                        <input type="email" name="email" value="{{ old('email') }}" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-800" placeholder="Padre sem login pode ficar em branco">
-                    </div>
-
-                    <div>
-                        <label class="mb-1 block text-xs font-bold uppercase tracking-wider text-gray-400">Telefone</label>
-                        <input type="text" name="telefone" value="{{ old('telefone') }}" data-telefone-input class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-800">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
-                    <div data-password-strength-container>
-                        <label class="mb-1 block text-xs font-bold uppercase tracking-wider text-gray-400">Senha inicial</label>
-                        <input type="password" name="password" data-password-strength-input class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-800" placeholder="Se ficar em branco, usa CPF">
-                        @include('partials.password-strength-meter')
-                    </div>
-
-                    <div>
-                        <label class="mb-1 block text-xs font-bold uppercase tracking-wider text-gray-400">Confirmar senha</label>
-                        <input type="password" name="password_confirmation" data-password-confirmation-input class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-800">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="mb-1 block text-xs font-bold uppercase tracking-wider text-gray-400">Nivel global</label>
-                    <select name="nivel_global" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-800">
-                        @foreach ($niveisGlobais as $nivel)
-                            <option value="{{ $nivel }}" @selected((string) old('nivel_global', '6') === (string) $nivel)>
-                                Nivel {{ $nivel }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <p class="mt-2 text-xs text-gray-500">So vale para admin master. Os demais usuarios ficam no modelo novo de papéis por igreja.</p>
-                </div>
-
-                <label class="inline-flex items-center gap-3 text-sm font-medium text-gray-700">
-                    <input type="hidden" name="ativo" value="0">
-                    <input type="checkbox" name="ativo" value="1" {{ old('ativo', '1') ? 'checked' : '' }} class="rounded border-gray-300 text-green-700">
-                    <span>Conta ativa</span>
-                </label>
-
-                <div class="flex flex-wrap gap-3 pt-2">
-                    <button type="submit" class="inline-flex items-center rounded-xl bg-green-700 px-5 py-3 text-sm font-semibold text-white hover:bg-green-800">
-                        Salvar usuario
-                    </button>
-                    <a href="{{ route('admin.usuarios.index') }}" class="inline-flex items-center rounded-xl border border-gray-300 px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
-                        Cancelar
-                    </a>
-                </div>
-            </form>
-        </div>
-
-        <aside class="admin-highlight-surface rounded-3xl p-5 shadow-sm sm:p-6 2xl:sticky 2xl:top-6">
-            <h2 class="text-lg font-bold text-gray-800">Como este cadastro funciona</h2>
-            <div class="mt-4 space-y-3 text-sm text-gray-600">
-                <p><strong>Admin master:</strong> ja nasce com acesso global.</p>
-                <p><strong>Coordenador, admin local e musico:</strong> se houver igreja escolhida, o papel ja e aplicado. Sem igreja, a conta fica criada aguardando vinculo.</p>
-                <p><strong>Padre:</strong> pode existir sem login. Se o e-mail ficar vazio, o sistema cria um e-mail tecnico interno e reaproveita essa mesma conta depois.</p>
-                <p><strong>Sem duplicacao:</strong> CPF e e-mail sao reaproveitados para promover a mesma pessoa.</p>
+    <div class="admin-page-shell">
+        <section class="admin-page-header">
+            <div class="admin-page-intro">
+                <p class="admin-page-kicker">Cadastro central</p>
+                <h1 class="admin-page-title mt-2 text-2xl font-black sm:text-3xl">Novo usuario</h1>
+                <p class="admin-page-copy mt-3 max-w-3xl text-sm sm:text-base">
+                    Cadastre a conta base primeiro e, se fizer sentido, aplique o primeiro papel por igreja no mesmo fluxo.
+                    Se a igreja ficar em branco, a pessoa entra na base e pode ser vinculada depois.
+                </p>
             </div>
-        </aside>
+
+            <div class="admin-page-actions">
+                <a href="{{ route('admin.usuarios.index') }}" class="admin-btn admin-btn-secondary">Voltar</a>
+            </div>
+        </section>
+
+        @if ($errors->any())
+            <section class="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800">
+                <ul class="list-disc space-y-1 pl-5">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </section>
+        @endif
+
+        <div class="grid grid-cols-1 gap-6 2xl:grid-cols-[minmax(0,1.7fr)_minmax(21rem,0.9fr)]">
+            <section class="admin-panel">
+                <div class="admin-panel-header">
+                    <div>
+                        <p class="admin-page-kicker">Conta base</p>
+                        <h2 class="text-lg font-bold text-gray-800">Dados principais do usuario</h2>
+                        <p class="mt-2 text-sm text-gray-500">
+                            O cadastro central vale para admin master, coordenador, admin local, musico e padre.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="admin-panel-body">
+                    <form action="{{ route('admin.usuarios.store') }}" method="POST" class="space-y-6">
+                        @csrf
+
+                        <div class="admin-form-grid xl:grid-cols-2">
+                            <div>
+                                <label class="admin-label">Tipo inicial</label>
+                                <select name="tipo_cadastro" class="admin-select">
+                                    <option value="admin_master" @selected(old('tipo_cadastro') === 'admin_master')>Admin master</option>
+                                    <option value="coordenador" @selected(old('tipo_cadastro') === 'coordenador')>Coordenador</option>
+                                    <option value="admin_local" @selected(old('tipo_cadastro') === 'admin_local')>Admin local</option>
+                                    <option value="musico" @selected(old('tipo_cadastro', 'musico') === 'musico')>Musico</option>
+                                    <option value="padre" @selected(old('tipo_cadastro') === 'padre')>Padre</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="admin-label">Igreja inicial</label>
+                                <select name="igreja_id" class="admin-select">
+                                    <option value="">Criar sem vinculo inicial</option>
+                                    @foreach ($igrejas as $igreja)
+                                        <option value="{{ $igreja->id }}" @selected((string) old('igreja_id') === (string) $igreja->id)>{{ $igreja->nome }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="admin-label">Nome</label>
+                                <input type="text" name="nome" value="{{ old('nome') }}" required class="admin-input">
+                            </div>
+
+                            <div>
+                                <label class="admin-label">CPF</label>
+                                <input type="text" name="cpf" value="{{ old('cpf') }}" required data-cpf-input class="admin-input" placeholder="000.000.000-00">
+                            </div>
+
+                            <div>
+                                <label class="admin-label">E-mail</label>
+                                <input type="email" name="email" value="{{ old('email') }}" class="admin-input" placeholder="Padre sem login pode ficar em branco">
+                            </div>
+
+                            <div>
+                                <label class="admin-label">Telefone</label>
+                                <input type="text" name="telefone" value="{{ old('telefone') }}" data-telefone-input class="admin-input">
+                            </div>
+
+                            <div data-password-strength-container>
+                                <label class="admin-label">Senha inicial</label>
+                                <input type="password" name="password" data-password-strength-input class="admin-input" placeholder="Se ficar em branco, usa CPF">
+                                <div class="mt-3">
+                                    @include('partials.password-strength-meter')
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="admin-label">Confirmar senha</label>
+                                <input type="password" name="password_confirmation" data-password-confirmation-input class="admin-input">
+                            </div>
+
+                            <div class="xl:col-span-2">
+                                <div class="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm text-blue-900">
+                                    Quando o tipo inicial for <strong>admin master</strong>, a conta ja nasce com acesso global do sistema.
+                                    Nao existe mais nivel separado nesta etapa. Coordenador continua sendo papel por igreja e pode acumular varias igrejas.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="admin-checkbox-row">
+                            <label class="admin-checkbox">
+                                <input type="hidden" name="ativo" value="0">
+                                <input type="checkbox" name="ativo" value="1" {{ old('ativo', '1') ? 'checked' : '' }}>
+                                <span>Conta ativa</span>
+                            </label>
+                        </div>
+
+                        <div class="admin-actions">
+                            <button type="submit" class="admin-btn admin-btn-primary">Salvar usuario</button>
+                            <a href="{{ route('admin.usuarios.index') }}" class="admin-btn admin-btn-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <aside class="space-y-6">
+                <section class="admin-highlight-surface p-5 sm:p-6 2xl:sticky 2xl:top-6">
+                    <p class="admin-page-kicker">Como funciona</p>
+                    <h2 class="mt-2 text-lg font-bold text-gray-800">Regras deste cadastro</h2>
+
+                    <div class="mt-4 space-y-3 text-sm leading-7 text-gray-600">
+                        <p><strong>Admin master:</strong> ja nasce com acesso global e nao depende de nivel separado.</p>
+                        <p><strong>Coordenador, admin local e musico:</strong> se houver igreja escolhida, o papel ja e aplicado. Sem igreja, a conta fica aguardando vinculo.</p>
+                        <p><strong>Padre:</strong> pode existir sem login. Se o e-mail ficar vazio, o sistema cria um e-mail tecnico interno e reaproveita essa mesma conta depois.</p>
+                        <p><strong>Sem duplicacao:</strong> CPF e e-mail sao reutilizados para promover a mesma pessoa.</p>
+                    </div>
+                </section>
+
+                <section class="admin-muted-surface p-5 sm:p-6">
+                    <p class="admin-page-kicker">Fluxo recomendado</p>
+                    <h2 class="mt-2 text-lg font-bold text-gray-800">Primeiro a conta, depois a operacao</h2>
+                    <p class="mt-3 text-sm leading-7 text-gray-600">
+                        Uma igreja nao precisa nascer com admin local. O vinculo operacional so entra quando alguem realmente vai operar missa,
+                        repertorio e rotina daquela igreja.
+                    </p>
+                </section>
+            </aside>
+        </div>
     </div>
 @endsection
 

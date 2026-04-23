@@ -11,7 +11,7 @@ class RepertorioMusicoService
 {
     public function obterMissaDisponivelParaUsuario(Usuario $usuario): ?Missa
     {
-        $igrejaId = $usuario->igrejaAtiva()?->id ?? $usuario->igreja_id;
+        $igrejaId = $usuario->igrejaAtivaId() ?? $usuario->igreja_id;
 
         if (!$igrejaId) {
             return null;
@@ -43,7 +43,7 @@ class RepertorioMusicoService
 
     public function obterMissaComVersaoParaUsuario(Usuario $usuario, VersaoMusical $versaoMusical): ?Missa
     {
-        $igrejaId = $usuario->igrejaAtiva()?->id ?? $usuario->igreja_id;
+        $igrejaId = $usuario->igrejaAtivaId() ?? $usuario->igreja_id;
 
         if (!$igrejaId) {
             return null;

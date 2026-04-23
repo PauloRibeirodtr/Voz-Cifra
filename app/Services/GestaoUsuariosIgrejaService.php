@@ -13,8 +13,10 @@ use Illuminate\Validation\ValidationException;
 class GestaoUsuariosIgrejaService
 {
     public function __construct(
+        private readonly AuditoriaOperacionalService $auditoriaOperacionalService,
         private readonly NotificacaoSegurancaService $notificacaoSegurancaService,
-        private readonly NotificacaoAcessoInicialService $notificacaoAcessoInicialService
+        private readonly NotificacaoAcessoInicialService $notificacaoAcessoInicialService,
+        private readonly StatusOperacionalIgrejaService $statusOperacionalIgrejaService
     ) {
     }
 
@@ -68,7 +70,7 @@ class GestaoUsuariosIgrejaService
 
             if (!$conta->exists) {
                 $conta->perfil_global = 'usuario';
-                $conta->nivel_global = $this->nivelLegadoPorPapeis($papeisNormalizados, null);
+                $conta->nivel_global = 1;
                 $conta->password = $senhaInformada !== ''
                     ? $senhaInformada
                     : $this->senhaPadraoPorCpf((string) $dados['cpf']);
@@ -76,7 +78,7 @@ class GestaoUsuariosIgrejaService
             } else {
                 if (!$conta->ehAdminMaster()) {
                     $conta->perfil_global = 'usuario';
-                    $conta->nivel_global = $this->nivelLegadoPorPapeis($papeisNormalizados, $conta->nivelGlobal());
+                    $conta->nivel_global = 1;
                 }
 
                 if ($deveLiberarPrimeiroAcesso) {
@@ -118,6 +120,8 @@ class GestaoUsuariosIgrejaService
                 ]
             );
         }
+
+        $this->statusOperacionalIgrejaService->atualizar($igreja);
 
         return $usuario;
     }
@@ -173,9 +177,7 @@ class GestaoUsuariosIgrejaService
                 'email' => $emailFinal,
                 'telefone' => $this->normalizarCampoTexto($dados['telefone'] ?? null),
                 'perfil_global' => $perfilGlobal,
-                'nivel_global' => $ehAdminMaster
-                    ? (int) ($dados['nivel_global'] ?? 6)
-                    : 1,
+                'nivel_global' => $ehAdminMaster ? 6 : 1,
                 'eh_padre' => $ehPadre || (bool) ($conta->eh_padre ?? false),
                 'ativo' => array_key_exists('ativo', $dados) ? (bool) $dados['ativo'] : true,
             ]);
@@ -210,9 +212,9 @@ class GestaoUsuariosIgrejaService
 
         if ($usuario->ehAdminMaster()) {
             $nivelNovo = $usuario->nivelGlobal();
-            $foiPromovido = !$eraAdminMaster || $nivelAnterior !== $nivelNovo;
+            $mudouAcessoGlobal = !$eraAdminMaster || $nivelAnterior !== $nivelNovo;
 
-            if ($foiPromovido) {
+            if ($mudouAcessoGlobal) {
                 $this->notificacaoSegurancaService->enviarEventoConta(
                     alvo: $usuario,
                     evento: 'troca_nivel_global',
@@ -285,6 +287,7 @@ class GestaoUsuariosIgrejaService
         });
 
         $this->notificarPapeisConcedidos($usuario, $igreja, $papeisConcedidos, $ator, $origem);
+        $this->statusOperacionalIgrejaService->atualizar($igreja);
 
         return $usuario;
     }
@@ -319,6 +322,56 @@ class GestaoUsuariosIgrejaService
             ator: $ator,
             origem: $origem
         );
+    }
+
+    public function revogarPapelDeUsuarioExistente(
+        Usuario $usuario,
+        Igreja $igreja,
+        PapelIgreja|string $papel,
+        ?Usuario $ator = null,
+        string $origem = 'gestao_usuario_igreja_revogacao'
+    ): Usuario {
+        $papelEnum = PapelIgreja::fromValue($papel);
+
+        DB::transaction(function () use ($usuario, $igreja, $papelEnum, $ator): void {
+            $usuario->removerPapel($papelEnum, $igreja, $ator);
+        });
+
+        $eventoOperacional = match ($papelEnum) {
+            PapelIgreja::ADMIN_LOCAL => 'admin_local_revogado',
+            PapelIgreja::COORDENADOR => 'coordenador_revogado',
+            PapelIgreja::MUSICO => 'musico_revogado',
+        };
+
+        $this->auditoriaOperacionalService->registrar(
+            evento: $eventoOperacional,
+            ator: $ator,
+            alvo: $usuario,
+            igreja: $igreja,
+            contexto: [
+                'origem' => $origem,
+                'papel' => $papelEnum->value,
+                'papel_label' => $papelEnum->label(),
+                'resumo' => sprintf('%s deixou de atuar como %s nesta igreja.', $usuario->nome, mb_strtolower($papelEnum->label())),
+            ]
+        );
+
+        $this->notificacaoSegurancaService->enviarEventoConta(
+            alvo: $usuario,
+            evento: 'papel_local_revogado',
+            ator: $ator,
+            contexto: [
+                'origem' => $origem,
+                'igreja_id' => $igreja->id,
+                'igreja_nome' => $igreja->nome,
+                'papel' => $papelEnum->value,
+                'papel_label' => $papelEnum->label(),
+            ]
+        );
+
+        $this->statusOperacionalIgrejaService->atualizar($igreja);
+
+        return $usuario->fresh();
     }
 
     public function criarOuAtualizarPadre(
@@ -383,6 +436,17 @@ class GestaoUsuariosIgrejaService
         ])->save();
 
         $evento = $ativo ? 'conta_reativada' : 'conta_inativada';
+        $this->auditoriaOperacionalService->registrar(
+            evento: $evento,
+            ator: $ator,
+            alvo: $usuario,
+            igreja: $contexto['igreja_id'] ?? $usuario->igrejaAtiva()?->id ?? $usuario->igreja_id,
+            contexto: $contexto + [
+                'resumo' => $ativo
+                    ? 'Conta reativada para voltar a operar no sistema.'
+                    : 'Conta inativada e retirada do fluxo operacional ativo.',
+            ]
+        );
         $this->notificacaoSegurancaService->enviarEventoConta(
             alvo: $usuario,
             evento: $evento,
@@ -390,7 +454,10 @@ class GestaoUsuariosIgrejaService
             contexto: $contexto
         );
 
-        return $usuario->fresh();
+        $usuario = $usuario->fresh();
+        $this->statusOperacionalIgrejaService->atualizarPorUsuario($usuario);
+
+        return $usuario;
     }
 
     public function redefinirSenhaProvisoria(
@@ -405,6 +472,17 @@ class GestaoUsuariosIgrejaService
             'password' => $senhaNormalizada !== '' ? $senhaNormalizada : $this->senhaPadraoPorCpf((string) $usuario->cpf),
             'primeiro_acesso' => true,
         ])->save();
+
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'reset_senha',
+            ator: $ator,
+            alvo: $usuario,
+            igreja: $contexto['igreja_id'] ?? $usuario->igrejaAtiva()?->id ?? $usuario->igreja_id,
+            contexto: $contexto + [
+                'senha_inicial' => $senhaNormalizada !== '' ? 'definida_manual' : 'cpf_sem_pontuacao',
+                'resumo' => 'Senha provisoria redefinida com obrigacao de troca no proximo acesso.',
+            ]
+        );
 
         $this->notificacaoSegurancaService->enviarEventoConta(
             alvo: $usuario,
@@ -520,6 +598,25 @@ class GestaoUsuariosIgrejaService
     ): void {
         $papeisConcedidos
             ->each(function (PapelIgreja $papel) use ($usuario, $igreja, $ator, $origem): void {
+                $eventoOperacional = match ($papel) {
+                    PapelIgreja::ADMIN_LOCAL => 'admin_local_vinculado',
+                    PapelIgreja::COORDENADOR => 'coordenador_vinculado',
+                    PapelIgreja::MUSICO => 'musico_vinculado',
+                };
+
+                $this->auditoriaOperacionalService->registrar(
+                    evento: $eventoOperacional,
+                    ator: $ator,
+                    alvo: $usuario,
+                    igreja: $igreja,
+                    contexto: [
+                        'origem' => $origem,
+                        'papel' => $papel->value,
+                        'papel_label' => $papel->label(),
+                        'resumo' => sprintf('%s vinculado(a) a igreja como %s.', $usuario->nome, mb_strtolower($papel->label())),
+                    ]
+                );
+
                 $this->notificacaoSegurancaService->enviarEventoConta(
                     alvo: $usuario,
                     evento: 'papel_local_concedido',
@@ -535,14 +632,4 @@ class GestaoUsuariosIgrejaService
             });
     }
 
-    private function nivelLegadoPorPapeis(Collection $papeis, ?int $nivelAtual): int
-    {
-        $nivelAtual = $nivelAtual ?? 1;
-
-        if ($papeis->contains(fn (PapelIgreja $papel) => $papel === PapelIgreja::ADMIN_LOCAL)) {
-            return max($nivelAtual, 5);
-        }
-
-        return max($nivelAtual, 1);
-    }
 }

@@ -19,7 +19,7 @@ class ChamadoController extends Controller
 
     public function index(Request $request): View
     {
-        $this->autorizarNivel7();
+        $this->autorizarAdminMaster();
 
         $status = trim((string) $request->string('status'));
         $prioridade = trim((string) $request->string('prioridade'));
@@ -58,7 +58,7 @@ class ChamadoController extends Controller
 
     public function show(Chamado $chamado): View
     {
-        $this->autorizarNivel7();
+        $this->autorizarAdminMaster();
 
         $chamado->load([
             'auditoriaEvento',
@@ -77,7 +77,7 @@ class ChamadoController extends Controller
 
     public function updateStatus(Request $request, Chamado $chamado): RedirectResponse
     {
-        $this->autorizarNivel7();
+        $this->autorizarAdminMaster();
 
         $dados = $request->validate([
             'status' => ['required', 'in:aberto,em_andamento,aguardando_usuario,resolvido,fechado'],
@@ -98,7 +98,7 @@ class ChamadoController extends Controller
 
     public function storeMessage(Request $request, Chamado $chamado): RedirectResponse
     {
-        $this->autorizarNivel7();
+        $this->autorizarAdminMaster();
 
         $dados = $request->validate([
             'mensagem' => ['required', 'string', 'max:5000'],
@@ -119,7 +119,7 @@ class ChamadoController extends Controller
 
     public function assumir(Chamado $chamado): RedirectResponse
     {
-        $this->autorizarNivel7();
+        $this->autorizarAdminMaster();
 
         /** @var \App\Models\Usuario|null $usuario */
         $usuario = Auth::user();
@@ -130,7 +130,7 @@ class ChamadoController extends Controller
 
     public function aprovarPedidoAcesso(Chamado $chamado): RedirectResponse
     {
-        $this->autorizarNivel7();
+        $this->autorizarAdminMaster();
 
         /** @var \App\Models\Usuario|null $usuario */
         $usuario = Auth::user();
@@ -147,7 +147,7 @@ class ChamadoController extends Controller
 
     public function pedirMaisDados(Request $request, Chamado $chamado): RedirectResponse
     {
-        $this->autorizarNivel7();
+        $this->autorizarAdminMaster();
 
         $dados = $request->validate([
             'mensagem' => ['required', 'string', 'max:2000'],
@@ -160,12 +160,12 @@ class ChamadoController extends Controller
         return back()->with('success', 'Chamado movido para aguardando usuario.');
     }
 
-    private function autorizarNivel7(): void
+    private function autorizarAdminMaster(): void
     {
         /** @var \App\Models\Usuario|null $usuario */
         $usuario = Auth::user();
 
-        abort_unless($usuario && method_exists($usuario, 'nivelGlobal') && $usuario->nivelGlobal() >= 7, 403);
+        abort_unless($usuario && $usuario->ehAdminMaster(), 403);
     }
 
     private function resolverMusicoAlvo(Chamado $chamado): ?\App\Models\Usuario
@@ -176,7 +176,7 @@ class ChamadoController extends Controller
 
         return \App\Models\Usuario::query()
             ->whereKey($chamado->origem_id)
-            ->where('perfil_global', 'member')
+            ->whereHas('papeisAtivosPorIgreja', fn ($query) => $query->where('papel', \App\Enums\PapelIgreja::MUSICO->value))
             ->first();
     }
 }

@@ -7,7 +7,7 @@
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Igrejas cadastradas</h1>
-            <p class="text-sm text-gray-500">Gerencie as igrejas, seus coordenadores, admins locais e os dois links publicos de cada comunidade.</p>
+            <p class="text-sm text-gray-500">Gerencie as igrejas, acompanhe o status operacional, visualize os links publicos e confira quem ja esta vinculado localmente.</p>
         </div>
 
         <a href="{{ route('admin.igrejas.create') }}" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-medium text-white hover:bg-green-800 sm:w-auto">
@@ -16,7 +16,7 @@
     </div>
 
     <div class="admin-inline-note mb-6 px-5 py-4 text-sm leading-7">
-        Uma igreja pode existir sem admin local. O papel local so precisa ser vinculado quando alguem for assumir a operacao da igreja e o cadastro de missas.
+        Uma igreja pode existir sem admin local. Ela so fica operacional para missas, repertorios e publicacoes quando houver admin local ativo vinculado.
     </div>
 
     @if (session('success'))
@@ -53,9 +53,9 @@
                         <tr>
                             <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Igreja</th>
                             <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Localizacao</th>
-                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Admins locais</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Vinculos locais</th>
                             <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Status</th>
-                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Link publico</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Links publicos</th>
                             <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-500">Acoes</th>
                         </tr>
                     </thead>
@@ -77,6 +77,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-600">
+                                    <div class="mb-3 text-xs font-bold uppercase tracking-wider text-gray-400">Admin local</div>
                                     @if ($coordenadores->isNotEmpty())
                                         <div class="mb-3 rounded-xl border border-amber-100 bg-amber-50 p-3">
                                             <div class="text-[11px] font-bold uppercase tracking-wider text-amber-700">Coordenadores</div>
@@ -102,27 +103,41 @@
                                             </div>
                                         @endforeach
                                     @else
-                                        <span class="text-amber-600 font-medium">Sem admin local</span>
+                                        <span class="text-amber-600 font-medium">Sem admin local vinculado</span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold {{ $igreja->ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                        {{ $igreja->ativo ? 'Ativa' : 'Inativa' }}
-                                    </span>
+                                    <div class="flex flex-col items-start gap-2">
+                                        <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold {{ $igreja->ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                            {{ $igreja->ativo ? 'Ativa' : 'Inativa' }}
+                                        </span>
+                                        <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold {{ $igreja->estaOperacional() ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700' }}">
+                                            {{ $igreja->statusOperacionalLabel() }}
+                                        </span>
+                                        <span class="text-xs text-gray-500">
+                                            {{ $igreja->estaOperacional() ? 'Liberada para operacao local' : 'Cadastro valido, operacao aguardando admin local' }}
+                                        </span>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-600">
-                                    <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="break-all text-green-700 hover:underline">
-                                        {{ $igreja->link_publico }}
-                                    </a>
-                                    <a href="{{ $igreja->link_publico_musicos }}" target="_blank" rel="noopener noreferrer" class="mt-2 block break-all text-slate-900 hover:underline">
-                                        {{ $igreja->link_publico_musicos }}
-                                    </a>
-                                    <div class="mt-2 text-xs text-gray-500">
-                                        Primeiro link para fieis, segundo para musicos.
+                                    <div class="rounded-xl border border-gray-200 bg-gray-50 p-3">
+                                        <div class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Link dos fieis</div>
+                                        <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="mt-2 block break-all text-green-700 hover:underline">
+                                            {{ $igreja->link_publico }}
+                                        </a>
                                     </div>
-                                    <div class="mt-2 flex items-center gap-2">
+                                    <div class="mt-3 rounded-xl border border-gray-200 bg-gray-50 p-3">
+                                        <div class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Link dos musicos</div>
+                                        <a href="{{ $igreja->link_publico_musicos }}" target="_blank" rel="noopener noreferrer" class="mt-2 block break-all text-slate-900 hover:underline">
+                                            {{ $igreja->link_publico_musicos }}
+                                        </a>
+                                    </div>
+                                    <div class="mt-3 flex items-center gap-2">
                                         <a href="{{ $igreja->qr_code_url }}" target="_blank" rel="noopener noreferrer" class="inline-flex rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
                                             QR fieis
+                                        </a>
+                                        <a href="{{ $igreja->qr_code_url_musicos }}" target="_blank" rel="noopener noreferrer" class="inline-flex rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+                                            QR musicos
                                         </a>
                                     </div>
                                 </td>
@@ -167,6 +182,12 @@
                             </span>
                         </div>
 
+                        <div class="mt-3">
+                            <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $igreja->estaOperacional() ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700' }}">
+                                {{ $igreja->statusOperacionalLabel() }}
+                            </span>
+                        </div>
+
                         <div class="mt-4 grid grid-cols-1 gap-3 text-sm text-gray-600">
                             <div class="rounded-xl bg-gray-50 p-3">
                                 <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-400">Localizacao</span>
@@ -202,22 +223,29 @@
                                         </div>
                                     @endforeach
                                 @else
-                                    <div class="mt-1 font-medium text-amber-600">Sem admin local</div>
+                                    <div class="mt-1 font-medium text-amber-600">Sem admin local vinculado</div>
                                 @endif
                             </div>
 
                             <div class="rounded-xl bg-gray-50 p-3">
                                 <span class="block text-[11px] font-bold uppercase tracking-wider text-gray-400">Acessos publicos</span>
+                                <div class="mt-3 text-[11px] font-bold uppercase tracking-wider text-gray-400">Link dos fieis</div>
                                 <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="mt-1 block break-all text-sm font-medium text-green-700 hover:underline">
                                     {{ $igreja->link_publico }}
                                 </a>
+                                <div class="mt-3 text-[11px] font-bold uppercase tracking-wider text-gray-400">Link dos musicos</div>
                                 <a href="{{ $igreja->link_publico_musicos }}" target="_blank" rel="noopener noreferrer" class="mt-2 block break-all text-sm font-medium text-slate-900 hover:underline">
                                     {{ $igreja->link_publico_musicos }}
                                 </a>
-                                <p class="mt-2 text-xs text-gray-500">Primeiro link para fieis, segundo para musicos.</p>
-                                <a href="{{ $igreja->qr_code_url }}" target="_blank" rel="noopener noreferrer" class="mt-3 inline-flex items-center justify-center rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
-                                    Ver QR dos fieis
-                                </a>
+                                <p class="mt-2 text-xs text-gray-500">Cada igreja tem um link publico para fieis e outro especifico para musicos.</p>
+                                <div class="mt-3 flex flex-wrap gap-2">
+                                    <a href="{{ $igreja->qr_code_url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+                                        QR fieis
+                                    </a>
+                                    <a href="{{ $igreja->qr_code_url_musicos }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+                                        QR musicos
+                                    </a>
+                                </div>
                             </div>
                         </div>
 

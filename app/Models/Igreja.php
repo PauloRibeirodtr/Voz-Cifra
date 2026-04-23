@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 
 class Igreja extends Model
 {
@@ -27,6 +28,7 @@ class Igreja extends Model
         'cidade',
         'estado',
         'imagem_path',
+        'status_operacional',
         'ativo',
     ];
 
@@ -117,5 +119,35 @@ class Igreja extends Model
     public function slugPublicoMusicos(): string
     {
         return (string) ($this->slug_publico_musicos ?: ($this->slug . '-musicos'));
+    }
+
+    public function estaOperacional(): bool
+    {
+        return $this->status_operacional === 'operacional';
+    }
+
+    public function statusOperacionalLabel(): string
+    {
+        return match ($this->status_operacional) {
+            'operacional' => 'Operacional',
+            default => 'Aguardando admin local',
+        };
+    }
+
+    public function imagemUrl(): string
+    {
+        $path = trim((string) $this->imagem_path);
+
+        if ($path !== '' && Storage::disk('public')->exists($path)) {
+            $url = route('media.public.show', ['path' => $path], false);
+
+            try {
+                return $url . '?v=' . Storage::disk('public')->lastModified($path);
+            } catch (\Throwable) {
+                return $url;
+            }
+        }
+
+        return asset('logo/final.png');
     }
 }

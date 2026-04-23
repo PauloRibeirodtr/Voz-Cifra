@@ -87,7 +87,6 @@ class UsuarioController extends Controller
                 'theme_preference' => 'system',
             ]),
             'igrejas' => Igreja::query()->orderBy('nome')->get(),
-            'niveisGlobais' => $this->niveisGlobaisDisponiveis(),
         ]);
     }
 
@@ -107,9 +106,7 @@ class UsuarioController extends Controller
                 'ativo' => (bool) ($dados['ativo'] ?? true),
                 'eh_padre' => $tipoCadastro === 'padre',
                 'perfil_global' => $tipoCadastro === 'admin_master' ? 'admin_master' : 'usuario',
-                'nivel_global' => $tipoCadastro === 'admin_master'
-                    ? (int) ($dados['nivel_global'] ?? 6)
-                    : 1,
+                'nivel_global' => $tipoCadastro === 'admin_master' ? 6 : 1,
             ],
             ator: $ator,
             origem: 'admin_usuarios_store'
@@ -135,23 +132,41 @@ class UsuarioController extends Controller
             ->with('success', $this->mensagemCriacao($tipoCadastro, $igreja));
     }
 
-    public function edit(Usuario $usuario): View
+    public function edit(Usuario $usuario): View|RedirectResponse
     {
         $this->autorizarGestaoDeContaMasterQuandoNecessario($usuario);
+
+        /** @var Usuario|null $ator */
+        $ator = Auth::user();
+
+        if ($usuario->ehAdminMaster() && $ator?->id === $usuario->id) {
+            return redirect()
+                ->route('admin.profile')
+                ->with('info', 'A conta admin master titular e gerenciada pela tela de Perfil.');
+        }
+
         $usuario->load(['vinculosIgreja.igreja', 'vinculosIgreja.papeisAtivos']);
 
         return view('admin.users.edit', [
             'usuario' => $usuario,
             'igrejas' => Igreja::query()->orderBy('nome')->get(),
-            'niveisGlobais' => $this->niveisGlobaisDisponiveis(),
         ]);
     }
 
     public function update(Request $request, Usuario $usuario): RedirectResponse
     {
         $this->autorizarGestaoDeContaMasterQuandoNecessario($usuario);
-        $dados = $this->validarAtualizacao($request);
+
+        /** @var Usuario|null $ator */
         $ator = Auth::user();
+
+        if ($usuario->ehAdminMaster() && $ator?->id === $usuario->id) {
+            return redirect()
+                ->route('admin.profile')
+                ->with('info', 'Atualize sua propria conta admin master apenas pela tela de Perfil.');
+        }
+
+        $dados = $this->validarAtualizacao($request);
 
         if ($usuario->id === $ator?->id && (bool) ($dados['ativo'] ?? true) === false) {
             throw ValidationException::withMessages([
@@ -169,9 +184,7 @@ class UsuarioController extends Controller
                 'ativo' => (bool) ($dados['ativo'] ?? true),
                 'eh_padre' => (bool) ($dados['eh_padre'] ?? false),
                 'perfil_global' => $dados['perfil_global'],
-                'nivel_global' => $dados['perfil_global'] === 'admin_master'
-                    ? (int) ($dados['nivel_global'] ?? 6)
-                    : 1,
+                'nivel_global' => $dados['perfil_global'] === 'admin_master' ? 6 : 1,
             ],
             ator: $ator,
             usuarioBase: $usuario,
@@ -212,8 +225,7 @@ class UsuarioController extends Controller
         $ator = Auth::user();
 
         if ($usuario->ehAdminMaster()) {
-            abort_unless(($ator?->nivelGlobal() ?? 0) >= 7, 403);
-            abort_if($usuario->id === $ator?->id, 422, 'Voce nao pode inativar a propria conta nesta operacao.');
+            abort(403, 'A conta admin master nao pode ser ativada ou inativada por este fluxo.');
         }
 
         $usuario = $this->gestaoUsuariosIgrejaService->alterarStatusConta(
@@ -237,7 +249,7 @@ class UsuarioController extends Controller
         $ator = Auth::user();
 
         if ($usuario->ehAdminMaster()) {
-            abort_unless(($ator?->nivelGlobal() ?? 0) >= 7, 403);
+            abort(403, 'A senha de admin master so pode ser alterada pelo proprio titular em Perfil.');
         }
 
         $dados = $request->validate([
@@ -273,7 +285,6 @@ class UsuarioController extends Controller
             'telefone' => ['nullable', 'string', 'max:20'],
             'password' => ['nullable', 'confirmed', new StrongPassword()],
             'ativo' => ['nullable', 'boolean'],
-            'nivel_global' => ['nullable', Rule::in($this->niveisGlobaisDisponiveis())],
         ]);
 
         $this->garantirEmailQuandoNecessario(
@@ -289,7 +300,6 @@ class UsuarioController extends Controller
     {
         $dados = $request->validate([
             'perfil_global' => ['required', Rule::in(['admin_master', 'usuario'])],
-            'nivel_global' => ['nullable', Rule::in($this->niveisGlobaisDisponiveis())],
             'nome' => ['required', 'string', 'max:255'],
             'cpf' => ['required', 'string', 'max:14'],
             'email' => ['nullable', 'email', 'max:255'],
@@ -321,19 +331,6 @@ class UsuarioController extends Controller
                 'email' => 'Usuarios operacionais precisam de e-mail. Padre sem login pode ficar sem e-mail.',
             ]);
         }
-    }
-
-    private function niveisGlobaisDisponiveis(): array
-    {
-        /** @var Usuario|null $ator */
-        $ator = Auth::user();
-        $nivelAtor = $ator?->nivelGlobal() ?? 6;
-
-        $niveis = $nivelAtor >= 7 ? [6, 7] : [6];
-
-        sort($niveis);
-
-        return $niveis;
     }
 
     private function papelInicialPorTipo(string $tipoCadastro): ?PapelIgreja
@@ -389,6 +386,6 @@ class UsuarioController extends Controller
             return;
         }
 
-        abort_unless(($ator?->nivelGlobal() ?? 0) >= 7, 403);
+        abort(403, 'Admins master so podem gerenciar a propria conta por este fluxo.');
     }
 }

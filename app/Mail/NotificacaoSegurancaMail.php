@@ -41,7 +41,7 @@ class NotificacaoSegurancaMail extends Mailable
             'reset_senha' => 'Aviso de seguranca: senha redefinida',
             'conta_inativada' => 'Aviso de seguranca: conta inativada',
             'conta_reativada' => 'Aviso de seguranca: conta reativada',
-            'troca_nivel_global' => 'Aviso de seguranca: nivel global alterado',
+            'troca_nivel_global' => 'Aviso de seguranca: acesso global alterado',
             'papel_local_concedido' => 'Aviso de seguranca: papel por igreja concedido',
             'papel_local_revogado' => 'Aviso de seguranca: papel por igreja revogado',
             default => 'Aviso de seguranca da conta',

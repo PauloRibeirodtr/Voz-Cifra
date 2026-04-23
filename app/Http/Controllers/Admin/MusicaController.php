@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\MomentoLiturgico;
 use App\Models\Musica;
 use App\Models\TempoLiturgico;
+use App\Services\AuditoriaOperacionalService;
 use App\Services\NotificacaoSistemaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,6 +16,7 @@ use Illuminate\View\View;
 class MusicaController extends Controller
 {
     public function __construct(
+        private readonly AuditoriaOperacionalService $auditoriaOperacionalService,
         private readonly NotificacaoSistemaService $notificacaoSistemaService
     ) {
     }
@@ -65,6 +67,19 @@ class MusicaController extends Controller
             'ativo' => $this->podeInativarRegistros() ? (bool) ($dados['ativo'] ?? true) : true,
         ]);
 
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'musica_criada',
+            ator: $usuario,
+            igreja: null,
+            contexto: [
+                'origem' => 'admin_musicas_store',
+                'origem_id' => $musica->id,
+                'titulo' => $musica->titulo,
+                'artista' => $musica->artista,
+                'resumo' => 'Musica base criada na biblioteca central.',
+            ]
+        );
+
         $this->notificacaoSistemaService->enviarParaTodosUsuariosAtivos(
             evento: 'musica_cadastrada',
             ator: $usuario,
@@ -106,6 +121,8 @@ class MusicaController extends Controller
     public function update(Request $request, Musica $musica): RedirectResponse
     {
         $dados = $this->validarDados($request);
+        /** @var \App\Models\Usuario|null $usuario */
+        $usuario = Auth::user();
 
         $musica->update([
             'titulo' => $dados['titulo'],
@@ -115,6 +132,19 @@ class MusicaController extends Controller
             'momento_liturgico_id' => $dados['momento_liturgico_id'] ?? null,
             'ativo' => $this->podeInativarRegistros() ? (bool) ($dados['ativo'] ?? false) : (bool) $musica->ativo,
         ]);
+
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'musica_editada',
+            ator: $usuario,
+            igreja: null,
+            contexto: [
+                'origem' => 'admin_musicas_update',
+                'origem_id' => $musica->id,
+                'titulo' => $musica->titulo,
+                'artista' => $musica->artista,
+                'resumo' => 'Musica base atualizada na biblioteca central.',
+            ]
+        );
 
         return redirect()
             ->route($this->routeName('musicas.index'))
@@ -129,6 +159,18 @@ class MusicaController extends Controller
 
         /** @var \App\Models\Usuario|null $usuario */
         $usuario = Auth::user();
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'musica_inativada',
+            ator: $usuario,
+            igreja: null,
+            contexto: [
+                'origem' => 'admin_musicas_destroy',
+                'origem_id' => $musica->id,
+                'titulo' => $musica->titulo,
+                'resumo' => 'Musica marcada como inativa na biblioteca central.',
+            ]
+        );
+
         $this->notificacaoSistemaService->enviarParaTodosUsuariosAtivos(
             evento: 'musica_inativada',
             ator: $usuario,

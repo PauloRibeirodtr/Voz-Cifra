@@ -28,7 +28,11 @@
         <div class="border-b border-green-800 bg-green-950/50 px-4 py-3 md:hidden">
             <div class="flex items-center gap-3">
                 <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-green-600 bg-green-800 font-bold text-white shadow-sm">
-                    {{ strtoupper(substr(auth()->user()->nome, 0, 1)) }}
+                    @if (filled(auth()->user()->foto_perfil_path))
+                        <img src="{{ auth()->user()->fotoPerfilUrl() }}" alt="Foto de {{ auth()->user()->nome }}" class="h-full w-full rounded-full object-cover">
+                    @else
+                        {{ strtoupper(substr(auth()->user()->nome, 0, 1)) }}
+                    @endif
                 </div>
                 <div class="min-w-0 flex-1">
                     <p class="truncate text-sm font-bold text-white">{{ auth()->user()->nome }}</p>
@@ -90,7 +94,11 @@
         @auth
             <div class="mb-4 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-3">
                 <div class="flex h-10 w-10 items-center justify-center rounded-full border border-green-600 bg-green-800 font-bold text-white shadow-sm">
-                    {{ strtoupper(substr(auth()->user()->nome, 0, 1)) }}
+                    @if (filled(auth()->user()->foto_perfil_path))
+                        <img src="{{ auth()->user()->fotoPerfilUrl() }}" alt="Foto de {{ auth()->user()->nome }}" class="h-full w-full rounded-full object-cover">
+                    @else
+                        {{ strtoupper(substr(auth()->user()->nome, 0, 1)) }}
+                    @endif
                 </div>
                 <div class="min-w-0 flex-1">
                     <p class="truncate text-sm font-bold text-white">{{ auth()->user()->nome }}</p>

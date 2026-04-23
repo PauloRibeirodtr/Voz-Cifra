@@ -182,7 +182,7 @@ class MusicoController extends Controller
         $igreja = $this->obterIgreja();
 
         abort_unless(
-            $musico->temPapelNaIgreja(PapelIgreja::MUSICO, $igreja->id) || ((int) $musico->igreja_id === (int) $igreja->id && $musico->perfil_global === 'member'),
+            $musico->temPapelNaIgreja(PapelIgreja::MUSICO, $igreja->id),
             404
         );
     }

@@ -594,6 +594,11 @@ class MissaController extends Controller
         $igreja = $this->obterUsuario()->igrejaAtiva() ?? $this->obterUsuario()->igreja;
 
         abort_unless($igreja !== null, 404, 'Igreja nao encontrada para este administrador local.');
+        abort_unless(
+            $igreja->estaOperacional(),
+            403,
+            'Esta igreja ainda esta aguardando admin local ativo e nao pode operar missas, repertorios ou publicacoes.'
+        );
 
         return $igreja;
     }

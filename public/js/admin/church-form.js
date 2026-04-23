@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const camposCpf = document.querySelectorAll('[data-cpf-input], [name="admin_cpf"]');
     const campoCnpj = document.querySelector('[data-cnpj-input]');
     const camposTelefone = document.querySelectorAll('[data-telefone-input]');
+    const togglesAdminLocal = document.querySelectorAll('[data-admin-local-toggle]');
+    const painelAdminLocal = document.querySelector('[data-admin-local-panel]');
 
     const aplicarMascaraCpf = (valor) => {
         valor = valor.replace(/\D/g, '').slice(0, 11);
@@ -101,4 +103,35 @@ document.addEventListener('DOMContentLoaded', () => {
             campo.value = aplicarMascaraTelefone(campo.value);
         });
     });
+
+    const atualizarPainelAdminLocal = () => {
+        if (!painelAdminLocal || togglesAdminLocal.length === 0) {
+            return;
+        }
+
+        const campoControle = togglesAdminLocal[0];
+        const exibirPainel = campoControle ? Boolean(campoControle.checked) : true;
+        const primeiroCampo = painelAdminLocal.querySelector('input:not([type="hidden"])');
+
+        painelAdminLocal.classList.toggle('hidden', !exibirPainel);
+        painelAdminLocal.setAttribute('aria-hidden', exibirPainel ? 'false' : 'true');
+
+        painelAdminLocal
+            .querySelectorAll('input')
+            .forEach((campo) => {
+                campo.disabled = !exibirPainel;
+            });
+
+        if (exibirPainel && primeiroCampo instanceof HTMLElement) {
+            window.requestAnimationFrame(() => {
+                primeiroCampo.focus();
+            });
+        }
+    };
+
+    togglesAdminLocal.forEach((campo) => {
+        campo.addEventListener('change', atualizarPainelAdminLocal);
+    });
+
+    atualizarPainelAdminLocal();
 });

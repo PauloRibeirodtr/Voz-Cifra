@@ -9,7 +9,7 @@
 <body class="font-sans text-gray-900" data-theme-preference="{{ $themePreference }}">
     <div
         id="admin_sidebar_overlay"
-        class="fixed inset-0 z-30 hidden bg-slate-950/45 backdrop-blur-[1px] md:hidden"
+        class="fixed inset-0 z-40 hidden bg-slate-950/70 backdrop-blur-[3px] lg:hidden"
         aria-hidden="true"
     ></div>
 
@@ -17,7 +17,7 @@
         @include('admin.partials.sidebar')
 
         <div class="admin-main">
-            <header class="admin-mobile-header sticky top-0 z-20 border-b border-white/10 backdrop-blur md:hidden">
+            <header class="admin-mobile-header sticky top-0 z-20 border-b border-white/10 backdrop-blur lg:hidden">
                 <div class="flex items-center justify-between gap-3 px-4 py-3">
                     <div class="min-w-0">
                         <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#d6ad6c]">Voz &amp; Cifra</p>
@@ -50,24 +50,33 @@
                 </div>
             </header>
 
-            <main class="admin-shell relative overflow-x-hidden px-4 py-4 sm:px-6 sm:py-6 lg:px-8" id="mainContent">
+            <main class="admin-shell relative overflow-x-hidden" id="mainContent">
                 <div class="admin-main-content">
-                    <div class="admin-topbar-card mb-6 hidden items-center justify-between gap-4 px-5 py-4 md:flex lg:px-6">
+                    <div class="admin-topbar-card hidden items-center justify-between gap-4 px-5 py-4 lg:flex lg:px-6">
                         <div class="min-w-0">
                             <p class="admin-page-kicker">Painel Admin Master</p>
                             <p class="mt-2 truncate text-sm text-gray-500">@yield('desktop_subtitle', 'Area administrativa do sistema')</p>
                         </div>
 
                         @auth
-                            <div class="admin-user-chip">
+                            <a href="{{ route('admin.profile') }}" class="admin-user-chip admin-user-link" aria-label="Abrir meu perfil">
                                 <div class="admin-user-chip-avatar">
-                                    {{ strtoupper(substr(auth()->user()->nome, 0, 1)) }}
+                                    @if (filled(auth()->user()->foto_perfil_path))
+                                        <img
+                                            src="{{ auth()->user()->fotoPerfilUrl() }}"
+                                            alt="Foto de {{ auth()->user()->nome }}"
+                                            class="admin-avatar-image"
+                                            onerror="this.onerror=null;this.src='{{ asset('logo/final.png') }}';"
+                                        >
+                                    @else
+                                        {{ strtoupper(substr(auth()->user()->nome, 0, 1)) }}
+                                    @endif
                                 </div>
                                 <div class="min-w-0">
                                     <div class="truncate text-sm font-semibold text-gray-800">{{ auth()->user()->nome }}</div>
                                     <div class="truncate text-xs text-gray-500">{{ auth()->user()->email }}</div>
                                 </div>
-                            </div>
+                            </a>
                         @endauth
                     </div>
 

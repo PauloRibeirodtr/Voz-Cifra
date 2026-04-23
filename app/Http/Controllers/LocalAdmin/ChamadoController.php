@@ -26,8 +26,10 @@ class ChamadoController extends Controller
         $musicoSelecionadoId = (int) $request->integer('musico');
 
         $musicos = Usuario::query()
-            ->where('igreja_id', $igreja->id)
-            ->where('perfil_global', 'member')
+            ->whereHas('papeisAtivosPorIgreja', function ($query) use ($igreja): void {
+                $query->where('papel', \App\Enums\PapelIgreja::MUSICO->value)
+                    ->where('usuario_igreja.igreja_id', $igreja->id);
+            })
             ->orderBy('nome')
             ->get();
 
@@ -66,8 +68,10 @@ class ChamadoController extends Controller
         /** @var Usuario|null $musico */
         $musico = Usuario::query()
             ->whereKey($dados['musico_id'])
-            ->where('igreja_id', $igreja->id)
-            ->where('perfil_global', 'member')
+            ->whereHas('papeisAtivosPorIgreja', function ($query) use ($igreja): void {
+                $query->where('papel', \App\Enums\PapelIgreja::MUSICO->value)
+                    ->where('usuario_igreja.igreja_id', $igreja->id);
+            })
             ->first();
 
         abort_unless($musico !== null, 404);

@@ -19,15 +19,10 @@ class ResolverIgrejaAtiva
         $usuario = $request->user();
 
         if ($usuario !== null && !$request->session()->has('igreja_ativa_id')) {
-            if (!empty($usuario->igreja_id)) {
-                $this->igrejaAtivaService->set((int) $usuario->igreja_id);
-            } else {
-                // Resolve fallback sem bloquear acesso, mesmo sem igreja legada.
-                $this->igrejaAtivaService->getId();
-            }
+            // Resolve a igreja ativa priorizando vinculos reais e sem depender do campo legado.
+            $this->igrejaAtivaService->getId();
         }
 
         return $next($request);
     }
 }
-

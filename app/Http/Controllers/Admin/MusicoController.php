@@ -26,10 +26,7 @@ class MusicoController extends Controller
         return view('admin.musicos.index', [
             'musicos' => Usuario::query()
                 ->with('igreja')
-                ->where(function ($query): void {
-                    $query->whereHas('papeisAtivosPorIgreja', fn ($subQuery) => $subQuery->where('papel', PapelIgreja::MUSICO->value))
-                        ->orWhere('perfil_global', 'member');
-                })
+                ->whereHas('papeisAtivosPorIgreja', fn ($subQuery) => $subQuery->where('papel', PapelIgreja::MUSICO->value))
                 ->orderBy('nome')
                 ->get(),
         ]);
@@ -171,7 +168,7 @@ class MusicoController extends Controller
     protected function garantirMusico(Usuario $musico): void
     {
         abort_unless(
-            $musico->temPapelNaIgreja(PapelIgreja::MUSICO) || $musico->perfil_global === 'member',
+            $musico->temPapelNaIgreja(PapelIgreja::MUSICO),
             404
         );
     }

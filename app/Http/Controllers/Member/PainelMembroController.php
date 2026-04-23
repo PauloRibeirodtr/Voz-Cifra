@@ -10,6 +10,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -60,6 +61,7 @@ class PainelMembroController extends Controller
         $dados = $request->validate([
             'email' => ['required', 'email', Rule::unique('usuarios', 'email')->ignore($usuario->id)],
             'telefone' => ['nullable', 'string', 'max:20'],
+            'foto_perfil' => ['nullable', 'image', 'max:2048'],
             'password' => [$primeiroAcesso ? 'required' : 'nullable', 'confirmed', new StrongPassword()],
             'theme_preference' => ['required', Rule::in(['system', 'light', 'dark'])],
         ], [
@@ -74,6 +76,15 @@ class PainelMembroController extends Controller
         if (!empty($dados['password'])) {
             $usuario->password = $dados['password'];
             $usuario->primeiro_acesso = false;
+        }
+
+        if ($request->hasFile('foto_perfil')) {
+            $caminhoAnterior = $usuario->foto_perfil_path;
+            $usuario->foto_perfil_path = $request->file('foto_perfil')->store('usuarios/fotos', 'public');
+
+            if (is_string($caminhoAnterior) && $caminhoAnterior !== '') {
+                Storage::disk('public')->delete($caminhoAnterior);
+            }
         }
 
         $usuario->save();

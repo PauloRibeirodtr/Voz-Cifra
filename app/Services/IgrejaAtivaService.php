@@ -109,18 +109,18 @@ class IgrejaAtivaService
             return false;
         }
 
-        if ((int) ($usuario->igreja_id ?? 0) === $igrejaId) {
+        if (!$this->tabelaVinculosDisponivel()) {
+            return (int) ($usuario->igreja_id ?? 0) === $igrejaId;
+        }
+
+        if ($usuario->vinculosIgreja()
+            ->where('igreja_id', $igrejaId)
+            ->where('ativo', true)
+            ->exists()) {
             return true;
         }
 
-        if (!$this->tabelaVinculosDisponivel()) {
-            return false;
-        }
-
-        return $usuario->vinculosIgreja()
-            ->where('igreja_id', $igrejaId)
-            ->where('ativo', true)
-            ->exists();
+        return (int) ($usuario->igreja_id ?? 0) === $igrejaId;
     }
 
     private function tabelaVinculosDisponivel(): bool

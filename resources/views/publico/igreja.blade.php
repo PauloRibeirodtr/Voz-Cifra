@@ -507,13 +507,21 @@
 </head>
 <body data-contrast="normal">
     <main class="page">
-        <div hidden data-public-status-sync data-state="{{ $estadoCelebracao }}" data-status-url="{{ route('igrejas.public.status', ['slug' => $igreja->slug]) }}" @if($countdownIso) data-target="{{ $countdownIso }}" @endif></div>
+        <div
+            hidden
+            data-public-status-sync
+            data-state="{{ $estadoCelebracao }}"
+            data-status-url="{{ ($modoPublico ?? 'fieis') === 'musicos'
+                ? route('igrejas.public.musicos.status', ['slug' => $igreja->slugPublicoMusicos()])
+                : route('igrejas.public.status', ['slug' => $igreja->slug]) }}"
+            @if($countdownIso) data-target="{{ $countdownIso }}" @endif
+        ></div>
 
         <section class="shell">
             <div class="hero">
                 <div class="hero-main">
                     <a href="{{ route('igrejas.public.show', ['slug' => $igreja->slug]) }}" class="brand">
-                        <img src="{{ asset('logo/final.png') }}" alt="Logo Voz &amp; Cifra">
+                        <img src="{{ $igreja->imagemUrl() }}" alt="Logo {{ $igreja->nome }}">
                         <div>
                             <p class="brand-kicker">Voz &amp; Cifra</p>
                             <p class="brand-name">

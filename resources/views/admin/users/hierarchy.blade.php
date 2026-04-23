@@ -2,7 +2,7 @@
 
 @section('title', 'Hierarquia de Usuarios | Voz & Cifra')
 @section('mobile_title', 'Hierarquia')
-@section('desktop_subtitle', 'Visao simples dos usuarios abaixo do nivel 7')
+@section('desktop_subtitle', 'Visao simples das contas abaixo do admin master')
 
 @section('content')
     @php
@@ -12,9 +12,7 @@
 
         $rotuloPerfil = static function (\App\Models\Usuario $usuario): string {
             return match ($usuario->perfil_global) {
-                'admin_master' => 'Admin master nivel ' . (method_exists($usuario, 'nivelGlobal') ? $usuario->nivelGlobal() : ($usuario->nivel_global ?? 1)),
-                'admin_local' => 'Administrador local',
-                'member' => 'Membro',
+                'admin_master' => 'Admin master',
                 default => 'Usuario',
             };
         };
@@ -23,7 +21,7 @@
     <div class="mb-6 sm:mb-8">
         <h1 class="text-2xl sm:text-3xl font-black text-gray-800">Hierarquia de usuarios</h1>
         <p class="mt-2 max-w-3xl text-sm text-gray-500 sm:text-base">
-            Esta tela mostra quem esta abaixo de voce na estrutura do sistema. A ideia e facilitar a administracao para o nivel global 7 sem exigir leitura tecnica.
+            Esta tela mostra quem esta abaixo de voce na estrutura do sistema. A ideia e facilitar a administracao central sem exigir leitura tecnica.
         </p>
     </div>
 
@@ -80,7 +78,7 @@
             <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h2 class="text-lg font-black text-gray-800">Admins master abaixo de voce</h2>
-                    <p class="mt-1 text-sm text-gray-500">Camada global imediatamente abaixo do nivel 7.</p>
+                    <p class="mt-1 text-sm text-gray-500">Camada global imediatamente abaixo da conta principal.</p>
                 </div>
                 <span class="inline-flex w-fit rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
                     {{ $adminsMasterAbaixo->count() }} usuarios

@@ -22,15 +22,7 @@ class CheckRole
             abort(403, 'Conta inativa.');
         }
 
-        if (method_exists($usuario, 'nivelGlobal') && $usuario->nivelGlobal() >= 6) {
-            return $next($request);
-        }
-
         if (method_exists($usuario, 'ehAdminMaster') && $usuario->ehAdminMaster()) {
-            return $next($request);
-        }
-
-        if (($usuario->perfil_global ?? null) === $papel) {
             return $next($request);
         }
 

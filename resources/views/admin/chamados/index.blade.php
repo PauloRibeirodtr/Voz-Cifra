@@ -2,7 +2,7 @@
 
 @section('title', 'Chamados | Voz & Cifra')
 @section('mobile_title', 'Chamados')
-@section('desktop_subtitle', 'Suporte central e fila operacional do nivel 7')
+@section('desktop_subtitle', 'Suporte central e fila operacional do admin master')
 
 @section('content')
     <div class="mb-6 sm:mb-8">

@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\TempoLiturgicoController;
 use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\Admin\VersaoMusicalController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\IgrejaAtivaController;
+use App\Http\Controllers\Media\PublicStorageController;
 use App\Http\Controllers\Coordenador\GestaoIgrejaController as CoordenadorGestaoIgrejaController;
 use App\Http\Controllers\LocalAdmin\MusicoController as LocalAdminMusicoController;
 use App\Http\Controllers\LocalAdmin\MissaController as LocalAdminMissaController;
@@ -36,6 +38,10 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
+Route::post('/contexto/igreja-ativa', [IgrejaAtivaController::class, 'update'])
+    ->middleware(['auth', 'verified_custom', 'primeiro_acesso'])
+    ->name('contexto.igreja-ativa.update');
+
 Route::middleware(['auth', 'verified_custom', 'super.admin', 'primeiro_acesso'])
     ->prefix('admin')
     ->name('admin.')
@@ -43,11 +49,8 @@ Route::middleware(['auth', 'verified_custom', 'super.admin', 'primeiro_acesso'])
         Route::get('/dashboard', [AdminMasterController::class, 'dashboard'])->name('dashboard');
         Route::get('/perfil', [AdminMasterController::class, 'profile'])->name('profile');
         Route::put('/perfil', [AdminMasterController::class, 'updateProfile'])->name('profile.update');
+        Route::post('/perfil/vinculos', [AdminMasterController::class, 'storeProfileVinculo'])->name('profile.vinculos.store');
         Route::get('/configuracoes', [AdminMasterController::class, 'settings'])->name('settings');
-        Route::post('/configuracoes/admins-master', [AdminMasterController::class, 'storeAdminMaster'])->name('admins-master.store');
-        Route::post('/configuracoes/admins-master/{usuario}/nivel-global', [AdminMasterController::class, 'updateNivelGlobal'])->name('admins-master.nivel-global.update');
-        Route::post('/configuracoes/admins-master/{usuario}/toggle', [AdminMasterController::class, 'toggleAdminMaster'])->name('admins-master.toggle');
-        Route::post('/configuracoes/admins-master/{usuario}/resetar-senha', [AdminMasterController::class, 'resetAdminMasterPassword'])->name('admins-master.password.reset');
 
         Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
         Route::get('/usuarios/criar', [UsuarioController::class, 'create'])->name('usuarios.create');
@@ -71,6 +74,8 @@ Route::middleware(['auth', 'verified_custom', 'super.admin', 'primeiro_acesso'])
         Route::post('/igrejas/{igreja}/admins-locais', [IgrejaController::class, 'storeAdminLocal'])->name('igrejas.admins-locais.store');
         Route::post('/igrejas/{igreja}/coordenadores', [IgrejaController::class, 'storeCoordenador'])->name('igrejas.coordenadores.store');
         Route::post('/igrejas/{igreja}/admin-local/resetar-senha', [IgrejaController::class, 'resetAdminLocalPassword'])->name('igrejas.admin-local.password.reset');
+        Route::post('/igrejas/{igreja}/usuarios/{usuario}/papeis', [IgrejaController::class, 'storePapelUsuarioVinculado'])->name('igrejas.usuarios.papeis.store');
+        Route::post('/igrejas/{igreja}/usuarios/{usuario}/papeis/remover', [IgrejaController::class, 'destroyPapelUsuarioVinculado'])->name('igrejas.usuarios.papeis.destroy');
 
         Route::get('/musicos', [AdminMusicoController::class, 'index'])->name('musicos.index');
         Route::get('/musicos/criar', [AdminMusicoController::class, 'create'])->name('musicos.create');
@@ -233,6 +238,10 @@ Route::get('/publico/musicos/{slug}/status', [IgrejaPublicaController::class, 's
 Route::get('/publico/musicos/{slug}', [IgrejaPublicaController::class, 'showMusicos'])
     ->where('slug', '[A-Za-z0-9\-]+')
     ->name('igrejas.public.musicos.show');
+
+Route::get('/media/public/{path}', [PublicStorageController::class, 'show'])
+    ->where('path', '.*')
+    ->name('media.public.show');
 
 Route::get('/{slug}', [IgrejaPublicaController::class, 'show'])
     ->where('slug', '[A-Za-z0-9\-]+')

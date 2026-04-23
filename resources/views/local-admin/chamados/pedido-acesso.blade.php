@@ -8,7 +8,7 @@
     <div class="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">Solicitar acesso para musico</h1>
-            <p class="mt-1 max-w-3xl text-sm text-gray-500">Somente admins locais podem abrir esse pedido. Escolha um musico da igreja, explique o motivo e o suporte nivel 7 recebe a solicitacao ja organizada.</p>
+            <p class="mt-1 max-w-3xl text-sm text-gray-500">Somente admins locais podem abrir esse pedido. Escolha um musico da igreja, explique o motivo e o suporte do admin master recebe a solicitacao ja organizada.</p>
         </div>
     </div>
 
@@ -124,7 +124,7 @@
                 <div class="mt-4 space-y-3 text-sm text-gray-600">
                     <p>1. Voce escolhe um musico da sua igreja.</p>
                     <p>2. Explica o motivo do acesso.</p>
-                    <p>3. O pedido entra como chamado para o nivel 7.</p>
+                    <p>3. O pedido entra como chamado para a fila central do admin master.</p>
                     <p>4. O suporte analisa e responde com o protocolo.</p>
                 </div>
             </section>

@@ -12,6 +12,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class Usuario extends Authenticatable
 {
@@ -25,6 +26,7 @@ class Usuario extends Authenticatable
         'cpf',
         'email',
         'telefone',
+        'foto_perfil_path',
         'password',
         'perfil_global',
         'nivel_global',
@@ -98,7 +100,7 @@ class Usuario extends Authenticatable
     {
         $nivel = (int) ($this->nivel_global ?? 0);
 
-        if ($nivel >= 1 && $nivel <= 7) {
+        if ($nivel >= 1 && $nivel <= 6) {
             return $nivel;
         }
 
@@ -146,21 +148,15 @@ class Usuario extends Authenticatable
                 return $vinculo->listarPapeisAtivos();
             }
 
-            return $this->listarPapeisLegadosNaIgreja($igrejaId);
+            return collect();
         }
 
-        $papeis = $this->vinculosIgrejaAtivos()
+        return $this->vinculosIgrejaAtivos()
             ->with('papeisAtivos')
             ->get()
             ->flatMap(fn (UsuarioIgreja $vinculo) => $vinculo->listarPapeisAtivos())
             ->unique(fn (PapelIgreja $papel) => $papel->value)
             ->values();
-
-        if ($papeis->isNotEmpty()) {
-            return $papeis;
-        }
-
-        return $this->listarPapeisLegadosNaIgreja($this->igreja_id !== null ? (int) $this->igreja_id : null);
     }
 
     public function temPapelNaIgreja(PapelIgreja|string $papel, Igreja|int|null $igreja = null): bool
@@ -237,6 +233,39 @@ class Usuario extends Authenticatable
         return null;
     }
 
+    public function igrejaAtivaId(): ?int
+    {
+        return $this->igrejaAtiva()?->id;
+    }
+
+    public function igrejasDisponiveisParaAtivacao(): Collection
+    {
+        return $this->vinculosIgrejaAtivos()
+            ->with('igreja')
+            ->get()
+            ->pluck('igreja')
+            ->filter(fn ($igreja) => $igreja instanceof Igreja)
+            ->unique('id')
+            ->values();
+    }
+
+    public function fotoPerfilUrl(): string
+    {
+        $path = trim((string) $this->foto_perfil_path);
+
+        if ($path !== '' && Storage::disk('public')->exists($path)) {
+            $url = route('media.public.show', ['path' => $path], false);
+
+            try {
+                return $url . '?v=' . Storage::disk('public')->lastModified($path);
+            } catch (\Throwable) {
+                return $url;
+            }
+        }
+
+        return asset('logo/final.png');
+    }
+
     public function musicasCriadas(): HasMany
     {
         return $this->hasMany(Musica::class, 'criado_por');
@@ -270,8 +299,7 @@ class Usuario extends Authenticatable
             return $this->temPapelNaIgreja(PapelIgreja::ADMIN_LOCAL, $igrejaAtivaId);
         }
 
-        return $this->temPapelNaIgreja(PapelIgreja::ADMIN_LOCAL)
-            || $this->perfil_global === 'admin_local';
+        return $this->temPapelNaIgreja(PapelIgreja::ADMIN_LOCAL);
     }
 
     public function ehCoordenador(): bool
@@ -297,8 +325,7 @@ class Usuario extends Authenticatable
 
         return $this->temPapelNaIgreja(PapelIgreja::MUSICO)
             || $this->temPapelNaIgreja(PapelIgreja::COORDENADOR)
-            || $this->temPapelNaIgreja(PapelIgreja::ADMIN_LOCAL)
-            || $this->perfil_global === 'member';
+            || $this->temPapelNaIgreja(PapelIgreja::ADMIN_LOCAL);
     }
 
     public function ehUsuarioGlobal(): bool
@@ -424,27 +451,6 @@ class Usuario extends Authenticatable
                 'igreja_id' => $igrejaPrincipalId,
             ])->save();
         }
-    }
-
-    protected function listarPapeisLegadosNaIgreja(?int $igrejaId = null): Collection
-    {
-        if ($igrejaId === null || (int) ($this->igreja_id ?? 0) !== $igrejaId) {
-            return collect();
-        }
-
-        $papeis = [];
-
-        if ($this->perfil_global === 'admin_local') {
-            $papeis[] = PapelIgreja::ADMIN_LOCAL;
-        }
-
-        if ($this->perfil_global === 'member') {
-            $papeis[] = PapelIgreja::MUSICO;
-        }
-
-        return collect($papeis)
-            ->unique(fn (PapelIgreja $papel) => $papel->value)
-            ->values();
     }
 
     protected function resolverIgrejaId(Igreja|int|null $igreja = null): ?int

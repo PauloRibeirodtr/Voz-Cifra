@@ -6,16 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\Acorde;
 use App\Models\Musica;
 use App\Models\VersaoMusical;
-use App\Rules\ValidChord;
+use App\Services\AuditoriaOperacionalService;
 use App\Services\NormalizadorCifrasService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class VersaoMusicalController extends Controller
 {
     public function __construct(
+        private readonly AuditoriaOperacionalService $auditoriaOperacionalService,
         private readonly NormalizadorCifrasService $normalizadorCifrasService
     ) {
     }
@@ -28,6 +30,7 @@ class VersaoMusicalController extends Controller
             'musica' => $musica,
             'acordes' => $acordes,
             'acordesValidos' => $acordes->pluck('nome')->values()->all(),
+            'tonsMusicais' => config('musical.tons', []),
         ]);
     }
 
@@ -35,11 +38,13 @@ class VersaoMusicalController extends Controller
     {
         $dados = $request->validate([
             'titulo' => ['nullable', 'string', 'max:255'],
-            'tom_musical' => ['nullable', 'string', 'max:50', new ValidChord()],
+            'tom_musical' => ['nullable', Rule::in(config('musical.tons', []))],
             'bpm' => ['nullable', 'integer', 'min:1', 'max:999'],
             'youtube_video_id' => ['nullable', 'string', 'max:255'],
             'letra_com_cifras' => ['required', 'string'],
             'ativo' => ['nullable', 'boolean'],
+        ], [
+            'tom_musical.in' => 'Escolha um tom musical padronizado da lista.',
         ]);
 
         $acordesValidos = Acorde::where('ativo', true)->pluck('nome')->all();
@@ -58,6 +63,20 @@ class VersaoMusicalController extends Controller
             'criado_por' => $usuario->id,
             'ativo' => $this->podeInativarRegistros() ? (bool) ($dados['ativo'] ?? true) : true,
         ]);
+
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'versao_musical_criada',
+            ator: $usuario,
+            igreja: null,
+            contexto: [
+                'origem' => 'admin_versoes_musicais_store',
+                'origem_id' => $versaoMusical->id,
+                'musica_id' => $musica->id,
+                'musica_titulo' => $musica->titulo,
+                'tom_musical' => $versaoMusical->tom_musical,
+                'resumo' => 'Versao musical criada com cifras para a musica base.',
+            ]
+        );
 
         $redirecionamento = redirect()
             ->route($this->routeName('versoes-musicais.show'), [$musica, $versaoMusical])
@@ -119,6 +138,7 @@ class VersaoMusicalController extends Controller
             'versaoMusical' => $versaoMusical,
             'acordes' => $acordes,
             'acordesValidos' => $acordes->pluck('nome')->values()->all(),
+            'tonsMusicais' => config('musical.tons', []),
         ]);
     }
 
@@ -128,15 +148,19 @@ class VersaoMusicalController extends Controller
 
         $dados = $request->validate([
             'titulo' => ['nullable', 'string', 'max:255'],
-            'tom_musical' => ['nullable', 'string', 'max:50', new ValidChord()],
+            'tom_musical' => ['nullable', Rule::in(config('musical.tons', []))],
             'bpm' => ['nullable', 'integer', 'min:1', 'max:999'],
             'youtube_video_id' => ['nullable', 'string', 'max:255'],
             'letra_com_cifras' => ['required', 'string'],
             'ativo' => ['nullable', 'boolean'],
+        ], [
+            'tom_musical.in' => 'Escolha um tom musical padronizado da lista.',
         ]);
 
         $acordesValidos = Acorde::where('ativo', true)->pluck('nome')->all();
         $resultadoCifras = $this->normalizadorCifrasService->processar($dados['letra_com_cifras'], $acordesValidos);
+        /** @var \App\Models\Usuario|null $usuario */
+        $usuario = Auth::user();
 
         $versaoMusical->update([
             'titulo' => $dados['titulo'] ?? null,
@@ -146,6 +170,20 @@ class VersaoMusicalController extends Controller
             'letra_com_cifras' => $resultadoCifras['texto_normalizado'],
             'ativo' => $this->podeInativarRegistros() ? (bool) ($dados['ativo'] ?? false) : (bool) $versaoMusical->ativo,
         ]);
+
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'versao_musical_editada',
+            ator: $usuario,
+            igreja: null,
+            contexto: [
+                'origem' => 'admin_versoes_musicais_update',
+                'origem_id' => $versaoMusical->id,
+                'musica_id' => $musica->id,
+                'musica_titulo' => $musica->titulo,
+                'tom_musical' => $versaoMusical->tom_musical,
+                'resumo' => 'Versao musical atualizada na biblioteca.',
+            ]
+        );
 
         $redirecionamento = redirect()
             ->route($this->routeName('versoes-musicais.show'), [$musica, $versaoMusical])
@@ -169,6 +207,21 @@ class VersaoMusicalController extends Controller
         $versaoMusical->update([
             'ativo' => false,
         ]);
+
+        /** @var \App\Models\Usuario|null $usuario */
+        $usuario = Auth::user();
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'versao_musical_inativada',
+            ator: $usuario,
+            igreja: null,
+            contexto: [
+                'origem' => 'admin_versoes_musicais_destroy',
+                'origem_id' => $versaoMusical->id,
+                'musica_id' => $musica->id,
+                'musica_titulo' => $musica->titulo,
+                'resumo' => 'Versao musical marcada como inativa.',
+            ]
+        );
 
         return redirect()
             ->route($this->routeName('musicas.show'), $musica)
@@ -221,7 +274,19 @@ class VersaoMusicalController extends Controller
     {
         $tom = trim((string) $tom);
 
-        return $tom !== '' ? $tom : null;
+        if ($tom === '') {
+            return null;
+        }
+
+        $tonsDisponiveis = config('musical.tons', []);
+
+        foreach ($tonsDisponiveis as $tomDisponivel) {
+            if (strcasecmp((string) $tomDisponivel, $tom) === 0) {
+                return (string) $tomDisponivel;
+            }
+        }
+
+        return $tom;
     }
 
     private function adaptarAcordeParaPreview(Acorde $acorde): array

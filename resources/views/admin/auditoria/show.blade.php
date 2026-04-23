@@ -14,6 +14,7 @@
             <section class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-700">{{ $auditoria->protocolo }}</span>
+                    <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">{{ ucfirst($auditoria->categoria) }}</span>
                     <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">{{ $auditoria->evento }}</span>
                     <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $auditoria->resultado === 'email_falhou' ? 'bg-red-100 text-red-700' : ($auditoria->resultado === 'email_enviado' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700') }}">
                         {{ $auditoria->resultado }}
@@ -22,6 +23,12 @@
 
                 <h1 class="mt-4 text-2xl font-black text-gray-800">Evento auditado</h1>
                 <p class="mt-2 text-sm text-gray-600">Este registro mostra quem executou a acao, para quem ela valeu e qual foi o resultado da tentativa de notificacao.</p>
+
+                @if (filled($contexto['resumo'] ?? null))
+                    <div class="mt-5 rounded-2xl bg-amber-50 px-4 py-4 text-sm text-amber-900">
+                        {{ $contexto['resumo'] }}
+                    </div>
+                @endif
 
                 <div class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div class="rounded-2xl bg-gray-50 px-4 py-4">

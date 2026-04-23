@@ -19,7 +19,7 @@
 @endpush
 
 @section('content')
-    <div class="max-w-7xl mx-auto">
+    <div class="w-full">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
             <div class="bg-white w-full rounded-[2rem] shadow-lg overflow-hidden">
                 <div class="p-6 md:p-10">

@@ -1,4 +1,4 @@
-@php
+ï»¿@php
     $classeInput = 'mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-100';
     $letraInicial = old('letra_com_cifras', $versaoMusical->letra_com_cifras ?? $musica->letra ?? '');
 @endphp
@@ -32,7 +32,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Tom musical</label>
-                        <input type="text" name="tom_musical" value="{{ old('tom_musical', $versaoMusical->tom_musical ?? '') }}" placeholder="Ex.: G, Dm, F#m" class="{{ $classeInput }}" />
+                        <select name="tom_musical" class="{{ $classeInput }}">
+                            <option value="">Selecione um tom</option>
+                            @foreach (($tonsMusicais ?? []) as $tomMusical)
+                                <option value="{{ $tomMusical }}" @selected(old('tom_musical', $versaoMusical->tom_musical ?? '') === $tomMusical)>
+                                    {{ $tomMusical }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">Use um tom padronizado para manter o repertorio consistente entre igrejas e versoes.</p>
                     </div>
 
                     <div>
@@ -53,59 +61,56 @@
                             <i class="fa-solid fa-circle-info"></i>
                         </div>
 
-                        <div class="flex-1 space-y-3 text-sm text-blue-900">
+                        <div class="flex-1 space-y-4 text-sm text-blue-900">
                             <div>
                                 <h2 class="text-base font-bold">Como preencher a cifra</h2>
-                                <p class="text-blue-800">Voce pode colar a cifra em formato com colchetes ou estilo Cifra Club. O sistema tenta converter automaticamente para o formato interno com colchetes. Depois da conversao, revise a posicao dos acordes antes de salvar, pois alguns casos podem exigir ajuste manual.</p>
+                                <p class="text-blue-800">Cole a cifra com colchetes ou no estilo Cifra Club. A previa abaixo mostra ao vivo como a versao com cifra e a leitura sem cifra vao ficar.</p>
                             </div>
 
-                            <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                                <div class="rounded-xl border border-green-200 bg-white p-4">
-                                    <h3 class="text-sm font-bold text-green-700 mb-3">Formato 1: com colchetes</h3>
-                                    <pre class="whitespace-pre-wrap break-words font-mono text-sm leading-7 text-gray-800">[G]Quao grande e o meu Deus
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div class="rounded-xl border border-blue-200 bg-white px-4 py-3">
+                                    <div class="text-xs font-black uppercase tracking-[0.16em] text-blue-600">Aceito</div>
+                                    <p class="mt-2 text-sm text-gray-700">`[G]Quao grande e o meu Deus`</p>
+                                </div>
+                                <div class="rounded-xl border border-blue-200 bg-white px-4 py-3">
+                                    <div class="text-xs font-black uppercase tracking-[0.16em] text-blue-600">Aceito</div>
+                                    <p class="mt-2 text-sm text-gray-700">Linha de acorde acima da letra, estilo Cifra Club.</p>
+                                </div>
+                                <div class="rounded-xl border border-red-200 bg-white px-4 py-3">
+                                    <div class="text-xs font-black uppercase tracking-[0.16em] text-red-600">Evite</div>
+                                    <p class="mt-2 text-sm text-gray-700">Varios acordes soltos sem alinhamento com a letra.</p>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" class="rounded-full border border-blue-200 bg-white px-4 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100" data-exemplo-toggle="colchetes">
+                                    Ver exemplo com colchetes
+                                </button>
+                                <button type="button" class="rounded-full border border-blue-200 bg-white px-4 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100" data-exemplo-toggle="cifraclub">
+                                    Ver exemplo estilo Cifra Club
+                                </button>
+                                <button type="button" class="rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-100" data-exemplo-toggle="interno">
+                                    Ver texto interno
+                                </button>
+                            </div>
+
+                            <div class="hidden rounded-xl border border-blue-200 bg-white p-4" data-exemplo-painel="colchetes">
+                                <pre class="whitespace-pre-wrap break-words font-mono text-sm leading-7 text-gray-800">[G]Quao grande e o meu Deus
 [D/F#]Cantarei quao grande e o meu Deus
 [Em7]E todos hao de ver
 [C9]Quao grande e o meu Deus</pre>
-                                    <p class="mt-3 text-xs text-green-700">Esse ja e o formato interno do sistema.</p>
-                                </div>
-
-                                <div class="rounded-xl border border-blue-200 bg-white p-4">
-                                    <h3 class="text-sm font-bold text-blue-700 mb-3">Formato 2: estilo Cifra Club</h3>
-                                    <pre class="whitespace-pre-wrap break-words font-mono text-sm leading-7 text-gray-800">   G
-Quao grande e o meu Deus
-      D/F#  Em7
-Cantarei quao grande e o meu Deus</pre>
-                                    <p class="mt-3 text-xs text-blue-700">Esse formato tambem e aceito. O sistema tenta converter para colchetes, mas vale revisar o resultado antes de salvar.</p>
-                                </div>
                             </div>
 
-                            <div class="rounded-xl border border-amber-200 bg-white p-4">
-                                <h3 class="text-sm font-bold text-amber-700 mb-3">Exemplo real: Quao grande e o meu Deus</h3>
+                            <div class="hidden rounded-xl border border-blue-200 bg-white p-4" data-exemplo-painel="cifraclub">
                                 <pre class="whitespace-pre-wrap break-words font-mono text-sm leading-7 text-gray-800">   G
 Quao grande e o meu Deus
       D/F#  Em7
-Cantarei quao grande e o meu Deus
-         Em/D   C9
-E todos hao de ver
-       C/D           G   C/D
-Quao grande e o meu Deus</pre>
-                                <p class="mt-3 text-xs text-amber-700">Se colar nesse formato, o sistema tenta converter para a marcacao com colchetes e prioriza um resultado legivel.</p>
+Cantarei quao grande e o meu Deus</pre>
                             </div>
 
-                            <div class="rounded-xl border border-red-200 bg-white p-4">
-                                <h3 class="text-sm font-bold text-red-700 mb-3">Formato que deve ser evitado</h3>
-                                <pre class="whitespace-pre-wrap break-words font-mono text-sm leading-7 text-gray-800">G D/F# Em7 C9
-Quao grande e o meu Deus</pre>
-                                <p class="mt-3 text-xs text-red-700">Evite colocar varios acordes soltos na mesma linha sem alinhamento com a letra, porque isso prejudica a conversao automatica.</p>
-                            </div>
-
-                            <div class="space-y-1 text-blue-800">
-                                <p>O sistema usa os <strong>colchetes</strong> para reconhecer a cifra no formato interno.</p>
-                                <p>O preview sem cifras remove automaticamente apenas os acordes reconhecidos.</p>
-                                <p>Os acordes sao comparados com a biblioteca cadastrada, mas acordes invalidos nao bloqueiam o salvamento nesta etapa.</p>
-                                <p>A biblioteca de acordes ao lado pode ser usada como apoio visual.</p>
-                                <p>Ao clicar em um acorde da biblioteca, ele e inserido no cursor do editor.</p>
-                                <p>Revise sempre o resultado da conversao antes de salvar.</p>
+                            <div class="hidden rounded-xl border border-gray-200 bg-white p-4" data-exemplo-painel="interno">
+                                <h3 class="text-sm font-bold text-gray-800 mb-2">Formato interno gerado</h3>
+                                <pre id="preview_padrao_interno" class="whitespace-pre-wrap break-words font-mono text-sm leading-7 text-gray-800"></pre>
                             </div>
 
                             <div id="painel_validacao_cifras" class="hidden rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
@@ -120,12 +125,6 @@ Quao grande e o meu Deus</pre>
                         </div>
                     </div>
                 </div>
-
-                <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
-                    <h3 class="font-semibold text-gray-800 mb-2">Padrao interno gerado pelo sistema</h3>
-                    <p class="mb-3 text-xs text-gray-500">Confira se os acordes ficaram em posicoes legiveis antes de salvar.</p>
-                    <pre id="preview_padrao_interno" class="whitespace-pre-wrap break-words font-mono text-sm leading-7 text-gray-800"></pre>
-                                </div>
 
                 <div>
                     <div class="flex items-center justify-between gap-3">
@@ -148,15 +147,24 @@ Quao grande e o meu Deus</pre>
 
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <h2 class="text-lg font-bold text-gray-800 mb-4">Pre-visualizacao</h2>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div>
-                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Visao interna com cifras</h3>
-                    <pre id="preview_com_cifras" class="min-h-[260px] rounded-xl bg-gray-900 text-green-200 p-4 whitespace-pre-wrap break-words text-sm leading-7"></pre>
+            <div class="mb-4 flex flex-wrap gap-2">
+                <button type="button" class="rounded-full bg-green-700 px-4 py-2 text-sm font-semibold text-white" data-preview-toggle="com-cifras">
+                    Ver com cifra
+                </button>
+                <button type="button" class="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700" data-preview-toggle="sem-cifras">
+                    Ver sem cifra
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div data-preview-panel="com-cifras">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Visao com cifra</h3>
+                    <div id="preview_com_cifras" class="min-h-[320px] rounded-xl bg-slate-900 p-5 text-green-100 border border-slate-800 overflow-auto"></div>
                 </div>
 
-                <div>
-                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Visao futura sem cifras</h3>
-                    <pre id="preview_sem_cifras" class="min-h-[260px] rounded-xl bg-gray-50 text-gray-700 p-4 whitespace-pre-wrap break-words text-sm leading-7 border border-gray-200"></pre>
+                <div class="hidden" data-preview-panel="sem-cifras">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Visao sem cifra</h3>
+                    <div id="preview_sem_cifras" class="min-h-[320px] rounded-xl bg-gray-50 p-5 text-gray-800 border border-gray-200"></div>
                 </div>
             </div>
         </div>
@@ -202,6 +210,11 @@ Quao grande e o meu Deus</pre>
         const painelValidacaoCifras = document.getElementById('painel_validacao_cifras');
         const listaAcordesInvalidos = document.getElementById('lista_acordes_invalidos');
         const acordesValidos = @json($acordesValidos ?? []);
+        const bibliotecaAcordes = new Set(acordesValidos.map((item) => String(item).toUpperCase()));
+        const botoesPreview = document.querySelectorAll('[data-preview-toggle]');
+        const paineisPreview = document.querySelectorAll('[data-preview-panel]');
+        const botoesExemplo = document.querySelectorAll('[data-exemplo-toggle]');
+        const paineisExemplo = document.querySelectorAll('[data-exemplo-painel]');
 
         if (!textarea || !previewComCifras || !previewSemCifras || !previewPadraoInterno) {
             return;
@@ -214,7 +227,7 @@ Quao grande e o meu Deus</pre>
                 return false;
             }
 
-            return /^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\\+|-|[0-9#b])|\\([^)]+\\))*(?:\\/[A-G](?:#|b)?)?$/.test(texto);
+            return /^[A-G](?:#|b)?(?:m|maj|min|dim|aug|sus|add|omit|no|M|Âº|Â°|-|\+|[0-9#b()])*(?:\/[A-G](?:#|b)?)?$/i.test(texto);
         };
 
         const ehLinhaTablatura = (linha) => {
@@ -338,15 +351,80 @@ Quao grande e o meu Deus</pre>
             }).trim();
         };
 
+        const escaparHtml = (texto) => {
+            return (texto || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        };
+
+        const renderizarLinhaComCifras = (linha) => {
+            const linhaLimpa = linha.trim();
+
+            if (!linhaLimpa) {
+                return '<div class="h-5"></div>';
+            }
+
+            const marcacao = linhaLimpa.match(/^\[(.+)\]$/);
+            if (marcacao && !ehAcorde(marcacao[1])) {
+                return `<div class="my-2 inline-flex rounded-full bg-slate-700/80 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-100">${escaparHtml(marcacao[1])}</div>`;
+            }
+
+            const html = linha.replace(/\[([^\[\]\r\n]+)\]/g, (trechoCompleto, interno) => {
+                const acorde = String(interno || '').trim();
+
+                if (!ehAcorde(acorde)) {
+                    return `<span class="text-slate-300">${escaparHtml(trechoCompleto)}</span>`;
+                }
+
+                return `<span class="mx-[0.08rem] inline-flex rounded-md bg-slate-800 px-1.5 py-0.5 align-middle text-[0.95rem] font-extrabold leading-none text-orange-300">${escaparHtml(acorde)}</span>`;
+            });
+
+            return `<div class="mb-3 whitespace-pre-wrap break-words text-[1.02rem] leading-8 text-slate-100">${html}</div>`;
+        };
+
+        const renderizarComCifras = (texto) => {
+            const linhas = (texto || '').split('\n');
+            const html = linhas.map(renderizarLinhaComCifras).join('');
+
+            return html || '<p class="text-sm text-slate-400">A previa com cifra aparecera aqui.</p>';
+        };
+
+        const renderizarSemCifras = (texto) => {
+            const linhas = removerCifras(texto).split('\n');
+            const blocos = [];
+
+            linhas.forEach((linha) => {
+                const linhaLimpa = linha.trim();
+
+                if (!linhaLimpa) {
+                    blocos.push('<div class="h-4"></div>');
+                    return;
+                }
+
+                const marcacao = linhaLimpa.match(/^\[(.+)\]$/);
+                if (marcacao && !ehAcorde(marcacao[1])) {
+                    blocos.push(`<div class="my-4 inline-flex rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-indigo-700">${escaparHtml(marcacao[1])}</div>`);
+                    return;
+                }
+
+                blocos.push(`<p class="mb-3 whitespace-pre-wrap break-words text-[1.02rem] leading-8 text-gray-800">${escaparHtml(linhaLimpa)}</p>`);
+            });
+
+            return blocos.join('') || '<p class="text-sm text-gray-500">A previa sem cifra aparecera aqui.</p>';
+        };
+
         const atualizarPreview = () => {
             const valor = textarea.value || '';
             const resultado = normalizarFormato(valor);
             const acordesEncontrados = extrairAcordes(resultado.textoNormalizado);
-            const acordesInvalidos = acordesEncontrados.filter((acorde) => !acordesValidos.map((item) => item.toUpperCase()).includes(acorde.toUpperCase()));
+            const acordesInvalidos = acordesEncontrados.filter((acorde) => !bibliotecaAcordes.has(acorde.toUpperCase()));
 
             previewPadraoInterno.textContent = resultado.textoNormalizado;
-            previewComCifras.textContent = resultado.textoNormalizado;
-            previewSemCifras.textContent = removerCifras(resultado.textoNormalizado);
+            previewComCifras.innerHTML = renderizarComCifras(resultado.textoNormalizado);
+            previewSemCifras.innerHTML = renderizarSemCifras(resultado.textoNormalizado);
 
             if (resultado.houveConversao) {
                 painelConversaoAutomatica.classList.remove('hidden');
@@ -389,9 +467,49 @@ Quao grande e o meu Deus</pre>
             });
         });
 
+        const ativarPreview = (modo) => {
+            botoesPreview.forEach((botao) => {
+                const ativo = botao.dataset.previewToggle === modo;
+                botao.classList.toggle('bg-green-700', ativo);
+                botao.classList.toggle('text-white', ativo);
+                botao.classList.toggle('border', !ativo);
+                botao.classList.toggle('border-gray-200', !ativo);
+                botao.classList.toggle('bg-white', !ativo);
+                botao.classList.toggle('text-gray-700', !ativo);
+            });
+
+            paineisPreview.forEach((painel) => {
+                painel.classList.toggle('hidden', painel.dataset.previewPanel !== modo);
+            });
+        };
+
+        const ativarExemplo = (modo) => {
+            botoesExemplo.forEach((botao) => {
+                const ativo = botao.dataset.exemploToggle === modo;
+                botao.classList.toggle('border-blue-500', ativo);
+                botao.classList.toggle('bg-blue-100', ativo);
+                botao.classList.toggle('text-blue-800', ativo);
+            });
+
+            paineisExemplo.forEach((painel) => {
+                painel.classList.toggle('hidden', painel.dataset.exemploPainel !== modo);
+            });
+        };
+
+        botoesPreview.forEach((botao) => {
+            botao.addEventListener('click', () => ativarPreview(botao.dataset.previewToggle));
+        });
+
+        botoesExemplo.forEach((botao) => {
+            botao.addEventListener('click', () => ativarExemplo(botao.dataset.exemploToggle));
+        });
+
+        ativarPreview('com-cifras');
+        ativarExemplo('colchetes');
         atualizarPreview();
     })();
 </script>
 @endpush
+
 
 

@@ -7,11 +7,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Igreja;
 use App\Models\Usuario;
 use App\Rules\StrongPassword;
+use App\Services\AuditoriaOperacionalService;
 use App\Services\GestaoUsuariosIgrejaService;
+use App\Services\StatusOperacionalIgrejaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -21,7 +24,9 @@ use Illuminate\View\View;
 class IgrejaController extends Controller
 {
     public function __construct(
-        private readonly GestaoUsuariosIgrejaService $gestaoUsuariosIgrejaService
+        private readonly GestaoUsuariosIgrejaService $gestaoUsuariosIgrejaService,
+        private readonly StatusOperacionalIgrejaService $statusOperacionalIgrejaService,
+        private readonly AuditoriaOperacionalService $auditoriaOperacionalService
     ) {
     }
 
@@ -47,6 +52,10 @@ class IgrejaController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $request->merge([
+            'criar_admin_local_agora' => $this->normalizarOpcaoAdminLocal($request->input('criar_admin_local_agora')),
+        ]);
+
         $dados = $request->validate([
             'nome' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'alpha_dash', Rule::unique('igrejas', 'slug')],
@@ -55,7 +64,9 @@ class IgrejaController extends Controller
             'endereco' => ['nullable', 'string', 'max:255'],
             'cidade' => ['required', 'string', 'max:255'],
             'estado' => ['required', 'string', 'size:2'],
+            'imagem' => ['nullable', 'image', 'max:2048'],
             'ativo' => ['nullable', 'boolean'],
+            'criar_admin_local_agora' => ['nullable', 'boolean'],
             'admin_nome' => ['nullable', 'string', 'max:255'],
             'admin_cpf' => ['nullable', 'string', 'max:14'],
             'admin_email' => ['nullable', 'email', 'max:255'],
@@ -82,6 +93,7 @@ class IgrejaController extends Controller
                 'endereco' => $dados['endereco'] ?? null,
                 'cidade' => $dados['cidade'],
                 'estado' => strtoupper($dados['estado']),
+                'status_operacional' => 'aguardando_admin_local',
                 'ativo' => (bool) ($dados['ativo'] ?? true),
             ]);
 
@@ -92,17 +104,44 @@ class IgrejaController extends Controller
             return $igreja;
         });
 
+        if ($request->hasFile('imagem')) {
+            $igreja->imagem_path = $request->file('imagem')->store('igrejas/imagens', 'public');
+            $igreja->save();
+        }
+
+        $igreja = $this->statusOperacionalIgrejaService->atualizar($igreja);
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'igreja_criada',
+            ator: $ator,
+            alvo: $adminLocalCriado,
+            igreja: $igreja,
+            contexto: [
+                'origem' => 'admin_igrejas_store',
+                'status_operacional' => $igreja->status_operacional,
+                'admin_local_vinculado' => $adminLocalCriado instanceof Usuario,
+                'resumo' => $adminLocalCriado instanceof Usuario
+                    ? 'Igreja criada e liberada para operacao com admin local ativo.'
+                    : 'Igreja criada sem admin local e mantida em aguardando admin local.',
+            ]
+        );
+
         return redirect()
             ->route('admin.igrejas.edit', $igreja)
             ->with('success', $adminLocalCriado instanceof Usuario
-                ? 'Igreja e administrador local cadastrados com sucesso. O link publico fixo e o QR Code desta igreja ja estao prontos para uso futuro.'
-                : 'Igreja cadastrada com sucesso. Voce pode vincular o admin local depois, quando a unidade estiver pronta.');
+                ? 'Igreja cadastrada com sucesso. O administrador local foi vinculado e a unidade ja esta operacional para missas, repertorios e publicacoes.'
+                : 'Igreja cadastrada com sucesso. A unidade ficou em aguardando admin local e ainda nao pode operar missas, repertorios ou publicacoes.');
     }
 
     public function edit(Igreja $igreja): View
     {
         $adminsLocais = $this->obterAdminsLocais($igreja);
         $coordenadores = $this->obterCoordenadores($igreja);
+        $usuariosVinculados = $igreja->vinculosUsuarios()
+            ->where('ativo', true)
+            ->with(['usuario', 'papeisAtivos'])
+            ->get()
+            ->filter(fn ($vinculo) => $vinculo->usuario !== null)
+            ->values();
         $igreja = $this->adicionarDadosPublicos($igreja);
 
         return view('admin.churches.edit', [
@@ -110,11 +149,16 @@ class IgrejaController extends Controller
             'adminLocal' => $adminsLocais->first(),
             'adminsLocais' => $adminsLocais,
             'coordenadores' => $coordenadores,
+            'usuariosVinculados' => $usuariosVinculados,
         ]);
     }
 
     public function update(Request $request, Igreja $igreja): RedirectResponse
     {
+        $request->merge([
+            'criar_admin_local_agora' => $this->normalizarOpcaoAdminLocal($request->input('criar_admin_local_agora')),
+        ]);
+
         $adminLocal = $this->obterAdminLocal($igreja);
 
         $dados = $request->validate([
@@ -125,7 +169,9 @@ class IgrejaController extends Controller
             'endereco' => ['nullable', 'string', 'max:255'],
             'cidade' => ['required', 'string', 'max:255'],
             'estado' => ['required', 'string', 'size:2'],
+            'imagem' => ['nullable', 'image', 'max:2048'],
             'ativo' => ['nullable', 'boolean'],
+            'criar_admin_local_agora' => ['nullable', 'boolean'],
             'admin_nome' => ['nullable', 'string', 'max:255'],
             'admin_cpf' => ['nullable', 'string', 'max:14'],
             'admin_email' => ['nullable', 'email', 'max:255'],
@@ -168,9 +214,37 @@ class IgrejaController extends Controller
             );
         });
 
+        if ($request->hasFile('imagem')) {
+            $caminhoAnterior = $igreja->imagem_path;
+            $igreja->imagem_path = $request->file('imagem')->store('igrejas/imagens', 'public');
+            $igreja->save();
+
+            if (is_string($caminhoAnterior) && $caminhoAnterior !== '') {
+                Storage::disk('public')->delete($caminhoAnterior);
+            }
+        }
+
+        $igreja = $this->statusOperacionalIgrejaService->atualizar($igreja);
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'igreja_editada',
+            ator: $ator,
+            alvo: $this->obterAdminLocal($igreja),
+            igreja: $igreja,
+            contexto: [
+                'origem' => 'admin_igrejas_update',
+                'status_operacional' => $igreja->status_operacional,
+                'admin_local_revisado' => $this->dadosDeAdminLocalPreenchidos($dados),
+                'resumo' => $igreja->estaOperacional()
+                    ? 'Dados da igreja atualizados mantendo a unidade operacional.'
+                    : 'Dados da igreja atualizados; a unidade segue aguardando admin local.',
+            ]
+        );
+
         return redirect()
             ->route('admin.igrejas.edit', $igreja)
-            ->with('success', 'Igreja atualizada com sucesso.');
+            ->with('success', $igreja->estaOperacional()
+                ? 'Igreja atualizada com sucesso. A unidade segue operacional.'
+                : 'Igreja atualizada com sucesso. A unidade continua aguardando admin local para operar missas, repertorios e publicacoes.');
     }
 
     public function resetAdminLocalPassword(Request $request, Igreja $igreja): RedirectResponse
@@ -239,9 +313,11 @@ class IgrejaController extends Controller
             'admin_telefone' => $dados['telefone'] ?? null,
         ], Auth::user(), 'admin_igrejas_store_admin_local');
 
+        $this->statusOperacionalIgrejaService->atualizar($igreja);
+
         return redirect()
             ->route('admin.igrejas.edit', $igreja)
-            ->with('success', 'Admin local adicional cadastrado com sucesso.');
+            ->with('success', 'Administrador local vinculado com sucesso. A unidade foi atualizada para o fluxo operacional correto.');
     }
 
     public function storeCoordenador(Request $request, Igreja $igreja): RedirectResponse
@@ -272,6 +348,60 @@ class IgrejaController extends Controller
             ->with('success', 'Coordenador vinculado a igreja com sucesso.');
     }
 
+    public function storePapelUsuarioVinculado(Request $request, Igreja $igreja, Usuario $usuario): RedirectResponse
+    {
+        $dados = $request->validate([
+            'papel' => ['required', Rule::in([
+                PapelIgreja::ADMIN_LOCAL->value,
+                PapelIgreja::COORDENADOR->value,
+                PapelIgreja::MUSICO->value,
+            ])],
+        ]);
+
+        abort_unless($usuario->vinculoNaIgreja($igreja)?->ativo, 404);
+
+        $papel = PapelIgreja::fromValue((string) $dados['papel']);
+
+        $this->gestaoUsuariosIgrejaService->atribuirPapeisAoUsuarioExistente(
+            usuario: $usuario,
+            igreja: $igreja,
+            papeis: [$papel],
+            ator: Auth::user(),
+            origem: 'admin_igrejas_store_papel_usuario_vinculado'
+        );
+
+        return redirect()
+            ->route('admin.igrejas.edit', $igreja)
+            ->with('success', sprintf('%s agora atua como %s nesta igreja.', $usuario->nome, mb_strtolower($papel->label())));
+    }
+
+    public function destroyPapelUsuarioVinculado(Request $request, Igreja $igreja, Usuario $usuario): RedirectResponse
+    {
+        $dados = $request->validate([
+            'papel' => ['required', Rule::in([
+                PapelIgreja::ADMIN_LOCAL->value,
+                PapelIgreja::COORDENADOR->value,
+                PapelIgreja::MUSICO->value,
+            ])],
+        ]);
+
+        abort_unless($usuario->vinculoNaIgreja($igreja)?->ativo, 404);
+
+        $papel = PapelIgreja::fromValue((string) $dados['papel']);
+
+        $this->gestaoUsuariosIgrejaService->revogarPapelDeUsuarioExistente(
+            usuario: $usuario,
+            igreja: $igreja,
+            papel: $papel,
+            ator: Auth::user(),
+            origem: 'admin_igrejas_destroy_papel_usuario_vinculado'
+        );
+
+        return redirect()
+            ->route('admin.igrejas.edit', $igreja)
+            ->with('success', sprintf('%s deixou de atuar como %s nesta igreja.', $usuario->nome, mb_strtolower($papel->label())));
+    }
+
     protected function obterAdminLocal(Igreja $igreja): ?Usuario
     {
         return $this->obterAdminsLocais($igreja)->first();
@@ -279,16 +409,7 @@ class IgrejaController extends Controller
 
     protected function obterAdminsLocais(Igreja $igreja)
     {
-        $adminsLocais = $igreja->usuariosComPapel(PapelIgreja::ADMIN_LOCAL)
-            ->orderBy('nome')
-            ->get();
-
-        if ($adminsLocais->isNotEmpty()) {
-            return $adminsLocais;
-        }
-
-        return $igreja->usuarios()
-            ->where('perfil_global', 'admin_local')
+        return $igreja->usuariosComPapel(PapelIgreja::ADMIN_LOCAL)
             ->orderBy('nome')
             ->get();
     }
@@ -385,6 +506,12 @@ class IgrejaController extends Controller
 
     protected function validarConjuntoAdminLocal(Request $request): void
     {
+        $deveCadastrarAgora = (bool) $this->normalizarOpcaoAdminLocal($request->input('criar_admin_local_agora'));
+
+        if (!$deveCadastrarAgora) {
+            return;
+        }
+
         $campos = [
             'admin_nome',
             'admin_cpf',
@@ -394,18 +521,30 @@ class IgrejaController extends Controller
 
         $preenchidos = collect($campos)->contains(fn (string $campo) => filled($request->input($campo)));
 
-        if (!$preenchidos) {
-            return;
-        }
-
         Validator::make($request->all(), [
             'admin_nome' => ['required', 'string', 'max:255'],
             'admin_cpf' => ['required', 'string', 'max:14'],
             'admin_email' => ['required', 'email', 'max:255'],
         ], [
-            'admin_nome.required' => 'Informe o nome do admin local ou deixe o bloco em branco para cadastrar depois.',
-            'admin_cpf.required' => 'Informe o CPF do admin local ou deixe o bloco em branco para cadastrar depois.',
-            'admin_email.required' => 'Informe o e-mail do admin local ou deixe o bloco em branco para cadastrar depois.',
+            'admin_nome.required' => $preenchidos
+                ? 'Informe o nome do admin local para concluir o cadastro agora.'
+                : 'Voce escolheu cadastrar o admin local agora. Informe o nome do admin local.',
+            'admin_cpf.required' => $preenchidos
+                ? 'Informe o CPF do admin local para concluir o cadastro agora.'
+                : 'Voce escolheu cadastrar o admin local agora. Informe o CPF do admin local.',
+            'admin_email.required' => $preenchidos
+                ? 'Informe o e-mail do admin local para concluir o cadastro agora.'
+                : 'Voce escolheu cadastrar o admin local agora. Informe o e-mail do admin local.',
         ])->validate();
+    }
+
+    protected function normalizarOpcaoAdminLocal(mixed $valor): bool
+    {
+        return match (true) {
+            is_bool($valor) => $valor,
+            is_numeric($valor) => (int) $valor === 1,
+            is_string($valor) => in_array(mb_strtolower(trim($valor)), ['1', 'true', 'sim', 'on', 'yes'], true),
+            default => false,
+        };
     }
 }

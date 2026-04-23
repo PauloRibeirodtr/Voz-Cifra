@@ -17,82 +17,80 @@
 @endpush
 
 @section('content')
-    <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+    <div class="admin-page-shell">
+        <section class="admin-page-header">
+            <div class="admin-page-intro">
+                <p class="admin-page-kicker">Biblioteca visual</p>
+                <h1 class="admin-page-title mt-2 text-2xl font-black sm:text-3xl">Acordes</h1>
+                <p class="admin-page-copy mt-3 text-sm sm:text-base">Galeria visual de acordes cadastrados pelo admin master.</p>
+            </div>
+        </section>
+
+        <section class="admin-filter-surface p-5">
+            <form action="{{ route('admin.acordes.index') }}" method="GET" class="admin-form-grid lg:grid-cols-[minmax(0,1fr)_auto]">
+                <div>
+                    <label class="admin-label">Busca</label>
+                    <input
+                        type="text"
+                        name="search"
+                        placeholder="Buscar por nome ou descricao"
+                        value="{{ request('search') }}"
+                        class="admin-input"
+                    >
+                </div>
+
+                <div class="admin-page-actions lg:self-end">
+                    <button type="submit" class="admin-btn admin-btn-warm">Buscar</button>
+                    <a href="{{ route('admin.acordes.create') }}" class="admin-btn admin-btn-primary">Novo acorde</a>
+                </div>
+            </form>
+        </section>
+
+        @if (session('success'))
+            <div class="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-sm text-green-800">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        <section class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            @forelse($acordes as $acorde)
+                <article class="admin-list-card overflow-hidden">
+                    <div class="border-b border-gray-100 bg-gray-50 px-4 py-4 text-center">
+                        <h2 class="text-xl font-black text-gray-800">{{ $acorde->nome }}</h2>
+                        <p class="text-xs italic text-gray-500">{{ $acorde->variation_name ?: 'Padrao' }}</p>
+                    </div>
+
+                    <div class="flex justify-center px-4 py-5">
+                        <svg id="acorde-svg-{{ $acorde->id }}" width="120" height="160" viewBox="0 0 160 210"></svg>
+                    </div>
+
+                    <div class="border-t border-gray-100 px-4 py-4">
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="text-xs font-black uppercase tracking-[0.14em] text-gray-400">Casa {{ $acorde->base_fret }}°</span>
+                        </div>
+
+                        <div class="admin-actions mt-4">
+                            <a href="{{ route('admin.acordes.show', $acorde->id) }}" class="admin-btn admin-btn-secondary">Ver</a>
+                            <a href="{{ route('admin.acordes.edit', $acorde->id) }}" class="admin-btn admin-btn-secondary">Editar</a>
+                            <form action="{{ route('admin.acordes.destroy', $acorde->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir o acorde {{ $acorde->nome }}?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="admin-btn admin-btn-danger">Excluir</button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+            @empty
+                <div class="admin-empty-state col-span-full">
+                    <i class="fa-solid fa-music mb-4 text-4xl"></i>
+                    <p>Nenhum acorde encontrado. <a href="{{ route('admin.acordes.create') }}" class="font-bold underline">Cadastre o primeiro.</a></p>
+                </div>
+            @endforelse
+        </section>
+
         <div>
-            <h1 class="text-3xl font-black text-gray-800">Acordes</h1>
-            <p class="text-sm text-gray-500">Galeria visual de acordes cadastrados pelo admin master.</p>
+            {{ $acordes->appends(request()->query())->links() }}
         </div>
-
-        <form action="{{ route('admin.acordes.index') }}" method="GET" class="flex gap-2 w-full md:w-auto">
-            <input
-                type="text"
-                name="search"
-                placeholder="Buscar por nome ou descricao"
-                value="{{ request('search') }}"
-                class="border border-gray-300 rounded-lg px-4 py-2 w-full md:w-72 focus:ring-2 focus:ring-orange-500 outline-none"
-            >
-
-            <button type="submit" class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition">
-                <i class="fa-solid fa-search"></i>
-            </button>
-
-            <a href="{{ route('admin.acordes.create') }}" class="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition font-semibold">
-                Novo acorde
-            </a>
-        </form>
-    </div>
-
-    @if (session('success'))
-        <div class="mb-6 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-sm flex justify-between">
-            {{ session('success') }}
-            <button onclick="this.parentElement.remove()" class="text-green-900 font-bold">X</button>
-        </div>
-    @endif
-
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-        @forelse($acordes as $acorde)
-            <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-1 group relative">
-                <div class="p-3 bg-gray-50 border-b border-gray-100 text-center">
-                    <h2 class="text-xl font-black text-gray-800">{{ $acorde->nome }}</h2>
-                    <p class="text-xs text-gray-500 font-serif italic">{{ $acorde->variation_name ?: 'Padrao' }}</p>
-                </div>
-
-                <div class="flex justify-center py-5 bg-white">
-                    <svg id="acorde-svg-{{ $acorde->id }}" width="120" height="160" viewBox="0 0 160 210"></svg>
-                </div>
-
-                <div class="absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition duration-300">
-                    <a href="{{ route('admin.acordes.show', $acorde->id) }}" class="bg-white text-gray-900 p-3 rounded-full hover:bg-gray-200 transition transform hover:scale-110" title="Visualizar">
-                        <i class="fa-solid fa-eye"></i>
-                    </a>
-
-                    <a href="{{ route('admin.acordes.edit', $acorde->id) }}" class="bg-blue-600 text-white p-3 rounded-full hover:bg-blue-700 transition transform hover:scale-110" title="Editar">
-                        <i class="fa-solid fa-pen"></i>
-                    </a>
-
-                    <form action="{{ route('admin.acordes.destroy', $acorde->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir o acorde {{ $acorde->nome }}?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="bg-red-600 text-white p-3 rounded-full hover:bg-red-700 transition transform hover:scale-110" title="Excluir">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </form>
-                </div>
-
-                <div class="p-2 bg-gray-50 text-center text-xs font-bold text-gray-400 border-t border-gray-100">
-                    CASA {{ $acorde->base_fret }}°
-                </div>
-            </div>
-        @empty
-            <div class="col-span-full text-center py-20 text-gray-400">
-                <i class="fa-solid fa-music text-4xl mb-4"></i>
-                <p>Nenhum acorde encontrado. <a href="{{ route('admin.acordes.create') }}" class="text-orange-600 underline font-bold">Cadastre o primeiro.</a></p>
-            </div>
-        @endforelse
-    </div>
-
-    <div class="mt-8">
-        {{ $acordes->appends(request()->query())->links() }}
     </div>
 @endsection
 

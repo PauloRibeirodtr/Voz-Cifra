@@ -18,28 +18,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggle = document.getElementById('admin_sidebar_toggle');
     const closeButton = document.getElementById('admin_sidebar_close');
     const overlay = document.getElementById('admin_sidebar_overlay');
-    const mediaQuery = window.matchMedia('(min-width: 768px)');
+    const mediaQuery = window.matchMedia('(min-width: 1024px)');
 
     if (!sidebar || !toggle || !overlay) {
         return;
     }
 
     const abrirMenu = () => {
-        sidebar.classList.remove('-translate-x-full');
+        sidebar.classList.add('is-open');
         overlay.classList.remove('hidden');
-        body.classList.add('overflow-hidden');
+        body.classList.add('overflow-hidden', 'admin-sidebar-open');
         toggle.setAttribute('aria-expanded', 'true');
+        sidebar.setAttribute('aria-hidden', 'false');
     };
 
     const fecharMenu = () => {
-        sidebar.classList.add('-translate-x-full');
+        sidebar.classList.remove('is-open');
         overlay.classList.add('hidden');
-        body.classList.remove('overflow-hidden');
+        body.classList.remove('overflow-hidden', 'admin-sidebar-open');
         toggle.setAttribute('aria-expanded', 'false');
+        sidebar.setAttribute('aria-hidden', mediaQuery.matches ? 'false' : 'true');
     };
 
     toggle.addEventListener('click', () => {
-        if (sidebar.classList.contains('-translate-x-full')) {
+        if (!sidebar.classList.contains('is-open')) {
             abrirMenu();
             return;
         }
@@ -60,15 +62,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const sincronizarLayout = () => {
         if (mediaQuery.matches) {
-            sidebar.classList.remove('-translate-x-full');
+            sidebar.classList.remove('is-open');
             overlay.classList.add('hidden');
-            body.classList.remove('overflow-hidden');
+            body.classList.remove('overflow-hidden', 'admin-sidebar-open');
             toggle.setAttribute('aria-expanded', 'false');
+            sidebar.setAttribute('aria-hidden', 'false');
             return;
         }
 
-        sidebar.classList.add('-translate-x-full');
+        sidebar.classList.remove('is-open');
+        sidebar.setAttribute('aria-hidden', 'true');
+        body.classList.remove('admin-sidebar-open');
     };
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !mediaQuery.matches && sidebar.classList.contains('is-open')) {
+            fecharMenu();
+        }
+    });
 
     sincronizarLayout();
     mediaQuery.addEventListener('change', sincronizarLayout);

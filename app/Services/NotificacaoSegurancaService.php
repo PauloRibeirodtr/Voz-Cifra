@@ -128,7 +128,7 @@ class NotificacaoSegurancaService
     private function descreverFuncao(Usuario $usuario): string
     {
         if ($usuario->ehAdminMaster()) {
-            return 'Admin master nivel ' . $usuario->nivelGlobal();
+            return 'Admin master';
         }
 
         $papeis = $usuario->listarPapeisNaIgreja($usuario->igrejaAtiva()?->id)

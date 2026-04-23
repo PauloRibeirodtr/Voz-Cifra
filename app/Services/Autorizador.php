@@ -58,23 +58,19 @@ class Autorizador
 
         $this->carregarDadosNovosSeNecessario();
 
-        if ($this->novasTabelasDisponiveis) {
-            if ($igrejaId !== null) {
-                $papeis = $this->papeisPorIgreja[$igrejaId] ?? [];
+        if ($igrejaId !== null) {
+            $papeis = $this->papeisPorIgreja[$igrejaId] ?? [];
 
-                return in_array($papel, $papeis, true);
-            }
-
-            foreach ($this->papeisPorIgreja as $papeis) {
-                if (in_array($papel, $papeis, true)) {
-                    return true;
-                }
-            }
-
-            return false;
+            return in_array($papel, $papeis, true);
         }
 
-        return $this->temPapelLegado($papel, $igrejaId);
+        foreach ($this->papeisPorIgreja as $papeis) {
+            if (in_array($papel, $papeis, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function papeisNaIgreja(?int $igrejaId = null): Collection
@@ -85,27 +81,14 @@ class Autorizador
 
         $this->carregarDadosNovosSeNecessario();
 
-        if ($this->novasTabelasDisponiveis) {
-            if ($igrejaId !== null) {
-                return collect($this->papeisPorIgreja[$igrejaId] ?? [])->values();
-            }
-
-            return collect($this->papeisPorIgreja)
-                ->flatten()
-                ->unique()
-                ->values();
+        if ($igrejaId !== null) {
+            return collect($this->papeisPorIgreja[$igrejaId] ?? [])->values();
         }
 
-        $papeis = [];
-        $papelLegacy = $this->papelLocalLegado();
-
-        if ($papelLegacy !== null) {
-            if ($igrejaId === null || (int) $this->usuario->igreja_id === $igrejaId) {
-                $papeis[] = $papelLegacy;
-            }
-        }
-
-        return collect($papeis)->unique()->values();
+        return collect($this->papeisPorIgreja)
+            ->flatten()
+            ->unique()
+            ->values();
     }
 
     public function igrejasDoUsuario(): Collection
@@ -116,15 +99,7 @@ class Autorizador
 
         $this->carregarDadosNovosSeNecessario();
 
-        if ($this->novasTabelasDisponiveis) {
-            return collect($this->igrejasIds)->values();
-        }
-
-        if ($this->usuario->igreja_id === null) {
-            return collect();
-        }
-
-        return collect([(int) $this->usuario->igreja_id]);
+        return collect($this->igrejasIds)->values();
     }
 
     public function pode(string $acao, ?int $igrejaId = null): bool
@@ -184,7 +159,7 @@ class Autorizador
 
         $nivel = (int) ($this->usuario->nivel_global ?? 0);
 
-        if ($nivel >= 1 && $nivel <= 7) {
+        if ($nivel >= 1 && $nivel <= 6) {
             return $nivel;
         }
 
@@ -204,8 +179,6 @@ class Autorizador
         }
 
         if (!Schema::hasTable('usuario_igreja') || !Schema::hasTable('usuario_igreja_papeis')) {
-            $this->novasTabelasDisponiveis = false;
-
             return;
         }
 
@@ -221,12 +194,8 @@ class Autorizador
             ->get();
 
         if ($registros->isEmpty()) {
-            $this->novasTabelasDisponiveis = false;
-
             return;
         }
-
-        $this->novasTabelasDisponiveis = true;
 
         foreach ($registros as $registro) {
             $igrejaId = (int) $registro->igreja_id;
@@ -246,19 +215,6 @@ class Autorizador
         }
     }
 
-    private function papelLocalLegado(): ?string
-    {
-        if (!$this->usuario || $this->usuario->igreja_id === null) {
-            return null;
-        }
-
-        return match ($this->usuario->perfil_global) {
-            'admin_local' => 'admin_local',
-            'member' => 'musico',
-            default => null,
-        };
-    }
-
     private function temAlgumPapelNaIgreja(array $papeis, ?int $igrejaId = null): bool
     {
         foreach ($papeis as $papel) {
@@ -268,20 +224,5 @@ class Autorizador
         }
 
         return false;
-    }
-
-    private function temPapelLegado(string $papel, ?int $igrejaId = null): bool
-    {
-        $papelLegado = $this->papelLocalLegado();
-
-        if ($papelLegado === null || $papelLegado !== $papel) {
-            return false;
-        }
-
-        if ($igrejaId === null) {
-            return true;
-        }
-
-        return (int) $this->usuario->igreja_id === $igrejaId;
     }
 }

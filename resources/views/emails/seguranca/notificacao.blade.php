@@ -10,7 +10,7 @@
             'reset_senha' => 'Senha redefinida',
             'conta_inativada' => 'Conta inativada',
             'conta_reativada' => 'Conta reativada',
-            'troca_nivel_global' => 'Nivel global alterado',
+            'troca_nivel_global' => 'Acesso global alterado',
             'papel_local_concedido' => 'Papel por igreja concedido',
             'papel_local_revogado' => 'Papel por igreja revogado',
             default => 'Atualizacao de seguranca',
@@ -20,7 +20,7 @@
             'reset_senha' => 'Registramos uma redefinicao de senha na sua conta. No proximo acesso, a senha devera ser trocada.',
             'conta_inativada' => 'Sua conta foi temporariamente inativada no sistema.',
             'conta_reativada' => 'Sua conta foi reativada no sistema.',
-            'troca_nivel_global' => 'O nivel de acesso global da sua conta foi alterado.',
+            'troca_nivel_global' => 'O acesso global da sua conta foi alterado.',
             'papel_local_concedido' => 'Um novo papel por igreja foi concedido para a sua conta.',
             'papel_local_revogado' => 'Um papel por igreja foi removido da sua conta.',
             default => 'Registramos uma atualizacao de seguranca relacionada a sua conta.',
@@ -44,11 +44,11 @@
         }
 
         if (!empty($contexto['nivel_anterior']) || array_key_exists('nivel_anterior', $contexto)) {
-            $detalhes['Nivel anterior'] = $contexto['nivel_anterior'] === null ? 'nao informado' : (string) $contexto['nivel_anterior'];
+            $detalhes['Acesso anterior'] = $contexto['nivel_anterior'] === null ? 'nao informado' : (string) $contexto['nivel_anterior'];
         }
 
         if (!empty($contexto['nivel_novo'])) {
-            $detalhes['Novo nivel'] = (string) $contexto['nivel_novo'];
+            $detalhes['Novo acesso'] = (string) $contexto['nivel_novo'];
         }
 
         if (!empty($contexto['protocolo'])) {

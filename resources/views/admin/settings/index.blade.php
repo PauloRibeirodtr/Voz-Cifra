@@ -4,12 +4,6 @@
 @section('mobile_title', 'Configuracoes')
 
 @section('content')
-    @php
-        /** @var \App\Models\Usuario|null $usuarioAutenticado */
-        $usuarioAutenticado = auth()->user();
-        $nivelUsuarioAutenticado = method_exists($usuarioAutenticado, 'nivelGlobal') ? $usuarioAutenticado->nivelGlobal() : 1;
-    @endphp
-
     <div class="admin-page-intro">
         <p class="admin-page-kicker">Conta e sistema</p>
         <h1 class="admin-page-title mt-2 text-2xl font-bold">Configuracoes</h1>
@@ -137,183 +131,23 @@
         <div class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
             <div class="flex items-start justify-between gap-4 mb-6">
                 <div>
-                    <h2 class="text-lg font-bold text-gray-800">Administradores principais</h2>
-                    <p class="text-sm text-gray-500 mt-2">Cadastre outros usuarios com perfil de admin master para compartilhar a administracao central do sistema.</p>
+                    <h2 class="text-lg font-bold text-gray-800">Gestao de admins master</h2>
+                    <p class="text-sm text-gray-500 mt-2">A criacao de novos admins master agora fica centralizada em Usuarios para evitar fluxo duplicado.</p>
                 </div>
                 <div class="h-11 w-11 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                    <i class="fa-solid fa-user-shield"></i>
+                    <i class="fa-solid fa-users-gear"></i>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                <div class="rounded-2xl border border-gray-200 bg-gray-50 p-5">
-                    <h3 class="text-base font-bold text-gray-800">Novo admin master</h3>
-                    <p class="mt-1 text-sm text-gray-500">Se a senha ficar em branco, o sistema usa o CPF sem pontuacao como senha inicial e marca primeiro acesso.</p>
+            <div class="rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-4 text-sm text-emerald-900">
+                Use o modulo <strong>Usuarios</strong> para cadastrar novas contas admin master. A edicao da propria senha, e-mail e telefone continua disponivel aqui em <strong>Perfil</strong>.
+            </div>
 
-                    <form action="{{ route('admin.admins-master.store') }}" method="POST" class="mt-5 space-y-4">
-                        @csrf
-
-                        <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Nome</label>
-                            <input type="text" name="nome" value="{{ old('nome') }}" required class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-green-600 focus:ring-2 focus:ring-green-100" placeholder="Administrador Master">
-                            @error('nome')
-                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">CPF</label>
-                                <input type="text" name="cpf" value="{{ old('cpf') }}" required data-cpf-input class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-green-600 focus:ring-2 focus:ring-green-100" placeholder="000.000.000-00">
-                                @error('cpf')
-                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Telefone</label>
-                                <input type="text" name="telefone" value="{{ old('telefone') }}" data-telefone-input class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-green-600 focus:ring-2 focus:ring-green-100" placeholder="(65) 99999-9999">
-                                @error('telefone')
-                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">E-mail</label>
-                            <input type="email" name="email" value="{{ old('email') }}" required class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-green-600 focus:ring-2 focus:ring-green-100" placeholder="admin@vozecifra.com">
-                            @error('email')
-                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Nivel global</label>
-                            <select name="nivel_global" class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-green-600 focus:ring-2 focus:ring-green-100">
-                                <option value="6" @selected((string) old('nivel_global', '6') === '6')>6 - Admin master</option>
-                                @if ($nivelUsuarioAutenticado >= 7)
-                                    <option value="7" @selected((string) old('nivel_global') === '7')>7 - Super admin</option>
-                                @endif
-                            </select>
-                            @error('nivel_global')
-                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div data-password-strength-container>
-                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Senha inicial</label>
-                                <input type="password" name="password" data-password-strength-input class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-green-600 focus:ring-2 focus:ring-green-100" placeholder="Opcional">
-                                @include('partials.password-strength-meter')
-                                @error('password')
-                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Confirmar senha</label>
-                                <input type="password" name="password_confirmation" data-password-confirmation-input class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-green-600 focus:ring-2 focus:ring-green-100" placeholder="Repita a senha">
-                            </div>
-                        </div>
-
-                        <label class="inline-flex items-center gap-3 text-sm font-medium text-gray-700">
-                            <input type="hidden" name="ativo" value="0">
-                            <input type="checkbox" name="ativo" value="1" {{ old('ativo', '1') ? 'checked' : '' }} class="rounded border-gray-300 text-green-700 focus:ring-green-500">
-                            <span>Admin master ativo</span>
-                        </label>
-
-                        <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-green-700 px-5 py-3 font-semibold text-white hover:bg-green-800">
-                            Cadastrar admin master
-                        </button>
-                    </form>
-                </div>
-
-                <div class="rounded-2xl border border-gray-200 bg-white p-5">
-                    <div class="flex items-center justify-between gap-3 mb-4">
-                        <div>
-                            <h3 class="text-base font-bold text-gray-800">Admins master cadastrados</h3>
-                            <p class="text-sm text-gray-500">Usuarios com acesso total ao painel central.</p>
-                        </div>
-                        <span class="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                            {{ $adminsMaster->count() }} total
-                        </span>
-                    </div>
-
-                    <div class="space-y-3">
-                        @foreach ($adminsMaster as $adminMaster)
-                            <div class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-4">
-                                <div class="flex items-start justify-between gap-3">
-                                    <div class="min-w-0">
-                                        <p class="font-semibold text-gray-800">{{ $adminMaster->nome }}</p>
-                                        <p class="mt-1 break-all text-sm text-gray-600">{{ $adminMaster->email }}</p>
-                                        <p class="mt-1 text-xs text-gray-400">
-                                            CPF:
-                                            {{
-                                                preg_replace(
-                                                    '/(\d{3})(\d{3})(\d{3})(\d{2})/',
-                                                    '$1.$2.$3-$4',
-                                                    preg_replace('/\D+/', '', (string) $adminMaster->cpf)
-                                                ) ?: $adminMaster->cpf
-                                            }}
-                                        </p>
-                                        @if ($adminMaster->telefone)
-                                            @php
-                                                $telefoneNumerico = preg_replace('/\D+/', '', (string) $adminMaster->telefone);
-                                                $telefoneFormatado = strlen($telefoneNumerico) === 11
-                                                    ? preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', $telefoneNumerico)
-                                                    : preg_replace('/(\d{2})(\d{4})(\d{4})/', '($1) $2-$3', $telefoneNumerico);
-                                            @endphp
-                                            <p class="mt-1 text-xs text-gray-400">Telefone: {{ $telefoneFormatado ?: $adminMaster->telefone }}</p>
-                                        @endif
-                                    </div>
-                                    <div class="flex flex-col items-end gap-2">
-                                        <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $adminMaster->ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                            {{ $adminMaster->ativo ? 'Ativo' : 'Inativo' }}
-                                        </span>
-                                        <span class="inline-flex rounded-full bg-indigo-100 px-3 py-1 text-[11px] font-semibold text-indigo-700">
-                                            Nivel {{ method_exists($adminMaster, 'nivelGlobal') ? $adminMaster->nivelGlobal() : ($adminMaster->nivel_global ?? 1) }}
-                                        </span>
-                                        @if ($adminMaster->primeiro_acesso)
-                                            <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold text-amber-700">
-                                                Primeiro acesso
-                                            </span>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                @if ($nivelUsuarioAutenticado >= 7)
-                                    <form action="{{ route('admin.admins-master.nivel-global.update', $adminMaster) }}" method="POST" class="mt-3 flex flex-wrap items-center gap-2">
-                                        @csrf
-                                        <label class="text-xs font-semibold text-gray-500">Ajustar nivel:</label>
-                                        <select name="nivel_global" class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700">
-                                            <option value="6" @selected((method_exists($adminMaster, 'nivelGlobal') ? $adminMaster->nivelGlobal() : ($adminMaster->nivel_global ?? 1)) == 6)>6</option>
-                                            <option value="7" @selected((method_exists($adminMaster, 'nivelGlobal') ? $adminMaster->nivelGlobal() : ($adminMaster->nivel_global ?? 1)) == 7)>7</option>
-                                        </select>
-                                        <button type="submit" class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700">
-                                            Salvar nivel
-                                        </button>
-                                    </form>
-
-                                    <div class="mt-3 flex flex-wrap gap-2">
-                                        <form action="{{ route('admin.admins-master.toggle', $adminMaster) }}" method="POST" onsubmit="return confirm('Confirma alterar o status deste admin master?');">
-                                            @csrf
-                                            <button type="submit" class="rounded-lg {{ $adminMaster->ativo ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700' }} px-3 py-2 text-sm font-semibold text-white">
-                                                {{ $adminMaster->ativo ? 'Inativar conta' : 'Reativar conta' }}
-                                            </button>
-                                        </form>
-
-                                        <form action="{{ route('admin.admins-master.password.reset', $adminMaster) }}" method="POST" onsubmit="return confirm('Deseja resetar a senha deste admin master para o CPF sem pontuacao?');">
-                                            @csrf
-                                            <button type="submit" class="rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white hover:bg-amber-700">
-                                                Resetar senha
-                                            </button>
-                                        </form>
-                                    </div>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
+            <div class="mt-5">
+                <a href="{{ route('admin.usuarios.create') }}" class="inline-flex items-center gap-2 rounded-xl bg-green-700 px-5 py-3 font-semibold text-white hover:bg-green-800">
+                    <i class="fa-solid fa-user-plus"></i>
+                    <span>Ir para Usuarios</span>
+                </a>
             </div>
         </div>
     </div>

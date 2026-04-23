@@ -312,7 +312,7 @@ class ChamadoSupportService
         /** @var Usuario|null $musico */
         $musico = Usuario::query()
             ->whereKey($chamado->origem_id)
-            ->where('perfil_global', 'member')
+            ->whereHas('papeisAtivosPorIgreja', fn ($query) => $query->where('papel', \App\Enums\PapelIgreja::MUSICO->value))
             ->first();
 
         if (!$musico) {
