@@ -1,10 +1,24 @@
 @extends('local-admin.layouts.admin')
 
-@section('title', 'Visualizacao com cifra | Voz & Cifra')
+@section('title', 'Visualiza&ccedil;&atilde;o com cifra | Voz & Cifra')
 @section('mobile_title', 'Cifra')
 
 @push('styles')
     @include('partials.cifra-viewer-styles')
+    <style>
+        .leitura-clara .cifra-acordes {
+            color: #c56a1a;
+        }
+
+        .leitura-clara .cifra-letra {
+            color: #1f2937;
+        }
+
+        .leitura-clara .cifra-marcacao {
+            background: rgba(140, 105, 51, 0.1);
+            color: #6c4a21;
+        }
+    </style>
 @endpush
 
 @section('content')
@@ -79,7 +93,7 @@
                     @endif
                 </div>
 
-                <div class="rounded-2xl bg-gray-900 p-5 text-green-200 shadow-inner">
+                <div class="leitura-clara rounded-2xl border border-[#8c6933]/15 bg-gradient-to-b from-[#fffdfa] to-[#f7efe3] p-5 text-gray-800 shadow-inner">
                     <div id="letra_com_cifras_preview" class="space-y-2"></div>
                 </div>
             </section>

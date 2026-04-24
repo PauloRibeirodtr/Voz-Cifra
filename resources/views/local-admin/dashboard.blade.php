@@ -4,6 +4,8 @@
 @section('mobile_title', 'Painel da igreja')
 
 @section('content')
+    @include('local-admin.partials.church-switcher')
+
     <div class="mb-6">
         <p class="text-sm font-semibold uppercase tracking-[0.22em] text-green-700">Painel da igreja</p>
         <h1 class="mt-2 text-2xl sm:text-3xl font-black text-gray-900">{{ $igreja->nome }}</h1>

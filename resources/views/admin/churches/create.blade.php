@@ -5,13 +5,13 @@
 
 @section('content')
     @php
-        $classeInput = 'mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-100';
+        $classeInput = 'mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 shadow-sm focus:border-[#6c4a21] focus:ring-2 focus:ring-[#d6ad6c]/30';
     @endphp
 
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Cadastrar igreja</h1>
-            <p class="text-sm text-gray-500">Cadastre a igreja primeiro. O administrador local pode entrar agora ou depois, sem impedir o registro da comunidade.</p>
+            <p class="text-sm text-gray-500">Cadastre a igreja primeiro. O administrador local pode ser vinculado agora ou depois, sem impedir o registro da comunidade.</p>
         </div>
 
         <a href="{{ route('admin.igrejas.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-700 font-medium hover:bg-gray-50 sm:w-auto">
@@ -20,7 +20,7 @@
     </div>
 
     <div class="admin-inline-note mb-6 px-5 py-4 text-sm leading-7">
-        Igreja sem admin local continua valida no cadastro. O administrador local pode ser vinculado depois, quando a comunidade estiver pronta para operar missas, repertorios e publicacoes.
+        Igreja sem administrador local continua válida no cadastro. O vínculo pode ser feito depois, quando a comunidade estiver pronta para operar missas, repertórios e publicações.
     </div>
 
     @if (session('success'))
@@ -54,12 +54,14 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="md:col-span-2 rounded-3xl border border-gray-200 bg-gray-50 p-5">
                     <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-                        <img
-                            id="church-image-create-preview"
-                            src="{{ asset('logo/final.png') }}"
-                            alt="Imagem padrao da igreja"
-                            class="h-24 w-24 rounded-3xl border border-gray-200 object-cover bg-white shadow-sm"
-                        />
+                        <div class="h-28 w-28 overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+                            <img
+                                id="church-image-create-preview"
+                                src="{{ asset('logo/final.png') }}"
+                                alt="Imagem padrão da igreja"
+                                class="h-full w-full object-cover"
+                            />
+                        </div>
                         <div class="flex-1">
                             <label class="block text-sm font-medium text-gray-700">Imagem ou logo da igreja</label>
                             <input
@@ -71,7 +73,7 @@
                                 data-image-preview-target="#church-image-create-preview"
                                 data-default-src="{{ asset('logo/final.png') }}"
                             />
-                            <p class="mt-2 text-xs text-gray-500">Use uma imagem quadrada ou retangular leve. Ela sera aproveitada no painel e nos links publicos da igreja.</p>
+                            <p class="mt-2 text-xs text-gray-500">Use JPG, PNG ou WebP com até 2 MB. Prefira imagem quadrada ou em 4:3 para manter boa leitura nos cards, no painel e nos links públicos.</p>
                         </div>
                     </div>
                 </div>
@@ -97,7 +99,7 @@
                         data-cep-input
                         class="{{ $classeInput }}"
                     />
-                    <p class="text-xs text-gray-500 mt-1">Ao informar um CEP valido, cidade, estado e endereco serao sugeridos automaticamente.</p>
+                    <p class="text-xs text-gray-500 mt-1">Ao informar um CEP válido, cidade, estado e endereço poderão ser sugeridos automaticamente.</p>
                 </div>
 
                 <div>
@@ -106,18 +108,18 @@
                 </div>
 
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700">Endereco</label>
-                    <input type="text" name="endereco" value="{{ old('endereco') }}" placeholder="Rua, numero e complemento" data-endereco-input class="{{ $classeInput }}" />
+                    <label class="block text-sm font-medium text-gray-700">Endereço</label>
+                    <input type="text" name="endereco" value="{{ old('endereco') }}" placeholder="Rua, número e complemento" data-endereco-input class="{{ $classeInput }}" />
                 </div>
 
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700">Cidade</label>
-                    <input type="text" name="cidade" value="{{ old('cidade') }}" required placeholder="Ex.: Cuiaba" data-cidade-input class="{{ $classeInput }}" />
+                    <input type="text" name="cidade" value="{{ old('cidade') }}" required placeholder="Ex.: Cuiabá" data-cidade-input class="{{ $classeInput }}" />
                 </div>
 
                 <div class="flex items-center gap-3 pt-2">
                     <input type="hidden" name="ativo" value="0" />
-                    <input id="ativo" type="checkbox" name="ativo" value="1" {{ old('ativo', '1') ? 'checked' : '' }} class="rounded border-gray-300 text-green-700 focus:ring-green-500" />
+                    <input id="ativo" type="checkbox" name="ativo" value="1" {{ old('ativo', '1') ? 'checked' : '' }} class="rounded border-gray-300 text-[#6c4a21] focus:ring-[#6c4a21]" />
                     <label for="ativo" class="text-sm font-medium text-gray-700">Igreja ativa</label>
                 </div>
             </div>
@@ -125,11 +127,11 @@
 
         <div class="admin-section-card p-6">
             <h2 class="text-lg font-bold text-gray-800 mb-4">Administrador local</h2>
-            <p class="mb-4 text-sm text-gray-500">Defina se a unidade ja sai pronta para operacao local ou se vai permanecer em aguardando admin local.</p>
+            <p class="mb-4 text-sm text-gray-500">Defina se a unidade já sai pronta para operação local ou se ficará aguardando administrador local.</p>
 
             <div class="space-y-4">
                 <div>
-                    @php($criarAdminLocalAgora = (bool) old('criar_admin_local_agora', true))
+                    @php($criarAdminLocalAgora = (bool) old('criar_admin_local_agora', false))
                     <input type="hidden" name="criar_admin_local_agora" value="0">
                     <label class="flex items-start gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-4 text-sm text-gray-700">
                         <input
@@ -138,17 +140,17 @@
                             value="1"
                             {{ $criarAdminLocalAgora ? 'checked' : '' }}
                             data-admin-local-toggle
-                            class="mt-1 rounded border-gray-300 text-green-700 focus:ring-green-500"
+                            class="mt-1 rounded border-gray-300 text-[#6c4a21] focus:ring-[#6c4a21]"
                         >
                         <span>
                             <strong class="block text-gray-900">Cadastrar administrador local agora</strong>
-                            Se marcado, a igreja ja sai operacional com admin local ativo. Se desmarcado, ela sera criada em aguardando admin local.
+                            Se marcado, a igreja já sai operacional com administrador local ativo. Se desmarcado, ela será criada com o status <strong>aguardando administrador local</strong>.
                         </span>
                     </label>
                 </div>
 
                 <div class="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm text-blue-900">
-                    Se a caixa ficar desmarcada, a igreja sera cadastrada normalmente, continuara editavel pelo admin master e aparecera com o status <strong>aguardando admin local</strong>.
+                    Se a caixa ficar desmarcada, a igreja será cadastrada normalmente, continuará editável pelo admin master e aparecerá com o status <strong>aguardando administrador local</strong>.
                 </div>
 
                 <div data-admin-local-panel class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -173,8 +175,8 @@
                     </div>
 
                     <div class="admin-inline-note-warm md:col-span-2 p-4 text-sm">
-                        Se voce preencher os dados acima, o admin local acessara o sistema com o e-mail informado e a senha inicial sera o CPF digitado, usando apenas os numeros.
-                        No primeiro acesso, ele devera trocar a senha.
+                        Se você preencher os dados acima, o administrador local acessará o sistema com o e-mail informado e a senha inicial será o CPF digitado, usando apenas os números.
+                        No primeiro acesso, ele deverá trocar a senha.
                     </div>
                 </div>
             </div>
@@ -184,7 +186,7 @@
             <a href="{{ route('admin.igrejas.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 text-gray-700 font-medium hover:bg-gray-50">
                 Cancelar
             </a>
-            <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-5 py-3 font-semibold text-white hover:bg-green-800">
+            <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-[#6c4a21] px-5 py-3 font-semibold text-white hover:bg-[#7a5528]">
                 Salvar igreja
             </button>
         </div>

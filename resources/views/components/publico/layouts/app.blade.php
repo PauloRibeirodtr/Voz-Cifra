@@ -1,10 +1,16 @@
+@props([
+    'title' => 'Voz & Cifra',
+    'description' => 'Acompanhe missas, consulte igrejas e acesse o sistema Voz & Cifra.',
+    'forcedContrast' => null,
+])
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title ?? 'Voz & Cifra' }}</title>
-    <meta name="description" content="{{ $description ?? 'Acompanhe missas, consulte igrejas e acesse o sistema Voz & Cifra.' }}">
+    <title>{{ $title }}</title>
+    <meta name="description" content="{{ $description }}">
     <link rel="icon" type="image/png" href="{{ asset('logo/final.png') }}">
     <style>
         :root {
@@ -493,7 +499,7 @@
     </style>
     @stack('styles')
 </head>
-<body data-contrast="normal">
+<body data-contrast="{{ $forcedContrast === 'high' ? 'high' : 'normal' }}">
     {{ $slot }}
 
     <script>
@@ -503,6 +509,7 @@
             const contrastToggle = document.querySelector('[data-contrast-toggle]');
             const storageKey = 'vozecifra-public-contrast';
             const body = document.body;
+            const forcedContrast = @json($forcedContrast);
 
             const aplicarContraste = (modo) => {
                 body.dataset.contrast = modo === 'high' ? 'high' : 'normal';
@@ -515,9 +522,13 @@
                 }
             };
 
-            aplicarContraste(localStorage.getItem(storageKey) || 'normal');
+            if (forcedContrast === 'high' || forcedContrast === 'normal') {
+                aplicarContraste(forcedContrast);
+            } else {
+                aplicarContraste(localStorage.getItem(storageKey) || 'normal');
+            }
 
-            if (contrastToggle) {
+            if (contrastToggle && !forcedContrast) {
                 contrastToggle.addEventListener('click', () => {
                     const novoModo = body.dataset.contrast === 'high' ? 'normal' : 'high';
                     localStorage.setItem(storageKey, novoModo);

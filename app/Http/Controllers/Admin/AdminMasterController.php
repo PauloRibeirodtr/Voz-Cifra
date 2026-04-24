@@ -12,6 +12,7 @@ use App\Models\Usuario;
 use App\Models\UsuarioIgrejaPapel;
 use App\Rules\StrongPassword;
 use App\Services\GestaoUsuariosIgrejaService;
+use App\Services\IgrejaAtivaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -144,6 +145,7 @@ class AdminMasterController extends Controller
             ator: $usuario,
             origem: 'admin_profile_store_vinculo'
         );
+        app(IgrejaAtivaService::class)->set($igreja);
 
         return redirect()
             ->route('admin.profile')

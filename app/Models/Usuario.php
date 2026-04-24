@@ -249,6 +249,20 @@ class Usuario extends Authenticatable
             ->values();
     }
 
+    public function igrejasDisponiveisPorPapel(PapelIgreja|string $papel): Collection
+    {
+        $papelEnum = PapelIgreja::fromValue($papel);
+
+        return $this->vinculosIgrejaAtivos()
+            ->with(['igreja', 'papeisAtivos'])
+            ->get()
+            ->filter(fn (UsuarioIgreja $vinculo): bool => $vinculo->listarPapeisAtivos()->contains($papelEnum))
+            ->pluck('igreja')
+            ->filter(fn ($igreja) => $igreja instanceof Igreja)
+            ->unique('id')
+            ->values();
+    }
+
     public function fotoPerfilUrl(): string
     {
         $path = trim((string) $this->foto_perfil_path);

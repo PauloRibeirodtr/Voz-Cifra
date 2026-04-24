@@ -4,6 +4,8 @@
 @section('mobile_title', 'Minha igreja')
 
 @section('content')
+    @include('local-admin.partials.church-switcher')
+
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-900">Dados da igreja</h1>
         <p class="mt-1 text-sm text-gray-500">Visualizacao da igreja vinculada ao seu acesso local.</p>

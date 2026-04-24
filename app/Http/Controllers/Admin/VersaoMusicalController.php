@@ -7,6 +7,7 @@ use App\Models\Acorde;
 use App\Models\Musica;
 use App\Models\VersaoMusical;
 use App\Services\AuditoriaOperacionalService;
+use App\Services\NotificacaoSistemaService;
 use App\Services\NormalizadorCifrasService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ class VersaoMusicalController extends Controller
 {
     public function __construct(
         private readonly AuditoriaOperacionalService $auditoriaOperacionalService,
+        private readonly NotificacaoSistemaService $notificacaoSistemaService,
         private readonly NormalizadorCifrasService $normalizadorCifrasService
     ) {
     }
@@ -75,6 +77,17 @@ class VersaoMusicalController extends Controller
                 'musica_titulo' => $musica->titulo,
                 'tom_musical' => $versaoMusical->tom_musical,
                 'resumo' => 'Versao musical criada com cifras para a musica base.',
+            ]
+        );
+
+        $this->notificacaoSistemaService->enviarParaUsuariosOperacionaisAtivos(
+            evento: 'versao_musical_criada',
+            ator: $usuario,
+            contexto: [
+                'origem' => 'admin_versoes_musicais_store',
+                'origem_id' => $versaoMusical->id,
+                'titulo' => $musica->titulo,
+                'nome' => $versaoMusical->titulo ?: 'Versão principal',
             ]
         );
 

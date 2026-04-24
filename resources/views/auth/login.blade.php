@@ -28,7 +28,7 @@
                     <p class="text-xs font-black uppercase tracking-[0.28em] text-[#d8b071]">Voz &amp; Cifra</p>
                     <h1 class="mt-3 font-serif text-3xl font-black text-[#fff8ed] sm:text-4xl">Entrar no sistema</h1>
                     <p class="mx-auto mt-3 max-w-sm text-base leading-7 text-[#dbcab5]">
-                        Acesso interno para equipes autorizadas.
+                        Acesso interno ao sistema.
                     </p>
                 </div>
 
@@ -99,7 +99,7 @@
 
                 <div class="mt-8 border-t border-white/10 pt-5 text-center">
                     <a href="{{ route('root') }}" class="text-sm font-semibold text-[#d8b071] hover:text-[#f4ddb4]">
-                        Voltar para a pagina publica
+                        Voltar para a página principal
                     </a>
                 </div>
             </div>

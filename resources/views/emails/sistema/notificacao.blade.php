@@ -8,6 +8,7 @@
     @php
         $tituloEvento = match ($evento) {
             'musica_cadastrada' => 'Nova musica cadastrada',
+            'versao_musical_criada' => 'Nova versao musical cadastrada',
             'acorde_cadastrado' => 'Novo acorde cadastrado',
             'musica_inativada' => 'Musica inativada',
             'acorde_inativado' => 'Acorde inativado',
@@ -17,6 +18,7 @@
 
         $mensagemPrincipal = match ($evento) {
             'musica_cadastrada' => 'Uma nova musica foi adicionada ao acervo principal do Voz & Cifra.',
+            'versao_musical_criada' => 'Uma nova versao musical com cifras foi adicionada ao acervo principal do Voz & Cifra.',
             'acorde_cadastrado' => 'Um novo acorde foi adicionado a biblioteca principal do sistema.',
             'musica_inativada' => 'Uma musica foi inativada no acervo principal.',
             'acorde_inativado' => 'Um acorde foi inativado na biblioteca principal.',

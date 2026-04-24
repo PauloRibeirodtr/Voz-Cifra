@@ -6,7 +6,7 @@
 
 @section('title', $tituloPerfil . ' | Voz & Cifra')
 @section('mobile_title', $tituloPerfil)
-@section('desktop_subtitle', $isCoordenadorArea ? 'Perfil e acesso operacional da igreja' : 'Perfil e configuracoes do musico')
+@section('desktop_subtitle', $isCoordenadorArea ? 'Perfil e acesso operacional da igreja' : 'Perfil e configurações do músico')
 
 @section('header_actions')
     <a href="{{ route($routePrefix . '.dashboard') }}" class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
@@ -78,7 +78,7 @@
                                     data-image-preview-target="#member-profile-preview"
                                     data-default-src="{{ $user->fotoPerfilUrl() }}"
                                 >
-                                <p class="mt-2 text-xs text-gray-500">A foto aparece na sua navegação lateral e ajuda a identificar a conta ativa.</p>
+                                <p class="mt-2 text-xs text-gray-500">Use JPG, PNG ou WebP com até 2 MB. A foto aparece na navegação lateral e ajuda a identificar a conta ativa.</p>
                             </div>
                         </div>
                     </div>
@@ -100,7 +100,7 @@
 
                     <div data-password-strength-container>
                         <label class="block text-sm font-medium text-gray-700">Nova senha</label>
-                        <input type="password" name="password" data-password-strength-input class="{{ $classeInput }}" placeholder="Minimo de 8 caracteres">
+                        <input type="password" name="password" data-password-strength-input class="{{ $classeInput }}" placeholder="Mínimo de 8 caracteres">
                         @include('partials.password-strength-meter', ['required' => (bool) ($user->primeiro_acesso ?? false)])
                     </div>
 
@@ -129,15 +129,15 @@
 
         <aside class="space-y-6">
             <section class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-bold text-gray-900">Vinculo atual</h2>
+                <h2 class="text-lg font-bold text-gray-900">Vínculo atual</h2>
                 <div class="mt-4 rounded-2xl bg-gray-50 p-4 text-sm text-gray-600">
                     <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Igreja</span>
-                    <span class="mt-2 block text-base font-semibold text-gray-900">{{ $igreja?->nome ?: 'Nao vinculada' }}</span>
+                    <span class="mt-2 block text-base font-semibold text-gray-900">{{ $igreja?->nome ?: 'Não vinculada' }}</span>
                 </div>
 
                 @if ($papeisAtivos->isNotEmpty())
                     <div class="mt-4">
-                        <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Papeis ativos</span>
+                        <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Papéis ativos</span>
                         <div class="mt-3 flex flex-wrap gap-2">
                             @foreach ($papeisAtivos as $papel)
                                 @php($corBadge = match($papel->value) {
@@ -153,11 +153,11 @@
             </section>
 
             <section class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-bold text-gray-900">Preferencias</h2>
+                <h2 class="text-lg font-bold text-gray-900">Preferências</h2>
                 <div class="mt-4 space-y-3 text-sm text-gray-600">
-                    <p>Use esta tela para manter o acesso atualizado e escolher o tema claro, escuro ou automatico para a sua conta.</p>
+                    <p>Use esta tela para manter o acesso atualizado e escolher o tema claro, escuro ou automático para a sua conta.</p>
                     <a href="{{ route($isCoordenadorArea ? 'coordenador.musicas.index' : 'member.repertorio') }}" class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 font-semibold text-gray-700 hover:bg-gray-50">
-                        {{ $isCoordenadorArea ? 'Ir para musicas da igreja' : 'Ir para meu repertorio' }}
+                        {{ $isCoordenadorArea ? 'Ir para músicas da igreja' : 'Ir para meu repertório' }}
                     </a>
                 </div>
             </section>

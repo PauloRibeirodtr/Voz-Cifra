@@ -111,7 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const campoControle = togglesAdminLocal[0];
         const exibirPainel = campoControle ? Boolean(campoControle.checked) : true;
-        const primeiroCampo = painelAdminLocal.querySelector('input:not([type="hidden"])');
 
         painelAdminLocal.classList.toggle('hidden', !exibirPainel);
         painelAdminLocal.setAttribute('aria-hidden', exibirPainel ? 'false' : 'true');
@@ -121,12 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
             .forEach((campo) => {
                 campo.disabled = !exibirPainel;
             });
-
-        if (exibirPainel && primeiroCampo instanceof HTMLElement) {
-            window.requestAnimationFrame(() => {
-                primeiroCampo.focus();
-            });
-        }
     };
 
     togglesAdminLocal.forEach((campo) => {

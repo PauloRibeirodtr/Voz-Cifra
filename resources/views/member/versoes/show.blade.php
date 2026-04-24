@@ -1,8 +1,8 @@
 @extends('member.layouts.app')
 
-@section('title', ($versaoMusical->titulo ?: 'Versao musical') . ' | Voz & Cifra')
+@section('title', ($versaoMusical->titulo ?: 'Versão musical') . ' | Voz & Cifra')
 @section('mobile_title', 'Estudo da cifra')
-@section('desktop_subtitle', 'Leitura musical para estudo, video e apoio')
+@section('desktop_subtitle', 'Leitura musical para estudo, vídeo e apoio')
 
 @section('header_actions')
     <a href="{{ route('member.versoes.print', [$musica, $versaoMusical]) }}" class="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-100">
@@ -64,9 +64,9 @@
     <section class="study-panel px-6 py-6 lg:px-7">
         <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div class="min-w-0">
-                <p class="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-300">Modo estudo</p>
+                <p class="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-300">Modo de estudo</p>
                 <h1 class="mt-2 text-3xl font-black text-white">{{ $musica->titulo }}</h1>
-                <p class="mt-2 text-sm text-emerald-100">{{ $versaoMusical->titulo ?: 'Versao principal' }} @if ($missaAtiva) â€¢ Missa ativa: {{ $missaAtiva->titulo }} @endif</p>
+                <p class="mt-2 text-sm text-emerald-100">{{ $versaoMusical->titulo ?: 'Versão principal' }} @if ($missaAtiva) &bull; Missa ativa: {{ $missaAtiva->titulo }} @endif</p>
             </div>
             <div class="grid grid-cols-2 gap-3 sm:flex">
                 <button type="button" id="abrir_modal_playlist" class="study-action-button px-4 text-sm">
@@ -75,16 +75,16 @@
                 </button>
                 <a href="{{ route('member.versoes.print', [$musica, $versaoMusical]) }}" class="study-control px-4 text-sm">Imprimir</a>
                 <a href="{{ route('member.versoes.pdf', [$musica, $versaoMusical]) }}" class="study-control px-4 text-sm">PDF</a>
-                <a href="{{ route('member.repertorio') }}" class="study-control px-4 text-sm">Meu repertorio</a>
+                <a href="{{ route('member.repertorio') }}" class="study-control px-4 text-sm">Meu repertório</a>
                 <a href="{{ route('member.dashboard') }}" class="study-control px-4 text-sm">Painel</a>
             </div>
         </div>
 
         <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <div class="study-surface p-4"><span class="block text-xs font-black uppercase tracking-wider text-emerald-200">Tom exibido</span><span id="tom_atual_badge" class="mt-2 block text-2xl font-black text-white">{{ $tomExibicao ?: 'Nao informado' }}</span></div>
-            <div class="study-surface p-4"><span class="block text-xs font-black uppercase tracking-wider text-emerald-200">Tom original</span><span class="mt-2 block text-2xl font-black text-white">{{ $tomOriginal ?: 'Nao informado' }}</span></div>
+            <div class="study-surface p-4"><span class="block text-xs font-black uppercase tracking-wider text-emerald-200">Tom exibido</span><span id="tom_atual_badge" class="mt-2 block text-2xl font-black text-white">{{ $tomExibicao ?: 'Não informado' }}</span></div>
+            <div class="study-surface p-4"><span class="block text-xs font-black uppercase tracking-wider text-emerald-200">Tom original</span><span class="mt-2 block text-2xl font-black text-white">{{ $tomOriginal ?: 'Não informado' }}</span></div>
             <div class="study-surface p-4"><span class="block text-xs font-black uppercase tracking-wider text-emerald-200">BPM</span><span class="mt-2 block text-2xl font-black text-white">{{ $versaoMusical->bpm ?: '-' }}</span></div>
-            <div class="study-surface p-4"><span class="block text-xs font-black uppercase tracking-wider text-emerald-200">Contexto</span><span class="mt-2 block text-sm font-bold text-white">{{ $itemMissa ? 'Versao usada na missa da sua igreja' : 'Estudo livre da biblioteca musical' }}</span></div>
+            <div class="study-surface p-4"><span class="block text-xs font-black uppercase tracking-wider text-emerald-200">Contexto</span><span class="mt-2 block text-sm font-bold text-white">{{ $itemMissa ? 'Versão usada na missa da sua igreja' : 'Estudo livre da biblioteca musical' }}</span></div>
         </div>
     </section>
 
@@ -116,7 +116,7 @@
                                     </div>
                                 </div>
                                 <div class="flex flex-wrap items-center gap-3">
-                                    <button type="button" id="toggle_metronomo" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-100">Iniciar metronomo</button>
+                                    <button type="button" id="toggle_metronomo" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-100">Iniciar metrônomo</button>
                                     <div class="inline-flex items-center overflow-hidden rounded-xl border border-gray-200 bg-white">
                                         <button type="button" id="diminuir_bpm" class="h-11 w-11 text-lg font-bold text-gray-700 hover:bg-gray-50">-</button>
                                         <input id="controle_bpm" type="number" min="20" max="240" value="{{ $versaoMusical->bpm ?: 72 }}" class="w-20 border-0 text-center text-base font-bold text-gray-800 focus:ring-0">
@@ -126,12 +126,12 @@
                             </div>
 
                             <div class="mt-4 flex flex-wrap items-center gap-3">
-                                <span class="inline-flex rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700" id="indicador_tom_atual">Tom atual: {{ $tomExibicao ?: 'Nao informado' }}</span>
+                                <span class="inline-flex rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700" id="indicador_tom_atual">Tom atual: {{ $tomExibicao ?: 'Não informado' }}</span>
                                 <button type="button" data-transpose="-1" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">Tom -</button>
                                 <button type="button" data-transpose-reset class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">Tom original</button>
                                 <button type="button" data-transpose="1" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">Tom +</button>
                                 <button type="button" data-font="-1" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">A-</button>
-                                <button type="button" data-font-reset class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">Fonte padrao</button>
+                                <button type="button" data-font-reset class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">Fonte padrão</button>
                                 <button type="button" data-font="1" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">A+</button>
                             </div>
                         </div>
@@ -141,12 +141,12 @@
                         @if ($versaoMusical->youtube_video_id)
                             <div class="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
                                 <div class="aspect-video bg-slate-950">
-                                    <iframe class="h-full w-full" src="https://www.youtube.com/embed/{{ $versaoMusical->youtube_video_id }}" title="Video de apoio" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                                    <iframe class="h-full w-full" src="https://www.youtube.com/embed/{{ $versaoMusical->youtube_video_id }}" title="Vídeo de apoio" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                                 </div>
-                                <div class="border-t border-gray-100 px-4 py-3 text-sm text-gray-500">Video de apoio sincronizado com o estudo da musica.</div>
+                                <div class="border-t border-gray-100 px-4 py-3 text-sm text-gray-500">Vídeo de apoio sincronizado com o estudo da música.</div>
                             </div>
                         @else
-                            <div class="rounded-3xl border border-dashed border-gray-300 bg-gray-50 p-5 text-sm text-gray-500">Esta versao ainda nao possui video do YouTube vinculado.</div>
+                            <div class="rounded-3xl border border-dashed border-gray-300 bg-gray-50 p-5 text-sm text-gray-500">Esta versão ainda não possui vídeo do YouTube vinculado.</div>
                         @endif
                     </div>
                 </div>
@@ -161,7 +161,7 @@
 
         <aside class="space-y-6">
             <section class="study-panel p-5">
-                <h2 class="text-lg font-bold text-white">Dicionario de acordes</h2>
+                <h2 class="text-lg font-bold text-white">Dicionário de acordes</h2>
                 <p class="mt-1 text-sm text-slate-300">Passe o mouse ou toque num acorde da cifra para ver o shape correspondente.</p>
                 <div class="mt-4 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
                     <div class="diagrama-acorde flex justify-center" id="painel_diagrama_acorde"></div>
@@ -195,7 +195,7 @@
             <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
                 <section class="playlist-card p-4">
                     <h3 class="text-base font-bold text-white">Criar nova playlist</h3>
-                    <p class="mt-1 text-sm text-slate-300">Perfeito para separar por ensaio, missa ou repertorio pessoal.</p>
+                    <p class="mt-1 text-sm text-slate-300">Perfeito para separar por ensaio, missa ou repertório pessoal.</p>
                     <form action="{{ route('member.colecoes.store') }}" method="POST" class="mt-4 space-y-3">
                         @csrf
                         <input type="hidden" name="musica_id" value="{{ $musica->id }}">
@@ -210,7 +210,7 @@
 
                 <section class="playlist-card p-4">
                     <h3 class="text-base font-bold text-white">Adicionar em playlist existente</h3>
-                    <p class="mt-1 text-sm text-slate-300">Toque numa playlist para incluir esta versao rapidamente.</p>
+                    <p class="mt-1 text-sm text-slate-300">Toque numa playlist para incluir esta versão rapidamente.</p>
                     <div class="mt-4 space-y-3">
                         @forelse ($colecoes as $colecao)
                             <form action="{{ route('member.colecoes.itens.store', $colecao) }}" method="POST" class="playlist-existing-item flex items-center gap-3 px-3 py-3">
@@ -222,7 +222,7 @@
                                     <p class="text-xs text-slate-400">{{ $colecao->itens_count }} itens</p>
                                 </div>
                                 @if ($colecaoIdsComVersao->contains($colecao->id))
-                                    <span class="inline-flex items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-300">Ja adicionada</span>
+                                    <span class="inline-flex items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-300">Já adicionada</span>
                                 @else
                                     <button type="submit" class="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold text-white hover:bg-white/20">
                                         <i class="fa-solid fa-plus mr-2"></i>
@@ -232,7 +232,7 @@
                             </form>
                         @empty
                             <div class="rounded-xl border border-dashed border-white/10 bg-white/5 p-4 text-sm text-slate-300">
-                                Nenhuma playlist criada ainda. Use o formulario ao lado para criar a primeira.
+                                Nenhuma playlist criada ainda. Use o formulário ao lado para criar a primeira.
                             </div>
                         @endforelse
                     </div>
@@ -285,7 +285,7 @@
             if (!preview || !helper || !previewContainer) return;
 
             const renderizarDiagrama = (shape) => {
-                if (!shape) return '<div class="text-sm text-slate-300">Sem desenho disponivel.</div>';
+                if (!shape) return '<div class="text-sm text-slate-300">Sem desenho disponível.</div>';
                 const config = { startX: 30, startY: 40, width: 180, height: 240, numStrings: 6, numFrets: 5 };
                 const stringGap = config.width / (config.numStrings - 1);
                 const fretGap = config.height / config.numFrets;
@@ -323,7 +323,7 @@
                     elemento.classList.toggle('ring-2', ativo);
                     elemento.classList.toggle('ring-emerald-400', ativo);
                 });
-                if (!acorde) { if (painelDiagrama) painelDiagrama.innerHTML = '<div class="text-sm text-slate-300">Sem desenho disponivel.</div>'; if (nomeAcordeAtivo) nomeAcordeAtivo.textContent = nome || 'Nenhum acorde selecionado'; if (descricaoAcordeAtivo) descricaoAcordeAtivo.textContent = 'Esse acorde nao possui desenho cadastrado na biblioteca.'; return; }
+                if (!acorde) { if (painelDiagrama) painelDiagrama.innerHTML = '<div class="text-sm text-slate-300">Sem desenho disponível.</div>'; if (nomeAcordeAtivo) nomeAcordeAtivo.textContent = nome || 'Nenhum acorde selecionado'; if (descricaoAcordeAtivo) descricaoAcordeAtivo.textContent = 'Esse acorde não possui desenho cadastrado na biblioteca.'; return; }
                 if (painelDiagrama) painelDiagrama.innerHTML = renderizarDiagrama(acorde.shape);
                 if (nomeAcordeAtivo) nomeAcordeAtivo.textContent = nome;
                 if (descricaoAcordeAtivo) descricaoAcordeAtivo.textContent = acorde.descricao || 'Shape salvo na biblioteca de acordes.';
@@ -347,7 +347,7 @@
             };
 
             const atualizarTomBadge = () => {
-                const valorAtual = !tomBase || !helper.isChord(tomBase) ? 'Nao informado' : helper.transposeChord(tomBase, transposicaoAtual);
+                const valorAtual = !tomBase || !helper.isChord(tomBase) ? 'Não informado' : helper.transposeChord(tomBase, transposicaoAtual);
                 if (tomBadge) tomBadge.textContent = valorAtual;
                 if (tomIndicador) tomIndicador.textContent = `Tom atual: ${valorAtual}`;
             };
@@ -374,7 +374,7 @@
             document.querySelector('[data-font-reset]')?.addEventListener('click', () => { fonteAtual = 18; renderizar(); });
             botaoRolagem?.addEventListener('click', () => { if (rolagemAtiva) { pararRolagem(); return; } rolagemAtiva = true; botaoRolagem.textContent = 'Parar auto rolagem'; iniciarRolagem(); });
             controleVelocidade?.addEventListener('input', () => { if (valorVelocidade) valorVelocidade.textContent = formatarVelocidade(controleVelocidade.value); if (rolagemAtiva) { window.clearInterval(intervaloRolagem); iniciarRolagem(); } });
-            botaoMetronomo?.addEventListener('click', () => { if (intervaloMetronomo) { window.clearInterval(intervaloMetronomo); intervaloMetronomo = null; botaoMetronomo.textContent = 'Iniciar metronomo'; return; } tocarPulso(); intervaloMetronomo = window.setInterval(tocarPulso, Math.round(60000 / bpmAtual)); botaoMetronomo.textContent = 'Parar metronomo'; });
+            botaoMetronomo?.addEventListener('click', () => { if (intervaloMetronomo) { window.clearInterval(intervaloMetronomo); intervaloMetronomo = null; botaoMetronomo.textContent = 'Iniciar metrônomo'; return; } tocarPulso(); intervaloMetronomo = window.setInterval(tocarPulso, Math.round(60000 / bpmAtual)); botaoMetronomo.textContent = 'Parar metrônomo'; });
             botaoDiminuirBpm?.addEventListener('click', () => atualizarBpm(bpmAtual - 1));
             botaoAumentarBpm?.addEventListener('click', () => atualizarBpm(bpmAtual + 1));
             controleBpm?.addEventListener('input', () => atualizarBpm(controleBpm.value));

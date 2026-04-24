@@ -59,7 +59,7 @@ class IgrejaController extends Controller
         $dados = $request->validate([
             'nome' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'alpha_dash', Rule::unique('igrejas', 'slug')],
-            'cnpj' => ['required', 'string', 'max:18', Rule::unique('igrejas', 'cnpj')],
+            'cnpj' => ['required', 'string', 'max:18'],
             'cep' => ['nullable', 'string', 'max:9'],
             'endereco' => ['nullable', 'string', 'max:255'],
             'cidade' => ['required', 'string', 'max:255'],
@@ -164,7 +164,7 @@ class IgrejaController extends Controller
         $dados = $request->validate([
             'nome' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'alpha_dash', Rule::unique('igrejas', 'slug')->ignore($igreja->id)],
-            'cnpj' => ['required', 'string', 'max:18', Rule::unique('igrejas', 'cnpj')->ignore($igreja->id)],
+            'cnpj' => ['required', 'string', 'max:18'],
             'cep' => ['nullable', 'string', 'max:9'],
             'endereco' => ['nullable', 'string', 'max:255'],
             'cidade' => ['required', 'string', 'max:255'],

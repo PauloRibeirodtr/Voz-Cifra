@@ -1,9 +1,9 @@
 @php
-    $classeInput = 'mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-100';
+    $classeInput = 'mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 shadow-sm focus:border-[#8c6933] focus:ring-2 focus:ring-[#ead6b3]';
 @endphp
 
 <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
-    <section class="xl:col-span-2 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+    <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm xl:col-span-2">
         @if ($errors->any())
             <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
                 <ul class="list-disc pl-5">
@@ -16,15 +16,15 @@
 
         <div class="grid grid-cols-1 gap-4">
             @if (!empty($modoCriacao))
-                <div class="rounded-2xl border border-green-100 bg-green-50 p-4">
-                    <span class="block text-sm font-semibold text-green-900">Deseja reaproveitar o repertório de uma missa anterior?</span>
+                <div class="rounded-2xl border border-[#ead6b3] bg-[#fff8ed] p-4">
+                    <span class="block text-sm font-semibold text-[#5b3d1a]">Deseja reaproveitar o repert&oacute;rio de uma missa anterior?</span>
                     <div class="mt-4 flex flex-wrap gap-4">
                         <label class="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
-                            <input type="radio" name="reaproveitar_repertorio" value="0" {{ old('reaproveitar_repertorio', '0') !== '1' ? 'checked' : '' }} class="border-gray-300 text-green-700 focus:ring-green-500">
-                            <span>Não</span>
+                            <input type="radio" name="reaproveitar_repertorio" value="0" {{ old('reaproveitar_repertorio', '0') !== '1' ? 'checked' : '' }} class="border-gray-300 text-[#6c4a21] focus:ring-[#d6ad6c]">
+                            <span>N&atilde;o</span>
                         </label>
                         <label class="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
-                            <input type="radio" name="reaproveitar_repertorio" value="1" {{ old('reaproveitar_repertorio') === '1' ? 'checked' : '' }} class="border-gray-300 text-green-700 focus:ring-green-500">
+                            <input type="radio" name="reaproveitar_repertorio" value="1" {{ old('reaproveitar_repertorio') === '1' ? 'checked' : '' }} class="border-gray-300 text-[#6c4a21] focus:ring-[#d6ad6c]">
                             <span>Sim</span>
                         </label>
                     </div>
@@ -35,17 +35,17 @@
                             <option value="">Selecione uma missa da mesma igreja</option>
                             @foreach (($missasAnteriores ?? collect()) as $missaAnterior)
                                 <option value="{{ $missaAnterior->id }}" @selected((string) old('missa_origem_id') === (string) $missaAnterior->id)>
-                                    {{ $missaAnterior->titulo }} • {{ optional($missaAnterior->data_missa)->format('d/m/Y') }}
+                                    {{ $missaAnterior->titulo }} &bull; {{ optional($missaAnterior->data_missa)->format('d/m/Y') }}
                                 </option>
                             @endforeach
                         </select>
-                        <p class="mt-2 text-xs text-gray-500">O sistema copia músicas, ordem, momento litúrgico e versão musical. Depois você pode ajustar tudo livremente.</p>
+                        <p class="mt-2 text-xs text-gray-500">O sistema copia m&uacute;sicas, ordem, momento lit&uacute;rgico e vers&atilde;o musical. Depois voc&ecirc; pode ajustar tudo livremente.</p>
                     </div>
                 </div>
             @endif
 
             <div>
-                <label class="block text-sm font-medium text-gray-700">Titulo da missa</label>
+                <label class="block text-sm font-medium text-gray-700">T&iacute;tulo da missa</label>
                 <input type="text" name="titulo" value="{{ old('titulo', $missa->titulo) }}" class="{{ $classeInput }}" placeholder="Ex.: Missa dominical da noite" required>
             </div>
 
@@ -56,7 +56,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Tempo liturgico</label>
+                    <label class="block text-sm font-medium text-gray-700">Tempo lit&uacute;rgico</label>
                     <select name="tempo_liturgico_id" class="{{ $classeInput }}">
                         <option value="">Selecionar depois</option>
                         @foreach ($temposLiturgicos as $tempoLiturgico)
@@ -70,64 +70,64 @@
 
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Hora de inicio</label>
+                    <label class="block text-sm font-medium text-gray-700">Hora de in&iacute;cio</label>
                     <input type="time" name="hora_inicio" value="{{ old('hora_inicio', $missa->hora_inicio ? substr((string) $missa->hora_inicio, 0, 5) : '') }}" class="{{ $classeInput }}" required>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Hora de termino</label>
+                    <label class="block text-sm font-medium text-gray-700">Hora de t&eacute;rmino</label>
                     <input type="time" name="hora_fim" value="{{ old('hora_fim', $missa->hora_fim ? substr((string) $missa->hora_fim, 0, 5) : '') }}" class="{{ $classeInput }}" required>
                 </div>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700">Padre</label>
+                <label class="block text-sm font-medium text-gray-700">Celebrante</label>
                 <select name="padre_id" class="{{ $classeInput }}">
-                    <option value="">Nao vincular agora</option>
+                    <option value="">N&atilde;o vincular agora</option>
                     @foreach ($padres as $padre)
                         <option value="{{ $padre->id }}" @selected((string) old('padre_id', $missa->celebrante_usuario_id ?? null) === (string) $padre->id)>
                             {{ $padre->nome }}
                         </option>
                     @endforeach
                 </select>
-                <p class="mt-1 text-xs text-gray-500">Selecione um padre cadastrado. O sistema evita conflito do mesmo padre em duas missas no mesmo horario.</p>
+                <p class="mt-1 text-xs text-gray-500">Selecione um celebrante cadastrado. O sistema evita conflito do mesmo padre em duas missas no mesmo hor&aacute;rio.</p>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700">Observacoes</label>
-                <textarea name="observacoes" rows="5" class="{{ $classeInput }}" placeholder="Observacoes gerais da missa, orientacoes ou combinados internos.">{{ old('observacoes', $missa->observacoes) }}</textarea>
+                <label class="block text-sm font-medium text-gray-700">Observa&ccedil;&otilde;es</label>
+                <textarea name="observacoes" rows="5" class="{{ $classeInput }}" placeholder="Observa&ccedil;&otilde;es gerais da missa, orienta&ccedil;&otilde;es ou combinados internos.">{{ old('observacoes', $missa->observacoes) }}</textarea>
             </div>
         </div>
     </section>
 
     <aside class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
         <h2 class="text-lg font-bold text-gray-900">Status da missa</h2>
-        <p class="mt-2 text-sm text-gray-500">Se marcar como ativa, esta missa passa a ser a principal da igreja para o fluxo futuro.</p>
+        <p class="mt-2 text-sm text-gray-500">Se marcar como ativa, esta missa passa a ser a principal da igreja para o fluxo operacional.</p>
 
         <label class="mt-5 inline-flex items-start gap-3 text-sm font-medium text-gray-700">
             <input type="hidden" name="ativo" value="0">
-            <input type="checkbox" name="ativo" value="1" {{ old('ativo', $missa->exists ? (int) $missa->ativo : 1) ? 'checked' : '' }} class="mt-1 rounded border-gray-300 text-green-700 focus:ring-green-500">
+            <input type="checkbox" name="ativo" value="1" {{ old('ativo', $missa->exists ? (int) $missa->ativo : 1) ? 'checked' : '' }} class="mt-1 rounded border-gray-300 text-[#6c4a21] focus:ring-[#d6ad6c]">
             <span>Deixar esta missa ativa para a igreja</span>
         </label>
 
         <label class="mt-5 inline-flex items-start gap-3 text-sm font-medium text-gray-700">
             <input type="hidden" name="publica_para_fieis" value="0">
-            <input type="checkbox" name="publica_para_fieis" value="1" {{ old('publica_para_fieis', $missa->publica_para_fieis ?? false) ? 'checked' : '' }} class="mt-1 rounded border-gray-300 text-green-700 focus:ring-green-500">
-            <span>Publicar esta missa para os fieis no link publico</span>
+            <input type="checkbox" name="publica_para_fieis" value="1" {{ old('publica_para_fieis', $missa->publica_para_fieis ?? false) ? 'checked' : '' }} class="mt-1 rounded border-gray-300 text-[#6c4a21] focus:ring-[#d6ad6c]">
+            <span>Publicar esta missa para os fi&eacute;is no link p&uacute;blico</span>
         </label>
 
         <label class="mt-4 inline-flex items-start gap-3 text-sm font-medium text-gray-700">
             <input type="hidden" name="publica_para_musicos" value="0">
-            <input type="checkbox" name="publica_para_musicos" value="1" {{ old('publica_para_musicos', $missa->publica_para_musicos ?? false) ? 'checked' : '' }} class="mt-1 rounded border-gray-300 text-green-700 focus:ring-green-500">
-            <span>Publicar esta missa para os musicos com cifras e estudo</span>
+            <input type="checkbox" name="publica_para_musicos" value="1" {{ old('publica_para_musicos', $missa->publica_para_musicos ?? false) ? 'checked' : '' }} class="mt-1 rounded border-gray-300 text-[#6c4a21] focus:ring-[#d6ad6c]">
+            <span>Publicar esta missa para os m&uacute;sicos com cifras e estudo</span>
         </label>
 
         <div class="mt-6 space-y-3">
-            <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-green-700 px-5 py-3 font-semibold text-white hover:bg-green-800">
-                {{ $missa->exists ? 'Salvar alteracoes' : 'Criar missa' }}
+            <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-[#6c4a21] px-5 py-3 font-semibold text-white transition hover:bg-[#5b3d1a]">
+                {{ $missa->exists ? 'Salvar altera&ccedil;&otilde;es' : 'Salvar missa e abrir repert&oacute;rio' }}
             </button>
 
-            <a href="{{ route('local-admin.missas.index') }}" class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 font-semibold text-gray-700 hover:bg-gray-50">
+            <a href="{{ route('local-admin.missas.index') }}" class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 font-semibold text-gray-700 transition hover:bg-gray-50">
                 Voltar
             </a>
         </div>

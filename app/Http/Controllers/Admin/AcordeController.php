@@ -98,7 +98,7 @@ class AcordeController extends Controller
             'ativo' => true,
         ]);
 
-        $this->notificacaoSistemaService->enviarParaTodosUsuariosAtivos(
+        $this->notificacaoSistemaService->enviarParaUsuariosOperacionaisAtivos(
             evento: 'acorde_cadastrado',
             ator: $ator,
             contexto: [
@@ -110,7 +110,7 @@ class AcordeController extends Controller
 
         $totalAcordesAtivos = Acorde::query()->where('ativo', true)->count();
         if ($totalAcordesAtivos > 0 && $totalAcordesAtivos % 100 === 0) {
-            $this->notificacaoSistemaService->enviarParaTodosUsuariosAtivos(
+            $this->notificacaoSistemaService->enviarParaUsuariosOperacionaisAtivos(
                 evento: 'acordes_marco_alcancado',
                 ator: $ator,
                 contexto: [
@@ -213,7 +213,7 @@ class AcordeController extends Controller
 
         /** @var \App\Models\Usuario|null $ator */
         $ator = Auth::user();
-        $this->notificacaoSistemaService->enviarParaTodosUsuariosAtivos(
+        $this->notificacaoSistemaService->enviarParaUsuariosOperacionaisAtivos(
             evento: 'acorde_inativado',
             ator: $ator,
             contexto: [

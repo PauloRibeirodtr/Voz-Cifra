@@ -38,25 +38,25 @@
         <table class="grid">
             <tr>
                 <td width="50%">
-                    <strong>Tempo liturgico:</strong><br>
-                    <span class="muted">{{ $missa->tempoLiturgico?->nome ?: 'Nao definido' }}</span>
+                    <strong>Tempo lit&uacute;rgico:</strong><br>
+                    <span class="muted">{{ $missa->tempoLiturgico?->nome ?: 'N&atilde;o definido' }}</span>
                 </td>
                 <td width="50%">
-                    <strong>Padre:</strong><br>
-                    <span class="muted">{{ $missa->celebrante?->nome ?: 'Nao vinculado' }}</span>
+                    <strong>Celebrante:</strong><br>
+                    <span class="muted">{{ $missa->celebrante?->nome ?: 'N&atilde;o vinculado' }}</span>
                 </td>
             </tr>
         </table>
     </div>
 
-    <h3>Repertorio</h3>
+    <h3>Repert&oacute;rio e folhas da missa</h3>
     <table class="repertorio">
         <thead>
             <tr>
                 <th width="8%">Ordem</th>
-                <th width="26%">Momento liturgico</th>
-                <th width="26%">Musica</th>
-                <th width="20%">Versao</th>
+                <th width="26%">Momento lit&uacute;rgico</th>
+                <th width="26%">M&uacute;sica</th>
+                <th width="20%">Vers&atilde;o</th>
                 <th width="10%">Tom</th>
                 <th width="10%">BPM</th>
             </tr>
@@ -73,7 +73,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6">Nenhum item cadastrado no repertorio desta missa.</td>
+                    <td colspan="6">Nenhum item cadastrado no repert&oacute;rio desta missa.</td>
                 </tr>
             @endforelse
         </tbody>
@@ -81,7 +81,7 @@
 
     @if ($missa->observacoes)
         <div class="box" style="margin-top: 18px;">
-            <strong>Observacoes</strong>
+            <strong>Observa&ccedil;&otilde;es</strong>
             <p class="muted" style="margin-top: 8px; line-height: 1.6;">{{ $missa->observacoes }}</p>
         </div>
     @endif
@@ -91,7 +91,7 @@
             <div class="cifra-bloco">
                 <h3>{{ $item['ordem'] }}. {{ $item['musica'] }}</h3>
                 <p class="muted" style="margin-top: 6px;">
-                    {{ $item['momento'] ?: 'Momento nao definido' }} • {{ $item['versao'] }}
+                    {{ $item['momento'] ?: 'Momento n&atilde;o definido' }} • {{ $item['versao'] }}
                     @if ($item['tom_exibicao'])
                         • Tom da missa {{ $item['tom_exibicao'] }}
                     @endif
@@ -110,4 +110,3 @@
     @endforeach
 </body>
 </html>
-

@@ -25,17 +25,6 @@
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <form action="{{ route('logout') }}" method="POST">
-                            @csrf
-                            <button
-                                type="submit"
-                                class="inline-flex h-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-4 text-sm font-semibold text-[#fff1ea] shadow-sm transition hover:bg-white/10"
-                                aria-label="Sair do sistema"
-                            >
-                                Sair
-                            </button>
-                        </form>
-
                         <button
                             type="button"
                             id="admin_sidebar_toggle"

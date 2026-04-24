@@ -80,7 +80,7 @@ class MusicaController extends Controller
             ]
         );
 
-        $this->notificacaoSistemaService->enviarParaTodosUsuariosAtivos(
+        $this->notificacaoSistemaService->enviarParaUsuariosOperacionaisAtivos(
             evento: 'musica_cadastrada',
             ator: $usuario,
             contexto: [
@@ -171,7 +171,7 @@ class MusicaController extends Controller
             ]
         );
 
-        $this->notificacaoSistemaService->enviarParaTodosUsuariosAtivos(
+        $this->notificacaoSistemaService->enviarParaUsuariosOperacionaisAtivos(
             evento: 'musica_inativada',
             ator: $usuario,
             contexto: [

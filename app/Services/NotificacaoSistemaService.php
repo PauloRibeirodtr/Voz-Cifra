@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Enums\PapelIgreja;
 use App\Mail\NotificacaoSistemaMail;
 use App\Models\AuditoriaEvento;
 use App\Models\HistoricoEnvioEmail;
+use App\Models\Igreja;
 use App\Models\Usuario;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -54,6 +56,57 @@ class NotificacaoSistemaService
             ->each(function (Usuario $usuario) use ($evento, $ator, $contextoNormalizado): void {
                 $this->enviarParaUsuario($usuario, $evento, $ator, $contextoNormalizado);
             });
+    }
+
+    public function enviarParaUsuariosOperacionaisAtivos(
+        string $evento,
+        ?Usuario $ator = null,
+        array $contexto = [],
+        Igreja|int|null $igreja = null,
+        array $papeis = [
+            PapelIgreja::ADMIN_LOCAL,
+            PapelIgreja::COORDENADOR,
+            PapelIgreja::MUSICO,
+        ],
+        bool $incluirAdminMaster = true
+    ): void {
+        if (!$this->podeEnviar($evento)) {
+            return;
+        }
+
+        $igrejaId = $igreja instanceof Igreja
+            ? (int) $igreja->id
+            : (is_int($igreja) && $igreja > 0 ? $igreja : null);
+
+        if ($igrejaId !== null) {
+            $contexto['igreja_id'] = $contexto['igreja_id'] ?? $igrejaId;
+            $contexto['igreja_nome'] = $contexto['igreja_nome']
+                ?? Igreja::query()->whereKey($igrejaId)->value('nome');
+        }
+
+        $papeisNormalizados = collect($papeis)
+            ->map(fn (PapelIgreja|string $papel): string => PapelIgreja::fromValue($papel)->value)
+            ->unique()
+            ->values()
+            ->all();
+
+        $usuarios = Usuario::query()
+            ->where('ativo', true)
+            ->where(function ($query) use ($incluirAdminMaster, $igrejaId, $papeisNormalizados): void {
+                if ($incluirAdminMaster) {
+                    $query->orWhere('perfil_global', 'admin_master');
+                }
+
+                $query->orWhereHas('vinculosIgreja', function ($vinculos) use ($igrejaId, $papeisNormalizados): void {
+                    $vinculos->where('ativo', true)
+                        ->when($igrejaId !== null, fn ($consulta) => $consulta->where('igreja_id', $igrejaId))
+                        ->whereHas('papeisAtivos', fn ($papeisAtivos) => $papeisAtivos->whereIn('papel', $papeisNormalizados));
+                });
+            })
+            ->orderBy('id')
+            ->get();
+
+        $this->enviarParaUsuarios($usuarios, $evento, $ator, $contexto);
     }
 
     private function enviarParaUsuario(

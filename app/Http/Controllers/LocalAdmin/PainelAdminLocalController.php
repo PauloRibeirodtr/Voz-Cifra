@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\LocalAdmin;
 
+use App\Enums\PapelIgreja;
 use App\Http\Controllers\Controller;
 use App\Models\Igreja;
 use App\Models\Missa;
@@ -20,6 +21,7 @@ class PainelAdminLocalController extends Controller
     {
         $usuario = $this->obterUsuario();
         $igreja = $this->adicionarDadosPublicos($this->obterIgreja($usuario));
+        $igrejasAdministradas = $this->obterIgrejasAdministradas($usuario, $igreja);
 
         $metricas = [
             'total_missas' => Missa::where('igreja_id', $igreja->id)->count(),
@@ -38,6 +40,7 @@ class PainelAdminLocalController extends Controller
         return view('local-admin.dashboard', [
             'usuario' => $usuario,
             'igreja' => $igreja,
+            'igrejasAdministradas' => $igrejasAdministradas,
             'metricas' => $metricas,
             'proximasMissas' => $proximasMissas,
         ]);
@@ -50,6 +53,7 @@ class PainelAdminLocalController extends Controller
 
         return view('local-admin.church', [
             'igreja' => $igreja,
+            'igrejasAdministradas' => $this->obterIgrejasAdministradas($usuario, $igreja),
             'usuario' => $usuario,
         ]);
     }
@@ -133,5 +137,17 @@ class PainelAdminLocalController extends Controller
         );
 
         return $igreja;
+    }
+
+    private function obterIgrejasAdministradas(Usuario $usuario, Igreja $igrejaAtiva): array
+    {
+        return $usuario->igrejasDisponiveisPorPapel(PapelIgreja::ADMIN_LOCAL)
+            ->map(function (Igreja $igreja) use ($igrejaAtiva): Igreja {
+                $igrejaComDados = $this->adicionarDadosPublicos($igreja);
+                $igrejaComDados->setAttribute('eh_ativa', (int) $igreja->id === (int) $igrejaAtiva->id);
+
+                return $igrejaComDados;
+            })
+            ->all();
     }
 }

@@ -5,13 +5,13 @@
 
 @section('content')
     @php
-        $classeInput = 'mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-100';
+        $classeInput = 'mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 shadow-sm focus:border-[#6c4a21] focus:ring-2 focus:ring-[#d6ad6c]/30';
     @endphp
 
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Editar igreja</h1>
-            <p class="text-sm text-gray-500">Atualize os dados da igreja e gerencie coordenadores, admins locais e links publicos sem depender do modelo legado.</p>
+            <p class="text-sm text-gray-500">Atualize os dados da igreja e gerencie coordenadores, administradores locais e links públicos de forma organizada.</p>
         </div>
 
         <a href="{{ route('admin.igrejas.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-700 font-medium hover:bg-gray-50 sm:w-auto">
@@ -20,7 +20,7 @@
     </div>
 
     <div class="admin-inline-note mb-6 px-5 py-4 text-sm leading-7">
-        Esta igreja pode continuar ativa mesmo sem admin local vinculado. O papel local so se torna necessario quando alguem vai operar missas, repertorios e a rotina da comunidade.
+        Esta igreja pode continuar ativa mesmo sem administrador local vinculado. O papel local só se torna necessário quando alguém vai operar missas, repertórios e a rotina da comunidade.
     </div>
 
     <div class="mb-6">
@@ -67,12 +67,14 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="md:col-span-2 rounded-3xl border border-gray-200 bg-gray-50 p-5">
                     <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-                        <img
-                            id="church-image-edit-preview"
-                            src="{{ $igreja->imagemUrl() }}"
-                            alt="Imagem da igreja {{ $igreja->nome }}"
-                            class="h-24 w-24 rounded-3xl border border-gray-200 object-cover bg-white shadow-sm"
-                        />
+                        <div class="h-28 w-28 overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+                            <img
+                                id="church-image-edit-preview"
+                                src="{{ $igreja->imagemUrl() }}"
+                                alt="Imagem da igreja {{ $igreja->nome }}"
+                                class="h-full w-full object-cover"
+                            />
+                        </div>
                         <div class="flex-1">
                             <label class="block text-sm font-medium text-gray-700">Imagem ou logo da igreja</label>
                             <input
@@ -84,7 +86,7 @@
                                 data-image-preview-target="#church-image-edit-preview"
                                 data-default-src="{{ $igreja->imagemUrl() }}"
                             />
-                            <p class="mt-2 text-xs text-gray-500">Troque a imagem quando precisar atualizar a identidade visual usada no painel e nos links publicos.</p>
+                            <p class="mt-2 text-xs text-gray-500">Use JPG, PNG ou WebP com até 2 MB. Prefira imagem quadrada ou em 4:3 para manter boa leitura nos cards, no painel e nos links públicos.</p>
                         </div>
                     </div>
                 </div>
@@ -140,7 +142,7 @@
             @php($criarAdminLocalAgora = (bool) old('criar_admin_local_agora', (bool) $adminLocal))
 
             <h2 class="text-lg font-bold text-gray-800 mb-4">Administrador local</h2>
-            <p class="mb-4 text-sm text-gray-500">Use a mesma regra do cadastro: a igreja pode existir sem admin local, mas a operacao local depende desse vinculo ativo.</p>
+            <p class="mb-4 text-sm text-gray-500">Use a mesma regra do cadastro: a igreja pode existir sem administrador local, mas a operação local depende desse vínculo ativo.</p>
 
             <div class="space-y-4">
                 <div>
@@ -156,7 +158,7 @@
                         >
                         <span>
                             <strong class="block text-gray-900">Cadastrar ou atualizar admin local agora</strong>
-                            Se marcado, o bloco abaixo fica disponivel para revisar o admin local principal. Se desmarcado, nada sera alterado nessa parte.
+                            Se marcado, o bloco abaixo fica disponível para revisar o administrador local principal. Se desmarcado, nada será alterado nessa parte.
                         </span>
                     </label>
                 </div>
@@ -168,7 +170,7 @@
                 <div data-admin-local-panel class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700">Nome</label>
-                        <input type="text" name="admin_nome" value="{{ old('admin_nome', $adminLocal?->nome) }}" placeholder="Nome completo do admin local principal" class="{{ $classeInput }}" />
+                        <input type="text" name="admin_nome" value="{{ old('admin_nome', $adminLocal?->nome) }}" placeholder="Nome completo do administrador local principal" class="{{ $classeInput }}" />
                     </div>
 
                     <div>
@@ -187,7 +189,7 @@
                     </div>
 
                     <div class="md:col-span-2 bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800">
-                        Os dados do admin local principal ficam aqui. Nas secoes abaixo voce pode adicionar outros admins locais e coordenadores para a mesma igreja, reaproveitando usuarios ja existentes quando os dados coincidirem.
+                        Os dados do administrador local principal ficam aqui. Nas seções abaixo você pode adicionar outros administradores locais e coordenadores para a mesma igreja, reaproveitando usuários já existentes quando os dados coincidirem.
                     </div>
                 </div>
             </div>
@@ -227,7 +229,7 @@
                                     <p class="mt-1 text-xs text-gray-400">{{ $admin->cpf }} @if($admin->telefone) • {{ $admin->telefone }} @endif</p>
                                 </div>
                                 <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $admin->primeiro_acesso ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-700' }}">
-                                    {{ $admin->primeiro_acesso ? 'Troca pendente no proximo login' : 'Acesso liberado' }}
+                                    {{ $admin->primeiro_acesso ? 'Troca pendente no próximo login' : 'Acesso liberado' }}
                                 </span>
                             </div>
 
@@ -248,7 +250,7 @@
                                 </div>
 
                                 <div class="lg:col-span-2 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm text-amber-900">
-                                    Se a nova senha ficar em branco, o sistema vai usar o CPF deste admin local como senha padrao e obrigar a troca no proximo acesso.
+                                    Se a nova senha ficar em branco, o sistema vai usar o CPF deste administrador local como senha padrão e obrigar a troca no próximo acesso.
                                 </div>
 
                                 <div class="lg:col-span-2">
@@ -266,9 +268,9 @@
         <div class="admin-section-card p-6">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div class="max-w-3xl">
-                    <h2 class="text-lg font-bold text-gray-800">Usuarios vinculados a esta igreja</h2>
+                    <h2 class="text-lg font-bold text-gray-800">Usuários vinculados a esta igreja</h2>
                     <p class="mt-2 text-sm text-gray-500">
-                        Esta e a forma mais segura de promover ou revogar `admin local`, `coordenador` e `musico`: escolha apenas usuarios ja vinculados a esta igreja e aplique a acao desejada.
+                        Esta é a forma mais segura de promover ou revogar `administrador local`, `coordenador` e `músico`: escolha apenas usuários já vinculados a esta igreja e aplique a ação desejada.
                     </p>
                 </div>
                 <div class="w-full max-w-md">
@@ -298,7 +300,7 @@
                                 <div class="flex flex-wrap items-center gap-2">
                                     <h3 class="text-base font-bold text-gray-900">{{ $usuarioVinculado->nome }}</h3>
                                     @if ($vinculo->responsavel_principal)
-                                        <span class="admin-badge admin-badge-info">Vinculo principal</span>
+                                        <span class="admin-badge admin-badge-info">Vínculo principal</span>
                                     @endif
                                 </div>
                                 <p class="mt-1 text-sm text-gray-600">{{ $usuarioVinculado->email }}</p>
@@ -324,7 +326,7 @@
                                         class="inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'admin_local') ? 'bg-green-100 text-green-800' : 'bg-green-700 text-white hover:bg-green-800' }}"
                                         {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'admin_local') ? 'disabled' : '' }}
                                     >
-                                        {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'admin_local') ? 'Ja e admin local' : 'Tornar admin local' }}
+                                        {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'admin_local') ? 'Já é admin local' : 'Tornar admin local' }}
                                     </button>
                                 </form>
 
@@ -348,7 +350,7 @@
                                         class="inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'coordenador') ? 'bg-slate-200 text-slate-700' : 'bg-slate-900 text-white hover:bg-slate-800' }}"
                                         {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'coordenador') ? 'disabled' : '' }}
                                     >
-                                        {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'coordenador') ? 'Ja e coordenador' : 'Tornar coordenador' }}
+                                        {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'coordenador') ? 'Já é coordenador' : 'Tornar coordenador' }}
                                     </button>
                                 </form>
 
@@ -372,11 +374,11 @@
                                         class="inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'musico') ? 'bg-indigo-100 text-indigo-800' : 'bg-indigo-700 text-white hover:bg-indigo-800' }}"
                                         {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'musico') ? 'disabled' : '' }}
                                     >
-                                        {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'musico') ? 'Ja e musico' : 'Tornar musico' }}
+                                        {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'musico') ? 'Já é músico' : 'Tornar músico' }}
                                     </button>
                                 </form>
 
-                                <form action="{{ route('admin.igrejas.usuarios.papeis.destroy', [$igreja, $usuarioVinculado]) }}" method="POST" onsubmit="return confirm('Remover o papel de musico de {{ $usuarioVinculado->nome }}?');">
+                                <form action="{{ route('admin.igrejas.usuarios.papeis.destroy', [$igreja, $usuarioVinculado]) }}" method="POST" onsubmit="return confirm('Remover o papel de músico de {{ $usuarioVinculado->nome }}?');">
                                     @csrf
                                     <input type="hidden" name="papel" value="musico">
                                     <button
@@ -384,7 +386,7 @@
                                         class="inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'musico') ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-gray-100 text-gray-400' }}"
                                         {{ $papeisAtivos->contains(fn ($papel) => $papel->value === 'musico') ? '' : 'disabled' }}
                                     >
-                                        Remover musico
+                                        Remover músico
                                     </button>
                                 </form>
                             </div>
@@ -392,7 +394,7 @@
                     </article>
                 @empty
                     <div class="rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-4 py-5 text-sm text-gray-500">
-                        Esta igreja ainda nao possui usuarios vinculados para promover por busca.
+                        Esta igreja ainda não possui usuários vinculados para promover por busca.
                     </div>
                 @endforelse
             </div>
@@ -401,7 +403,7 @@
             <div class="admin-section-card p-6">
                 <h2 class="text-lg font-bold text-gray-800">Adicionar ou promover admin local</h2>
                 <p class="mt-2 text-sm text-gray-500">
-                    Use este formulario apenas quando a pessoa ainda nao estiver vinculada a esta igreja ou quando voce realmente precisar cadastrar manualmente.
+                    Use este formulário apenas quando a pessoa ainda não estiver vinculada a esta igreja ou quando você realmente precisar cadastrar manualmente.
                 </p>
 
                 <form action="{{ route('admin.igrejas.admins-locais.store', $igreja) }}" method="POST" class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -428,7 +430,7 @@
                     </div>
 
                     <div class="md:col-span-2 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm text-blue-800">
-                        A senha inicial sera o CPF informado para contas novas. Quando a pessoa ja existir, o sistema reaproveita a conta e concede o novo papel nesta igreja.
+                        A senha inicial será o CPF informado para contas novas. Quando a pessoa já existir, o sistema reaproveita a conta e concede o novo papel nesta igreja.
                     </div>
 
                     <div class="md:col-span-2">
@@ -444,10 +446,10 @@
                 <div class="max-w-2xl">
                     <h2 class="text-lg font-bold text-gray-800">Coordenadores da igreja</h2>
                     <p class="mt-2 text-sm text-gray-500">
-                        Coordenadores podem acumular papeis com musico ou admin local. Prefira usar a busca acima quando o usuario ja estiver vinculado a esta igreja.
+                        Coordenadores podem acumular papéis com músico ou administrador local. Prefira usar a busca acima quando o usuário já estiver vinculado a esta igreja.
                     </p>
                     <div class="mt-4 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm text-amber-900">
-                        O comportamento regional por cidade ou CEP ainda nao foi implementado. Hoje o coordenador continua sendo um papel por igreja, mesmo quando a mesma pessoa acumula varias igrejas.
+                        O comportamento regional por cidade ou CEP ainda não foi implementado. Hoje o coordenador continua sendo um papel por igreja, mesmo quando a mesma pessoa acumula várias igrejas.
                     </div>
                 </div>
                 <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
@@ -491,7 +493,7 @@
                 </div>
 
                 <div class="md:col-span-2 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm text-amber-900">
-                    Use os mesmos dados da conta ja existente quando quiser apenas adicionar o papel de coordenador a uma pessoa que ja participa do sistema.
+                    Use os mesmos dados da conta já existente quando quiser apenas adicionar o papel de coordenador a uma pessoa que já participa do sistema.
                 </div>
 
                 <div class="md:col-span-2">
@@ -505,20 +507,20 @@
         <div class="admin-section-card p-6">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div class="max-w-2xl">
-                    <h2 class="text-lg font-bold text-gray-800">Links publicos e QR fixos</h2>
+                    <h2 class="text-lg font-bold text-gray-800">Links públicos e QR fixos</h2>
                     <p class="mt-2 text-sm text-gray-500">
-                        Cada igreja possui um link publico para fieis e outro link publico especifico para musicos. Os dois podem ser compartilhados separadamente conforme a missa for publicada.
+                        Cada igreja possui um link público para fiéis e outro link público específico para músicos. Os dois podem ser compartilhados separadamente conforme a missa for publicada.
                     </p>
 
                     <div class="mt-5 rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                        <span class="block text-xs font-bold uppercase tracking-wider text-gray-400">Link publico dos fieis</span>
+                        <span class="block text-xs font-bold uppercase tracking-wider text-gray-400">Link público dos fiéis</span>
                         <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="mt-2 block break-all text-sm font-semibold text-green-700 hover:underline">
                             {{ $igreja->link_publico }}
                         </a>
                     </div>
 
                     <div class="mt-4 rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                        <span class="block text-xs font-bold uppercase tracking-wider text-gray-400">Link publico dos musicos</span>
+                        <span class="block text-xs font-bold uppercase tracking-wider text-gray-400">Link público dos músicos</span>
                         <a href="{{ $igreja->link_publico_musicos }}" target="_blank" rel="noopener noreferrer" class="mt-2 block break-all text-sm font-semibold text-slate-900 hover:underline">
                             {{ $igreja->link_publico_musicos }}
                         </a>
@@ -526,25 +528,25 @@
 
                     <div class="mt-4 flex flex-col gap-3 sm:flex-row">
                         <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
-                            Abrir pagina dos fieis
+                            Abrir página dos fiéis
                         </a>
                         <a href="{{ $igreja->qr_code_url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
-                            Abrir QR dos fieis
+                            Abrir QR dos fiéis
                         </a>
                         <a href="{{ $igreja->link_publico_musicos }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
-                            Abrir pagina dos musicos
+                            Abrir página dos músicos
                         </a>
                     </div>
                 </div>
 
                 <div class="w-full max-w-xs rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                    <span class="block text-xs font-bold uppercase tracking-wider text-gray-400">Previa do QR dos fieis</span>
+                    <span class="block text-xs font-bold uppercase tracking-wider text-gray-400">Prévia do QR dos fiéis</span>
                     <img src="{{ $igreja->qr_code_url }}" alt="QR Code da igreja {{ $igreja->nome }}" class="mt-4 w-full rounded-xl border border-gray-200 bg-white p-3" />
                     <div class="mt-3 rounded-xl border border-green-100 bg-green-50 px-3 py-3 text-sm text-green-800">
-                        Aponte a camera para o QR Code e acompanhe a pagina publica dos fieis.
+                        Aponte a câmera para o QR Code e acompanhe a página pública dos fiéis.
                     </div>
                     <p class="mt-3 text-xs leading-5 text-gray-500">
-                        O QR aponta sempre para o link publico dos fieis. O link dos musicos pode ser compartilhado separadamente para leitura com cifras.
+                        O QR aponta sempre para o link público dos fiéis. O link dos músicos pode ser compartilhado separadamente para leitura com cifras.
                     </p>
                 </div>
             </div>

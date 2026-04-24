@@ -11,8 +11,8 @@ use App\Models\Musica;
 use App\Models\TempoLiturgico;
 use App\Models\Usuario;
 use App\Models\VersaoMusical;
+use App\Services\AuditoriaOperacionalService;
 use App\Services\FolhaVersaoMusicalService;
-use App\Rules\ValidChord;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use App\Services\RenderizadorCifrasHtmlService;
@@ -22,11 +22,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class MissaController extends Controller
 {
     public function __construct(
+        private readonly AuditoriaOperacionalService $auditoriaOperacionalService,
         private readonly TranspositorCifrasService $transpositorCifrasService,
         private readonly RenderizadorCifrasHtmlService $renderizadorCifrasHtmlService,
         private readonly FolhaVersaoMusicalService $folhaVersaoMusicalService
@@ -77,6 +79,7 @@ class MissaController extends Controller
     {
         $dados = $this->validarDadosMissa($request);
         $igreja = $this->obterIgreja();
+        $usuario = $this->obterUsuario();
 
         $missa = DB::transaction(function () use ($dados, $igreja): Missa {
             if (($dados['ativo'] ?? false) === true) {
@@ -121,11 +124,27 @@ class MissaController extends Controller
             return $missa;
         });
 
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'missa_criada',
+            ator: $usuario,
+            igreja: $igreja,
+            contexto: [
+                'origem' => 'local_admin_missas_store',
+                'origem_id' => $missa->id,
+                'titulo' => $missa->titulo,
+                'publica_para_fieis' => $missa->publica_para_fieis,
+                'publica_para_musicos' => $missa->publica_para_musicos,
+                'resumo' => !empty($dados['reaproveitar_repertorio']) && !empty($dados['missa_origem_id'])
+                    ? 'Missa criada com reaproveitamento de repertório anterior.'
+                    : 'Missa criada para a rotina da igreja.',
+            ]
+        );
+
         return redirect()
-            ->route('local-admin.missas.show', $missa)
+            ->to(route('local-admin.missas.show', $missa) . '#missa-repertorio')
             ->with('success', !empty($dados['reaproveitar_repertorio']) && !empty($dados['missa_origem_id'])
                 ? 'Missa cadastrada com sucesso. O repertório anterior foi copiado como ponto de partida.'
-                : 'Missa cadastrada com sucesso. Agora voce pode montar o repertorio.');
+                : 'Missa cadastrada com sucesso. Agora adicione as músicas ao repertório.');
     }
 
     public function show(Missa $missa): View
@@ -189,6 +208,8 @@ class MissaController extends Controller
     {
         $this->garantirMissaDaIgreja($missa);
         $dados = $this->validarDadosMissa($request);
+        $igreja = $this->obterIgreja();
+        $usuario = $this->obterUsuario();
 
         DB::transaction(function () use ($dados, $missa): void {
             if (($dados['ativo'] ?? false) === true) {
@@ -211,6 +232,20 @@ class MissaController extends Controller
             ]);
         });
 
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'missa_editada',
+            ator: $usuario,
+            igreja: $igreja,
+            contexto: [
+                'origem' => 'local_admin_missas_update',
+                'origem_id' => $missa->id,
+                'titulo' => $missa->titulo,
+                'publica_para_fieis' => (bool) ($dados['publica_para_fieis'] ?? false),
+                'publica_para_musicos' => (bool) ($dados['publica_para_musicos'] ?? false),
+                'resumo' => 'Missa atualizada com ajustes de publicação e dados litúrgicos.',
+            ]
+        );
+
         return redirect()
             ->route('local-admin.missas.show', $missa)
             ->with('success', 'Missa atualizada com sucesso.');
@@ -221,30 +256,62 @@ class MissaController extends Controller
         $this->garantirMissaDaIgreja($missa);
 
         return back()->withErrors([
-            'missa' => 'Somente o admin master pode inativar ou remover registros de missa.',
+            'missa' => 'A exclusão direta de missas não está disponível neste fluxo. Use a inativação para preservar o histórico da celebração.',
         ]);
     }
 
     public function toggle(Missa $missa): RedirectResponse
     {
         $this->garantirMissaDaIgreja($missa);
+        $igreja = $this->obterIgreja();
+        $usuario = $this->obterUsuario();
+        $novoStatus = !$missa->ativo;
 
-        return back()->withErrors([
-            'missa' => 'Somente o admin master pode inativar ou reativar registros de missa.',
-        ]);
+        DB::transaction(function () use ($missa, $novoStatus): void {
+            if ($novoStatus) {
+                Missa::query()
+                    ->where('igreja_id', $missa->igreja_id)
+                    ->whereKeyNot($missa->id)
+                    ->update(['ativo' => false]);
+            }
+
+            $missa->update(['ativo' => $novoStatus]);
+        });
+
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'missa_editada',
+            ator: $usuario,
+            igreja: $igreja,
+            contexto: [
+                'origem' => 'local_admin_missas_toggle',
+                'origem_id' => $missa->id,
+                'titulo' => $missa->titulo,
+                'ativo' => $novoStatus,
+                'resumo' => $novoStatus
+                    ? 'Missa reativada e definida novamente no fluxo operacional da igreja.'
+                    : 'Missa inativada para preservar o histórico sem excluir o repertório.',
+            ]
+        );
+
+        return back()->with('success', $novoStatus
+            ? 'Missa reativada com sucesso.'
+            : 'Missa inativada com sucesso.');
     }
 
     public function storeRepertorio(Request $request, Missa $missa): RedirectResponse
     {
         $this->garantirMissaDaIgreja($missa);
+        $igreja = $this->obterIgreja();
+        $usuario = $this->obterUsuario();
 
         $dados = $request->validate([
             'musica_id' => ['required', 'exists:musicas,id'],
             'versao_musical_id' => ['nullable', 'exists:versoes_musicais,id'],
-            'tom_usado' => ['nullable', 'string', 'max:20', new ValidChord()],
+            'tom_usado' => ['nullable', Rule::in(config('musical.tons', []))],
             'momento_liturgico_id' => ['nullable', 'exists:momentos_liturgicos,id'],
         ], [
             'musica_id.required' => 'Selecione uma musica para adicionar ao repertorio.',
+            'tom_usado.in' => 'Escolha um tom padronizado da lista para usar nesta missa.',
         ]);
 
         if (!empty($dados['versao_musical_id'])) {
@@ -258,7 +325,7 @@ class MissaController extends Controller
 
         $proximaOrdem = (int) ($missa->missaMusicas()->max('ordem') ?? 0) + 1;
 
-        MissaMusica::create([
+        $itemRepertorio = MissaMusica::create([
             'missa_id' => $missa->id,
             'musica_id' => $dados['musica_id'],
             'versao_musical_id' => $dados['versao_musical_id'] ?? null,
@@ -267,20 +334,42 @@ class MissaController extends Controller
             'ordem' => $proximaOrdem,
         ]);
 
+        $itemRepertorio->loadMissing(['musica', 'versaoMusical', 'momentoLiturgico']);
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'repertorio_item_adicionado',
+            ator: $usuario,
+            igreja: $igreja,
+            contexto: [
+                'origem' => 'local_admin_repertorio_store',
+                'origem_id' => $itemRepertorio->id,
+                'missa_id' => $missa->id,
+                'missa_titulo' => $missa->titulo,
+                'musica_id' => $itemRepertorio->musica_id,
+                'titulo' => $itemRepertorio->musica?->titulo,
+                'versao_id' => $itemRepertorio->versao_musical_id,
+                'momento_liturgico_id' => $itemRepertorio->momento_liturgico_id,
+                'resumo' => 'Música adicionada ao repertório da missa.',
+            ]
+        );
+
         return redirect()
-            ->route('local-admin.missas.show', $missa)
-            ->with('success', 'Musica adicionada ao repertorio da missa.');
+            ->to(route('local-admin.missas.show', $missa) . '#missa-repertorio')
+            ->with('success', 'Música adicionada ao repertório da missa.');
     }
 
     public function updateRepertorio(Request $request, Missa $missa, MissaMusica $missaMusica): RedirectResponse
     {
         $this->garantirMissaDaIgreja($missa);
         $this->garantirItemDaMissa($missa, $missaMusica);
+        $igreja = $this->obterIgreja();
+        $usuario = $this->obterUsuario();
 
         $dados = $request->validate([
             'versao_musical_id' => ['nullable', 'exists:versoes_musicais,id'],
-            'tom_usado' => ['nullable', 'string', 'max:20', new ValidChord()],
+            'tom_usado' => ['nullable', Rule::in(config('musical.tons', []))],
             'momento_liturgico_id' => ['nullable', 'exists:momentos_liturgicos,id'],
+        ], [
+            'tom_usado.in' => 'Escolha um tom padronizado da lista para usar nesta missa.',
         ]);
 
         if (!empty($dados['versao_musical_id'])) {
@@ -297,6 +386,24 @@ class MissaController extends Controller
             'tom_usado' => $this->normalizarTomInformado($dados['tom_usado'] ?? null),
             'momento_liturgico_id' => $dados['momento_liturgico_id'] ?? null,
         ]);
+
+        $missaMusica->loadMissing(['musica', 'versaoMusical', 'momentoLiturgico']);
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'repertorio_item_atualizado',
+            ator: $usuario,
+            igreja: $igreja,
+            contexto: [
+                'origem' => 'local_admin_repertorio_update',
+                'origem_id' => $missaMusica->id,
+                'missa_id' => $missa->id,
+                'missa_titulo' => $missa->titulo,
+                'musica_id' => $missaMusica->musica_id,
+                'titulo' => $missaMusica->musica?->titulo,
+                'versao_id' => $missaMusica->versao_musical_id,
+                'momento_liturgico_id' => $missaMusica->momento_liturgico_id,
+                'resumo' => 'Item do repertório atualizado.',
+            ]
+        );
 
         return back()->with('success', 'Item do repertorio atualizado com sucesso.');
     }
@@ -361,6 +468,9 @@ class MissaController extends Controller
     {
         $this->garantirMissaDaIgreja($missa);
         $this->garantirItemDaMissa($missa, $missaMusica);
+        $igreja = $this->obterIgreja();
+        $usuario = $this->obterUsuario();
+        $missaMusica->loadMissing(['musica', 'versaoMusical', 'momentoLiturgico']);
 
         $missaMusica->delete();
 
@@ -371,6 +481,22 @@ class MissaController extends Controller
             ->each(function (MissaMusica $item, int $indice): void {
                 $item->update(['ordem' => $indice + 1]);
             });
+
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'repertorio_item_removido',
+            ator: $usuario,
+            igreja: $igreja,
+            contexto: [
+                'origem' => 'local_admin_repertorio_destroy',
+                'origem_id' => $missaMusica->id,
+                'missa_id' => $missa->id,
+                'missa_titulo' => $missa->titulo,
+                'musica_id' => $missaMusica->musica_id,
+                'titulo' => $missaMusica->musica?->titulo,
+                'versao_id' => $missaMusica->versao_musical_id,
+                'resumo' => 'Item removido do repertório da missa.',
+            ]
+        );
 
         return back()->with('success', 'Item removido do repertorio.');
     }

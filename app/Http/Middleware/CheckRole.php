@@ -13,6 +13,7 @@ class CheckRole
     public function handle(Request $request, Closure $next, string $papel): Response
     {
         $usuario = $request->user();
+        $igrejaAtivaService = app(IgrejaAtivaService::class);
 
         if (!$usuario) {
             return redirect()->route('login');
@@ -26,9 +27,17 @@ class CheckRole
             return $next($request);
         }
 
-        $igrejaAtivaId = app(IgrejaAtivaService::class)->getId();
+        $igrejaAtivaId = $igrejaAtivaService->getId();
 
         if (method_exists($usuario, 'possuiPapel') && $this->usuarioTemPapelSolicitado($usuario, $papel, $igrejaAtivaId)) {
+            return $next($request);
+        }
+
+        $igrejaCompativel = $this->resolverIgrejaCompativelPorPapel($usuario, $papel);
+
+        if ($igrejaCompativel !== null) {
+            $igrejaAtivaService->set($igrejaCompativel);
+
             return $next($request);
         }
 
@@ -55,5 +64,23 @@ class CheckRole
             ])->contains(fn (string $papelLocal) => $usuario->possuiPapel($papelLocal, $igrejaAtivaId)),
             default => false,
         };
+    }
+
+    private function resolverIgrejaCompativelPorPapel(mixed $usuario, string $papel): ?int
+    {
+        if (!method_exists($usuario, 'igrejasDisponiveisPorPapel')) {
+            return null;
+        }
+
+        $igreja = match ($papel) {
+            'admin_local' => $usuario->igrejasDisponiveisPorPapel(PapelIgreja::ADMIN_LOCAL)->first(),
+            'coordenador' => $usuario->igrejasDisponiveisPorPapel(PapelIgreja::COORDENADOR)->first(),
+            'member', 'musico' => $usuario->igrejasDisponiveisPorPapel(PapelIgreja::MUSICO)->first()
+                ?? $usuario->igrejasDisponiveisPorPapel(PapelIgreja::COORDENADOR)->first()
+                ?? $usuario->igrejasDisponiveisPorPapel(PapelIgreja::ADMIN_LOCAL)->first(),
+            default => null,
+        };
+
+        return is_object($igreja) && isset($igreja->id) ? (int) $igreja->id : null;
     }
 }

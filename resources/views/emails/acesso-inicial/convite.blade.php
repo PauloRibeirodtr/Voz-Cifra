@@ -97,11 +97,11 @@
 
             <div style="margin-top:24px; padding:16px 18px; border-radius:14px; background:#eff6ff; border:1px solid #bfdbfe; color:#1e3a8a;">
                 <strong style="display:block; margin-bottom:6px;">Primeiro acesso</strong>
-                <span>Assim que entrar, o sistema vai exigir a troca da senha provisoria para liberar o uso normal da conta.</span>
+                <span>Assim que entrar, o sistema vai exigir a troca da senha provisória para liberar o uso normal da conta.</span>
             </div>
 
             <p style="margin:24px 0 0; color:#57534e; font-size:13px;">
-                Se voce nao reconhece este convite, desconsidere esta mensagem e avise o administrador responsavel.
+                Se voce não reconhece este convite, desconsidere esta mensagem e avise o administrador responsável.
             </p>
         </div>
     </div>
