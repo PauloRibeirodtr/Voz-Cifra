@@ -118,7 +118,7 @@ class Igreja extends Model
 
     public function slugPublicoMusicos(): string
     {
-        return (string) ($this->slug_publico_musicos ?: ($this->slug . '-musicos'));
+        return (string) $this->slug;
     }
 
     public function estaOperacional(): bool

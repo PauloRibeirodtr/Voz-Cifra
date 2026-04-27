@@ -16,8 +16,8 @@
             <p class="text-sm text-gray-500">Gerencie as igrejas, acompanhe o status operacional, visualize os links públicos e confira quem já está vinculado localmente.</p>
         </div>
 
-        <a href="{{ route('admin.igrejas.create') }}" class="inline-flex items-center justify-center rounded-2xl bg-[#6c4a21] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#7a5528] sm:self-start">
-            Criar nova igreja
+        <a href="{{ route('admin.igrejas.create') }}" class="inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 sm:self-start">
+            Cadastrar igreja
         </a>
     </div>
 
@@ -97,7 +97,7 @@
                                 <p class="mt-3 text-sm text-gray-600">
                                     {{ $igreja->cidade }} - {{ $igreja->estado }}
                                     @if ($igreja->endereco)
-                                        <span class="text-gray-400">• {{ $igreja->endereco }}</span>
+                                        <span class="text-gray-400">• {{ $igreja->endereco }}{{ $igreja->numero ? ', '.$igreja->numero : '' }}</span>
                                     @endif
                                 </p>
                             </div>
@@ -110,14 +110,24 @@
                             <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-[#6c4a21]/20 bg-[#f8f1e7] px-4 py-3 text-sm font-semibold text-[#6c4a21] transition hover:bg-[#efe2cf]">
                                 Página dos fiéis
                             </a>
+                            <a href="{{ $igreja->link_publico_musicos }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-200">
+                                Página dos músicos
+                            </a>
+                            <button
+                                type="button"
+                                class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                                data-copy-url="{{ $igreja->link_publico_musicos }}"
+                            >
+                                Copiar link dos músicos
+                            </button>
                             @if ($adminLocal)
                                 <button
                                     type="button"
-                                    class="inline-flex items-center justify-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800 transition hover:bg-amber-100"
+                                    class="inline-flex items-center justify-center rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-100"
                                     data-reset-admin-local
                                     data-modal-id="resetar-admin-local-{{ $igreja->id }}-{{ $adminLocal->id }}"
                                 >
-                                    Resetar senha do admin local
+                                    Redefinir senha do admin local
                                 </button>
                             @endif
                         </div>
@@ -138,12 +148,22 @@
                                 @if ($adminLocal)
                                     <div class="mt-3 space-y-3">
                                         @foreach ($adminsLocais as $admin)
-                                            <div class="@if (!$loop->first) border-t border-gray-200 pt-3 @endif">
-                                                <p class="font-semibold text-gray-900">{{ $admin->nome }}</p>
-                                                <p class="break-all text-sm text-gray-600">{{ $admin->email }}</p>
-                                                @if ($admin->telefone)
-                                                    <p class="text-sm text-gray-500">{{ $admin->telefone }}</p>
-                                                @endif
+                                            <div class="flex items-start gap-3 @if (!$loop->first) border-t border-gray-200 pt-3 @endif">
+                                                <div class="h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                                                    <img
+                                                        src="{{ $admin->fotoPerfilUrl() }}"
+                                                        alt="Foto de {{ $admin->nome }}"
+                                                        class="h-full w-full object-cover"
+                                                        onerror="this.onerror=null;this.src='{{ asset('logo/final.png') }}';"
+                                                    >
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <p class="font-semibold text-gray-900">{{ $admin->nome }}</p>
+                                                    <p class="break-all text-sm text-gray-600">{{ $admin->email }}</p>
+                                                    @if ($admin->telefone)
+                                                        <p class="text-sm text-gray-500">{{ $admin->telefone }}</p>
+                                                    @endif
+                                                </div>
                                             </div>
                                         @endforeach
                                     </div>
@@ -163,10 +183,20 @@
                                 @if ($coordenadores->isNotEmpty())
                                     <div class="mt-3 grid gap-3 sm:grid-cols-2">
                                         @foreach ($coordenadores as $coordenador)
-                                            <div class="rounded-2xl border border-amber-100 bg-amber-50 p-3">
-                                                <p class="font-semibold text-gray-900">{{ $coordenador->nome }}</p>
-                                                <p class="break-all text-sm text-gray-600">{{ $coordenador->email }}</p>
-                                                <p class="text-xs text-gray-400">{{ $coordenador->cpf }}</p>
+                                            <div class="flex items-start gap-3 rounded-2xl border border-amber-100 bg-amber-50 p-3">
+                                                <div class="h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-sm">
+                                                    <img
+                                                        src="{{ $coordenador->fotoPerfilUrl() }}"
+                                                        alt="Foto de {{ $coordenador->nome }}"
+                                                        class="h-full w-full object-cover"
+                                                        onerror="this.onerror=null;this.src='{{ asset('logo/final.png') }}';"
+                                                    >
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <p class="font-semibold text-gray-900">{{ $coordenador->nome }}</p>
+                                                    <p class="break-all text-sm text-gray-600">{{ $coordenador->email }}</p>
+                                                    <p class="text-xs text-gray-400">{{ $coordenador->cpf }}</p>
+                                                </div>
                                             </div>
                                         @endforeach
                                     </div>
@@ -185,6 +215,13 @@
                                     <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="mt-2 block break-all text-sm font-semibold text-[#6c4a21] hover:underline">
                                         {{ $igreja->link_publico }}
                                     </a>
+                                    <button
+                                        type="button"
+                                        class="mt-3 inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-100"
+                                        data-copy-url="{{ $igreja->link_publico }}"
+                                    >
+                                        Copiar link dos fiéis
+                                    </button>
                                 </div>
 
                                 <div class="rounded-2xl border border-white bg-white p-4 shadow-sm">
@@ -192,6 +229,13 @@
                                     <a href="{{ $igreja->link_publico_musicos }}" target="_blank" rel="noopener noreferrer" class="mt-2 block break-all text-sm font-semibold text-slate-800 hover:underline">
                                         {{ $igreja->link_publico_musicos }}
                                     </a>
+                                    <button
+                                        type="button"
+                                        class="mt-3 inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-100"
+                                        data-copy-url="{{ $igreja->link_publico_musicos }}"
+                                    >
+                                        Copiar link dos músicos
+                                    </button>
                                 </div>
 
                                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -222,7 +266,7 @@
                 <div class="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl">
                     <div class="flex items-start justify-between gap-4">
                         <div>
-                            <h2 class="text-lg font-bold text-gray-900">Resetar senha do administrador local</h2>
+                            <h2 class="text-lg font-bold text-gray-900">Redefinir senha do administrador local</h2>
                             <p class="mt-1 text-sm text-gray-500">
                                 {{ $adminLocal->nome }} • {{ $igreja->nome }}
                             </p>
@@ -237,26 +281,26 @@
                         <input type="hidden" name="origem" value="index">
                         <input type="hidden" name="admin_local_id" value="{{ $adminLocal->id }}">
 
-                        <div class="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm text-amber-900">
+                        <div class="rounded-2xl border border-red-100 bg-red-50 px-4 py-4 text-sm text-red-800">
                             Se você deixar a nova senha em branco, o sistema vai usar o CPF do administrador local como senha padrão e obrigar a troca no próximo acesso.
                         </div>
 
                         <div data-password-strength-container>
                             <label class="block text-sm font-medium text-gray-700">Nova senha manual</label>
-                            <input type="password" name="password" data-password-strength-input class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 shadow-sm focus:border-[#6c4a21] focus:ring-2 focus:ring-[#d6ad6c]/30" placeholder="Opcional">
+                            <input type="password" name="password" data-password-strength-input class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 shadow-sm focus:border-red-500 focus:ring-2 focus:ring-red-100" placeholder="Opcional">
                             @include('partials.password-strength-meter')
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Confirmar nova senha</label>
-                            <input type="password" name="password_confirmation" data-password-confirmation-input class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 shadow-sm focus:border-[#6c4a21] focus:ring-2 focus:ring-[#d6ad6c]/30" placeholder="Repita a nova senha">
+                            <input type="password" name="password_confirmation" data-password-confirmation-input class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 shadow-sm focus:border-red-500 focus:ring-2 focus:ring-red-100" placeholder="Repita a nova senha">
                         </div>
 
                         <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                             <button type="button" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 font-medium text-gray-700 hover:bg-gray-50" data-fechar-reset-modal>
                                 Cancelar
                             </button>
-                            <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-amber-600 px-5 py-3 font-semibold text-white hover:bg-amber-700">
+                            <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-red-600 px-5 py-3 font-semibold text-white hover:bg-red-700">
                                 Confirmar redefinição
                             </button>
                         </div>
@@ -271,7 +315,30 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const abrirBotoes = document.querySelectorAll('[data-reset-admin-local]');
+            const copiarBotoes = document.querySelectorAll('[data-copy-url]');
             const modalInicialId = @json(session('abrir_reset_modal'));
+
+            copiarBotoes.forEach((botao) => {
+                botao.addEventListener('click', async () => {
+                    const url = botao.getAttribute('data-copy-url');
+
+                    if (!url) {
+                        return;
+                    }
+
+                    try {
+                        await navigator.clipboard.writeText(url);
+                        const textoOriginal = botao.textContent;
+                        botao.textContent = 'Link copiado';
+
+                        window.setTimeout(() => {
+                            botao.textContent = textoOriginal;
+                        }, 1800);
+                    } catch (error) {
+                        console.debug('Não foi possível copiar o link.', error);
+                    }
+                });
+            });
 
             abrirBotoes.forEach((botao) => {
                 const modalId = botao.getAttribute('data-modal-id');

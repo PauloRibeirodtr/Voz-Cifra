@@ -10,6 +10,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             AdminMasterSeeder::class,
+            IgrejaCorumbaSeeder::class,
             TempoLiturgicoSeeder::class,
             MomentoLiturgicoSeeder::class,
             AcordeSeeder::class,

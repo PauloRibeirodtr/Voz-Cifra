@@ -1,0 +1,146 @@
+<?php
+
+namespace Tests\Feature\Publico;
+
+use App\Models\Igreja;
+use App\Models\Missa;
+use App\Models\MissaMusica;
+use App\Models\Musica;
+use App\Models\Usuario;
+use Carbon\CarbonImmutable;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class IgrejaPublicaFieisTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function tearDown(): void
+    {
+        CarbonImmutable::setTestNow();
+
+        parent::tearDown();
+    }
+
+    public function test_link_publico_do_fiel_mostra_todas_as_missas_do_dia_mesmo_antes_do_horario(): void
+    {
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-04-27 07:30:00', 'America/Cuiaba'));
+
+        $igreja = Igreja::factory()->create([
+            'nome' => 'Paroquia Sao Jose',
+            'slug' => 'paroquia-sao-jose',
+            'cidade' => 'Campo Grande',
+            'estado' => 'MS',
+            'ativo' => true,
+        ]);
+
+        Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa da Manha',
+            'data_missa' => '2026-04-27',
+            'hora_inicio' => '08:00:00',
+            'hora_fim' => '09:00:00',
+            'publica_para_fieis' => true,
+            'publica_para_musicos' => false,
+            'ativo' => true,
+        ]);
+
+        Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa da Noite',
+            'data_missa' => '2026-04-27',
+            'hora_inicio' => '19:00:00',
+            'hora_fim' => '20:30:00',
+            'publica_para_fieis' => true,
+            'publica_para_musicos' => false,
+            'ativo' => true,
+        ]);
+
+        $response = $this->get(route('igrejas.public.show', ['slug' => $igreja->slug]));
+
+        $response->assertOk();
+        $response->assertSee('Missas de hoje');
+        $response->assertSee('Missa da Manha');
+        $response->assertSee('Missa da Noite');
+        $response->assertSeeInOrder(['08:00', 'Missa da Manha', '19:00', 'Missa da Noite'], false);
+        $response->assertDontSee('Como funciona esta página');
+    }
+
+    public function test_link_publico_do_fiel_exibe_repertorio_sem_cifras(): void
+    {
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-04-27 08:30:00', 'America/Cuiaba'));
+
+        $igreja = Igreja::factory()->create([
+            'slug' => 'paroquia-santa-cecilia',
+            'ativo' => true,
+        ]);
+
+        $usuario = Usuario::factory()->create();
+
+        $missa = Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa com Cantos',
+            'data_missa' => '2026-04-27',
+            'hora_inicio' => '09:00:00',
+            'hora_fim' => '10:00:00',
+            'publica_para_fieis' => true,
+            'publica_para_musicos' => false,
+            'ativo' => true,
+        ]);
+
+        $musica = Musica::query()->create([
+            'titulo' => 'Aclamacao ao Evangelho',
+            'artista' => null,
+            'letra' => "[Am]Senhor, tende piedade\n[C]Cristo, tende piedade",
+            'criado_por' => $usuario->id,
+            'ativo' => true,
+        ]);
+
+        MissaMusica::query()->create([
+            'missa_id' => $missa->id,
+            'musica_id' => $musica->id,
+            'versao_musical_id' => null,
+            'tom_usado' => null,
+            'momento_liturgico_id' => null,
+            'ordem' => 1,
+        ]);
+
+        $response = $this->get(route('igrejas.public.show', ['slug' => $igreja->slug]));
+
+        $response->assertOk();
+        $response->assertSee('Missa com Cantos');
+        $response->assertSee('Senhor, tende piedade');
+        $response->assertSee('Cristo, tende piedade');
+        $response->assertDontSee('[Am]');
+        $response->assertDontSee('[C]');
+    }
+
+    public function test_link_publico_do_fiel_mostra_estado_vazio_util_quando_nao_ha_missas_hoje(): void
+    {
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-04-27 10:00:00', 'America/Cuiaba'));
+
+        $igreja = Igreja::factory()->create([
+            'slug' => 'paroquia-sao-francisco',
+            'ativo' => true,
+        ]);
+
+        Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa do Domingo Passado',
+            'data_missa' => '2026-04-26',
+            'hora_inicio' => '18:00:00',
+            'hora_fim' => '19:00:00',
+            'publica_para_fieis' => true,
+            'publica_para_musicos' => false,
+            'ativo' => true,
+        ]);
+
+        $response = $this->get(route('igrejas.public.show', ['slug' => $igreja->slug]));
+
+        $response->assertOk();
+        $response->assertSee('Missas de hoje');
+        $response->assertSee('Ainda não há missas para hoje.', false);
+        $response->assertSee('Consultar histórico', false);
+        $response->assertSee('Missa do Domingo Passado');
+    }
+}

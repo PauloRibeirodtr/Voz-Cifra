@@ -3,35 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $igreja->nome }} | Voz & Cifra</title>
+    <title>{{ $igreja->nome }} | Voz &amp; Cifra</title>
     <link rel="icon" type="image/png" href="{{ asset('logo/final.png') }}">
     <style>
         :root {
             color-scheme: dark;
-            --bg-1: #1b0e0f;
-            --bg-2: #2a1415;
-            --bg-3: #5f4229;
-            --panel: rgba(28, 15, 15, 0.94);
-            --panel-soft: rgba(44, 24, 22, 0.92);
-            --text: #fff8ef;
-            --muted: #eadcc7;
-            --accent: #f0d7a5;
-            --line: rgba(240, 215, 165, 0.18);
+            --bg-1: #160c0d;
+            --bg-2: #241112;
+            --bg-3: #4a2e20;
+            --panel: rgba(31, 16, 17, 0.94);
+            --panel-soft: rgba(46, 24, 24, 0.94);
+            --panel-strong: rgba(62, 33, 28, 0.96);
+            --text: #fff7ee;
+            --muted: #e8d8c4;
+            --accent: #e3be84;
+            --line: rgba(227, 190, 132, 0.18);
             --shadow: 0 22px 60px rgba(0, 0, 0, 0.34);
-            --public-font-scale: 1.08;
+            --public-font-scale: 1.02;
         }
 
         body[data-contrast='high'] {
-            --panel: rgba(14, 8, 8, 0.98);
-            --panel-soft: rgba(20, 12, 12, 0.98);
-            --text: #fffdf8;
-            --muted: #f4e8d1;
-            --accent: #ffe0a8;
-            --line: rgba(255, 224, 168, 0.34);
-            --shadow: 0 0 0 1px rgba(255, 224, 168, 0.16), 0 22px 60px rgba(0, 0, 0, 0.5);
+            --panel: rgba(15, 9, 9, 0.98);
+            --panel-soft: rgba(21, 12, 12, 0.98);
+            --panel-strong: rgba(35, 18, 18, 0.98);
+            --text: #fffdf9;
+            --muted: #f5ead9;
+            --accent: #ffd99d;
+            --line: rgba(255, 217, 157, 0.28);
         }
 
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
         html, body {
             margin: 0;
@@ -39,372 +42,326 @@
             overflow-x: hidden;
             font-family: "Segoe UI", Arial, Helvetica, sans-serif;
             background:
-                radial-gradient(circle at top right, rgba(240, 215, 165, 0.12), transparent 24%),
-                radial-gradient(circle at left bottom, rgba(107, 74, 45, 0.14), transparent 28%),
-                linear-gradient(140deg, var(--bg-1), var(--bg-2) 44%, var(--bg-3));
+                radial-gradient(circle at top right, rgba(227, 190, 132, 0.10), transparent 22%),
+                radial-gradient(circle at left bottom, rgba(138, 90, 54, 0.16), transparent 26%),
+                linear-gradient(145deg, var(--bg-1), var(--bg-2) 46%, var(--bg-3));
             color: var(--text);
         }
 
         body {
-            line-height: 1.8;
             -webkit-text-size-adjust: 100%;
+            line-height: 1.65;
+        }
+
+        a {
+            color: inherit;
         }
 
         .page {
-            width: 100%;
             min-height: 100vh;
-            padding: 12px 10px 28px;
+            padding: 14px 12px 32px;
         }
 
-        .shell,
-        .content-section {
-            width: min(100%, 1120px);
+        .shell {
+            width: min(100%, 980px);
             margin: 0 auto;
-            border-radius: 28px;
+        }
+
+        .section {
+            margin-top: 14px;
+            border-radius: 26px;
+            border: 1px solid var(--line);
             background: var(--panel);
             box-shadow: var(--shadow);
-            border: 1px solid var(--line);
+            padding: 18px 16px;
             backdrop-filter: blur(12px);
         }
 
-        .content-section {
-            margin-top: 16px;
-            padding: 22px 16px 18px;
-        }
-
         .hero {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr);
-        }
-
-        .hero-main {
-            padding: 20px 16px 18px;
-        }
-
-        .hero-side {
-            padding: 0 16px 20px;
+            padding-top: 20px;
         }
 
         .brand {
             display: flex;
-            align-items: flex-start;
-            gap: 14px;
-            margin-bottom: 20px;
+            align-items: center;
+            gap: 12px;
             text-decoration: none;
-            color: inherit;
         }
 
         .brand img {
-            width: 56px;
-            height: auto;
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
             flex-shrink: 0;
-            filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.18));
         }
 
         .brand-kicker,
-        .section-kicker,
-        .panel-title,
-        .label {
+        .section-kicker {
             margin: 0;
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: 0.2em;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 0.20em;
             text-transform: uppercase;
             color: var(--accent);
+        }
+
+        .brand-name,
+        .section-title,
+        .card-title,
+        .celebration-title {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            color: var(--text);
         }
 
         .brand-name {
-            margin: 6px 0 0;
-            font-family: Georgia, "Times New Roman", serif;
-            font-size: clamp(26px, 4.8vw, 36px);
-            line-height: 1.1;
-            font-weight: 900;
-            letter-spacing: -0.02em;
+            margin-top: 4px;
+            font-size: 18px;
         }
 
-        .location {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--line);
-            padding: 12px 16px;
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--accent);
-        }
-
-        .title {
-            margin: 18px 0 0;
-            max-width: 14ch;
+        .hero-title {
+            margin: 20px 0 0;
             font-family: Georgia, "Times New Roman", serif;
-            font-size: clamp(40px, 9vw, 74px);
+            font-size: clamp(40px, 10vw, 64px);
             line-height: 0.98;
-            font-weight: 900;
             letter-spacing: -0.04em;
-            text-wrap: balance;
         }
 
-        .lead,
-        .panel-text,
-        .section-lead,
-        .history-empty {
-            font-size: clamp(calc(17px * var(--public-font-scale)), calc(3.8vw * var(--public-font-scale)), calc(20px * var(--public-font-scale)));
-            line-height: 1.9;
+        .hero-church {
+            margin: 12px 0 0;
+            font-size: clamp(calc(23px * var(--public-font-scale)), calc(5vw * var(--public-font-scale)), calc(34px * var(--public-font-scale)));
+            line-height: 1.15;
+        }
+
+        .hero-city {
+            margin: 10px 0 0;
             color: var(--muted);
+            font-size: clamp(calc(17px * var(--public-font-scale)), calc(4vw * var(--public-font-scale)), calc(20px * var(--public-font-scale)));
+            font-weight: 700;
         }
 
-        .lead {
-            margin: 16px 0 0;
-            max-width: 56rem;
+        .hero-address {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: clamp(calc(15px * var(--public-font-scale)), calc(3.5vw * var(--public-font-scale)), calc(18px * var(--public-font-scale)));
+            line-height: 1.6;
         }
 
-        .status-strip {
-            margin-top: 18px;
+        .cards,
+        .history-list,
+        .celebration-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .card,
+        .history-item,
+        .celebration-item,
+        .access-bar,
+        .empty-state,
+        .history-form {
+            border-radius: 22px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: var(--panel-soft);
+        }
+
+        .card,
+        .history-item,
+        .celebration-item,
+        .empty-state {
+            padding: 18px;
+        }
+
+        .card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .card-main {
+            min-width: 0;
+        }
+
+        .card-hour {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            border-radius: 999px;
-            padding: 12px 16px;
-            background: rgba(202, 161, 96, 0.12);
-            border: 1px solid rgba(240, 215, 165, 0.16);
-            color: #fff3cf;
-            font-size: 13px;
-            font-weight: 800;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
+            justify-content: center;
+            min-width: 84px;
+            padding: 10px 14px;
+            border-radius: 16px;
+            background: rgba(227, 190, 132, 0.12);
+            color: var(--accent);
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: -0.03em;
         }
 
-        .access-tools {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
-            margin-top: 22px;
+        .card-title {
+            margin-top: 12px;
+            font-size: clamp(calc(23px * var(--public-font-scale)), calc(5vw * var(--public-font-scale)), calc(30px * var(--public-font-scale)));
+            line-height: 1.1;
         }
 
-        .access-tools button,
+        .card-meta,
+        .section-copy,
+        .history-meta,
+        .empty-copy,
+        .celebration-meta-text {
+            margin: 10px 0 0;
+            color: var(--muted);
+            font-size: clamp(calc(16px * var(--public-font-scale)), calc(3.8vw * var(--public-font-scale)), calc(18px * var(--public-font-scale)));
+            line-height: 1.8;
+        }
+
+        .card-action,
+        .empty-action,
         .history-form button,
-        .history-form input {
-            min-height: 58px;
-            font: inherit;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .access-tools button {
-            border: 1px solid var(--line);
-            border-radius: 18px;
-            background: rgba(255, 255, 255, 0.06);
-            color: var(--text);
-            padding: 16px 14px;
-            font-size: 17px;
+        .history-form a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 50px;
+            border-radius: 16px;
+            padding: 0 18px;
+            border: 1px solid transparent;
+            text-decoration: none;
+            font-size: 15px;
             font-weight: 800;
             cursor: pointer;
         }
 
-        .access-tools button:last-child {
-            grid-column: 1 / -1;
-        }
-
-        .summary-block,
-        .panel,
-        .agenda-item,
-        .celebration-item,
-        .history-item,
-        .history-form {
-            border-radius: 22px;
-            background: var(--panel-soft);
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .summary-block {
-            margin-top: 24px;
-            background: linear-gradient(135deg, rgba(202, 161, 96, 0.16), rgba(255, 255, 255, 0.04));
-            padding: 18px 18px 16px;
-            border: 1px solid rgba(240, 215, 165, 0.14);
-        }
-
-        .summary-title,
-        .section-title,
-        .celebration-title {
-            margin: 8px 0 0;
-            font-family: Georgia, "Times New Roman", serif;
-            font-weight: 900;
-            color: #fffdf8;
-            letter-spacing: -0.03em;
-            text-wrap: balance;
-        }
-
-        .summary-title {
-            font-size: clamp(calc(28px * var(--public-font-scale)), calc(6vw * var(--public-font-scale)), calc(40px * var(--public-font-scale)));
-            line-height: 1.14;
-        }
-
-        .summary-meta,
-        .agenda-meta,
-        .history-meta {
-            color: var(--muted);
-            font-size: clamp(calc(16px * var(--public-font-scale)), calc(3.5vw * var(--public-font-scale)), calc(19px * var(--public-font-scale)));
-            line-height: 1.8;
-        }
-
-        .summary-meta {
-            margin: 10px 0 0;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .panel {
-            padding: 20px;
-        }
-
-        .panel + .panel {
-            margin-top: 14px;
-        }
-
-        .panel-text,
-        .section-lead,
-        .history-empty {
-            margin: 12px 0 0;
-        }
-
-        .agenda-list,
-        .celebration-list,
-        .history-list {
-            display: grid;
-            gap: 12px;
-            margin-top: 16px;
-        }
-
-        .agenda-item,
-        .celebration-item,
-        .history-item {
-            padding: 18px;
-        }
-
-        .agenda-top,
-        .history-top {
-            display: flex;
-            align-items: baseline;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .agenda-title,
-        .history-title {
-            margin: 0;
-            font-size: clamp(calc(20px * var(--public-font-scale)), calc(4vw * var(--public-font-scale)), calc(24px * var(--public-font-scale)));
-            line-height: 1.35;
-            font-weight: 800;
+        .card-action,
+        .empty-action,
+        .history-form button {
+            background: linear-gradient(135deg, #7b4b2a, #a06b35);
             color: #fff8ef;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.20);
         }
 
-        .agenda-hour,
-        .history-date {
-            font-size: clamp(calc(20px * var(--public-font-scale)), calc(4.2vw * var(--public-font-scale)), calc(26px * var(--public-font-scale)));
-            font-weight: 900;
-            color: var(--accent);
+        .history-form a {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--line);
+            color: var(--muted);
         }
 
-        .section-header,
-        .celebration-header {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 16px;
+        .empty-state {
+            background: linear-gradient(180deg, rgba(44, 24, 22, 0.96), rgba(62, 33, 28, 0.96));
         }
 
-        .section-title,
-        .celebration-title {
-            font-size: clamp(30px, 7vw, 42px);
+        .empty-title {
+            margin-top: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(calc(28px * var(--public-font-scale)), calc(6vw * var(--public-font-scale)), calc(36px * var(--public-font-scale)));
+            line-height: 1.08;
+            letter-spacing: -0.03em;
+        }
+
+        .section-header {
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            margin-top: 6px;
+            font-size: clamp(calc(26px * var(--public-font-scale)), calc(6vw * var(--public-font-scale)), calc(36px * var(--public-font-scale)));
             line-height: 1.08;
         }
 
-        .history-form {
-            margin-top: 18px;
-            padding: 16px;
+        .section-accessibility {
+            padding: 14px 14px 12px;
+        }
+
+        .section-accessibility .section-header {
+            margin-bottom: 10px;
+        }
+
+        .section-accessibility .section-title {
+            margin-top: 4px;
+            font-size: clamp(calc(22px * var(--public-font-scale)), calc(4.8vw * var(--public-font-scale)), calc(28px * var(--public-font-scale)));
+        }
+
+        .access-bar {
             display: grid;
-            gap: 12px;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 8px;
+            padding: 8px;
+        }
+
+        .access-bar button {
+            min-height: 36px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text);
+            font: inherit;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .history-form {
+            display: grid;
+            gap: 10px;
+            padding: 12px;
+        }
+
+        .history-form input {
+            width: 100%;
+            min-height: 52px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text);
+            padding: 0 16px;
+            font: inherit;
         }
 
         .history-form label {
             display: block;
             margin-bottom: 8px;
-            color: var(--accent);
             font-size: 14px;
-            font-weight: 800;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--muted);
         }
 
-        .history-form input {
-            width: 100%;
-            border: 1px solid rgba(240, 215, 165, 0.16);
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text);
-            padding: 0 16px;
-            font-size: 17px;
+        .history-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
         }
 
-        .history-form input::placeholder {
-            color: rgba(234, 220, 199, 0.72);
-        }
-
-        .history-form button {
-            border: 1px solid rgba(240, 215, 165, 0.2);
-            border-radius: 16px;
-            background: rgba(202, 161, 96, 0.15);
-            color: #fff8ef;
-            padding: 0 18px;
-            font-size: 17px;
-            font-weight: 800;
-            cursor: pointer;
-        }
-
-        .history-form a {
+        .history-date,
+        .badge {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-height: 58px;
-            border-radius: 16px;
-            border: 1px solid rgba(240, 215, 165, 0.14);
-            color: var(--muted);
-            font-weight: 700;
-            padding: 0 18px;
-            background: rgba(255, 255, 255, 0.04);
-        }
-
-        .history-note {
-            margin-top: 10px;
-            color: rgba(255, 248, 239, 0.72);
-            font-size: clamp(calc(15px * var(--public-font-scale)), calc(3.2vw * var(--public-font-scale)), calc(17px * var(--public-font-scale)));
-            line-height: 1.8;
-        }
-
-        .celebration-badge,
-        .celebration-pill,
-        .history-pill {
-            display: inline-flex;
-            align-items: center;
+            min-height: 32px;
             border-radius: 999px;
-            padding: 10px 12px;
+            padding: 0 12px;
+            background: rgba(227, 190, 132, 0.10);
+            border: 1px solid rgba(227, 190, 132, 0.12);
+            color: var(--accent);
             font-size: 12px;
             font-weight: 800;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.06em;
             text-transform: uppercase;
-            color: var(--accent);
-            background: rgba(255, 255, 255, 0.08);
         }
 
-        .celebration-badge {
-            gap: 8px;
-            padding: 12px 15px;
-            color: #fff2ca;
-            border: 1px solid rgba(240, 215, 165, 0.16);
-            background: rgba(202, 161, 96, 0.16);
+        .celebration-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .celebration-title {
+            font-size: clamp(calc(28px * var(--public-font-scale)), calc(6vw * var(--public-font-scale)), calc(40px * var(--public-font-scale)));
+            line-height: 1.06;
         }
 
         .celebration-meta {
@@ -414,84 +371,69 @@
             margin-bottom: 12px;
         }
 
-        .celebration-song {
-            margin: 0;
-            font-family: Georgia, "Times New Roman", serif;
-            font-size: clamp(calc(28px * var(--public-font-scale)), calc(5vw * var(--public-font-scale)), calc(34px * var(--public-font-scale)));
-            line-height: 1.2;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-        }
-
-        .celebration-lyrics {
+        .lyrics {
             margin-top: 14px;
-            border-radius: 18px;
-            background: rgba(0, 0, 0, 0.14);
-            padding: 18px 18px 20px;
-            color: rgba(255, 255, 255, 0.98);
-            font-size: clamp(calc(23px * var(--public-font-scale)), calc(4.9vw * var(--public-font-scale)), calc(28px * var(--public-font-scale)));
-            line-height: 2.15;
-            white-space: break-spaces;
-            word-break: break-word;
-            overflow-wrap: anywhere;
-            text-wrap: pretty;
+            white-space: pre-wrap;
+            color: var(--text);
+            font-size: clamp(calc(17px * var(--public-font-scale)), calc(4vw * var(--public-font-scale)), calc(21px * var(--public-font-scale)));
+            line-height: 1.95;
         }
 
-        body[data-public-mode='musicos'] .celebration-item {
-            border: 1px solid rgba(240, 215, 165, 0.14);
-            background: rgba(255, 252, 247, 0.96);
-            color: #2f241f;
+        body[data-public-mode='musicos'] .lyrics {
+            font-family: "Courier New", Courier, monospace;
+            font-size: clamp(calc(15px * var(--public-font-scale)), calc(3.8vw * var(--public-font-scale)), calc(20px * var(--public-font-scale)));
+            line-height: 2;
         }
 
-        body[data-public-mode='musicos'] .celebration-song {
-            color: #2b1a19;
+        .chord-mark {
+            display: inline-block;
+            margin-right: 0.16em;
+            padding: 0.08em 0.40em;
+            border-radius: 999px;
+            background: rgba(227, 190, 132, 0.12);
+            color: #ffd99d;
+            font-weight: 800;
         }
 
-        body[data-public-mode='musicos'] .celebration-pill {
-            color: #7a4a1f;
-            background: rgba(197, 106, 26, 0.08);
-        }
+        @media (max-width: 719px) {
+            .card {
+                flex-direction: column;
+                align-items: stretch;
+            }
 
-        body[data-public-mode='musicos'] .celebration-lyrics {
-            background: linear-gradient(180deg, #fffdfa 0%, #f7efe3 100%);
-            color: #1f2937;
-            border: 1px solid rgba(140, 105, 51, 0.14);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
-        }
+            .card-action,
+            .empty-action,
+            .history-form button,
+            .history-form a {
+                width: 100%;
+            }
 
-        .empty-box {
-            margin-top: 20px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.04);
-            padding: 20px;
-            color: var(--muted);
-            font-size: clamp(calc(18px * var(--public-font-scale)), calc(4vw * var(--public-font-scale)), calc(21px * var(--public-font-scale)));
-            line-height: 1.9;
+            .access-bar {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .access-bar button:last-child {
+                grid-column: 1 / -1;
+            }
         }
 
         @media (min-width: 720px) {
             .page {
-                padding: 18px 18px 36px;
+                padding: 20px 18px 38px;
             }
 
-            .hero-main {
-                padding: 24px 22px 22px;
+            .section {
+                padding: 22px;
             }
 
-            .hero-side {
-                padding: 0 22px 22px;
+            .section-accessibility {
+                padding: 16px;
             }
 
-            .content-section {
-                padding: 24px 22px 20px;
-            }
-
-            .access-tools {
-                grid-template-columns: repeat(4, minmax(0, 1fr));
-            }
-
-            .access-tools button:last-child {
-                grid-column: auto;
+            .cards,
+            .history-list,
+            .celebration-list {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
 
             .history-form {
@@ -499,261 +441,214 @@
                 align-items: end;
             }
         }
-
-        @media (min-width: 980px) {
-            .page {
-                padding: 28px 24px 52px;
-            }
-
-            .hero {
-                grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.9fr);
-            }
-
-            .hero-main {
-                padding: 34px 34px 30px;
-            }
-
-            .hero-side {
-                padding: 34px 30px 30px 10px;
-            }
-
-            .content-section {
-                padding: 28px 34px 24px;
-            }
-
-            .history-list {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-        }
     </style>
 </head>
-<body data-contrast="normal" data-public-mode="{{ $modoPublico ?? 'fieis' }}">
+<body data-contrast="high" data-public-mode="{{ $modoPublico ?? 'fieis' }}">
     <main class="page">
         <div
             hidden
             data-public-status-sync
             data-state="{{ $estadoCelebracao }}"
             data-status-url="{{ ($modoPublico ?? 'fieis') === 'musicos'
-                ? route('igrejas.public.musicos.status', ['slug' => $igreja->slugPublicoMusicos()])
-                : route('igrejas.public.status', ['slug' => $igreja->slug]) }}"
+                ? route('igrejas.public.musicos.status', ['slug' => $igreja->slug, 'celebracao' => ($celebracaoSelecionadaId ?? 0) > 0 ? $celebracaoSelecionadaId : null])
+                : route('igrejas.public.status', ['slug' => $igreja->slug, 'celebracao' => ($celebracaoSelecionadaId ?? 0) > 0 ? $celebracaoSelecionadaId : null]) }}"
             @if($countdownIso) data-target="{{ $countdownIso }}" @endif
         ></div>
 
-        <section class="shell">
-            <div class="hero">
-                <div class="hero-main">
-                    <a href="{{ route('igrejas.public.show', ['slug' => $igreja->slug]) }}" class="brand">
-                        <img src="{{ $igreja->imagemUrl() }}" alt="Logo {{ $igreja->nome }}">
-                        <div>
-                            <p class="brand-kicker">Voz &amp; Cifra</p>
-                            <p class="brand-name">
-                                @if ($estadoCelebracao === 'em_andamento')
-                                    Missa em andamento
-                                @elseif ($proximaMissa)
-                                    Horarios da comunidade
-                                @else
-                                    Aguarde a proxima missa
-                                @endif
-                            </p>
-                        </div>
-                    </a>
+        <div class="shell">
+            <section class="section hero">
+                <a href="{{ route('igrejas.public.show', ['slug' => $igreja->slug]) }}" class="brand">
+                    <img src="{{ $igreja->imagemUrl() }}" alt="Logo {{ $igreja->nome }}">
+                    <div>
+                        <p class="brand-kicker">Voz &amp; Cifra</p>
+                        <p class="brand-name">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Repertório para ensaio' : 'Missas de hoje' }}</p>
+                    </div>
+                </a>
 
-                    <span class="location">{{ $igreja->cidade }} - {{ $igreja->estado }}</span>
+                <h1 class="hero-title">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Músicos' : 'Missas de hoje' }}</h1>
+                <h2 class="hero-church">{{ $igreja->nome }}</h2>
+                @php
+                    $enderecoLinha = trim(collect([$igreja->endereco, $igreja->numero])->filter()->implode(', '));
+                    $bairroLinha = trim((string) ($igreja->bairro ?? ''));
+                    $localizacaoLinha = collect([$enderecoLinha, $bairroLinha])->filter()->implode(' • ');
+                    $cidadeEstadoLinha = trim(($igreja->cidade ?? '') . ' - ' . ($igreja->estado ?? ''), ' -');
+                @endphp
+                @if ($localizacaoLinha !== '')
+                    <p class="hero-city">{{ $localizacaoLinha }}</p>
+                @endif
+                @if ($cidadeEstadoLinha !== '')
+                    <p class="hero-address">{{ $cidadeEstadoLinha }}</p>
+                @endif
+            </section>
 
-                    <h1 class="title">{{ $igreja->nome }}</h1>
-
-                    <p class="lead">
-                        @if (($modoPublico ?? 'fieis') === 'musicos')
-                            @if ($missaPublica)
-                                Este link foi preparado para leitura musical. Quando a missa estiver publicada para músicos, as músicas aparecem em sequência com cifras e mais foco no estudo da celebração.
-                            @elseif ($proximasMissas->isNotEmpty())
-                                Aqui os músicos encontram os próximos horários publicados para estudo. Quando a celebração for liberada para músicos, o repertório aparecerá nesta mesma página.
-                            @else
-                                Este link ficará pronto para estudo musical assim que uma nova missa for publicada para músicos nesta igreja.
-                            @endif
-                        @elseif ($estadoCelebracao === 'em_andamento' && $missaPublica)
-                            Esta página está aberta para acompanhar a missa atual com leitura limpa, letras grandes e menos distração na tela.
-                        @elseif ($proximasMissas->isNotEmpty())
-                            Aqui você encontra os próximos horários de missa desta comunidade. Quando chegar o momento da celebração, o repertório público aparecerá nesta mesma página.
-                        @else
-                            Este link público ficará pronto para a comunidade acompanhar a missa assim que um novo horário for organizado pela equipe local.
-                        @endif
-                    </p>
-
-                    <div class="status-strip">
-                        @if (($modoPublico ?? 'fieis') === 'musicos' && $missaPublica)
-                            Repertório musical disponível
-                        @elseif ($estadoCelebracao === 'em_andamento')
-                            Celebracao aberta agora
-                        @elseif ($proximasMissas->isNotEmpty())
-                            Próximos horários disponíveis
-                        @else
-                            Aguardando novo horário
-                        @endif
+            @if (($modoPublico ?? 'fieis') === 'fieis')
+                <section class="section">
+                    <div class="section-header">
+                        <p class="section-kicker">Hoje</p>
+                        <h2 class="section-title">Missas de hoje</h2>
                     </div>
 
-                    @if ($missaPublica)
-                        <div class="summary-block">
-                            <p class="section-kicker">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Leitura do músico' : 'Missa aberta' }}</p>
-                            <h2 class="summary-title">{{ $missaPublica->titulo }}</h2>
-                            <p class="summary-meta">
-                                {{ $missaPublica->data_missa->format('d/m/Y') }} às {{ substr((string) $missaPublica->hora_inicio, 0, 5) }}
-                                @if ($missaPublica->tempoLiturgico)
-                                    • {{ $missaPublica->tempoLiturgico->nome }}
-                                @endif
-                            </p>
+                    @if ($missasHoje->isNotEmpty())
+                        <div class="cards">
+                            @foreach ($missasHoje as $missaHoje)
+                                <article class="card">
+                                    <div class="card-main">
+                                        <span class="card-hour">{{ $missaHoje['horario'] }}</span>
+                                        <h3 class="card-title">{{ $missaHoje['titulo'] }}</h3>
+                                    </div>
+                                    <a
+                                        href="{{ route('igrejas.public.show', ['slug' => $igreja->slug, 'celebracao' => $missaHoje['id']]) }}#celebracao-publica"
+                                        class="card-action"
+                                    >
+                                        Abrir celebração
+                                    </a>
+                                </article>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="empty-state">
+                            <h3 class="empty-title">Ainda não há missas para hoje.</h3>
+                            <a href="#historico-publico" class="empty-action">Consultar histórico</a>
                         </div>
                     @endif
-
-                    <div class="access-tools">
-                        <button type="button" data-public-font="-1">A-</button>
-                        <button type="button" data-public-font-reset>A</button>
-                        <button type="button" data-public-font="1">A+</button>
-                        <button type="button" data-public-contrast-toggle aria-pressed="false">Contraste</button>
-                    </div>
-                </div>
-
-                <aside class="hero-side">
-                    <div class="panel">
-                        <p class="panel-title">Proximas missas</p>
-
-                        @if ($proximasMissas->isNotEmpty())
-                            <div class="agenda-list">
-                                @foreach ($proximasMissas as $agenda)
-                                    <article class="agenda-item">
-                                        <div class="agenda-top">
-                                            <h3 class="agenda-title">{{ $agenda['titulo'] }}</h3>
-                                            <span class="agenda-hour">{{ $agenda['horario'] }}</span>
-                                        </div>
-                                        <p class="agenda-meta">
-                                            {{ $agenda['dia_semana'] }} • {{ $agenda['data'] }}
-                                            @if (!empty($agenda['tempo_liturgico']))
-                                                <br>{{ $agenda['tempo_liturgico'] }}
-                                            @endif
-                                        </p>
-                                    </article>
-                                @endforeach
-                            </div>
-                        @else
-                            <p class="panel-text">
-                                Ainda não há novos horários cadastrados para esta igreja. Quando a equipe publicar uma nova missa, ela aparecerá aqui de forma simples.
-                            </p>
-                        @endif
-                    </div>
-
-                    <div class="panel">
-                        <p class="panel-title">Como funciona este link</p>
-                        <p class="panel-text">
-                            @if (($modoPublico ?? 'fieis') === 'musicos')
-                                Este é o link público oficial dos músicos desta igreja. Ele mostra apenas missas publicadas para músicos e reaproveita a mesma base de repertório da celebração.
-                            @else
-                                Este é o link público oficial desta igreja. Ele mostra os horários da comunidade e abre o repertório somente quando a missa estiver disponível para acompanhamento.
-                            @endif
-                        </p>
-                    </div>
-                </aside>
-            </div>
-        </section>
-
-        <section class="content-section">
-            <div class="section-header">
-                <div>
-                    <p class="section-kicker">Histórico</p>
-                    <h2 class="section-title">Buscar missas passadas da comunidade</h2>
-                    <p class="section-lead">
-                        Você pode pesquisar pelo nome da missa, dia da semana, data ou tempo litúrgico para encontrar celebrações anteriores desta igreja.
-                    </p>
-                </div>
-            </div>
-
-            <form method="GET" action="{{ ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slugPublicoMusicos()]) : route('igrejas.public.show', ['slug' => $igreja->slug]) }}" class="history-form">
-                <div>
-                    <label for="historico">Buscar no histórico</label>
-                    <input
-                        id="historico"
-                        name="historico"
-                        type="text"
-                        value="{{ $historicoBusca }}"
-                        placeholder="Ex.: domingo, 24/03, quinta, páscoa"
-                    >
-                </div>
-                <button type="submit">Buscar</button>
-                <a href="{{ ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slugPublicoMusicos()]) : route('igrejas.public.show', ['slug' => $igreja->slug]) }}">Limpar</a>
-            </form>
-
-            <p class="history-note">
-                Mostrando até 12 missas passadas mais recentes{{ $historicoBusca !== '' ? ' para a busca informada.' : '.' }}
-            </p>
-
-            @if ($historicoMissas->isNotEmpty())
-                <div class="history-list">
-                    @foreach ($historicoMissas as $missaHistorica)
-                        <article class="history-item">
-                            <div class="history-top">
-                                <h3 class="history-title">{{ $missaHistorica['titulo'] }}</h3>
-                                <span class="history-date">{{ $missaHistorica['data'] }}</span>
-                            </div>
-                            <p class="history-meta">
-                                {{ $missaHistorica['dia_semana'] }} • {{ $missaHistorica['horario'] }}
-                            </p>
-                            @if (!empty($missaHistorica['tempo_liturgico']))
-                                <div style="margin-top: 10px;">
-                                    <span class="history-pill">{{ $missaHistorica['tempo_liturgico'] }}</span>
-                                </div>
-                            @endif
-                        </article>
-                    @endforeach
-                </div>
+                </section>
             @else
-                <div class="empty-box">
-                    Nenhuma missa passada foi encontrada com esse termo. Tente buscar por data, nome da celebração, dia da semana ou tempo litúrgico.
-                </div>
-            @endif
-        </section>
-
-        @if ($missaPublica)
-            <section class="content-section">
-                <div class="celebration-header">
-                    <div>
-                        <p class="section-kicker">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Leitura musical' : 'Leitura pública' }}</p>
-                        <h2 class="celebration-title">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Repertório publicado para músicos' : 'Acompanhe a missa atual' }}</h2>
-                        <p class="section-lead">
-                            @if (($modoPublico ?? 'fieis') === 'musicos')
-                                Esta área foi preparada para estudo e execução do repertório com a sequência publicada para os músicos da igreja.
-                            @else
-                                Esta área foi preparada para leitura tranquila durante a celebração, com menos elementos na tela e foco no canto que está sendo acompanhado.
-                            @endif
-                        </p>
+                <section class="section">
+                    <div class="section-header">
+                        <p class="section-kicker">Ensaio</p>
+                        <h2 class="section-title">Celebrações publicadas</h2>
                     </div>
-                    <span class="celebration-badge">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Modo músico' : 'Celebração em andamento' }}</span>
+
+                    @if ($missasMusicos->isNotEmpty())
+                        <div class="cards">
+                            @foreach ($missasMusicos as $missaMusico)
+                                <article class="card">
+                                    <div class="card-main">
+                                        <span class="card-hour">{{ $missaMusico['horario'] }}</span>
+                                        <h3 class="card-title">{{ $missaMusico['titulo'] }}</h3>
+                                        <p class="card-meta">{{ $missaMusico['dia_semana'] }} • {{ $missaMusico['data'] }}</p>
+                                    </div>
+                                    <a
+                                        href="{{ route('igrejas.public.musicos.show', ['slug' => $igreja->slug, 'celebracao' => $missaMusico['id']]) }}#celebracao-publica"
+                                        class="card-action"
+                                    >
+                                        Abrir repertório
+                                    </a>
+                                </article>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="empty-state">
+                            <h3 class="empty-title">Ainda não há missas publicadas para ensaio.</h3>
+                            <p class="empty-copy">Quando a equipe publicar uma celebração para músicos, ela aparecerá aqui.</p>
+                            <p class="empty-copy">Esta página permanece em modo somente leitura.</p>
+                        </div>
+                    @endif
+                </section>
+            @endif
+
+            <section class="section section-accessibility">
+                <div class="section-header">
+                    <p class="section-kicker">Acessibilidade</p>
+                    <h2 class="section-title">Leitura rápida</h2>
                 </div>
 
-                @php($itensPublicos = collect($missaPublica->itens_publicos ?? []))
+                <div class="access-bar">
+                    <button type="button" data-public-font="-1">A-</button>
+                    <button type="button" data-public-font-reset>A</button>
+                    <button type="button" data-public-font="1">A+</button>
+                    <button type="button" data-public-contrast-toggle aria-pressed="false">Contraste</button>
+                </div>
+            </section>
 
-                @if ($itensPublicos->isNotEmpty())
-                    <div class="celebration-list">
-                        @foreach ($itensPublicos as $item)
-                            <article class="celebration-item">
-                                <div class="celebration-meta">
-                                    <span class="celebration-pill">Ordem {{ $item['ordem'] }}</span>
-                                    @if (!empty($item['momento']))
-                                        <span class="celebration-pill">{{ $item['momento'] }}</span>
-                                    @endif
+            <section class="section" id="historico-publico">
+                <div class="section-header">
+                    <p class="section-kicker">Histórico</p>
+                    <h2 class="section-title">Histórico da comunidade</h2>
+                </div>
+
+                <form method="GET" action="{{ ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slug]) : route('igrejas.public.show', ['slug' => $igreja->slug]) }}" class="history-form">
+                    <div>
+                        <label for="historico">Buscar missas passadas</label>
+                        <input
+                            id="historico"
+                            name="historico"
+                            type="text"
+                            value="{{ $historicoBusca }}"
+                            placeholder="Ex.: domingo, 24/03, páscoa"
+                        >
+                    </div>
+                    @if (($celebracaoSelecionadaId ?? 0) > 0)
+                        <input type="hidden" name="celebracao" value="{{ $celebracaoSelecionadaId }}">
+                    @endif
+                    <button type="submit">Buscar</button>
+                    <a href="{{ ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slug]) : route('igrejas.public.show', ['slug' => $igreja->slug]) }}">Limpar</a>
+                </form>
+
+                @if ($historicoMissas->isNotEmpty())
+                    <div class="history-list">
+                        @foreach ($historicoMissas as $missaHistorica)
+                            <article class="history-item">
+                                <div class="history-top">
+                                    <h3 class="card-title">{{ $missaHistorica['titulo'] }}</h3>
+                                    <span class="history-date">{{ $missaHistorica['data'] }}</span>
                                 </div>
-                                <h3 class="celebration-song">{{ $item['titulo'] }}</h3>
-                                <div class="celebration-lyrics">{{ $item['letra_publica'] !== '' ? $item['letra_publica'] : (($modoPublico ?? 'fieis') === 'musicos' ? 'A cifra e a letra desta música ainda não foram preparadas para o link público do músico.' : 'A letra deste canto ainda não foi preparada para exibição pública.') }}</div>
+                                <p class="history-meta">{{ $missaHistorica['dia_semana'] }} • {{ $missaHistorica['horario'] }}</p>
                             </article>
                         @endforeach
                     </div>
                 @else
-                    <div class="empty-box">
-                        {{ ($modoPublico ?? 'fieis') === 'musicos'
-                            ? 'O repertório desta missa ainda não foi preparado para o link público do músico. Assim que a equipe concluir a organização, as músicas aparecerão aqui.'
-                            : 'O repertório desta missa ainda não foi preparado para exibição pública. Assim que a equipe concluir a organização, os cantos aparecerão aqui.' }}
+                    <div class="empty-state">
+                        <h3 class="empty-title">Nenhuma missa encontrada.</h3>
                     </div>
                 @endif
             </section>
-        @endif
+
+            @if ($missaPublica)
+                @php($itensPublicos = collect($missaPublica->itens_publicos ?? []))
+
+                <section class="section" id="celebracao-publica">
+                    <div class="celebration-header">
+                        <div>
+                            <p class="section-kicker">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Ensaio' : 'Celebração' }}</p>
+                            <h2 class="celebration-title">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Repertório publicado' : $missaPublica->titulo }}</h2>
+                            <p class="celebration-meta-text">
+                                {{ $missaPublica->data_missa->format('d/m/Y') }} • {{ substr((string) $missaPublica->hora_inicio, 0, 5) }}
+                            </p>
+                        </div>
+                        <span class="badge">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Modo músico' : 'Somente leitura' }}</span>
+                    </div>
+
+                    @if ($itensPublicos->isNotEmpty())
+                        <div class="celebration-list">
+                            @foreach ($itensPublicos as $item)
+                                <article class="celebration-item">
+                                    <div class="celebration-meta">
+                                        <span class="badge">Ordem {{ $item['ordem'] }}</span>
+                                        @if (!empty($item['momento']))
+                                            <span class="badge">{{ $item['momento'] }}</span>
+                                        @endif
+                                        @if (($modoPublico ?? 'fieis') === 'musicos' && !empty($item['tom']))
+                                            <span class="badge">Tom {{ $item['tom'] }}</span>
+                                        @endif
+                                    </div>
+                                    <h3 class="card-title">{{ $item['titulo'] }}</h3>
+                                    @if (($modoPublico ?? 'fieis') === 'musicos')
+                                        <div class="lyrics">{!! $item['letra_publica_html'] ?? nl2br(e($item['letra_publica'] ?? ''), false) !!}</div>
+                                    @else
+                                        <div class="lyrics">{{ $item['letra_publica'] !== '' ? $item['letra_publica'] : 'A letra deste canto ainda não foi preparada para exibição pública.' }}</div>
+                                    @endif
+                                </article>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="empty-state">
+                            <h3 class="empty-title">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Repertório ainda não disponível.' : 'Celebração ainda sem repertório público.' }}</h3>
+                        </div>
+                    @endif
+                </section>
+            @endif
+        </div>
     </main>
 
     <script>
@@ -764,10 +659,10 @@
             const body = document.body;
             const fontKey = 'vozecifra-public-font-scale';
             const contrastKey = 'vozecifra-public-contrast';
-            let escalaFonte = Number(localStorage.getItem(fontKey) || '1.08');
+            let escalaFonte = Number(localStorage.getItem(fontKey) || '1.02');
 
             const aplicarEscalaFonte = () => {
-                const escalaSegura = Math.max(1, Math.min(1.55, escalaFonte));
+                const escalaSegura = Math.max(0.92, Math.min(1.45, escalaFonte));
                 escalaFonte = escalaSegura;
                 root.style.setProperty('--public-font-scale', escalaSegura.toFixed(2));
                 localStorage.setItem(fontKey, escalaSegura.toFixed(2));
@@ -779,12 +674,13 @@
 
                 if (contrastToggle) {
                     contrastToggle.setAttribute('aria-pressed', contrasteAtivo ? 'true' : 'false');
-                    contrastToggle.textContent = contrasteAtivo ? 'Contraste normal' : 'Contraste';
+                    contrastToggle.textContent = contrasteAtivo ? 'Normal' : 'Contraste';
                 }
             };
 
             aplicarEscalaFonte();
-            aplicarContraste(localStorage.getItem(contrastKey) || 'normal');
+            localStorage.setItem(contrastKey, 'high');
+            aplicarContraste('high');
 
             document.querySelectorAll('[data-public-font]').forEach((botao) => {
                 botao.addEventListener('click', () => {
@@ -796,7 +692,7 @@
             const resetButton = document.querySelector('[data-public-font-reset]');
             if (resetButton) {
                 resetButton.addEventListener('click', () => {
-                    escalaFonte = 1.08;
+                    escalaFonte = 1.02;
                     aplicarEscalaFonte();
                 });
             }
@@ -809,46 +705,44 @@
                 });
             }
 
-            if (!statusSync) {
+            if (!statusSync || !statusSync.dataset.statusUrl) {
                 return;
             }
 
-            const statusUrl = statusSync.dataset.statusUrl;
             let ultimaChaveEstado = [
                 statusSync.dataset.state || '',
                 statusSync.dataset.target || '',
                 window.location.pathname,
+                window.location.search,
             ].join('|');
 
-            if (statusUrl) {
-                window.setInterval(async () => {
-                    try {
-                        const resposta = await fetch(statusUrl, {
-                            headers: {
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest',
-                            },
-                        });
+            window.setInterval(async () => {
+                try {
+                    const resposta = await fetch(statusSync.dataset.statusUrl, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
 
-                        if (!resposta.ok) {
-                            return;
-                        }
-
-                        const payload = await resposta.json();
-                        const novaChaveEstado = [
-                            payload.estado || '',
-                            payload.countdown_iso || '',
-                            String(payload.missa_ref || ''),
-                        ].join('|');
-
-                        if (novaChaveEstado !== ultimaChaveEstado) {
-                            window.location.reload();
-                        }
-                    } catch (error) {
-                        console.debug('Falha ao sincronizar a página pública.', error);
+                    if (!resposta.ok) {
+                        return;
                     }
-                }, 30000);
-            }
+
+                    const payload = await resposta.json();
+                    const novaChaveEstado = [
+                        payload.estado || '',
+                        payload.countdown_iso || '',
+                        String(payload.missa_ref || ''),
+                    ].join('|');
+
+                    if (novaChaveEstado !== ultimaChaveEstado) {
+                        window.location.reload();
+                    }
+                } catch (error) {
+                    console.debug('Falha ao sincronizar a página pública.', error);
+                }
+            }, 30000);
         });
     </script>
 </body>

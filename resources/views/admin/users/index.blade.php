@@ -1,7 +1,7 @@
 @extends('admin.layouts.admin')
 
-@section('title', 'Usuarios | Voz & Cifra')
-@section('mobile_title', 'Usuarios')
+@section('title', 'Usuários | Voz & Cifra')
+@section('mobile_title', 'Usuários')
 
 @section('content')
     @php
@@ -18,16 +18,16 @@
     <div class="admin-page-shell">
         <section class="admin-page-header">
             <div class="admin-page-intro">
-                <p class="admin-page-kicker">Gestao central</p>
-                <h1 class="admin-page-title mt-2 text-2xl font-black sm:text-3xl">Usuarios</h1>
+                <p class="admin-page-kicker">Gestão central</p>
+                <h1 class="admin-page-title mt-2 text-2xl font-black sm:text-3xl">Usuários</h1>
                 <p class="admin-page-copy mt-3 max-w-3xl text-sm sm:text-base">
-                    Gestao central das contas do sistema. Aqui o admin master cria usuarios, acompanha quem ja esta vinculado a igrejas
+                    Gestão central das contas do sistema. Aqui o admin master cadastra usuários, acompanha quem já está vinculado a igrejas
                     e identifica quem ainda precisa receber papel por igreja.
                 </p>
             </div>
 
             <div class="admin-page-actions">
-                <a href="{{ route('admin.usuarios.create') }}" class="admin-btn admin-btn-primary">Novo usuario</a>
+                <a href="{{ route('admin.usuarios.create') }}" class="admin-btn admin-btn-primary">Cadastrar usuário</a>
             </div>
         </section>
 
@@ -55,11 +55,11 @@
                 <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['admins_locais'] }}</div>
             </div>
             <div class="admin-stat-card p-5">
-                <div class="text-xs font-black uppercase tracking-[0.2em] text-amber-500">Musicos</div>
+                <div class="text-xs font-black uppercase tracking-[0.2em] text-amber-500">Músicos</div>
                 <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['musicos'] }}</div>
             </div>
             <div class="admin-stat-card p-5">
-                <div class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Sem vinculo</div>
+                <div class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Sem vínculo</div>
                 <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['sem_vinculo'] }}</div>
             </div>
         </section>
@@ -78,9 +78,9 @@
                         <option value="admin_master" @selected($filtros['tipo'] === 'admin_master')>Admin master</option>
                         <option value="coordenador" @selected($filtros['tipo'] === 'coordenador')>Coordenador</option>
                         <option value="admin_local" @selected($filtros['tipo'] === 'admin_local')>Admin local</option>
-                        <option value="musico" @selected($filtros['tipo'] === 'musico')>Musico</option>
+                        <option value="musico" @selected($filtros['tipo'] === 'musico')>Músico</option>
                         <option value="padre" @selected($filtros['tipo'] === 'padre')>Padre</option>
-                        <option value="sem_vinculo" @selected($filtros['tipo'] === 'sem_vinculo')>Sem vinculo</option>
+                        <option value="sem_vinculo" @selected($filtros['tipo'] === 'sem_vinculo')>Sem vínculo</option>
                     </select>
                 </div>
 
@@ -103,7 +103,7 @@
         <section class="admin-panel">
             <div class="admin-panel-header">
                 <div>
-                    <h2 class="text-lg font-bold text-gray-800">Base de usuarios</h2>
+                    <h2 class="text-lg font-bold text-gray-800">Base de usuários</h2>
                 </div>
             </div>
 
@@ -112,54 +112,65 @@
                     @forelse ($usuarios as $usuario)
                         <article class="px-1 py-5 sm:px-2">
                             <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                                <div class="min-w-0 flex-1">
-                                    <div class="flex flex-wrap items-center gap-2">
-                                        <h3 class="text-base font-bold text-gray-800">{{ $usuario->nome }}</h3>
-                                        <span class="admin-badge {{ $usuario->ativo ? 'admin-badge-success' : 'admin-badge-danger' }}">
-                                            {{ $usuario->ativo ? 'Ativo' : 'Inativo' }}
-                                        </span>
-                                        @if ($usuario->primeiro_acesso)
-                                            <span class="admin-badge {{ $badgeClasse('ambar') }}">
-                                                Primeiro acesso
-                                            </span>
-                                        @endif
+                                <div class="min-w-0 flex flex-1 gap-4">
+                                    <div class="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                                        <img
+                                            src="{{ $usuario->fotoPerfilUrl() }}"
+                                            alt="Foto de {{ $usuario->nome }}"
+                                            class="h-full w-full object-cover"
+                                            onerror="this.onerror=null;this.src='{{ asset('logo/final.png') }}';"
+                                        >
                                     </div>
 
-                                    <div class="mt-2 flex flex-col gap-1 text-sm text-gray-500">
-                                        <span class="break-all">{{ $usuario->email }}</span>
-                                        <span>CPF: {{ $usuario->cpf }}</span>
-                                    </div>
-
-                                    <div class="mt-3 flex flex-wrap gap-2">
-                                        @if ($usuario->ehAdminMaster())
-                                            <span class="admin-badge {{ $badgeClasse('azul') }}">
-                                                Admin master
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <h3 class="text-base font-bold text-gray-800">{{ $usuario->nome }}</h3>
+                                            <span class="admin-badge {{ $usuario->ativo ? 'admin-badge-success' : 'admin-badge-danger' }}">
+                                                {{ $usuario->ativo ? 'Ativo' : 'Inativo' }}
                                             </span>
-                                        @endif
-
-                                        @if ($usuario->ehPadre())
-                                            <span class="admin-badge {{ $badgeClasse('roxo') }}">
-                                                Padre
-                                            </span>
-                                        @endif
-
-                                        @php
-                                            $vinculosAtivos = $usuario->vinculosIgreja->where('ativo', true);
-                                        @endphp
-
-                                        @forelse ($vinculosAtivos as $vinculo)
-                                            @foreach ($vinculo->listarPapeisAtivos() as $papel)
-                                                <span class="admin-badge {{ $badgeClasse('verde') }}">
-                                                    {{ $papel->label() }} em {{ $vinculo->igreja?->nome }}
-                                                </span>
-                                            @endforeach
-                                        @empty
-                                            @if (!$usuario->ehAdminMaster())
-                                                <span class="admin-badge {{ $badgeClasse('cinza') }}">
-                                                    Sem papel por igreja
+                                            @if ($usuario->primeiro_acesso)
+                                                <span class="admin-badge {{ $badgeClasse('ambar') }}">
+                                                    Primeiro acesso
                                                 </span>
                                             @endif
-                                        @endforelse
+                                        </div>
+
+                                        <div class="mt-2 flex flex-col gap-1 text-sm text-gray-500">
+                                            <span class="break-all">{{ $usuario->email }}</span>
+                                            <span>CPF: {{ $usuario->cpf }}</span>
+                                        </div>
+
+                                        <div class="mt-3 flex flex-wrap gap-2">
+                                            @if ($usuario->ehAdminMaster())
+                                                <span class="admin-badge {{ $badgeClasse('azul') }}">
+                                                    Admin master
+                                                </span>
+                                            @endif
+
+                                            @if ($usuario->ehPadre())
+                                                <span class="admin-badge {{ $badgeClasse('roxo') }}">
+                                                    Padre
+                                                </span>
+                                            @endif
+
+                                            @php
+                                                $vinculosAtivos = $usuario->vinculosIgreja->where('ativo', true);
+                                            @endphp
+
+                                            @forelse ($vinculosAtivos as $vinculo)
+                                                @foreach ($vinculo->listarPapeisAtivos() as $papel)
+                                                    <span class="admin-badge {{ $badgeClasse('verde') }}">
+                                                        {{ $papel->label() }} em {{ $vinculo->igreja?->nome }}
+                                                    </span>
+                                                @endforeach
+                                            @empty
+                                                @if (!$usuario->ehAdminMaster())
+                                                    <span class="admin-badge {{ $badgeClasse('cinza') }}">
+                                                        Sem papel por igreja
+                                                    </span>
+                                                @endif
+                                            @endforelse
+                                        </div>
                                     </div>
                                 </div>
 
@@ -175,12 +186,12 @@
 
                                     @if ($usuario->ehAdminMaster())
                                         <span class="admin-badge {{ $badgeClasse('ambar') }}">
-                                            Senha e status do master sao geridos apenas pelo proprio titular
+                                            Senha e status do master são geridos apenas pelo próprio titular
                                         </span>
                                     @else
-                                        <form action="{{ route('admin.usuarios.password.reset', $usuario) }}" method="POST" onsubmit="return confirm('Deseja redefinir a senha provisoria deste usuario?');">
+                                        <form action="{{ route('admin.usuarios.password.reset', $usuario) }}" method="POST" onsubmit="return confirm('Deseja redefinir a senha provisória deste usuário?');">
                                             @csrf
-                                            <button type="submit" class="admin-btn admin-btn-warm">Resetar senha</button>
+                                            <button type="submit" class="admin-btn admin-btn-warm">Redefinir senha</button>
                                         </form>
 
                                         <form action="{{ route('admin.usuarios.toggle', $usuario) }}" method="POST" onsubmit="return confirm('Confirma alterar o status desta conta?');">
@@ -195,7 +206,7 @@
                         </article>
                     @empty
                         <div class="admin-empty-state text-sm">
-                            Nenhum usuario encontrado com os filtros atuais.
+                            Nenhum usuário encontrado com os filtros atuais.
                         </div>
                     @endforelse
                 </div>

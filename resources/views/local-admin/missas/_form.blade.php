@@ -124,7 +124,7 @@
 
         <div class="mt-6 space-y-3">
             <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-[#6c4a21] px-5 py-3 font-semibold text-white transition hover:bg-[#5b3d1a]">
-                {{ $missa->exists ? 'Salvar altera&ccedil;&otilde;es' : 'Salvar missa e abrir repert&oacute;rio' }}
+                {{ $missa->exists ? 'Salvar alterações' : 'Cadastrar missa e abrir repertório' }}
             </button>
 
             <a href="{{ route('local-admin.missas.index') }}" class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 font-semibold text-gray-700 transition hover:bg-gray-50">

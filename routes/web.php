@@ -229,13 +229,25 @@ Route::middleware(['auth', 'verified_custom', 'role:member', 'primeiro_acesso'])
 
 Route::get('/publico/igrejas/{slug}/status', [IgrejaPublicaController::class, 'status'])
     ->where('slug', '[A-Za-z0-9\-]+')
-    ->name('igrejas.public.status');
+    ->name('igrejas.public.status.legacy');
 
 Route::get('/publico/musicos/{slug}/status', [IgrejaPublicaController::class, 'statusMusicos'])
     ->where('slug', '[A-Za-z0-9\-]+')
-    ->name('igrejas.public.musicos.status');
+    ->name('igrejas.public.musicos.status.legacy');
 
 Route::get('/publico/musicos/{slug}', [IgrejaPublicaController::class, 'showMusicos'])
+    ->where('slug', '[A-Za-z0-9\-]+')
+    ->name('igrejas.public.musicos.show.legacy');
+
+Route::get('/{slug}/status', [IgrejaPublicaController::class, 'status'])
+    ->where('slug', '[A-Za-z0-9\-]+')
+    ->name('igrejas.public.status');
+
+Route::get('/{slug}/musicos/status', [IgrejaPublicaController::class, 'statusMusicos'])
+    ->where('slug', '[A-Za-z0-9\-]+')
+    ->name('igrejas.public.musicos.status');
+
+Route::get('/{slug}/musicos', [IgrejaPublicaController::class, 'showMusicos'])
     ->where('slug', '[A-Za-z0-9\-]+')
     ->name('igrejas.public.musicos.show');
 

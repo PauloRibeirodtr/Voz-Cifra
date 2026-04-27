@@ -42,7 +42,7 @@
             <div class="mb-6 hidden items-center justify-between gap-4 md:flex">
                 <div class="min-w-0">
                     <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#d6ad6c]">Voz &amp; Cifra</p>
-                    <p class="truncate text-sm text-slate-500">@yield('desktop_subtitle', 'Area administrativa da igreja')</p>
+                    <p class="truncate text-sm text-slate-500">@yield('desktop_subtitle', 'Área administrativa da igreja')</p>
                 </div>
             </div>
 

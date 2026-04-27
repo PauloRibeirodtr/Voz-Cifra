@@ -1,14 +1,14 @@
 @extends('admin.layouts.admin')
 
-@section('title', 'Novo Usuario | Voz & Cifra')
-@section('mobile_title', 'Novo usuario')
+@section('title', 'Cadastrar Usuário | Voz & Cifra')
+@section('mobile_title', 'Cadastrar usuário')
 
 @section('content')
     <div class="admin-page-shell">
         <section class="admin-page-header">
             <div class="admin-page-intro">
                 <p class="admin-page-kicker">Cadastro central</p>
-                <h1 class="admin-page-title mt-2 text-2xl font-black sm:text-3xl">Novo usuario</h1>
+                <h1 class="admin-page-title mt-2 text-2xl font-black sm:text-3xl">Cadastrar usuário</h1>
                 <p class="admin-page-copy mt-3 max-w-3xl text-sm sm:text-base">
                     Cadastre a conta base primeiro e, se fizer sentido, aplique o primeiro papel por igreja no mesmo fluxo.
                     Se a igreja ficar em branco, a pessoa entra na base e pode ser vinculada depois.
@@ -35,9 +35,9 @@
                 <div class="admin-panel-header">
                     <div>
                         <p class="admin-page-kicker">Conta base</p>
-                        <h2 class="text-lg font-bold text-gray-800">Dados principais do usuario</h2>
+                        <h2 class="text-lg font-bold text-gray-800">Dados principais do usuário</h2>
                         <p class="mt-2 text-sm text-gray-500">
-                            O cadastro central vale para admin master, coordenador, admin local, musico e padre.
+                            O cadastro central vale para admin master, coordenador, admin local, músico e padre.
                         </p>
                     </div>
                 </div>
@@ -53,7 +53,7 @@
                                     <option value="admin_master" @selected(old('tipo_cadastro') === 'admin_master')>Admin master</option>
                                     <option value="coordenador" @selected(old('tipo_cadastro') === 'coordenador')>Coordenador</option>
                                     <option value="admin_local" @selected(old('tipo_cadastro') === 'admin_local')>Admin local</option>
-                                    <option value="musico" @selected(old('tipo_cadastro', 'musico') === 'musico')>Musico</option>
+                                    <option value="musico" @selected(old('tipo_cadastro', 'musico') === 'musico')>Músico</option>
                                     <option value="padre" @selected(old('tipo_cadastro') === 'padre')>Padre</option>
                                 </select>
                             </div>
@@ -61,7 +61,7 @@
                             <div>
                                 <label class="admin-label">Igreja inicial</label>
                                 <select name="igreja_id" class="admin-select">
-                                    <option value="">Criar sem vinculo inicial</option>
+                                    <option value="">Cadastrar sem vínculo inicial</option>
                                     @foreach ($igrejas as $igreja)
                                         <option value="{{ $igreja->id }}" @selected((string) old('igreja_id') === (string) $igreja->id)>{{ $igreja->nome }}</option>
                                     @endforeach
@@ -103,8 +103,8 @@
 
                             <div class="xl:col-span-2">
                                 <div class="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm text-blue-900">
-                                    Quando o tipo inicial for <strong>admin master</strong>, a conta ja nasce com acesso global do sistema.
-                                    Nao existe mais nivel separado nesta etapa. Coordenador continua sendo papel por igreja e pode acumular varias igrejas.
+                                    Quando o tipo inicial for <strong>admin master</strong>, a conta já nasce com acesso global do sistema.
+                                    Não existe mais nível separado nesta etapa. Coordenador continua sendo papel por igreja e pode acumular várias igrejas.
                                 </div>
                             </div>
                         </div>
