@@ -20,8 +20,6 @@
 
                 <nav class="site-nav" data-site-nav data-open="false">
                     <a href="{{ route('root') }}#inicio">Início</a>
-                    <a href="{{ route('root') }}#destaque">Próxima missa</a>
-                    <a href="{{ route('root') }}#igrejas">Igrejas</a>
                     <a href="{{ route('root') }}#igrejas">Igrejas</a>
                     <a href="{{ route('login') }}" class="site-nav__login">Entrar</a>
                 </nav>
@@ -95,8 +93,6 @@
                 <h3 class="site-footer__title">Navegação</h3>
                 <div class="site-footer__links">
                     <a href="{{ route('root') }}#inicio">Início</a>
-                    <a href="{{ route('root') }}#destaque">Próxima missa</a>
-                    <a href="{{ route('root') }}#igrejas">Igrejas</a>
                     <a href="{{ route('root') }}#igrejas">Igrejas</a>
                 </div>
             </div>

@@ -21,7 +21,6 @@
                 <nav class="site-nav" data-site-nav data-open="false">
                     <a href="{{ route('root') }}#inicio">Início</a>
                     <a href="{{ route('root') }}#igrejas">Igrejas</a>
-                    <a href="{{ route('root') }}#missas-publicadas">Missas publicadas</a>
                     <a href="{{ route('login') }}" class="site-nav__login">Entrar</a>
                 </nav>
             </div>
@@ -117,78 +116,6 @@
             </div>
         </section>
 
-        <section id="missas-publicadas" class="section">
-            <div class="container">
-                <div class="section__header">
-                    <span class="eyebrow">Missas publicadas</span>
-                    <h2 class="section__title">Celebrações acontecendo ou próximas</h2>
-                    <p class="section__lead">
-                        Veja as celebrações disponíveis sem preferência entre comunidades.
-                    </p>
-                </div>
-
-                @if ($missaEmDestaque)
-                    <article class="summary-card" style="padding:1.5rem;display:grid;gap:1rem;">
-                        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
-                            <div>
-                                <p style="margin:0;color:#d2aa66;text-transform:uppercase;letter-spacing:.12em;font-size:.78rem;font-weight:800;">{{ $missaEmDestaque['igreja'] }}</p>
-                                @if (!empty($missaEmDestaque['igreja_localidade']))
-                                    <p style="margin:.35rem 0 0;color:#d8c7b4;font-size:1rem;line-height:1.7;">{{ $missaEmDestaque['igreja_localidade'] }}</p>
-                                @endif
-                                <h3 style="margin:.65rem 0 0;font-family:Georgia,'Times New Roman',serif;font-size:clamp(2rem,5vw,3rem);line-height:1.08;">{{ $missaEmDestaque['titulo'] }}</h3>
-                            </div>
-
-                            <x-public.status-badge :status="$missaEmDestaque['status']" />
-                        </div>
-
-                        <p style="margin:0;color:#f0e4d4;font-size:1.12rem;line-height:1.9;max-width:56rem;">{{ $missaEmDestaque['resumo'] }}</p>
-
-                        <div style="display:grid;gap:.8rem;color:#ccbba7;line-height:1.8;">
-                            <div><strong style="color:#f5efe6;">Data e horário:</strong> {{ $missaEmDestaque['data_formatada'] }} • {{ $missaEmDestaque['horario'] }}</div>
-                            <div><strong style="color:#f5efe6;">Tempo litúrgico:</strong> {{ $missaEmDestaque['tempo_liturgico'] }}</div>
-                        </div>
-
-                        <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;">
-                            <span style="color:#d2aa66;font-size:1rem;font-weight:700;">Abrir celebração publicada</span>
-                            <x-public.button :href="$missaEmDestaque['url']">Abrir missa</x-public.button>
-                        </div>
-                    </article>
-                @else
-                    <article class="summary-card">
-                        <h3 class="summary-card__title">Nenhuma missa encontrada</h3>
-                        <p class="summary-card__description">
-                            Não encontramos uma missa para estes filtros no momento.
-                        </p>
-                    </article>
-                @endif
-            </div>
-        </section>
-
-        <section class="section">
-            <div class="container">
-                <div class="section__header">
-                    <span class="eyebrow">Mais celebrações</span>
-                    <h2 class="section__title">Outras missas publicadas</h2>
-                    <p class="section__lead">
-                        Todas seguem a mesma regra de publicação das igrejas cadastradas.
-                    </p>
-                </div>
-
-                <div class="cards-grid">
-                    @forelse ($missasRecentes as $missa)
-                        <x-public.missa-card :missa="$missa" />
-                    @empty
-                        <article class="summary-card" style="grid-column: 1 / -1;">
-                            <h3 class="summary-card__title">Nenhuma outra missa disponivel</h3>
-                            <p class="summary-card__description">
-                                Quando novas celebrações forem publicadas, elas aparecerão aqui.
-                            </p>
-                        </article>
-                    @endforelse
-                </div>
-            </div>
-        </section>
-
     </main>
 
     <footer class="site-footer">
@@ -205,7 +132,6 @@
                 <div class="site-footer__links">
                     <a href="#inicio">Início</a>
                     <a href="#igrejas">Igrejas</a>
-                    <a href="#missas-publicadas">Missas publicadas</a>
                 </div>
             </div>
 
