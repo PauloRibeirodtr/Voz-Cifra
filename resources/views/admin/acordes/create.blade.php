@@ -1,7 +1,7 @@
 @extends('admin.layouts.admin')
 
-@section('title', 'Novo acorde | Voz & Cifra')
-@section('mobile_title', 'Novo acorde')
+@section('title', 'Cadastrar acorde | Voz & Cifra')
+@section('mobile_title', 'Cadastrar acorde')
 
 @push('styles')
 <style>
@@ -27,7 +27,7 @@
                         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-bold uppercase tracking-wide mb-3">
                             <i class="fa-solid fa-pen-nib"></i> Editor visual
                         </div>
-                        <h2 class="text-3xl font-black text-gray-800 tracking-tight">Novo acorde</h2>
+                        <h2 class="text-3xl font-black text-gray-800 tracking-tight">Cadastrar acorde</h2>
                         <p class="text-gray-400 text-sm mt-1">Preencha os dados e desenhe o shape ao lado.</p>
                     </div>
 
@@ -65,7 +65,7 @@
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Casa inicial do shape</label>
                             <select id="input-base-fret" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-bold text-gray-700 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                                 @for ($casa = 1; $casa <= 12; $casa++)
-                                    <option value="{{ $casa }}">{{ $casa }}° casa</option>
+                                    <option value="{{ $casa }}">{{ $casa }}&deg; casa</option>
                                 @endfor
                             </select>
                             <p class="mt-1 text-xs text-gray-500">Use quando o desenho do acorde comecar acima da primeira casa. O braco continua mostrando 5 trastes, mas passa a representar a partir da casa escolhida.</p>

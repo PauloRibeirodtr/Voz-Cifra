@@ -13,6 +13,14 @@
     .barre-path { stroke: #ea580c; stroke-width: 10; stroke-linecap: round; opacity: 0.95; }
     .marker-x { fill: #ef4444; font-weight: 900; font-size: 12px; text-anchor: middle; }
     .marker-o { stroke: #3b82f6; stroke-width: 2; fill: none; }
+    .chord-card {
+        transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+    }
+    .chord-card:hover {
+        transform: translateY(-4px) scale(1.015);
+        border-color: rgba(180, 126, 51, 0.35);
+        box-shadow: 0 18px 42px rgba(48, 30, 18, 0.16);
+    }
 </style>
 @endpush
 
@@ -41,7 +49,7 @@
 
                 <div class="admin-page-actions lg:self-end">
                     <button type="submit" class="admin-btn admin-btn-warm">Buscar</button>
-                    <a href="{{ route('admin.acordes.create') }}" class="admin-btn admin-btn-primary">Novo acorde</a>
+                    <a href="{{ route('admin.acordes.create') }}" class="admin-btn admin-btn-primary">Cadastrar acorde</a>
                 </div>
             </form>
         </section>
@@ -54,7 +62,7 @@
 
         <section class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             @forelse($acordes as $acorde)
-                <article class="admin-list-card overflow-hidden">
+                <article class="admin-list-card chord-card overflow-hidden">
                     <div class="border-b border-gray-100 bg-gray-50 px-4 py-4 text-center">
                         <h2 class="text-xl font-black text-gray-800">{{ $acorde->nome }}</h2>
                         <p class="text-xs italic text-gray-500">{{ $acorde->variation_name ?: 'Padrao' }}</p>
@@ -66,12 +74,12 @@
 
                     <div class="border-t border-gray-100 px-4 py-4">
                         <div class="flex items-center justify-between gap-3">
-                            <span class="text-xs font-black uppercase tracking-[0.14em] text-gray-400">Casa {{ $acorde->base_fret }}°</span>
+                            <span class="text-xs font-black uppercase tracking-[0.14em] text-gray-400">Casa {{ $acorde->base_fret }}&deg;</span>
                         </div>
 
                         <div class="admin-actions mt-4">
-                            <a href="{{ route('admin.acordes.show', $acorde->id) }}" class="admin-btn admin-btn-secondary">Ver</a>
-                            <a href="{{ route('admin.acordes.edit', $acorde->id) }}" class="admin-btn admin-btn-secondary">Editar</a>
+                            <a href="{{ route('admin.acordes.show', $acorde->id) }}" class="admin-btn border border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100">Ver</a>
+                            <a href="{{ route('admin.acordes.edit', $acorde->id) }}" class="admin-btn border border-[#ead6b3] bg-[#fff8ed] text-[#6c4a21] hover:bg-[#f8ecd7]">Editar</a>
                             <form action="{{ route('admin.acordes.destroy', $acorde->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir o acorde {{ $acorde->nome }}?');">
                                 @csrf
                                 @method('DELETE')
@@ -88,7 +96,7 @@
             @endforelse
         </section>
 
-        <div>
+        <div class="rounded-2xl bg-white/75 px-4 py-3 shadow-sm ring-1 ring-black/5">
             {{ $acordes->appends(request()->query())->links() }}
         </div>
     </div>
@@ -126,7 +134,7 @@
         if (parseInt(baseFret) === 1) {
             inner += `<rect x="${configuracao.startX}" y="${configuracao.startY - 4}" width="${configuracao.width}" height="4" class="nut-rect" />`;
         } else {
-            inner += `<text x="${configuracao.startX - 6}" y="${configuracao.startY + 16}" text-anchor="end" fill="#9ca3af" font-weight="bold" font-size="12">${baseFret}ª</text>`;
+            inner += `<text x="${configuracao.startX - 6}" y="${configuracao.startY + 16}" text-anchor="end" fill="#9ca3af" font-weight="bold" font-size="12">${baseFret}&#176;</text>`;
             inner += `<line x1="${configuracao.startX}" y1="${configuracao.startY}" x2="${configuracao.startX + configuracao.width}" y2="${configuracao.startY}" class="fret-line" />`;
         }
 

@@ -17,21 +17,21 @@
 @endpush
 
 @section('content')
-<div class="w-full">
-    <div class="bg-white rounded-xl shadow p-6">
-        <div class="flex items-center justify-between mb-6">
+<div class="admin-page-shell">
+    <div class="admin-list-card p-6">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
             <div>
                 <h1 class="text-3xl font-black text-gray-800">{{ $acorde->nome }}</h1>
                 <p class="text-sm text-gray-500">{{ $acorde->variation_name ?? 'Padrao' }}</p>
             </div>
 
-            <div class="flex items-center gap-3">
-                <a href="{{ route('admin.acordes.edit', $acorde->id) }}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 transition text-white rounded font-bold">Editar</a>
-                <a href="{{ route('admin.acordes.index') }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 transition text-gray-700 rounded font-bold">Voltar</a>
+            <div class="admin-actions">
+                <a href="{{ route('admin.acordes.edit', $acorde->id) }}" class="admin-btn border border-[#ead6b3] bg-[#fff8ed] text-[#6c4a21] hover:bg-[#f8ecd7]">Editar</a>
+                <a href="{{ route('admin.acordes.index') }}" class="admin-btn admin-btn-secondary">Voltar</a>
                 <form action="{{ route('admin.acordes.destroy', $acorde->id) }}" method="POST" onsubmit="return confirm('Deseja excluir este acorde?');">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 transition text-white rounded font-bold">Excluir</button>
+                    <button type="submit" class="admin-btn admin-btn-danger">Excluir</button>
                 </form>
             </div>
         </div>
@@ -49,7 +49,7 @@
                 <h3 class="font-bold text-lg mb-4 text-gray-800 border-b pb-2">Detalhes do acorde</h3>
                 <ul class="text-gray-600 space-y-3">
                     <li><strong class="text-gray-800">Descricao:</strong> {{ $acorde->descricao ?: 'Nao informada' }}</li>
-                    <li><strong class="text-gray-800">Casa base do shape:</strong> {{ $acorde->base_fret }}° casa</li>
+                    <li><strong class="text-gray-800">Casa base do shape:</strong> {{ $acorde->base_fret }}&deg; casa</li>
                     <li><strong class="text-gray-800">Criado em:</strong> {{ $acorde->created_at->format('d/m/Y H:i') }}</li>
                     <li><strong class="text-gray-800">ID no sistema:</strong> #{{ $acorde->id }}</li>
                 </ul>
@@ -87,7 +87,7 @@ function render() {
     if (baseFret === 1) {
         grid += `<rect x="${CONFIG.startX}" y="${CONFIG.startY-6}" width="${CONFIG.width}" height="6" class="nut-rect" />`;
     } else {
-        grid += `<text x="${CONFIG.startX-10}" y="${CONFIG.startY+25}" text-anchor="end" fill="#9ca3af" font-weight="bold" font-size="18">${baseFret}°</text>`;
+        grid += `<text x="${CONFIG.startX-10}" y="${CONFIG.startY+25}" text-anchor="end" fill="#9ca3af" font-weight="bold" font-size="18">${baseFret}&#176;</text>`;
         grid += `<line x1="${CONFIG.startX}" y1="${CONFIG.startY}" x2="${CONFIG.startX+CONFIG.width}" y2="${CONFIG.startY}" class="fret-line" />`;
     }
 
