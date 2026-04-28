@@ -6,6 +6,14 @@
 @section('content')
     @php
         $emailTecnico = str_ends_with(mb_strtolower(trim((string) $usuario->email)), '@sem-login.local');
+        $papeisPorIgreja = $usuario->vinculosIgreja
+            ->where('ativo', true)
+            ->mapWithKeys(fn ($vinculo) => [
+                (string) $vinculo->igreja_id => $vinculo->listarPapeisAtivos()
+                    ->map(fn ($papel) => $papel->value)
+                    ->values()
+                    ->all(),
+            ]);
     @endphp
 
     <div class="admin-page-shell">
@@ -140,8 +148,8 @@
                 <section class="admin-highlight-surface p-5 sm:p-6">
                     <div class="mb-5">
                         <p class="admin-page-kicker">Acumulo de papeis</p>
-                        <h2 class="text-lg font-bold text-gray-800">Adicionar papel por igreja</h2>
-                        <p class="mt-2 text-sm text-gray-500">Use este fluxo para promover a mesma conta em outra igreja ou acumular funcoes.</p>
+                        <h2 class="text-lg font-bold text-gray-800">Ajustar papeis por igreja</h2>
+                        <p class="mt-2 text-sm text-gray-500">Selecione a igreja e marque apenas os papeis que esta pessoa deve manter. Desmarcar um papel remove o acesso naquela igreja.</p>
                         @if ($emailTecnico)
                             <p class="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                                 Esta conta ainda esta em modo tecnico sem login publico. Se o padre for operar com login, primeiro salve um e-mail real na conta base.
@@ -154,28 +162,31 @@
 
                         <div>
                             <label class="admin-label">Igreja</label>
-                            <select name="igreja_id" class="admin-select" required>
+                            <select name="igreja_id" class="admin-select" required data-igreja-papeis-select>
                                 <option value="">Selecione a igreja</option>
                                 @foreach ($igrejas as $igreja)
-                                    <option value="{{ $igreja->id }}">{{ $igreja->nome }}</option>
+                                    <option value="{{ $igreja->id }}" @selected((string) old('igreja_id') === (string) $igreja->id)>{{ $igreja->nome }}</option>
                                 @endforeach
                             </select>
                         </div>
 
                         <div>
-                            <span class="admin-label mb-3 block">Papeis a conceder</span>
+                            <span class="admin-label mb-3 block">Papeis nesta igreja</span>
                             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                 @foreach (\App\Enums\PapelIgreja::cases() as $papel)
                                     <label class="admin-checkbox rounded-2xl border border-gray-200 bg-white/70 px-4 py-3">
-                                        <input type="checkbox" name="papeis[]" value="{{ $papel->value }}">
+                                        <input type="checkbox" name="papeis[]" value="{{ $papel->value }}" data-papel-checkbox>
                                         <span>{{ $papel->label() }}</span>
                                     </label>
                                 @endforeach
                             </div>
+                            <p class="mt-3 text-xs text-gray-500" data-papeis-helper>
+                                Escolha uma igreja para carregar os papeis atuais desta conta.
+                            </p>
                         </div>
 
                         <div class="admin-actions">
-                            <button type="submit" class="admin-btn admin-btn-secondary">Aplicar vinculo</button>
+                            <button type="submit" class="admin-btn admin-btn-secondary">Salvar papeis</button>
                         </div>
                     </form>
                 </section>
@@ -302,6 +313,49 @@
                     campoTelefone.value = aplicarMascaraTelefone(campoTelefone.value);
                 });
             }
+
+            const papeisPorIgreja = @json($papeisPorIgreja);
+            const selectIgreja = document.querySelector('[data-igreja-papeis-select]');
+            const checkboxesPapeis = Array.from(document.querySelectorAll('[data-papel-checkbox]'));
+            const helperPapeis = document.querySelector('[data-papeis-helper]');
+
+            const atualizarPapeisDaIgreja = () => {
+                if (!selectIgreja) {
+                    return;
+                }
+
+                const igrejaId = selectIgreja.value;
+                const papeisAtuais = new Set(papeisPorIgreja[igrejaId] || []);
+
+                checkboxesPapeis.forEach((checkbox) => {
+                    const papelAtual = papeisAtuais.has(checkbox.value);
+                    const label = checkbox.closest('label');
+
+                    checkbox.checked = papelAtual;
+                    label?.classList.toggle('bg-emerald-50', papelAtual);
+                    label?.classList.toggle('border-emerald-200', papelAtual);
+                    label?.classList.toggle('text-emerald-800', papelAtual);
+                });
+
+                if (!helperPapeis) {
+                    return;
+                }
+
+                if (!igrejaId) {
+                    helperPapeis.textContent = 'Escolha uma igreja para carregar os papeis atuais desta conta.';
+                    return;
+                }
+
+                if (papeisAtuais.size > 0) {
+                    helperPapeis.textContent = 'Os papeis atuais aparecem marcados. Desmarque para remover ou marque novos papeis para conceder.';
+                    return;
+                }
+
+                helperPapeis.textContent = 'Esta conta ainda nao tem papel ativo nesta igreja. Marque os papeis que deseja conceder.';
+            };
+
+            selectIgreja?.addEventListener('change', atualizarPapeisDaIgreja);
+            atualizarPapeisDaIgreja();
         });
     </script>
     @include('partials.password-strength-script')

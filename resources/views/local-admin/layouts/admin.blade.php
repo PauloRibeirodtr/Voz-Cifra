@@ -6,126 +6,77 @@
 @php
     $themePreference = auth()->user()->theme_preference ?? 'system';
 @endphp
-<body class="bg-gray-50 font-sans text-gray-900" data-theme-preference="{{ $themePreference }}">
+<body class="font-sans text-gray-900" data-theme-preference="{{ $themePreference }}">
     <div
-        id="local_sidebar_overlay"
-        class="fixed inset-0 z-30 hidden bg-slate-950/45 backdrop-blur-[1px] md:hidden"
+        id="admin_sidebar_overlay"
+        class="fixed inset-0 z-40 hidden bg-slate-950/70 backdrop-blur-[3px] lg:hidden"
         aria-hidden="true"
     ></div>
 
-    @include('partials.operational-sidebar', ['sidebarId' => 'local_sidebar'])
+    <div class="admin-app">
+        @include('admin.partials.sidebar')
 
-    <div class="min-h-screen md:pl-72">
-        <header class="sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur md:hidden">
-            <div class="flex items-center justify-between gap-3 px-4 py-3">
-                <div class="min-w-0">
-                    <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#d6ad6c]">Voz &amp; Cifra</p>
-                    <h1 class="truncate text-base font-extrabold text-slate-900">@yield('mobile_title', 'Painel da igreja')</h1>
+        <div class="admin-main">
+            <header class="admin-mobile-header sticky top-0 z-20 border-b border-white/10 backdrop-blur lg:hidden">
+                <div class="flex items-center justify-between gap-3 px-4 py-3">
+                    <div class="min-w-0">
+                        <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#d6ad6c]">Voz &amp; Cifra</p>
+                        <h1 class="truncate text-base font-extrabold text-[#fff8ed]">@yield('mobile_title', 'Painel da igreja')</h1>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            id="admin_sidebar_toggle"
+                            class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-[#2a1b1b] text-[#f3dfbd] shadow-sm transition hover:border-[#c9a15f]/40 hover:bg-[#352121] hover:text-[#fff8ed]"
+                            aria-controls="admin_sidebar"
+                            aria-expanded="false"
+                            aria-label="Abrir menu"
+                        >
+                            <i class="fa-solid fa-bars text-base"></i>
+                        </button>
+                    </div>
                 </div>
+            </header>
 
-                <div class="flex items-center gap-2">
-                    <button
-                        type="button"
-                        id="local_sidebar_toggle"
-                        class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-[#2a1b1b] text-[#f3dfbd] shadow-sm transition hover:border-[#c9a15f]/40 hover:bg-[#352121] hover:text-[#fff8ed]"
-                        aria-controls="local_sidebar"
-                        aria-expanded="false"
-                        aria-label="Abrir menu"
-                    >
-                        <i class="fa-solid fa-bars text-base"></i>
-                    </button>
+            <main class="admin-shell relative overflow-x-hidden" id="mainContent">
+                <div class="admin-main-content">
+                    <div class="admin-topbar-card hidden items-center justify-between gap-4 px-5 py-4 lg:flex lg:px-6">
+                        <div class="min-w-0">
+                            <p class="admin-page-kicker">@yield('desktop_kicker', 'Painel operacional')</p>
+                            <p class="mt-2 truncate text-sm text-gray-500">@yield('desktop_subtitle', 'Area administrativa da igreja')</p>
+                        </div>
+
+                        @auth
+                            <a href="{{ route('local-admin.profile') }}" class="admin-user-chip admin-user-link" aria-label="Abrir meu perfil">
+                                <div class="admin-user-chip-avatar">
+                                    @if (filled(auth()->user()->foto_perfil_path))
+                                        <img
+                                            src="{{ auth()->user()->fotoPerfilUrl() }}"
+                                            alt="Foto de {{ auth()->user()->nome }}"
+                                            class="admin-avatar-image"
+                                            onerror="this.onerror=null;this.src='{{ asset('logo/final.png') }}';"
+                                        >
+                                    @else
+                                        {{ strtoupper(substr(auth()->user()->nome, 0, 1)) }}
+                                    @endif
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="truncate text-sm font-semibold text-gray-800">{{ auth()->user()->nome }}</div>
+                                    <div class="truncate text-xs text-gray-500">{{ auth()->user()->email }}</div>
+                                </div>
+                            </a>
+                        @endauth
+                    </div>
+
+                    @yield('content')
+                    @include('admin.partials.footer')
                 </div>
-            </div>
-        </header>
-
-        <main class="relative overflow-x-hidden px-4 py-4 sm:px-6 sm:py-6 lg:px-8" id="mainContent">
-            <div class="mb-6 hidden items-center justify-between gap-4 md:flex">
-                <div class="min-w-0">
-                    <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#d6ad6c]">Voz &amp; Cifra</p>
-                    <p class="truncate text-sm text-slate-500">@yield('desktop_subtitle', 'Área administrativa da igreja')</p>
-                </div>
-            </div>
-
-            @yield('content')
-            @include('admin.partials.footer')
-        </main>
+            </main>
+        </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const preference = document.body.dataset.themePreference || 'system';
-            const mediaScheme = window.matchMedia('(prefers-color-scheme: dark)');
-            const aplicarTema = () => {
-                const resolved = preference === 'system' ? (mediaScheme.matches ? 'dark' : 'light') : preference;
-                document.body.classList.toggle('theme-dark', resolved === 'dark');
-                document.body.classList.toggle('theme-light', resolved !== 'dark');
-                document.documentElement.classList.toggle('theme-dark', resolved === 'dark');
-                document.documentElement.classList.toggle('theme-light', resolved !== 'dark');
-            };
-
-            aplicarTema();
-            mediaScheme.addEventListener?.('change', aplicarTema);
-
-            const body = document.body;
-            const sidebar = document.getElementById('local_sidebar');
-            const toggle = document.getElementById('local_sidebar_toggle');
-            const overlay = document.getElementById('local_sidebar_overlay');
-            const mediaQuery = window.matchMedia('(min-width: 768px)');
-
-            if (!sidebar || !toggle || !overlay) {
-                return;
-            }
-
-            const abrirMenu = () => {
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.remove('hidden');
-                body.classList.add('overflow-hidden');
-                toggle.setAttribute('aria-expanded', 'true');
-            };
-
-            const fecharMenu = () => {
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.add('hidden');
-                body.classList.remove('overflow-hidden');
-                toggle.setAttribute('aria-expanded', 'false');
-            };
-
-            toggle.addEventListener('click', () => {
-                if (sidebar.classList.contains('-translate-x-full')) {
-                    abrirMenu();
-                    return;
-                }
-
-                fecharMenu();
-            });
-
-            overlay.addEventListener('click', fecharMenu);
-
-            sidebar.querySelectorAll('a').forEach((link) => {
-                link.addEventListener('click', () => {
-                    if (!mediaQuery.matches) {
-                        fecharMenu();
-                    }
-                });
-            });
-
-            const sincronizarLayout = () => {
-                if (mediaQuery.matches) {
-                    sidebar.classList.remove('-translate-x-full');
-                    overlay.classList.add('hidden');
-                    body.classList.remove('overflow-hidden');
-                    toggle.setAttribute('aria-expanded', 'false');
-                    return;
-                }
-
-                sidebar.classList.add('-translate-x-full');
-            };
-
-            sincronizarLayout();
-            mediaQuery.addEventListener('change', sincronizarLayout);
-        });
-    </script>
-
+    <script src="{{ asset('js/admin/layout.js') }}"></script>
     @stack('scripts')
 </body>
 </html>

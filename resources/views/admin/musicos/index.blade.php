@@ -11,7 +11,7 @@
         </div>
 
         <a href="{{ route('admin.musicos.create') }}" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-medium text-white hover:bg-green-800 sm:w-auto">
-            Novo músico
+            Cadastrar musico
         </a>
     </div>
 

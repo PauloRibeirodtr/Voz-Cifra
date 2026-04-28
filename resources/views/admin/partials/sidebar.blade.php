@@ -18,6 +18,9 @@
         $linkPessoasSidebar = $temAdminLocalSidebar
             ? route('local-admin.musicos.index')
             : ($temCoordenadorSidebar ? route('coordenador.musicos.index') : null);
+        $perfilRouteSidebar = request()->routeIs('local-admin.*')
+            ? 'local-admin.profile'
+            : (request()->routeIs('coordenador.*') ? 'coordenador.profile' : (request()->routeIs('member.*') ? 'member.profile' : 'admin.profile'));
 
         $itemMenuClasse = static function (bool $ativo): string {
             return $ativo
@@ -48,7 +51,7 @@
 
         @auth
             <div class="border-b border-white/10 bg-black/10 px-4 py-3 lg:hidden">
-                <a href="{{ route('admin.profile') }}" class="admin-sidebar-profile-link flex items-center gap-3 rounded-2xl px-2 py-2" aria-label="Abrir meu perfil">
+                <a href="{{ route($perfilRouteSidebar) }}" class="admin-sidebar-profile-link flex items-center gap-3 rounded-2xl px-2 py-2" aria-label="Abrir meu perfil">
                     <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#8c6933] bg-[#6c4a21] text-white font-bold shadow-sm">
                         @if (filled(auth()->user()->foto_perfil_path))
                             <img
@@ -110,39 +113,12 @@
                     <span>Usu&aacute;rios</span>
                 </a>
 
-                <a href="{{ route('admin.acordes.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.acordes.*')) }}">
-                    <i class="fa-solid fa-guitar w-5 text-center group-hover:scale-110 transition"></i>
-                    <span>Acordes</span>
-                </a>
-
-                <a href="{{ route('admin.tempos-liturgicos.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.tempos-liturgicos.*')) }}">
-                    <i class="fa-solid fa-calendar-days w-5 text-center group-hover:scale-110 transition"></i>
-                    <span>Tempos lit&uacute;rgicos</span>
-                </a>
-
-                <a href="{{ route('admin.momentos-liturgicos.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.momentos-liturgicos.*')) }}">
-                    <i class="fa-solid fa-list-ol w-5 text-center group-hover:scale-110 transition"></i>
-                    <span>Momentos lit&uacute;rgicos</span>
-                </a>
-
-                <a href="{{ route('admin.musicas.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.musicas.*', 'admin.versoes-musicais.*')) }}">
-                    <i class="fa-solid fa-music w-5 text-center group-hover:scale-110 transition"></i>
-                    <span>M&uacute;sicas</span>
-                </a>
-
-                @if (auth()->user()?->ehAdminMaster())
-                    <a href="{{ route('admin.admins-locais.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.admins-locais.*')) }}">
-                        <i class="fa-solid fa-user-shield w-5 text-center group-hover:scale-110 transition"></i>
-                        <span>Admins locais</span>
-                    </a>
-                @endif
-
                 @if ($temPapelOperacionalSidebar)
-                    <div class="admin-sidebar-section-label pt-3 pb-1 pl-4 text-[11px] font-black uppercase tracking-widest opacity-80">Igreja ativa</div>
+                    <div class="admin-sidebar-section-label pt-3 pb-1 pl-4 text-[11px] font-black uppercase tracking-widest opacity-80">Minha igreja</div>
 
                     @if ($igrejaAtivaSidebar)
                         <div class="mx-3 rounded-2xl border border-[#8c6933]/25 bg-[#251716] px-4 py-3 text-sm text-[#f6ead4]">
-                            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-[#d6ad6c]">Contexto operacional</p>
+                            <p class="text-[10px] font-black uppercase tracking-[0.18em] text-[#d6ad6c]">Igreja selecionada</p>
                             <p class="mt-1 font-semibold text-white">{{ $igrejaAtivaSidebar->nome }}</p>
                         </div>
                     @endif
@@ -150,72 +126,79 @@
                     @if ($temAdminLocalSidebar)
                         <a href="{{ route('local-admin.dashboard') }}" class="{{ $itemMenuClasse(request()->routeIs('local-admin.dashboard')) }}">
                             <i class="fa-solid fa-church w-5 text-center group-hover:scale-110 transition"></i>
-                            <span>Painel da igreja</span>
+                            <span>Resumo da igreja</span>
                         </a>
 
                         <a href="{{ route('local-admin.church') }}" class="{{ $itemMenuClasse(request()->routeIs('local-admin.church')) }}">
                             <i class="fa-solid fa-building-circle-check w-5 text-center group-hover:scale-110 transition"></i>
-                            <span>Dados operacionais</span>
+                            <span>Dados e links</span>
                         </a>
                     @endif
 
                     @if ($temCoordenadorSidebar)
                         <a href="{{ route('coordenador.dashboard') }}" class="{{ $itemMenuClasse(request()->routeIs('coordenador.dashboard')) }}">
                             <i class="fa-solid fa-diagram-project w-5 text-center group-hover:scale-110 transition"></i>
-                            <span>Coordena&ccedil;&atilde;o</span>
+                            <span>Coordena&ccedil;&atilde;o musical</span>
                         </a>
                     @endif
 
                     @if ($linkPessoasSidebar)
                         <a href="{{ $linkPessoasSidebar }}" class="{{ $itemMenuClasse(request()->routeIs('local-admin.musicos.*', 'coordenador.musicos.*')) }}">
                             <i class="fa-solid fa-users w-5 text-center group-hover:scale-110 transition"></i>
-                            <span>{!! $temAdminLocalSidebar ? 'M&uacute;sicos da igreja' : 'Pessoas e v&iacute;nculos' !!}</span>
+                            <span>Equipe musical</span>
                         </a>
                     @endif
                 @endif
 
                 @if ($temAdminLocalSidebar || $temAcessoMusicalSidebar)
-                    <div class="admin-sidebar-section-label pt-3 pb-1 pl-4 text-[11px] font-black uppercase tracking-widest opacity-80">Missas e repert&oacute;rios</div>
+                    <div class="admin-sidebar-section-label pt-3 pb-1 pl-4 text-[11px] font-black uppercase tracking-widest opacity-80">Celebra&ccedil;&otilde;es</div>
 
                     @if ($temAdminLocalSidebar)
                         <a href="{{ route('local-admin.missas.index') }}" class="{{ $itemMenuClasse(request()->routeIs('local-admin.missas.*', 'local-admin.repertorio.*')) }}">
                             <i class="fa-solid fa-calendar-check w-5 text-center group-hover:scale-110 transition"></i>
-                            <span>Missas e repert&oacute;rios</span>
+                            <span>Missas</span>
                         </a>
                     @endif
 
                     @if ($temAcessoMusicalSidebar)
                         <a href="{{ route('member.repertorio') }}" class="{{ $itemMenuClasse(request()->routeIs('member.repertorio')) }}">
                             <i class="fa-solid fa-list-check w-5 text-center group-hover:scale-110 transition"></i>
-                            <span>Consulta do repert&oacute;rio</span>
+                            <span>Repert&oacute;rio</span>
                         </a>
                     @endif
                 @endif
 
-                @if ($temCoordenadorSidebar || $temAcessoMusicalSidebar)
-                    <div class="admin-sidebar-section-label pt-3 pb-1 pl-4 text-[11px] font-black uppercase tracking-widest opacity-80">M&uacute;sicas e cifras</div>
+                @if ($temCoordenadorSidebar || $temAcessoMusicalSidebar || auth()->user()?->ehAdminMaster())
+                    <div class="admin-sidebar-section-label pt-3 pb-1 pl-4 text-[11px] font-black uppercase tracking-widest opacity-80">M&uacute;sicas e acordes</div>
 
                     @if ($temCoordenadorSidebar)
                         <a href="{{ route('coordenador.musicas.index') }}" class="{{ $itemMenuClasse(request()->routeIs('coordenador.musicas.*', 'coordenador.versoes-musicais.*')) }}">
                             <i class="fa-solid fa-sliders w-5 text-center group-hover:scale-110 transition"></i>
-                            <span>Gest&atilde;o musical</span>
+                            <span>Cadastrar m&uacute;sicas e cifras</span>
                         </a>
                     @endif
 
                     @if ($temAcessoMusicalSidebar)
                         <a href="{{ route('member.musicas.index') }}" class="{{ $itemMenuClasse(request()->routeIs('member.musicas.*', 'member.versoes.*')) }}">
                             <i class="fa-solid fa-music w-5 text-center group-hover:scale-110 transition"></i>
-                            <span>Biblioteca musical</span>
+                            <span>Consultar biblioteca</span>
                         </a>
 
                         <a href="{{ route('member.colecoes.index') }}" class="{{ $itemMenuClasse(request()->routeIs('member.colecoes.*')) }}">
                             <i class="fa-solid fa-book-open-reader w-5 text-center group-hover:scale-110 transition"></i>
-                            <span>&Aacute;rea de estudo</span>
+                            <span>Meus estudos</span>
+                        </a>
+                    @endif
+
+                    @if (auth()->user()?->ehAdminMaster())
+                        <a href="{{ route('admin.acordes.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.acordes.*')) }}">
+                            <i class="fa-solid fa-guitar w-5 text-center group-hover:scale-110 transition"></i>
+                            <span>Acordes</span>
                         </a>
                     @endif
                 @endif
 
-                <div class="admin-sidebar-section-label pt-3 pb-1 pl-4 text-[11px] font-black uppercase tracking-widest opacity-80">Auditoria e configura&ccedil;&otilde;es</div>
+                <div class="admin-sidebar-section-label pt-3 pb-1 pl-4 text-[11px] font-black uppercase tracking-widest opacity-80">Sistema</div>
 
                 @if (auth()->user()?->ehAdminMaster())
                     <a href="{{ route('admin.auditoria.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.auditoria.*')) }}">
@@ -232,7 +215,7 @@
 
             <div class="admin-sidebar-footer">
                 @auth
-                    <a href="{{ route('admin.profile') }}" class="admin-sidebar-profile admin-sidebar-profile-link mb-4 hidden items-center gap-3 rounded-2xl px-3 py-3 lg:flex" aria-label="Abrir meu perfil">
+                    <a href="{{ route($perfilRouteSidebar) }}" class="admin-sidebar-profile admin-sidebar-profile-link mb-4 hidden items-center gap-3 rounded-2xl px-3 py-3 lg:flex" aria-label="Abrir meu perfil">
                         <div class="w-10 h-10 rounded-full bg-[#6c4a21] flex items-center justify-center text-white font-bold border border-[#8c6933] shadow-sm">
                             @if (filled(auth()->user()->foto_perfil_path))
                                 <img

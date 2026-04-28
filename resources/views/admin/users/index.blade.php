@@ -137,7 +137,7 @@
 
                                         <div class="mt-2 flex flex-col gap-1 text-sm text-gray-500">
                                             <span class="break-all">{{ $usuario->email }}</span>
-                                            <span>CPF: {{ $usuario->cpf }}</span>
+                                            <span>CPF: {{ $usuario->cpfMascarado() }}</span>
                                         </div>
 
                                         <div class="mt-3 flex flex-wrap gap-2">

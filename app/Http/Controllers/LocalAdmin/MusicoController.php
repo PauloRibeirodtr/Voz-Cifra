@@ -23,12 +23,27 @@ class MusicoController extends Controller
     public function index(): View
     {
         $igreja = $this->obterIgreja();
+        $usuariosParaVinculo = Usuario::query()
+            ->where('ativo', true)
+            ->whereDoesntHave('papeisAtivosPorIgreja', function ($query) use ($igreja): void {
+                $query->where('papel', PapelIgreja::MUSICO->value)
+                    ->whereHas('vinculo', fn ($subQuery) => $subQuery->where('igreja_id', $igreja->id));
+            })
+            ->orderBy('nome')
+            ->get(['id', 'nome', 'email'])
+            ->map(fn (Usuario $usuario): array => [
+                'id' => $usuario->id,
+                'nome' => $usuario->nome,
+                'email' => $usuario->email,
+            ])
+            ->values();
 
         return view('local-admin.musicos.index', [
             'igreja' => $igreja,
             'usuariosIgreja' => $igreja->musicos()
                 ->orderBy('nome')
                 ->get(),
+            'usuariosParaVinculo' => $usuariosParaVinculo,
         ]);
     }
 
@@ -90,9 +105,7 @@ class MusicoController extends Controller
     public function vincularExistente(Request $request): RedirectResponse
     {
         $dados = $request->validate([
-            'usuario_id' => ['nullable', 'integer', 'exists:usuarios,id', 'required_without_all:cpf,email'],
-            'cpf' => ['nullable', 'string', 'max:14', 'required_without_all:usuario_id,email'],
-            'email' => ['nullable', 'email', 'max:255', 'required_without_all:usuario_id,cpf'],
+            'usuario_id' => ['required', 'integer', 'exists:usuarios,id'],
         ]);
 
         $this->gestaoUsuariosIgrejaService->vincularUsuarioExistente(

@@ -128,7 +128,7 @@ class UsuarioController extends Controller
         }
 
         return redirect()
-            ->route('admin.usuarios.edit', $usuario)
+            ->route('admin.usuarios.index')
             ->with('success', $this->mensagemCriacao($tipoCadastro, $igreja));
     }
 
@@ -192,7 +192,7 @@ class UsuarioController extends Controller
         );
 
         return redirect()
-            ->route('admin.usuarios.edit', $usuario)
+            ->route('admin.usuarios.index')
             ->with('success', 'Dados da conta atualizados com sucesso.');
     }
 
@@ -200,23 +200,50 @@ class UsuarioController extends Controller
     {
         $dados = $request->validate([
             'igreja_id' => ['required', 'exists:igrejas,id'],
-            'papeis' => ['required', 'array', 'min:1'],
+            'papeis' => ['nullable', 'array'],
             'papeis.*' => ['required', Rule::in(PapelIgreja::values())],
         ]);
 
         $igreja = Igreja::query()->findOrFail((int) $dados['igreja_id']);
+        $papeisSelecionados = collect((array) ($dados['papeis'] ?? []))
+            ->map(fn ($papel) => PapelIgreja::fromValue($papel))
+            ->unique(fn (PapelIgreja $papel) => $papel->value)
+            ->values();
+        $papeisAtuais = $usuario->listarPapeisNaIgreja($igreja);
 
-        $this->gestaoUsuariosIgrejaService->atribuirPapeisAoUsuarioExistente(
-            usuario: $usuario,
-            igreja: $igreja,
-            papeis: (array) $dados['papeis'],
-            ator: Auth::user(),
-            origem: 'admin_usuarios_store_vinculo'
-        );
+        $papeisParaConceder = $papeisSelecionados
+            ->reject(fn (PapelIgreja $papel) => $papeisAtuais->contains(fn (PapelIgreja $atual) => $atual === $papel))
+            ->values();
+
+        $papeisParaRevogar = $papeisAtuais
+            ->reject(fn (PapelIgreja $papel) => $papeisSelecionados->contains(fn (PapelIgreja $selecionado) => $selecionado === $papel))
+            ->values();
+
+        if ($papeisParaConceder->isNotEmpty()) {
+            $this->gestaoUsuariosIgrejaService->atribuirPapeisAoUsuarioExistente(
+                usuario: $usuario,
+                igreja: $igreja,
+                papeis: $papeisParaConceder->all(),
+                ator: Auth::user(),
+                origem: 'admin_usuarios_store_vinculo'
+            );
+        } else {
+            $usuario->garantirVinculoNaIgreja($igreja);
+        }
+
+        foreach ($papeisParaRevogar as $papel) {
+            $this->gestaoUsuariosIgrejaService->revogarPapelDeUsuarioExistente(
+                usuario: $usuario,
+                igreja: $igreja,
+                papel: $papel,
+                ator: Auth::user(),
+                origem: 'admin_usuarios_store_vinculo'
+            );
+        }
 
         return redirect()
-            ->route('admin.usuarios.edit', $usuario)
-            ->with('success', 'Vinculo e papeis atualizados com sucesso.');
+            ->route('admin.usuarios.index')
+            ->with('success', 'Papeis da igreja atualizados com sucesso.');
     }
 
     public function toggle(Usuario $usuario): RedirectResponse
@@ -238,7 +265,7 @@ class UsuarioController extends Controller
             ]
         );
 
-        return back()->with('success', $usuario->ativo
+        return redirect()->route('admin.usuarios.index')->with('success', $usuario->ativo
             ? 'Conta reativada com sucesso.'
             : 'Conta inativada com sucesso.');
     }
@@ -367,7 +394,7 @@ class UsuarioController extends Controller
         }
 
         if (!($igreja instanceof Igreja)) {
-            return 'Conta criada com sucesso. Vincule o usuario a uma igreja para liberar os papeis operacionais.';
+            return 'Conta criada com sucesso. Para liberar papeis operacionais, abra o usuario na lista e vincule uma igreja.';
         }
 
         return 'Conta criada e vinculada com sucesso.';

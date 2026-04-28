@@ -12,10 +12,6 @@ class AdminMasterSeeder extends Seeder
 
     public function run(): void
     {
-        if (Usuario::query()->where('perfil_global', 'admin_master')->exists()) {
-            return;
-        }
-
         $cpf = preg_replace('/\D+/', '', (string) env('ADMIN_MASTER_CPF', '06070933150')) ?: '06070933150';
         $email = trim((string) env('ADMIN_MASTER_EMAIL', 'pythonocr7@gmail.com'));
         $senhaInformada = trim((string) env('ADMIN_MASTER_PASSWORD', self::DEFAULT_ADMIN_MASTER_PASSWORD));
@@ -26,8 +22,17 @@ class AdminMasterSeeder extends Seeder
             ->orWhere('cpf', $cpf)
             ->first();
 
-        if ($usuarioExistente !== null) {
-            throw new \RuntimeException('O AdminMasterSeeder encontrou uma conta existente com o mesmo CPF ou e-mail. Ajuste as variaveis ADMIN_MASTER_* antes de executar o seed inicial.');
+        if ($usuarioExistente instanceof Usuario) {
+            $usuarioExistente->forceFill([
+                'email' => $usuarioExistente->email ?: $email,
+                'cpf' => $usuarioExistente->cpf ?: $cpf,
+                'perfil_global' => 'admin_master',
+                'nivel_global' => 6,
+                'ativo' => true,
+                'eh_padre' => false,
+            ])->save();
+
+            return;
         }
 
         $dados = [

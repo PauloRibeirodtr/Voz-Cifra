@@ -10,6 +10,7 @@
     $temCoordenadorSidebar = (bool) ($usuarioSidebar?->temPapelNaIgreja(PapelIgreja::COORDENADOR, $igrejaAtivaIdSidebar));
     $temMusicoSidebar = (bool) ($usuarioSidebar?->temPapelNaIgreja(PapelIgreja::MUSICO, $igrejaAtivaIdSidebar));
     $temAcessoMusicalSidebar = $temMusicoSidebar || $temCoordenadorSidebar || $temAdminLocalSidebar;
+    $temPapelOperacionalSidebar = $temAdminLocalSidebar || $temCoordenadorSidebar || $temMusicoSidebar;
 
     $isLocalAreaSidebar = request()->routeIs('local-admin.*');
     $isCoordenadorAreaSidebar = request()->routeIs('coordenador.*');
@@ -62,86 +63,115 @@
 
     <nav class="flex-1 space-y-3 overflow-y-auto px-4 py-6">
         @if ($temAdminMasterSidebar)
-            <div class="{{ $secaoLabelClasseSidebar }}">Gest&atilde;o central</div>
+            <div class="{{ $secaoLabelClasseSidebar }}">Painel</div>
 
             <a href="{{ route('admin.dashboard') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('admin.dashboard')) }}">
                 <i class="fa-solid fa-house w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
                 <span>Painel central</span>
             </a>
 
-            <a href="{{ route('admin.settings') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('admin.settings', 'admin.profile', 'admin.profile.update')) }}">
-                <i class="fa-solid fa-gear w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
-                <span>Configura&ccedil;&otilde;es</span>
+            <div class="{{ $secaoLabelClasseSidebar }}">Administra&ccedil;&atilde;o central</div>
+
+            <a href="{{ route('admin.igrejas.index') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('admin.igrejas.*')) }}">
+                <i class="fa-solid fa-church w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
+                <span>Igrejas</span>
             </a>
+
+            <a href="{{ route('admin.usuarios.index') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('admin.usuarios.*')) }}">
+                <i class="fa-solid fa-users w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
+                <span>Usu&aacute;rios</span>
+            </a>
+
         @endif
 
-        @if ($temAdminLocalSidebar || $temCoordenadorSidebar)
-            <div class="{{ $secaoLabelClasseSidebar }}">Igrejas</div>
+        @if ($temPapelOperacionalSidebar)
+            <div class="{{ $secaoLabelClasseSidebar }}">Minha igreja</div>
+
+            @if ($igrejaAtivaSidebar)
+                <div class="mx-1 rounded-2xl border border-[#8c6933]/25 bg-[#251716] px-4 py-3 text-sm text-[#f6ead4]">
+                    <p class="text-[10px] font-black uppercase tracking-[0.18em] text-[#d6ad6c]">Igreja selecionada</p>
+                    <p class="mt-1 font-semibold text-white">{{ $igrejaAtivaSidebar->nome }}</p>
+                </div>
+            @endif
 
             @if ($temAdminLocalSidebar)
                 <a href="{{ route('local-admin.dashboard') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('local-admin.dashboard')) }}">
                     <i class="fa-solid fa-church w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
-                    <span>Painel da igreja</span>
+                    <span>Resumo da igreja</span>
                 </a>
 
                 <a href="{{ route('local-admin.church') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('local-admin.church')) }}">
                     <i class="fa-solid fa-building-circle-check w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
-                    <span>Dados operacionais</span>
+                    <span>Dados e links</span>
                 </a>
             @endif
 
             @if ($temCoordenadorSidebar)
                 <a href="{{ route('coordenador.dashboard') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('coordenador.dashboard')) }}">
                     <i class="fa-solid fa-diagram-project w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
-                    <span>Coordena&ccedil;&atilde;o</span>
+                    <span>Coordena&ccedil;&atilde;o musical</span>
                 </a>
             @endif
 
             <a href="{{ $temAdminLocalSidebar ? route('local-admin.musicos.index') : route('coordenador.musicos.index') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('local-admin.musicos.*', 'coordenador.musicos.*')) }}">
                 <i class="fa-solid fa-users w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
-                <span>{!! $temAdminLocalSidebar ? 'M&uacute;sicos da igreja' : 'Pessoas e v&iacute;nculos' !!}</span>
+                <span>Equipe musical</span>
             </a>
         @endif
 
         @if ($temAdminLocalSidebar || $temAcessoMusicalSidebar)
-            <div class="{{ $secaoLabelClasseSidebar }}">Missas e repert&oacute;rios</div>
+            <div class="{{ $secaoLabelClasseSidebar }}">Celebra&ccedil;&otilde;es</div>
 
             @if ($temAdminLocalSidebar)
                 <a href="{{ route('local-admin.missas.index') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('local-admin.missas.*', 'local-admin.repertorio.*')) }}">
                     <i class="fa-solid fa-calendar-check w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
-                    <span>Missas e repert&oacute;rios</span>
+                    <span>Missas</span>
                 </a>
             @endif
 
             @if ($temAcessoMusicalSidebar)
                 <a href="{{ route('member.repertorio') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('member.repertorio')) }}">
                     <i class="fa-solid fa-list-check w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
-                    <span>Consulta do repert&oacute;rio</span>
+                    <span>Repert&oacute;rio</span>
                 </a>
             @endif
         @endif
 
         @if ($temCoordenadorSidebar || $temAcessoMusicalSidebar)
-            <div class="{{ $secaoLabelClasseSidebar }}">M&uacute;sicas e cifras</div>
+            <div class="{{ $secaoLabelClasseSidebar }}">M&uacute;sicas</div>
 
             @if ($temCoordenadorSidebar)
                 <a href="{{ route('coordenador.musicas.index') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('coordenador.musicas.*', 'coordenador.versoes-musicais.*')) }}">
                     <i class="fa-solid fa-sliders w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
-                    <span>Gest&atilde;o musical</span>
+                    <span>Cadastrar cifras</span>
                 </a>
             @endif
 
             @if ($temAcessoMusicalSidebar)
                 <a href="{{ route('member.musicas.index') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('member.musicas.*', 'member.versoes.*')) }}">
                     <i class="fa-solid fa-music w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
-                    <span>Biblioteca musical</span>
+                    <span>Consultar m&uacute;sicas</span>
                 </a>
 
                 <a href="{{ route('member.colecoes.index') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('member.colecoes.*')) }}">
                     <i class="fa-solid fa-book-open-reader w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
-                    <span>&Aacute;rea de estudo</span>
+                    <span>Meus estudos</span>
                 </a>
             @endif
+        @endif
+
+        @if ($temAdminMasterSidebar)
+            <div class="{{ $secaoLabelClasseSidebar }}">Sistema</div>
+
+            <a href="{{ route('admin.auditoria.index') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('admin.auditoria.*')) }}">
+                <i class="fa-solid fa-shield-halved w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
+                <span>Auditoria</span>
+            </a>
+
+            <a href="{{ route('admin.settings') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('admin.settings')) }}">
+                <i class="fa-solid fa-gear w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
+                <span>Configura&ccedil;&otilde;es</span>
+            </a>
         @endif
 
         <div class="{{ $secaoLabelClasseSidebar }}">Conta</div>

@@ -1,7 +1,7 @@
 @extends('local-admin.layouts.admin')
 
 @php($rotaPrefixo = request()->routeIs('coordenador.*') ? 'coordenador' : 'local-admin')
-@php($contextoTitulo = $rotaPrefixo === 'coordenador' ? 'Novo musico da igreja' : 'Novo musico')
+@php($contextoTitulo = $rotaPrefixo === 'coordenador' ? 'Cadastrar musico da igreja' : 'Cadastrar musico')
 
 @section('title', $contextoTitulo . ' | Voz & Cifra')
 @section('mobile_title', $contextoTitulo)

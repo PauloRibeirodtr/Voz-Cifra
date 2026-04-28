@@ -43,7 +43,7 @@
                 <div class="admin-main-content">
                     <div class="admin-topbar-card hidden items-center justify-between gap-4 px-5 py-4 lg:flex lg:px-6">
                         <div class="min-w-0">
-                            <p class="admin-page-kicker">Painel Admin Master</p>
+                            <p class="admin-page-kicker">@yield('desktop_kicker', 'Painel Admin Master')</p>
                             <p class="mt-2 truncate text-sm text-gray-500">@yield('desktop_subtitle', 'Area administrativa do sistema')</p>
                         </div>
 

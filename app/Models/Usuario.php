@@ -280,6 +280,17 @@ class Usuario extends Authenticatable
         return asset('logo/final.png');
     }
 
+    public function cpfMascarado(): string
+    {
+        $digitos = preg_replace('/\D+/', '', (string) $this->cpf);
+
+        if (strlen($digitos) !== 11) {
+            return 'CPF nao informado';
+        }
+
+        return substr($digitos, 0, 3) . '.***.***-' . substr($digitos, -2);
+    }
+
     public function musicasCriadas(): HasMany
     {
         return $this->hasMany(Musica::class, 'criado_por');
@@ -302,7 +313,7 @@ class Usuario extends Authenticatable
 
     public function ehAdminMaster(): bool
     {
-        return $this->perfil_global === 'admin_master';
+        return $this->perfil_global === 'admin_master' || (int) ($this->nivel_global ?? 0) >= 6;
     }
 
     public function ehAdminLocal(): bool
