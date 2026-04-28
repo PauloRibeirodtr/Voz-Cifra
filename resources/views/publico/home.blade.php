@@ -20,9 +20,8 @@
 
                 <nav class="site-nav" data-site-nav data-open="false">
                     <a href="{{ route('root') }}#inicio">Início</a>
-                    <a href="{{ route('root') }}#destaque">Próxima missa</a>
-                    <a href="{{ route('root') }}#missas">Missas</a>
                     <a href="{{ route('root') }}#igrejas">Igrejas</a>
+                    <a href="{{ route('root') }}#missas-publicadas">Missas publicadas</a>
                     <a href="{{ route('login') }}" class="site-nav__login">Entrar</a>
                 </nav>
             </div>
@@ -45,7 +44,7 @@
                             </p>
 
                             <div class="hero__actions">
-                                <x-public.button href="#destaque">Ver próxima missa</x-public.button>
+                                <x-public.button href="#igrejas">Encontrar minha igreja</x-public.button>
                                 <x-public.button :href="route('login')" variant="secondary">Entrar</x-public.button>
                             </div>
                         </div>
@@ -61,75 +60,70 @@
             </div>
         </section>
 
-        <section id="missas" class="section">
+        <section id="igrejas" class="section">
             <div class="container">
                 <div class="section__header">
-                    <span class="eyebrow">Buscar missas</span>
-                    <h2 class="section__title">Escolha a missa que você quer acompanhar</h2>
+                    <span class="eyebrow">Encontre sua igreja</span>
+                    <h2 class="section__title">Abra a página da sua comunidade</h2>
                     <p class="section__lead">
-                        Filtre por data, igreja, tempo litúrgico ou tipo de celebração.
+                        Busque pelo nome da igreja ou pela cidade para ver as missas publicadas.
                     </p>
                 </div>
 
-                <form method="GET" action="{{ route('root') }}" class="filter-card">
-                    <div class="filters-grid">
-                        <div class="field">
-                            <label for="data">Data</label>
-                            <input id="data" name="data" type="date" value="{{ $filtros['data'] }}">
-                        </div>
+                <div class="church-finder">
+                    <div class="church-finder__bar">
+                        <label class="field church-finder__field" for="busca_igreja">
+                            <span>Cidade ou igreja</span>
+                            <input id="busca_igreja" type="search" placeholder="Ex.: Corumbá, Catedral, Centro" data-church-search>
+                        </label>
 
-                        <div class="field">
-                            <label for="igreja">Igreja</label>
-                            <select id="igreja" name="igreja">
-                                <option value="">Todas as igrejas</option>
-                                @foreach ($igrejas as $igreja)
-                                    <option value="{{ $igreja->id }}" @selected($filtros['igreja'] === (string) $igreja->id)>
-                                        {{ $igreja->nome }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="field">
-                            <label for="tempo_liturgico">Tempo litúrgico</label>
-                            <select id="tempo_liturgico" name="tempo_liturgico">
-                                <option value="">Todos os tempos</option>
-                                @foreach ($temposLiturgicos as $tempo)
-                                    <option value="{{ $tempo->id }}" @selected($filtros['tempo_liturgico'] === (string) $tempo->id)>
-                                        {{ $tempo->nome }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="field">
-                            <label for="tipo">Tipo de celebração</label>
-                            <select id="tipo" name="tipo">
-                                <option value="">Todos os tipos</option>
-                                @foreach ($tiposCelebracao as $tipo)
-                                    <option value="{{ $tipo }}" @selected($filtros['tipo'] === $tipo)>
-                                        {{ $tipo }}
-                                    </option>
-                                @endforeach
-                            </select>
+                        <div class="city-badges" aria-label="Cidades com igrejas cadastradas">
+                            <button type="button" class="city-badge is-active" data-city-filter="">Todas</button>
+                            @foreach ($igrejasDestaque->pluck('cidade')->filter()->unique()->values() as $cidade)
+                                <button type="button" class="city-badge" data-city-filter="{{ $cidade }}">{{ $cidade }}</button>
+                            @endforeach
                         </div>
                     </div>
 
-                    <div class="filter-actions">
-                        <x-public.button type="submit">Aplicar filtros</x-public.button>
-                        <x-public.button :href="route('root')" variant="ghost">Limpar consulta</x-public.button>
+                    <div class="church-grid church-grid--visual" data-church-list>
+                        @foreach ($igrejasDestaque as $igreja)
+                            @php($temMissaPublicada = $igreja['proxima_missa'] !== 'Sem missa publicada no momento')
+                            <a
+                                href="{{ $igreja['slug'] ? route('igrejas.public.show', ['slug' => $igreja['slug']]) : route('login') }}"
+                                class="church-tile"
+                                data-church-card
+                                data-search="{{ \Illuminate\Support\Str::lower(\Illuminate\Support\Str::ascii(implode(' ', [$igreja['nome'], $igreja['cidade'], $igreja['estado'], $igreja['bairro'], $igreja['endereco']]))) }}"
+                                data-city="{{ \Illuminate\Support\Str::lower(\Illuminate\Support\Str::ascii((string) $igreja['cidade'])) }}"
+                            >
+                                <span class="church-tile__image">
+                                    <img src="{{ $igreja['imagem_url'] }}" alt="Imagem da igreja {{ $igreja['nome'] }}" loading="lazy">
+                                    <span class="church-tile__image-overlay"></span>
+                                </span>
+                                <span class="church-tile__content">
+                                    <span class="church-tile__city">{{ $igreja['localidade'] !== '' ? $igreja['localidade'] : 'Localidade em configuração' }}</span>
+                                    <span class="church-tile__name">{{ $igreja['nome'] }}</span>
+                                    <span class="church-tile__status {{ $temMissaPublicada ? 'church-tile__status--active' : 'church-tile__status--empty' }}">
+                                        <span aria-hidden="true">{{ $temMissaPublicada ? '●' : '●' }}</span>
+                                        {{ $temMissaPublicada ? 'Missa publicada' : 'Sem missa hoje' }}
+                                    </span>
+                                    <span class="church-tile__button">{{ $temMissaPublicada ? 'Abrir celebração' : 'Ver missas' }}</span>
+                                </span>
+                            </a>
+                        @endforeach
                     </div>
-                </form>
+
+                    <p class="church-finder__empty" data-church-empty hidden>Nenhuma igreja encontrada para essa busca.</p>
+                </div>
             </div>
         </section>
 
-        <section id="destaque" class="section">
+        <section id="missas-publicadas" class="section">
             <div class="container">
                 <div class="section__header">
-                    <span class="eyebrow">Próxima missa</span>
-                    <h2 class="section__title">A celebração principal para abrir agora</h2>
+                    <span class="eyebrow">Missas publicadas</span>
+                    <h2 class="section__title">Celebrações acontecendo ou próximas</h2>
                     <p class="section__lead">
-                        Aqui aparece primeiro a opção mais importante do momento.
+                        Veja as celebrações disponíveis sem preferência entre comunidades.
                     </p>
                 </div>
 
@@ -155,8 +149,8 @@
                         </div>
 
                         <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;">
-                            <span style="color:#d2aa66;font-size:1rem;font-weight:700;">Abrir missa pública agora</span>
-                            <x-public.button :href="$missaEmDestaque['url']">Ver Missa</x-public.button>
+                            <span style="color:#d2aa66;font-size:1rem;font-weight:700;">Abrir celebração publicada</span>
+                            <x-public.button :href="$missaEmDestaque['url']">Abrir missa</x-public.button>
                         </div>
                     </article>
                 @else
@@ -173,10 +167,10 @@
         <section class="section">
             <div class="container">
                 <div class="section__header">
-                    <span class="eyebrow">Outras missas</span>
-                    <h2 class="section__title">Mais opções para você consultar</h2>
+                    <span class="eyebrow">Mais celebrações</span>
+                    <h2 class="section__title">Outras missas publicadas</h2>
                     <p class="section__lead">
-                        Se a missa em destaque não for a que você procura, veja as outras celebrações abaixo.
+                        Todas seguem a mesma regra de publicação das igrejas cadastradas.
                     </p>
                 </div>
 
@@ -191,34 +185,6 @@
                             </p>
                         </article>
                     @endforelse
-                </div>
-            </div>
-        </section>
-
-        <section id="igrejas" class="section">
-            <div class="container">
-                <div class="section__header">
-                    <span class="eyebrow">Igrejas</span>
-                    <h2 class="section__title">Páginas públicas das comunidades</h2>
-                    <p class="section__lead">
-                        Abra a página da sua igreja para ver as celebrações publicadas.
-                    </p>
-                </div>
-
-                <div class="church-grid">
-                    @foreach ($igrejasDestaque as $igreja)
-                        <article class="church-card">
-                            <h3 class="church-card__title">{{ $igreja['nome'] }}</h3>
-                            <p class="church-card__meta">{{ $igreja['localidade'] !== '' ? $igreja['localidade'] : 'Localidade em configuração' }}</p>
-                            <p class="church-card__meta"><strong style="color:#f5efe6;">Próxima celebração:</strong> {{ $igreja['proxima_missa'] }}</p>
-                            <p class="church-card__meta">{{ $igreja['proxima_data'] }}</p>
-                            <div style="margin-top:1rem;">
-                                <x-public.button :href="$igreja['slug'] ? route('igrejas.public.show', ['slug' => $igreja['slug']]) : route('login')" variant="secondary" style="width:100%;">
-                                    Ver igreja
-                                </x-public.button>
-                            </div>
-                        </article>
-                    @endforeach
                 </div>
             </div>
         </section>
@@ -238,9 +204,8 @@
                 <h3 class="site-footer__title">Navegação</h3>
                 <div class="site-footer__links">
                     <a href="#inicio">Início</a>
-                    <a href="#destaque">Próxima missa</a>
-                    <a href="#missas">Missas</a>
                     <a href="#igrejas">Igrejas</a>
+                    <a href="#missas-publicadas">Missas publicadas</a>
                 </div>
             </div>
 
@@ -258,4 +223,253 @@
             <p>&copy; {{ date('Y') }} Voz &amp; Cifra. Um acesso simples para consultar missas e páginas públicas das comunidades.</p>
         </div>
     </footer>
+
+    <style>
+            .church-finder {
+                display: grid;
+                gap: 1rem;
+            }
+
+            .church-finder__bar {
+                display: grid;
+                gap: 1rem;
+                align-items: end;
+                border: 1px solid var(--line);
+                border-radius: var(--radius-lg);
+                background: var(--panel);
+                box-shadow: var(--shadow);
+                padding: 1rem;
+            }
+
+            .church-finder__field span {
+                display: block;
+                margin-bottom: 0.5rem;
+                color: var(--gold-soft);
+                font-size: 0.95rem;
+                font-weight: 700;
+            }
+
+            .city-badges {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.55rem;
+            }
+
+            .city-badge {
+                min-height: 2.75rem;
+                border: 1px solid rgba(210, 170, 102, 0.22);
+                border-radius: 999px;
+                background: rgba(255, 255, 255, 0.04);
+                color: var(--muted);
+                cursor: pointer;
+                font: inherit;
+                font-size: 0.92rem;
+                font-weight: 800;
+                padding: 0.55rem 0.9rem;
+            }
+
+            .city-badge.is-active,
+            .city-badge:hover,
+            .city-badge:focus-visible {
+                background: rgba(201, 161, 95, 0.2);
+                color: var(--gold-soft);
+                outline: none;
+            }
+
+            .church-grid--visual {
+                align-items: stretch;
+            }
+
+            .church-tile {
+                display: grid;
+                overflow: hidden;
+                border: 1px solid var(--line);
+                border-radius: var(--radius-lg);
+                background: var(--panel);
+                box-shadow: var(--shadow);
+                min-height: 100%;
+                grid-template-rows: auto 1fr;
+                transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+            }
+
+            .church-tile:hover,
+            .church-tile:focus-visible {
+                transform: translateY(-2px);
+                border-color: rgba(244, 221, 180, 0.5);
+                box-shadow: 0 28px 72px rgba(0, 0, 0, 0.46);
+                outline: none;
+            }
+
+            .church-tile:hover .church-tile__button,
+            .church-tile:focus-visible .church-tile__button {
+                background: rgba(244, 221, 180, 0.24);
+                border-color: rgba(244, 221, 180, 0.44);
+                color: var(--text);
+            }
+
+            .church-tile[hidden] {
+                display: none;
+            }
+
+            .church-tile__image {
+                position: relative;
+                display: block;
+                height: 11.5rem;
+                background: rgba(255, 255, 255, 0.05);
+                overflow: hidden;
+            }
+
+            .church-tile__image img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                transition: transform 0.26s ease;
+            }
+
+            .church-tile:hover .church-tile__image img,
+            .church-tile:focus-visible .church-tile__image img {
+                transform: scale(1.035);
+            }
+
+            .church-tile__image-overlay {
+                position: absolute;
+                inset: 0;
+                background:
+                    linear-gradient(180deg, rgba(8, 6, 6, 0.08), rgba(8, 6, 6, 0.58)),
+                    linear-gradient(90deg, rgba(8, 6, 6, 0.28), rgba(8, 6, 6, 0.02));
+                pointer-events: none;
+            }
+
+            .church-tile__content {
+                display: grid;
+                gap: 0.75rem;
+                align-content: start;
+                padding: 1rem;
+            }
+
+            .church-tile__city {
+                color: var(--gold-soft);
+                font-size: 0.78rem;
+                font-weight: 800;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+            }
+
+            .church-tile__name {
+                color: var(--text);
+                font-family: var(--font-display);
+                font-size: clamp(1.45rem, 2.2vw, 1.8rem);
+                font-weight: 800;
+                line-height: 1.18;
+            }
+
+            .church-tile__status {
+                display: inline-flex;
+                width: fit-content;
+                align-items: center;
+                gap: 0.45rem;
+                border-radius: 999px;
+                padding: 0.55rem 0.75rem;
+                font-size: 0.9rem;
+                font-weight: 900;
+                line-height: 1;
+            }
+
+            .church-tile__status--active {
+                background: rgba(95, 127, 87, 0.2);
+                border: 1px solid rgba(143, 190, 129, 0.28);
+                color: #dff4d8;
+            }
+
+            .church-tile__status--empty {
+                background: rgba(166, 123, 67, 0.2);
+                border: 1px solid rgba(232, 188, 121, 0.28);
+                color: #ffe2ad;
+            }
+
+            .church-tile__button {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 3.05rem;
+                width: 100%;
+                border-radius: 999px;
+                border: 1px solid rgba(210, 170, 102, 0.28);
+                background: rgba(201, 161, 95, 0.14);
+                color: var(--gold-soft);
+                font-size: 0.98rem;
+                font-weight: 900;
+                margin-top: 0.25rem;
+                text-align: center;
+                transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+            }
+
+            .church-finder__empty {
+                margin: 0;
+                border: 1px dashed var(--line);
+                border-radius: var(--radius-md);
+                color: var(--muted);
+                padding: 1rem;
+            }
+
+            @media (min-width: 768px) {
+                .church-finder__bar {
+                    grid-template-columns: minmax(18rem, 0.8fr) minmax(0, 1.2fr);
+                    padding: 1.2rem;
+                }
+
+                .church-tile__image {
+                    height: 12.25rem;
+                }
+            }
+    </style>
+
+    <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const input = document.querySelector('[data-church-search]');
+                const cards = Array.from(document.querySelectorAll('[data-church-card]'));
+                const empty = document.querySelector('[data-church-empty]');
+                const cityButtons = Array.from(document.querySelectorAll('[data-city-filter]'));
+                let activeCity = '';
+
+                const normalize = (value) => value
+                    .toString()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .toLowerCase()
+                    .trim();
+
+                const applyFilter = () => {
+                    const term = normalize(input ? input.value : '');
+                    let visibleCount = 0;
+
+                    cards.forEach((card) => {
+                        const matchesText = term === '' || card.dataset.search.includes(term);
+                        const matchesCity = activeCity === '' || card.dataset.city === activeCity;
+                        const visible = matchesText && matchesCity;
+
+                        card.hidden = !visible;
+                        if (visible) {
+                            visibleCount++;
+                        }
+                    });
+
+                    if (empty) {
+                        empty.hidden = visibleCount > 0;
+                    }
+                };
+
+                if (input) {
+                    input.addEventListener('input', applyFilter);
+                }
+
+                cityButtons.forEach((button) => {
+                    button.addEventListener('click', () => {
+                        activeCity = normalize(button.dataset.cityFilter || '');
+                        cityButtons.forEach((item) => item.classList.toggle('is-active', item === button));
+                        applyFilter();
+                    });
+                });
+            });
+    </script>
 </x-publico.layouts.app>

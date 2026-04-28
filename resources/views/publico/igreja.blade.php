@@ -68,31 +68,61 @@
         }
 
         .section {
-            margin-top: 14px;
-            border-radius: 26px;
+            margin-top: 10px;
+            border-radius: 22px;
             border: 1px solid var(--line);
             background: var(--panel);
             box-shadow: var(--shadow);
-            padding: 18px 16px;
+            padding: 14px;
             backdrop-filter: blur(12px);
         }
 
         .hero {
-            padding-top: 20px;
+            padding: 16px;
+        }
+
+        .home-floating {
+            position: fixed;
+            left: 14px;
+            bottom: 14px;
+            z-index: 60;
+        }
+
+        .home-floating__link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 54px;
+            border-radius: 999px;
+            border: 1px solid rgba(227, 190, 132, 0.22);
+            background: rgba(13, 8, 8, 0.96);
+            color: var(--accent);
+            box-shadow: var(--shadow);
+            font-size: 13px;
+            font-weight: 900;
+            padding: 0 16px;
+            text-decoration: none;
+        }
+
+        .home-floating__link:hover,
+        .home-floating__link:focus-visible {
+            background: rgba(227, 190, 132, 0.12);
+            outline: none;
         }
 
         .brand {
             display: flex;
-            align-items: center;
-            gap: 12px;
+            align-items: flex-start;
+            gap: 18px;
             text-decoration: none;
         }
 
         .brand img {
-            width: 48px;
-            height: 48px;
-            object-fit: contain;
+            width: 138px;
+            height: 138px;
+            object-fit: cover;
             flex-shrink: 0;
+            border-radius: 26px;
         }
 
         .brand-kicker,
@@ -105,7 +135,6 @@
             color: var(--accent);
         }
 
-        .brand-name,
         .section-title,
         .card-title,
         .celebration-title {
@@ -116,37 +145,17 @@
             color: var(--text);
         }
 
-        .brand-name {
-            margin-top: 4px;
-            font-size: 18px;
-        }
-
-        .hero-title {
-            margin: 20px 0 0;
-            font-family: Georgia, "Times New Roman", serif;
-            font-size: clamp(40px, 10vw, 64px);
-            line-height: 0.98;
-            letter-spacing: -0.04em;
-        }
-
         .hero-church {
-            margin: 12px 0 0;
-            font-size: clamp(calc(23px * var(--public-font-scale)), calc(5vw * var(--public-font-scale)), calc(34px * var(--public-font-scale)));
+            margin: 4px 0 0;
+            font-size: clamp(calc(26px * var(--public-font-scale)), calc(6.5vw * var(--public-font-scale)), calc(42px * var(--public-font-scale)));
             line-height: 1.15;
         }
 
         .hero-city {
-            margin: 10px 0 0;
-            color: var(--muted);
-            font-size: clamp(calc(17px * var(--public-font-scale)), calc(4vw * var(--public-font-scale)), calc(20px * var(--public-font-scale)));
-            font-weight: 700;
-        }
-
-        .hero-address {
-            margin: 6px 0 0;
+            margin: 8px 0 0;
             color: var(--muted);
             font-size: clamp(calc(15px * var(--public-font-scale)), calc(3.5vw * var(--public-font-scale)), calc(18px * var(--public-font-scale)));
-            line-height: 1.6;
+            font-weight: 700;
         }
 
         .cards,
@@ -178,7 +187,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 14px;
+            gap: 12px;
         }
 
         .card-main {
@@ -190,18 +199,18 @@
             align-items: center;
             justify-content: center;
             min-width: 84px;
-            padding: 10px 14px;
+            padding: 8px 12px;
             border-radius: 16px;
             background: rgba(227, 190, 132, 0.12);
             color: var(--accent);
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 900;
             letter-spacing: -0.03em;
         }
 
         .card-title {
-            margin-top: 12px;
-            font-size: clamp(calc(23px * var(--public-font-scale)), calc(5vw * var(--public-font-scale)), calc(30px * var(--public-font-scale)));
+            margin-top: 10px;
+            font-size: clamp(calc(22px * var(--public-font-scale)), calc(4.8vw * var(--public-font-scale)), calc(28px * var(--public-font-scale)));
             line-height: 1.1;
         }
 
@@ -223,32 +232,42 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-height: 50px;
+            min-height: 46px;
             border-radius: 16px;
             padding: 0 18px;
             border: 1px solid transparent;
             text-decoration: none;
             font-size: 15px;
             font-weight: 800;
+            font-family: inherit;
             cursor: pointer;
         }
 
-        .card-action,
+        .card-action {
+            background: linear-gradient(135deg, #2f6b4f, #4f8a63);
+            color: #fff8ef;
+            box-shadow: 0 12px 24px rgba(47, 107, 79, 0.26);
+        }
+
         .empty-action,
         .history-form button {
-            background: linear-gradient(135deg, #7b4b2a, #a06b35);
-            color: #fff8ef;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.20);
+            background: rgba(160, 107, 53, 0.18);
+            border-color: rgba(227, 190, 132, 0.34);
+            color: var(--accent);
         }
 
         .history-form a {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: var(--line);
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.08);
             color: var(--muted);
         }
 
         .empty-state {
             background: linear-gradient(180deg, rgba(44, 24, 22, 0.96), rgba(62, 33, 28, 0.96));
+        }
+
+        .empty-state--compact {
+            padding: 18px;
         }
 
         .empty-title {
@@ -259,8 +278,13 @@
             letter-spacing: -0.03em;
         }
 
+        .empty-title--small {
+            margin: 0;
+            font-size: clamp(calc(22px * var(--public-font-scale)), calc(5vw * var(--public-font-scale)), calc(30px * var(--public-font-scale)));
+        }
+
         .section-header {
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
         .section-title {
@@ -269,22 +293,9 @@
             line-height: 1.08;
         }
 
-        .section-accessibility {
-            padding: 14px 14px 12px;
-        }
-
-        .section-accessibility .section-header {
-            margin-bottom: 10px;
-        }
-
-        .section-accessibility .section-title {
-            margin-top: 4px;
-            font-size: clamp(calc(22px * var(--public-font-scale)), calc(4.8vw * var(--public-font-scale)), calc(28px * var(--public-font-scale)));
-        }
-
         .access-bar {
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 8px;
             padding: 8px;
         }
@@ -292,9 +303,9 @@
         .access-bar button {
             min-height: 36px;
             border-radius: 10px;
-            border: 1px solid var(--line);
-            background: rgba(255, 255, 255, 0.04);
-            color: var(--text);
+            border: 1px solid rgba(227, 190, 132, 0.22);
+            background: rgba(227, 190, 132, 0.08);
+            color: var(--accent);
             font: inherit;
             font-size: 12px;
             font-weight: 800;
@@ -325,6 +336,44 @@
             font-size: 14px;
             font-weight: 700;
             color: var(--muted);
+        }
+
+        .history-toggle {
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .history-toggle summary {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 54px;
+            padding: 0 18px;
+            cursor: pointer;
+            color: var(--accent);
+            font-weight: 900;
+            list-style: none;
+            background: rgba(13, 8, 8, 0.78);
+        }
+
+        .history-toggle summary:hover,
+        .history-toggle summary:focus-visible {
+            background: rgba(227, 190, 132, 0.08);
+            outline: none;
+        }
+
+        .history-toggle summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .history-toggle[open] summary {
+            border-bottom: 1px solid var(--line);
+        }
+
+        .history-content {
+            display: grid;
+            gap: 12px;
+            padding: 14px;
         }
 
         .history-top {
@@ -395,6 +444,49 @@
             font-weight: 800;
         }
 
+        .access-floating {
+            position: fixed;
+            right: 14px;
+            bottom: 14px;
+            z-index: 60;
+        }
+
+        .access-floating__button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 54px;
+            height: 54px;
+            border-radius: 999px;
+            border: 1px solid rgba(227, 190, 132, 0.22);
+            background: rgba(13, 8, 8, 0.96);
+            color: var(--accent);
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            font-size: 22px;
+        }
+
+        .access-floating__panel {
+            position: absolute;
+            right: 0;
+            bottom: 64px;
+            display: none;
+            width: min(280px, calc(100vw - 28px));
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: rgba(22, 12, 13, 0.98);
+            box-shadow: var(--shadow);
+            padding: 10px;
+        }
+
+        .access-floating[data-open="true"] .access-floating__panel {
+            display: block;
+        }
+
+        .access-floating .access-bar {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
         @media (max-width: 719px) {
             .card {
                 flex-direction: column;
@@ -412,8 +504,28 @@
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
 
-            .access-bar button:last-child {
-                grid-column: 1 / -1;
+            .access-floating .access-bar {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .home-floating__link {
+                width: 54px;
+                padding: 0;
+            }
+
+            .home-floating__text {
+                display: none;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .brand img {
+                width: 116px;
+                height: 116px;
+            }
+
+            .hero-church {
+                font-size: clamp(calc(23px * var(--public-font-scale)), calc(6vw * var(--public-font-scale)), calc(32px * var(--public-font-scale)));
             }
         }
 
@@ -423,11 +535,22 @@
             }
 
             .section {
-                padding: 22px;
+                padding: 18px;
             }
 
-            .section-accessibility {
-                padding: 16px;
+            .hero {
+                padding: 24px;
+            }
+
+            .brand {
+                align-items: center;
+                gap: 28px;
+            }
+
+            .brand img {
+                width: 180px;
+                height: 180px;
+                border-radius: 34px;
             }
 
             .cards,
@@ -460,25 +583,16 @@
                 <a href="{{ route('igrejas.public.show', ['slug' => $igreja->slug]) }}" class="brand">
                     <img src="{{ $igreja->imagemUrl() }}" alt="Logo {{ $igreja->nome }}">
                     <div>
-                        <p class="brand-kicker">Voz &amp; Cifra</p>
-                        <p class="brand-name">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Repertório para ensaio' : 'Missas de hoje' }}</p>
+                        <p class="brand-kicker">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Músicos' : 'Igreja' }}</p>
+                        <h1 class="hero-church">{{ $igreja->nome }}</h1>
+                        @php
+                            $cidadeEstadoLinha = trim(($igreja->cidade ?? '') . ' - ' . ($igreja->estado ?? ''), ' -');
+                        @endphp
+                        @if ($cidadeEstadoLinha !== '')
+                            <p class="hero-city">{{ $cidadeEstadoLinha }}</p>
+                        @endif
                     </div>
                 </a>
-
-                <h1 class="hero-title">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Músicos' : 'Missas de hoje' }}</h1>
-                <h2 class="hero-church">{{ $igreja->nome }}</h2>
-                @php
-                    $enderecoLinha = trim(collect([$igreja->endereco, $igreja->numero])->filter()->implode(', '));
-                    $bairroLinha = trim((string) ($igreja->bairro ?? ''));
-                    $localizacaoLinha = collect([$enderecoLinha, $bairroLinha])->filter()->implode(' • ');
-                    $cidadeEstadoLinha = trim(($igreja->cidade ?? '') . ' - ' . ($igreja->estado ?? ''), ' -');
-                @endphp
-                @if ($localizacaoLinha !== '')
-                    <p class="hero-city">{{ $localizacaoLinha }}</p>
-                @endif
-                @if ($cidadeEstadoLinha !== '')
-                    <p class="hero-address">{{ $cidadeEstadoLinha }}</p>
-                @endif
             </section>
 
             @if (($modoPublico ?? 'fieis') === 'fieis')
@@ -506,9 +620,9 @@
                             @endforeach
                         </div>
                     @else
-                        <div class="empty-state">
-                            <h3 class="empty-title">Ainda não há missas para hoje.</h3>
-                            <a href="#historico-publico" class="empty-action">Consultar histórico</a>
+                        <div class="empty-state empty-state--compact">
+                            <h3 class="empty-title empty-title--small">Nenhuma missa publicada hoje.</h3>
+                            <p class="empty-copy">Volte mais tarde ou consulte celebrações anteriores.</p>
                         </div>
                     @endif
                 </section>
@@ -539,70 +653,11 @@
                         </div>
                     @else
                         <div class="empty-state">
-                            <h3 class="empty-title">Ainda não há missas publicadas para ensaio.</h3>
-                            <p class="empty-copy">Quando a equipe publicar uma celebração para músicos, ela aparecerá aqui.</p>
-                            <p class="empty-copy">Esta página permanece em modo somente leitura.</p>
+                            <h3 class="empty-title">Sem repertório publicado.</h3>
                         </div>
                     @endif
                 </section>
             @endif
-
-            <section class="section section-accessibility">
-                <div class="section-header">
-                    <p class="section-kicker">Acessibilidade</p>
-                    <h2 class="section-title">Leitura rápida</h2>
-                </div>
-
-                <div class="access-bar">
-                    <button type="button" data-public-font="-1">A-</button>
-                    <button type="button" data-public-font-reset>A</button>
-                    <button type="button" data-public-font="1">A+</button>
-                    <button type="button" data-public-contrast-toggle aria-pressed="false">Contraste</button>
-                </div>
-            </section>
-
-            <section class="section" id="historico-publico">
-                <div class="section-header">
-                    <p class="section-kicker">Histórico</p>
-                    <h2 class="section-title">Histórico da comunidade</h2>
-                </div>
-
-                <form method="GET" action="{{ ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slug]) : route('igrejas.public.show', ['slug' => $igreja->slug]) }}" class="history-form">
-                    <div>
-                        <label for="historico">Buscar missas passadas</label>
-                        <input
-                            id="historico"
-                            name="historico"
-                            type="text"
-                            value="{{ $historicoBusca }}"
-                            placeholder="Ex.: domingo, 24/03, páscoa"
-                        >
-                    </div>
-                    @if (($celebracaoSelecionadaId ?? 0) > 0)
-                        <input type="hidden" name="celebracao" value="{{ $celebracaoSelecionadaId }}">
-                    @endif
-                    <button type="submit">Buscar</button>
-                    <a href="{{ ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slug]) : route('igrejas.public.show', ['slug' => $igreja->slug]) }}">Limpar</a>
-                </form>
-
-                @if ($historicoMissas->isNotEmpty())
-                    <div class="history-list">
-                        @foreach ($historicoMissas as $missaHistorica)
-                            <article class="history-item">
-                                <div class="history-top">
-                                    <h3 class="card-title">{{ $missaHistorica['titulo'] }}</h3>
-                                    <span class="history-date">{{ $missaHistorica['data'] }}</span>
-                                </div>
-                                <p class="history-meta">{{ $missaHistorica['dia_semana'] }} • {{ $missaHistorica['horario'] }}</p>
-                            </article>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="empty-state">
-                        <h3 class="empty-title">Nenhuma missa encontrada.</h3>
-                    </div>
-                @endif
-            </section>
 
             @if ($missaPublica)
                 @php($itensPublicos = collect($missaPublica->itens_publicos ?? []))
@@ -648,6 +703,73 @@
                     @endif
                 </section>
             @endif
+
+            <details class="section history-toggle" id="historico-publico" @if($historicoBusca !== '') open @endif>
+                <summary>Consultar histórico</summary>
+
+                <div class="history-content">
+                    <form method="GET" action="{{ ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slug]) : route('igrejas.public.show', ['slug' => $igreja->slug]) }}" class="history-form">
+                        <div>
+                            <label for="historico">Buscar missas passadas</label>
+                            <input
+                                id="historico"
+                                name="historico"
+                                type="text"
+                                value="{{ $historicoBusca }}"
+                                placeholder="Ex.: domingo, 24/03"
+                            >
+                        </div>
+                        @if (($celebracaoSelecionadaId ?? 0) > 0)
+                            <input type="hidden" name="celebracao" value="{{ $celebracaoSelecionadaId }}">
+                        @endif
+                        <button type="submit">Buscar</button>
+                        <a href="{{ ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slug]) : route('igrejas.public.show', ['slug' => $igreja->slug]) }}">Limpar</a>
+                    </form>
+
+                    @if ($historicoMissas->isNotEmpty())
+                        <div class="history-list">
+                            @foreach ($historicoMissas as $missaHistorica)
+                                <article class="history-item">
+                                    <div class="history-top">
+                                        <h3 class="card-title">{{ $missaHistorica['titulo'] }}</h3>
+                                        <span class="history-date">{{ $missaHistorica['data'] }}</span>
+                                    </div>
+                                    <p class="history-meta">{{ $missaHistorica['dia_semana'] }} • {{ $missaHistorica['horario'] }}</p>
+                                </article>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="empty-state">
+                            <h3 class="empty-title">Nenhuma missa encontrada.</h3>
+                        </div>
+                    @endif
+                </div>
+            </details>
+        </div>
+
+        <div class="home-floating">
+            <a href="{{ route('root') }}" class="home-floating__link" aria-label="Voltar para a página principal">
+                <span aria-hidden="true">←</span>
+                <span class="home-floating__text">&nbsp;Página principal</span>
+            </a>
+        </div>
+
+        <div class="access-floating" data-access-floating data-open="false">
+            <div class="access-floating__panel" id="access-panel">
+                <div class="access-bar">
+                    <button type="button" data-public-font="-1">A-</button>
+                    <button type="button" data-public-font-reset>A</button>
+                    <button type="button" data-public-font="1">A+</button>
+                </div>
+            </div>
+            <button
+                type="button"
+                class="access-floating__button"
+                data-access-toggle
+                aria-expanded="false"
+                aria-controls="access-panel"
+                aria-label="Abrir acessibilidade"
+            >&#9881;</button>
         </div>
     </main>
 
@@ -655,10 +777,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             const root = document.documentElement;
             const statusSync = document.querySelector('[data-public-status-sync]');
-            const contrastToggle = document.querySelector('[data-public-contrast-toggle]');
-            const body = document.body;
+            const accessFloating = document.querySelector('[data-access-floating]');
+            const accessToggle = document.querySelector('[data-access-toggle]');
             const fontKey = 'vozecifra-public-font-scale';
-            const contrastKey = 'vozecifra-public-contrast';
             let escalaFonte = Number(localStorage.getItem(fontKey) || '1.02');
 
             const aplicarEscalaFonte = () => {
@@ -668,19 +789,7 @@
                 localStorage.setItem(fontKey, escalaSegura.toFixed(2));
             };
 
-            const aplicarContraste = (modo) => {
-                const contrasteAtivo = modo === 'high';
-                body.dataset.contrast = contrasteAtivo ? 'high' : 'normal';
-
-                if (contrastToggle) {
-                    contrastToggle.setAttribute('aria-pressed', contrasteAtivo ? 'true' : 'false');
-                    contrastToggle.textContent = contrasteAtivo ? 'Normal' : 'Contraste';
-                }
-            };
-
             aplicarEscalaFonte();
-            localStorage.setItem(contrastKey, 'high');
-            aplicarContraste('high');
 
             document.querySelectorAll('[data-public-font]').forEach((botao) => {
                 botao.addEventListener('click', () => {
@@ -697,11 +806,11 @@
                 });
             }
 
-            if (contrastToggle) {
-                contrastToggle.addEventListener('click', () => {
-                    const novoModo = body.dataset.contrast === 'high' ? 'normal' : 'high';
-                    localStorage.setItem(contrastKey, novoModo);
-                    aplicarContraste(novoModo);
+            if (accessFloating && accessToggle) {
+                accessToggle.addEventListener('click', () => {
+                    const aberto = accessFloating.dataset.open === 'true';
+                    accessFloating.dataset.open = aberto ? 'false' : 'true';
+                    accessToggle.setAttribute('aria-expanded', aberto ? 'false' : 'true');
                 });
             }
 
