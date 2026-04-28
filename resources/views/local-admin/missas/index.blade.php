@@ -11,13 +11,25 @@
         </div>
 
         <a href="{{ route('local-admin.missas.create') }}" class="inline-flex items-center justify-center rounded-xl bg-[#6c4a21] px-4 py-3 font-semibold text-white transition hover:bg-[#5b3d1a]">
-            Criar nova missa
+            Cadastrar missa
         </a>
     </div>
+
+    @include('local-admin.partials.church-switcher')
 
     @if (session('success'))
         <div class="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800">
             {{ session('success') }}
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
+            <ul class="list-disc pl-5">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
         </div>
     @endif
 
@@ -26,7 +38,7 @@
             <h2 class="text-lg font-bold text-gray-900">Nenhuma missa cadastrada</h2>
             <p class="mt-2 text-sm text-gray-500">Comece criando a primeira missa da igreja para depois organizar o repert&oacute;rio.</p>
             <a href="{{ route('local-admin.missas.create') }}" class="mt-5 inline-flex items-center justify-center rounded-xl bg-[#6c4a21] px-4 py-3 font-semibold text-white transition hover:bg-[#5b3d1a]">
-                Criar primeira missa
+                Cadastrar primeira missa
             </a>
         </div>
     @else
@@ -54,7 +66,7 @@
                         </div>
 
                         <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:w-[380px]">
-                            <a href="{{ route('local-admin.missas.show', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
+                            <a href="{{ route('local-admin.missas.show', $missa) }}" class="inline-flex items-center justify-center rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800">
                                 Abrir missa
                             </a>
                             <a href="{{ route('local-admin.missas.apresentacao', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-semibold text-sky-800 transition hover:bg-sky-100">

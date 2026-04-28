@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\LocalAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Enums\PapelIgreja;
 use App\Models\Igreja;
 use App\Models\Missa;
 use App\Models\MissaMusica;
@@ -50,6 +51,7 @@ class MissaController extends Controller
         return view('local-admin.missas.index', [
             'igreja' => $this->adicionarDadosPublicos($igreja),
             'missas' => $missas,
+            'igrejasAdministradas' => $this->obterIgrejasAdministradas($this->obterUsuario(), $igreja),
         ]);
     }
 
@@ -61,6 +63,7 @@ class MissaController extends Controller
         return view('local-admin.missas.create', [
             'igreja' => $this->adicionarDadosPublicos($igreja),
             'missa' => new Missa(),
+            'igrejasAdministradas' => $this->obterIgrejasAdministradas($this->obterUsuario(), $igreja),
             'temposLiturgicos' => TempoLiturgico::where('ativo', true)->orderBy('nome')->get(),
             'padres' => Usuario::query()
                 ->where('eh_padre', true)
@@ -68,6 +71,7 @@ class MissaController extends Controller
                 ->orderBy('nome')
                 ->get(),
             'missasAnteriores' => Missa::query()
+                ->with(['tempoLiturgico', 'celebrante', 'missaMusicas.musica'])
                 ->where('igreja_id', $igreja->id)
                 ->orderByDesc('data_missa')
                 ->orderByDesc('hora_inicio')
@@ -296,6 +300,25 @@ class MissaController extends Controller
         return back()->with('success', $novoStatus
             ? 'Missa reativada com sucesso.'
             : 'Missa inativada com sucesso.');
+    }
+
+    public function concluirMontagem(Missa $missa): RedirectResponse
+    {
+        $this->garantirMissaDaIgreja($missa);
+
+        $totalItens = $missa->missaMusicas()->count();
+
+        if ($totalItens === 0) {
+            return redirect()
+                ->route('local-admin.missas.index')
+                ->withErrors([
+                    'missa' => 'Montagem nao concluida: adicione pelo menos uma musica ao repertorio de ' . $missa->titulo . '.',
+                ]);
+        }
+
+        return redirect()
+            ->route('local-admin.missas.index')
+            ->with('success', 'Montagem da missa "' . $missa->titulo . '" concluida com ' . $totalItens . ' item(ns) no repertorio.');
     }
 
     public function storeRepertorio(Request $request, Missa $missa): RedirectResponse
@@ -715,6 +738,19 @@ class MissaController extends Controller
         return $usuario;
     }
 
+    private function obterIgrejasAdministradas(Usuario $usuario, Igreja $igrejaAtiva): array
+    {
+        return $usuario->igrejasDisponiveisPorPapel(PapelIgreja::ADMIN_LOCAL)
+            ->map(function (Igreja $igreja) use ($igrejaAtiva): Igreja {
+                $igrejaComDados = clone $igreja;
+                $igrejaComDados->setAttribute('eh_ativa', (int) $igreja->id === (int) $igrejaAtiva->id);
+
+                return $igrejaComDados;
+            })
+            ->values()
+            ->all();
+    }
+
     private function obterIgreja(): Igreja
     {
         $igreja = $this->obterUsuario()->igrejaAtiva() ?? $this->obterUsuario()->igreja;
@@ -742,11 +778,17 @@ class MissaController extends Controller
     private function adicionarDadosPublicos(Igreja $igreja): Igreja
     {
         $linkPublico = route('igrejas.public.show', ['slug' => $igreja->slug]);
+        $linkPublicoMusicos = route('igrejas.public.musicos.show', ['slug' => $igreja->slugPublicoMusicos()]);
 
         $igreja->setAttribute('link_publico', $linkPublico);
+        $igreja->setAttribute('link_publico_musicos', $linkPublicoMusicos);
         $igreja->setAttribute(
             'qr_code_url',
             'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' . urlencode($linkPublico)
+        );
+        $igreja->setAttribute(
+            'qr_code_url_musicos',
+            'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' . urlencode($linkPublicoMusicos)
         );
 
         return $igreja;

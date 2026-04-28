@@ -9,6 +9,8 @@
         <p class="mt-1 text-sm text-gray-500">Cadastre a celebra&ccedil;&atilde;o da igreja e, em seguida, abra o repert&oacute;rio para adicionar as m&uacute;sicas.</p>
     </div>
 
+    @include('local-admin.partials.church-switcher')
+
     <form action="{{ route('local-admin.missas.store') }}" method="POST">
         @csrf
         @include('local-admin.missas._form', ['modoCriacao' => true])

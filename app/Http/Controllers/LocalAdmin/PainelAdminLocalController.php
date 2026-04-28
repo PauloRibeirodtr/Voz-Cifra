@@ -129,11 +129,17 @@ class PainelAdminLocalController extends Controller
     private function adicionarDadosPublicos(Igreja $igreja): Igreja
     {
         $linkPublico = route('igrejas.public.show', ['slug' => $igreja->slug]);
+        $linkPublicoMusicos = route('igrejas.public.musicos.show', ['slug' => $igreja->slugPublicoMusicos()]);
 
         $igreja->setAttribute('link_publico', $linkPublico);
+        $igreja->setAttribute('link_publico_musicos', $linkPublicoMusicos);
         $igreja->setAttribute(
             'qr_code_url',
             'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' . urlencode($linkPublico)
+        );
+        $igreja->setAttribute(
+            'qr_code_url_musicos',
+            'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' . urlencode($linkPublicoMusicos)
         );
 
         return $igreja;

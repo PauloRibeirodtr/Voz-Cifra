@@ -42,26 +42,46 @@
 
         <aside class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
             <h2 class="text-lg font-bold text-gray-900">Acesso publico</h2>
-            <p class="mt-2 text-sm text-gray-500">Este link e o QR fixo da igreja. O conteudo publico futuro sera atualizado nele.</p>
+            <p class="mt-2 text-sm text-gray-500">A igreja possui um link para fieis e outro para musicos, ambos fixos para compartilhar por QR Code.</p>
 
             <div class="mt-5 space-y-4">
                 <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                    <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Link publico</span>
+                    <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Link dos fieis</span>
                     <a href="{{ $igreja->link_publico }}" target="_blank" class="mt-2 block break-all text-sm font-semibold text-green-700 hover:underline">
                         {{ $igreja->link_publico }}
                     </a>
                 </div>
 
                 <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                    <span class="block text-xs font-black uppercase tracking-wider text-gray-400">QR fixo</span>
+                    <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Link dos musicos</span>
+                    <a href="{{ $igreja->link_publico_musicos }}" target="_blank" class="mt-2 block break-all text-sm font-semibold text-green-700 hover:underline">
+                        {{ $igreja->link_publico_musicos }}
+                    </a>
+                </div>
+
+                <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                    <span class="block text-xs font-black uppercase tracking-wider text-gray-400">QR dos fieis</span>
                     <a href="{{ $igreja->qr_code_url }}" target="_blank" class="mt-2 inline-flex items-center rounded-xl bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800">
-                        Abrir QR da igreja
+                        Abrir QR dos fieis
                     </a>
                     <div class="mt-4 rounded-2xl border border-gray-200 bg-white p-3">
                         <img src="{{ $igreja->qr_code_url }}" alt="QR da igreja {{ $igreja->nome }}" class="mx-auto h-auto w-full max-w-[220px] rounded-xl">
                     </div>
                     <div class="mt-3 rounded-xl border border-green-100 bg-green-50 px-3 py-3 text-sm text-green-800">
-                        Aponte a camera para o QR Code para acompanhar a missa e abrir a pagina publica da igreja.
+                        Aponte a camera para acompanhar a missa na pagina publica dos fieis.
+                    </div>
+                </div>
+
+                <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                    <span class="block text-xs font-black uppercase tracking-wider text-gray-400">QR dos musicos</span>
+                    <a href="{{ $igreja->qr_code_url_musicos }}" target="_blank" class="mt-2 inline-flex items-center rounded-xl bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800">
+                        Abrir QR dos musicos
+                    </a>
+                    <div class="mt-4 rounded-2xl border border-gray-200 bg-white p-3">
+                        <img src="{{ $igreja->qr_code_url_musicos }}" alt="QR dos musicos da igreja {{ $igreja->nome }}" class="mx-auto h-auto w-full max-w-[220px] rounded-xl">
+                    </div>
+                    <div class="mt-3 rounded-xl border border-green-100 bg-green-50 px-3 py-3 text-sm text-green-800">
+                        Este QR abre a versao com repertorio e cifras quando a missa estiver publicada para musicos.
                     </div>
                 </div>
             </div>

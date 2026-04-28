@@ -35,11 +35,12 @@
                             <option value="">Selecione uma missa da mesma igreja</option>
                             @foreach (($missasAnteriores ?? collect()) as $missaAnterior)
                                 <option value="{{ $missaAnterior->id }}" @selected((string) old('missa_origem_id') === (string) $missaAnterior->id)>
-                                    {{ $missaAnterior->titulo }} &bull; {{ optional($missaAnterior->data_missa)->format('d/m/Y') }}
+                                    {{ $missaAnterior->titulo }} &bull; {{ optional($missaAnterior->data_missa)->format('d/m/Y') }} &bull; {{ substr((string) $missaAnterior->hora_inicio, 0, 5) }} - {{ substr((string) $missaAnterior->hora_fim, 0, 5) }}
                                 </option>
                             @endforeach
                         </select>
-                        <p class="mt-2 text-xs text-gray-500">O sistema copia m&uacute;sicas, ordem, momento lit&uacute;rgico e vers&atilde;o musical. Depois voc&ecirc; pode ajustar tudo livremente.</p>
+                        <p class="mt-2 text-xs text-gray-500">Ao selecionar, o formulario tambem usa titulo, data, horarios, tempo liturgico, celebrante e observacoes como ponto de partida.</p>
+                        <div id="resumo_missa_origem" class="mt-3 hidden whitespace-pre-line rounded-xl border border-[#ead6b3] bg-white px-4 py-3 text-xs leading-relaxed text-[#5b3d1a]"></div>
                     </div>
                 </div>
             @endif
@@ -112,13 +113,13 @@
 
         <label class="mt-5 inline-flex items-start gap-3 text-sm font-medium text-gray-700">
             <input type="hidden" name="publica_para_fieis" value="0">
-            <input type="checkbox" name="publica_para_fieis" value="1" {{ old('publica_para_fieis', $missa->publica_para_fieis ?? false) ? 'checked' : '' }} class="mt-1 rounded border-gray-300 text-[#6c4a21] focus:ring-[#d6ad6c]">
+            <input type="checkbox" name="publica_para_fieis" value="1" {{ old('publica_para_fieis', $missa->exists ? (int) $missa->publica_para_fieis : 1) ? 'checked' : '' }} class="mt-1 rounded border-gray-300 text-[#6c4a21] focus:ring-[#d6ad6c]">
             <span>Publicar esta missa para os fi&eacute;is no link p&uacute;blico</span>
         </label>
 
         <label class="mt-4 inline-flex items-start gap-3 text-sm font-medium text-gray-700">
             <input type="hidden" name="publica_para_musicos" value="0">
-            <input type="checkbox" name="publica_para_musicos" value="1" {{ old('publica_para_musicos', $missa->publica_para_musicos ?? false) ? 'checked' : '' }} class="mt-1 rounded border-gray-300 text-[#6c4a21] focus:ring-[#d6ad6c]">
+            <input type="checkbox" name="publica_para_musicos" value="1" {{ old('publica_para_musicos', $missa->exists ? (int) $missa->publica_para_musicos : 1) ? 'checked' : '' }} class="mt-1 rounded border-gray-300 text-[#6c4a21] focus:ring-[#d6ad6c]">
             <span>Publicar esta missa para os m&uacute;sicos com cifras e estudo</span>
         </label>
 
@@ -136,15 +137,91 @@
 
 @if (!empty($modoCriacao))
     @push('scripts')
+        @php
+            $missasAnterioresParaReaproveitar = collect($missasAnteriores ?? [])->map(function ($missaAnterior) {
+                return [
+                    'id' => (string) $missaAnterior->id,
+                    'titulo' => (string) $missaAnterior->titulo,
+                    'data_missa' => optional($missaAnterior->data_missa)->format('Y-m-d'),
+                    'tempo_liturgico_id' => $missaAnterior->tempo_liturgico_id ? (string) $missaAnterior->tempo_liturgico_id : '',
+                    'padre_id' => $missaAnterior->celebrante_usuario_id ? (string) $missaAnterior->celebrante_usuario_id : '',
+                    'hora_inicio' => $missaAnterior->hora_inicio ? substr((string) $missaAnterior->hora_inicio, 0, 5) : '',
+                    'hora_fim' => $missaAnterior->hora_fim ? substr((string) $missaAnterior->hora_fim, 0, 5) : '',
+                    'observacoes' => (string) ($missaAnterior->observacoes ?? ''),
+                    'tempo_liturgico_nome' => (string) ($missaAnterior->tempoLiturgico?->nome ?? 'Sem tempo liturgico'),
+                    'celebrante_nome' => (string) ($missaAnterior->celebrante?->nome ?? 'Sem celebrante'),
+                    'musicas' => $missaAnterior->missaMusicas
+                        ->sortBy('ordem')
+                        ->map(fn ($item) => (string) ($item->musica?->titulo ?? 'Musica sem titulo'))
+                        ->values()
+                        ->all(),
+                ];
+            })->values();
+        @endphp
         <script>
             document.addEventListener('DOMContentLoaded', () => {
+                const missasAnteriores = @json($missasAnterioresParaReaproveitar);
+                const preencherAoCarregar = @json(!session()->hasOldInput());
                 const radios = document.querySelectorAll('[name="reaproveitar_repertorio"]');
                 const bloco = document.getElementById('bloco_reaproveitar_repertorio');
                 const select = document.querySelector('[name="missa_origem_id"]');
+                const resumo = document.getElementById('resumo_missa_origem');
+                const campos = {
+                    titulo: document.querySelector('[name="titulo"]'),
+                    dataMissa: document.querySelector('[name="data_missa"]'),
+                    tempoLiturgico: document.querySelector('[name="tempo_liturgico_id"]'),
+                    horaInicio: document.querySelector('[name="hora_inicio"]'),
+                    horaFim: document.querySelector('[name="hora_fim"]'),
+                    padre: document.querySelector('[name="padre_id"]'),
+                    observacoes: document.querySelector('[name="observacoes"]'),
+                };
 
                 if (!bloco || !select || radios.length === 0) {
                     return;
                 }
+
+                const preencherDadosDaMissa = () => {
+                    const missa = missasAnteriores.find((item) => item.id === select.value);
+
+                    if (!missa) {
+                        return;
+                    }
+
+                    if (campos.titulo) campos.titulo.value = missa.titulo || '';
+                    if (campos.dataMissa) campos.dataMissa.value = missa.data_missa || '';
+                    if (campos.tempoLiturgico) campos.tempoLiturgico.value = missa.tempo_liturgico_id || '';
+                    if (campos.horaInicio) campos.horaInicio.value = missa.hora_inicio || '';
+                    if (campos.horaFim) campos.horaFim.value = missa.hora_fim || '';
+                    if (campos.padre) campos.padre.value = missa.padre_id || '';
+                    if (campos.observacoes) campos.observacoes.value = missa.observacoes || '';
+                };
+
+                const atualizarResumo = () => {
+                    if (!resumo) {
+                        return;
+                    }
+
+                    const missa = missasAnteriores.find((item) => item.id === select.value);
+
+                    if (!missa) {
+                        resumo.classList.add('hidden');
+                        resumo.textContent = '';
+                        return;
+                    }
+
+                    const musicas = missa.musicas.length > 0
+                        ? missa.musicas.slice(0, 6).join(', ') + (missa.musicas.length > 6 ? '...' : '')
+                        : 'Nenhuma musica no repertorio anterior.';
+
+                    resumo.textContent = [
+                        `Missa: ${missa.titulo}`,
+                        `Data e horario: ${missa.data_missa || 'Sem data'} - ${missa.hora_inicio || '--:--'} as ${missa.hora_fim || '--:--'}`,
+                        `Tempo liturgico: ${missa.tempo_liturgico_nome}`,
+                        `Celebrante: ${missa.celebrante_nome}`,
+                        `Musicas copiadas: ${musicas}`,
+                    ].join('\n');
+                    resumo.classList.remove('hidden');
+                };
 
                 const atualizarBloco = () => {
                     const desejaReaproveitar = document.querySelector('[name="reaproveitar_repertorio"]:checked')?.value === '1';
@@ -152,14 +229,23 @@
 
                     if (!desejaReaproveitar) {
                         select.value = '';
+                        atualizarResumo();
                     }
                 };
+
+                select.addEventListener('change', preencherDadosDaMissa);
+                select.addEventListener('change', atualizarResumo);
 
                 radios.forEach((radio) => {
                     radio.addEventListener('change', atualizarBloco);
                 });
 
                 atualizarBloco();
+
+                if (select.value && preencherAoCarregar) {
+                    preencherDadosDaMissa();
+                }
+                atualizarResumo();
             });
         </script>
     @endpush

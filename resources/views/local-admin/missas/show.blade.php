@@ -25,7 +25,7 @@
         </div>
 
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:min-w-[23rem]">
-            <a href="{{ route('local-admin.missas.edit', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 font-semibold text-gray-700 transition hover:bg-gray-50">
+            <a href="{{ route('local-admin.missas.edit', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-[#ead6b3] bg-[#fff8ed] px-4 py-3 font-semibold text-[#6c4a21] transition hover:bg-[#f8ecd7]">
                 Editar missa
             </a>
             <a href="{{ route('local-admin.missas.apresentacao', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 font-semibold text-sky-800 transition hover:bg-sky-100">
@@ -70,9 +70,12 @@
                         <h2 class="text-lg font-bold text-gray-900">Adicionar m&uacute;sica ao repert&oacute;rio</h2>
                         <p class="mt-1 text-sm text-gray-500">Busque por nome da m&uacute;sica, artista ou trecho da letra para localizar o canto com mais rapidez.</p>
                     </div>
-                    <a href="#missa-resumo" class="inline-flex items-center justify-center rounded-xl border border-[#d6ad6c]/40 bg-[#fff8ed] px-4 py-3 text-sm font-semibold text-[#6c4a21] transition hover:bg-[#f8ecd7]">
-                        Concluir montagem da missa
-                    </a>
+                    <form action="{{ route('local-admin.missas.concluir-montagem', $missa) }}" method="POST" class="w-full sm:w-auto">
+                        @csrf
+                        <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 sm:w-auto">
+                            Concluir montagem
+                        </button>
+                    </form>
                 </div>
 
                 <form action="{{ route('local-admin.repertorio.store', $missa) }}" method="POST" class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -171,7 +174,7 @@
                                         </p>
                                     </div>
 
-                                    <div class="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:w-[360px]">
+                                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:w-[360px]">
                                         <form action="{{ route('local-admin.repertorio.up', [$missa, $item]) }}" method="POST">
                                             @csrf
                                             <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-100">
@@ -184,7 +187,7 @@
                                                 Descer
                                             </button>
                                         </form>
-                                        <a href="{{ route('local-admin.repertorio.cifra', [$missa, $item]) }}" class="inline-flex items-center justify-center rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800 transition hover:bg-amber-100">
+                                        <a href="{{ route('local-admin.repertorio.cifra', [$missa, $item]) }}" class="inline-flex items-center justify-center rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-800 transition hover:bg-sky-100">
                                             Visualizar cifra
                                         </a>
                                         <form action="{{ route('local-admin.repertorio.destroy', [$missa, $item]) }}" method="POST" onsubmit="return confirm('Deseja remover esta m&uacute;sica do repert&oacute;rio da missa?');">
@@ -269,9 +272,21 @@
             <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
                 <h2 class="text-lg font-bold text-gray-900">Links da igreja</h2>
                 <p class="mt-2 text-sm text-gray-500">Use a p&aacute;gina p&uacute;blica da igreja como refer&ecirc;ncia para o acesso dos fi&eacute;is e dos m&uacute;sicos.</p>
-                <a href="{{ $igreja->link_publico }}" target="_blank" class="mt-4 block break-all text-sm font-semibold text-[#8c6933] hover:underline">
-                    {{ $igreja->link_publico }}
-                </a>
+                <div class="mt-4 space-y-4">
+                    <div>
+                        <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Link dos fi&eacute;is</span>
+                        <a href="{{ $igreja->link_publico }}" target="_blank" class="mt-1 block break-all text-sm font-semibold text-[#8c6933] hover:underline">
+                            {{ $igreja->link_publico }}
+                        </a>
+                    </div>
+
+                    <div>
+                        <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Link dos m&uacute;sicos</span>
+                        <a href="{{ $igreja->link_publico_musicos }}" target="_blank" class="mt-1 block break-all text-sm font-semibold text-sky-800 hover:underline">
+                            {{ $igreja->link_publico_musicos }}
+                        </a>
+                    </div>
+                </div>
             </section>
         </aside>
     </div>
