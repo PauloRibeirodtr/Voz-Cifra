@@ -743,7 +743,7 @@
                     @else
                         <div class="empty-state empty-state--compact">
                             <h3 class="empty-title empty-title--small">Ainda não há missas para hoje.</h3>
-                            <p class="empty-copy">Volte mais tarde ou consulte celebrações anteriores.</p>
+                            <p class="empty-copy">{{ $proximasMissas->isNotEmpty() ? 'A proxima missa publicada ja pode ser aberta abaixo.' : 'Volte mais tarde ou consulte celebrações anteriores.' }}</p>
                         </div>
                     @endif
                 </section>
@@ -763,6 +763,12 @@
                                         <h3 class="card-title">{{ $proximaMissaItem['titulo'] }}</h3>
                                         <p class="card-meta">{{ $proximaMissaItem['dia_semana'] }} • {{ $proximaMissaItem['data'] }}</p>
                                     </div>
+                                    <a
+                                        href="{{ route('igrejas.public.show', ['slug' => $igreja->slug, 'celebracao' => $proximaMissaItem['id']]) }}#celebracao-publica"
+                                        class="card-action"
+                                    >
+                                        Abrir celebração
+                                    </a>
                                 </article>
                             @endforeach
                         </div>

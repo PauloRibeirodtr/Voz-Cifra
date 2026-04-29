@@ -111,6 +111,9 @@ class HomeController extends Controller
                     'endereco' => trim(($igreja->endereco ?? '') . ($igreja->numero ? ', ' . $igreja->numero : ''), ' ,'),
                     'proxima_missa' => $proximaMissa['titulo'] ?? 'Sem missa publicada no momento',
                     'proxima_data' => $proximaMissa['data_formatada'] ?? 'Aguardando nova celebracao',
+                    'proxima_horario' => $proximaMissa['horario_curto'] ?? null,
+                    'proxima_status' => $proximaMissa['status']['label'] ?? null,
+                    'proxima_url' => $proximaMissa['url'] ?? ($igreja->slug ? route('igrejas.public.show', ['slug' => $igreja->slug]) : route('login')),
                 ];
             })
             ->values();
@@ -214,11 +217,14 @@ class HomeController extends Controller
             'data_formatada' => $inicio->isoFormat('DD [de] MMMM [de] YYYY'),
             'data_curta' => $inicio->format('d/m/Y'),
             'horario' => $inicio->format('H:i') . ' - ' . $fim->format('H:i'),
+            'horario_curto' => $inicio->format('H:i'),
             'inicio_iso' => $inicio->toIso8601String(),
             'status' => $status,
             'tipo' => $missa->titulo,
             'resumo' => $this->montarResumoMissa($status['slug'], $inicio, $missa),
-            'url' => $missa->igreja?->slug ? route('igrejas.public.show', ['slug' => $missa->igreja->slug]) : route('login'),
+            'url' => $missa->igreja?->slug
+                ? route('igrejas.public.show', ['slug' => $missa->igreja->slug, 'celebracao' => $missa->id]) . '#celebracao-publica'
+                : route('login'),
         ];
     }
 
@@ -240,19 +246,19 @@ class HomeController extends Controller
             return $this->statusBadge('Acontecendo agora', 'acontecendo_agora');
         }
 
-        if ($inicio->isFuture() && $missa->ativo && $missa->missa_musicas_count > 0) {
+        if ($inicio->greaterThan($agora) && $missa->ativo && $missa->missa_musicas_count > 0) {
             return $this->statusBadge('Preparada', 'preparada');
         }
 
-        if ($inicio->isFuture() && $missa->ativo) {
+        if ($inicio->greaterThan($agora) && $missa->ativo) {
             return $this->statusBadge('Publicada', 'publicada');
         }
 
-        if ($inicio->isFuture() && !$missa->ativo) {
+        if ($inicio->greaterThan($agora) && !$missa->ativo) {
             return $this->statusBadge('Rascunho', 'rascunho');
         }
 
-        if ($fim->isPast() && $fim->isSameDay($agora)) {
+        if ($fim->lessThan($agora) && $fim->isSameDay($agora)) {
             return $this->statusBadge('Encerrada', 'encerrada');
         }
 

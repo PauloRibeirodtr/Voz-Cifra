@@ -88,7 +88,7 @@
                         @foreach ($igrejasDestaque as $igreja)
                             @php($temMissaPublicada = $igreja['proxima_missa'] !== 'Sem missa publicada no momento')
                             <a
-                                href="{{ $igreja['slug'] ? route('igrejas.public.show', ['slug' => $igreja['slug']]) : route('login') }}"
+                                href="{{ $igreja['proxima_url'] }}"
                                 class="church-tile"
                                 data-church-card
                                 data-search="{{ \Illuminate\Support\Str::lower(\Illuminate\Support\Str::ascii(implode(' ', [$igreja['nome'], $igreja['cidade'], $igreja['estado'], $igreja['bairro'], $igreja['endereco']]))) }}"
@@ -103,9 +103,17 @@
                                     <span class="church-tile__name">{{ $igreja['nome'] }}</span>
                                     <span class="church-tile__status {{ $temMissaPublicada ? 'church-tile__status--active' : 'church-tile__status--empty' }}">
                                         <span aria-hidden="true">{{ $temMissaPublicada ? '●' : '●' }}</span>
-                                        {{ $temMissaPublicada ? 'Missa publicada' : 'Sem missa hoje' }}
+                                        {{ $temMissaPublicada ? ($igreja['proxima_status'] ?? 'Missa publicada') : 'Sem missa publicada' }}
                                     </span>
-                                    <span class="church-tile__button">{{ $temMissaPublicada ? 'Abrir celebração' : 'Ver missas' }}</span>
+                                    @if ($temMissaPublicada)
+                                        <span class="church-tile__next">
+                                            {{ $igreja['proxima_data'] }}
+                                            @if ($igreja['proxima_horario'])
+                                                · {{ $igreja['proxima_horario'] }}
+                                            @endif
+                                        </span>
+                                    @endif
+                                    <span class="church-tile__button">{{ $temMissaPublicada ? 'Abrir próxima missa' : 'Ver missas' }}</span>
                                 </span>
                             </a>
                         @endforeach
@@ -204,6 +212,7 @@
 
             .church-grid--visual {
                 align-items: stretch;
+                gap: 0.9rem;
             }
 
             .church-tile {
@@ -214,7 +223,8 @@
                 background: var(--panel);
                 box-shadow: var(--shadow);
                 min-height: 100%;
-                grid-template-rows: auto 1fr;
+                grid-template-columns: 6.5rem minmax(0, 1fr);
+                min-height: 9.5rem;
                 transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
             }
 
@@ -240,7 +250,8 @@
             .church-tile__image {
                 position: relative;
                 display: block;
-                height: 11.5rem;
+                height: 100%;
+                min-height: 9.5rem;
                 background: rgba(255, 255, 255, 0.05);
                 overflow: hidden;
             }
@@ -268,14 +279,15 @@
 
             .church-tile__content {
                 display: grid;
-                gap: 0.75rem;
+                gap: 0.52rem;
                 align-content: start;
-                padding: 1rem;
+                padding: 0.9rem;
+                min-width: 0;
             }
 
             .church-tile__city {
                 color: var(--gold-soft);
-                font-size: 0.78rem;
+                font-size: 0.72rem;
                 font-weight: 800;
                 letter-spacing: 0.08em;
                 text-transform: uppercase;
@@ -284,9 +296,13 @@
             .church-tile__name {
                 color: var(--text);
                 font-family: var(--font-display);
-                font-size: clamp(1.45rem, 2.2vw, 1.8rem);
+                font-size: clamp(1.1rem, 1.65vw, 1.38rem);
                 font-weight: 800;
-                line-height: 1.18;
+                line-height: 1.12;
+                display: -webkit-box;
+                -webkit-box-orient: vertical;
+                -webkit-line-clamp: 2;
+                overflow: hidden;
             }
 
             .church-tile__status {
@@ -295,10 +311,17 @@
                 align-items: center;
                 gap: 0.45rem;
                 border-radius: 999px;
-                padding: 0.55rem 0.75rem;
-                font-size: 0.9rem;
+                padding: 0.42rem 0.65rem;
+                font-size: 0.78rem;
                 font-weight: 900;
                 line-height: 1;
+            }
+
+            .church-tile__next {
+                color: var(--muted);
+                font-size: 0.82rem;
+                font-weight: 700;
+                line-height: 1.25;
             }
 
             .church-tile__status--active {
@@ -317,15 +340,15 @@
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                min-height: 3.05rem;
+                min-height: 2.55rem;
                 width: 100%;
                 border-radius: 999px;
                 border: 1px solid rgba(210, 170, 102, 0.28);
                 background: rgba(201, 161, 95, 0.14);
                 color: var(--gold-soft);
-                font-size: 0.98rem;
+                font-size: 0.9rem;
                 font-weight: 900;
-                margin-top: 0.25rem;
+                margin-top: 0.1rem;
                 text-align: center;
                 transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
             }
@@ -345,7 +368,24 @@
                 }
 
                 .church-tile__image {
-                    height: 12.25rem;
+                    min-height: 10rem;
+                }
+            }
+
+            @media (min-width: 1024px) {
+                .church-grid--visual {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                }
+
+                .church-tile {
+                    grid-template-columns: 1fr;
+                    grid-template-rows: auto 1fr;
+                    min-height: 0;
+                }
+
+                .church-tile__image {
+                    height: 8.75rem;
+                    min-height: 0;
                 }
             }
     </style>

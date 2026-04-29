@@ -122,6 +122,10 @@ class IgrejaPublicaController extends Controller
             ->filter(fn (Missa $missa): bool => $missa->dataHoraInicio($timezone)->toDateString() === $hoje)
             ->values();
 
+        $missasFieisColecao = $missasOrdenadas
+            ->filter(fn (Missa $missa): bool => $missa->dataHoraFim($timezone)->greaterThanOrEqualTo($agora))
+            ->values();
+
         $missasMusicosColecao = $missasOrdenadas
             ->filter(fn (Missa $missa): bool => $missa->dataHoraFim($timezone)->greaterThanOrEqualTo($agora))
             ->values();
@@ -130,13 +134,13 @@ class IgrejaPublicaController extends Controller
         $celebracaoSelecionadaId = max(0, (int) $request->integer('celebracao'));
         $missaPublica = $audiencia === 'musicos'
             ? $this->resolverMissaPublicaMusicos($missasMusicosColecao, $celebracaoSelecionadaId, $missaEmAndamento, $proximaMissa)
-            : $this->resolverMissaPublicaFieis($missasHojeColecao, $celebracaoSelecionadaId);
+            : $this->resolverMissaPublicaFieis($missasFieisColecao, $celebracaoSelecionadaId, $missaEmAndamento, $proximaMissa);
 
         $this->anexarRepertorioPublico($missaPublica, $audiencia === 'musicos');
 
         $estadoCelebracao = $audiencia === 'musicos'
             ? ($missaEmAndamento ? 'em_andamento' : ($proximaMissa ? 'proxima' : 'aguardando'))
-            : ($missasHojeColecao->isNotEmpty() ? 'programacao_hoje' : 'aguardando');
+            : ($missaEmAndamento ? 'em_andamento' : ($missasHojeColecao->isNotEmpty() ? 'programacao_hoje' : ($proximaMissa ? 'proxima' : 'aguardando')));
         $countdownReferencia = $audiencia === 'musicos'
             ? ($missaEmAndamento ? $missaEmAndamento->dataHoraFim($timezone) : $proximaMissa?->dataHoraInicio($timezone))
             : ($missasHojeColecao->last()?->dataHoraFim($timezone) ?: $proximaMissa?->dataHoraInicio($timezone));
@@ -169,21 +173,34 @@ class IgrejaPublicaController extends Controller
         ];
     }
 
-    private function resolverMissaPublicaFieis(Collection $missasHoje, int $celebracaoSelecionadaId): ?Missa
+    private function resolverMissaPublicaFieis(
+        Collection $missasDisponiveis,
+        int $celebracaoSelecionadaId,
+        ?Missa $missaEmAndamento,
+        ?Missa $proximaMissa
+    ): ?Missa
     {
-        if ($missasHoje->isEmpty()) {
+        if ($missasDisponiveis->isEmpty()) {
             return null;
         }
 
         if ($celebracaoSelecionadaId > 0) {
-            $missaSelecionada = $missasHoje->firstWhere('id', $celebracaoSelecionadaId);
+            $missaSelecionada = $missasDisponiveis->firstWhere('id', $celebracaoSelecionadaId);
 
             if ($missaSelecionada instanceof Missa) {
                 return $missaSelecionada;
             }
         }
 
-        $primeiraMissa = $missasHoje->first();
+        if ($missaEmAndamento instanceof Missa) {
+            return $missaEmAndamento;
+        }
+
+        if ($proximaMissa instanceof Missa) {
+            return $proximaMissa;
+        }
+
+        $primeiraMissa = $missasDisponiveis->first();
 
         return $primeiraMissa instanceof Missa ? $primeiraMissa : null;
     }
@@ -334,6 +351,7 @@ class IgrejaPublicaController extends Controller
         $inicio = $missa->dataHoraInicio($timezone);
 
         return [
+            'id' => $missa->id,
             'titulo' => $missa->titulo,
             'data' => $inicio->format('d/m'),
             'dia_semana' => mb_convert_case($inicio->locale('pt_BR')->isoFormat('dddd'), MB_CASE_TITLE, 'UTF-8'),

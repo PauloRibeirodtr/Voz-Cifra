@@ -180,6 +180,13 @@ class IgrejaPublicaFieisTest extends TestCase
         $response->assertOk();
         $response->assertSee('Proximas missas publicadas');
         $response->assertSee('Missa da Proxima Semana');
+        $response->assertSee('Abrir celebração');
+        $response->assertSee('Celebração ainda sem repertório público.');
         $response->assertDontSee('Missa Fora do Mes');
+
+        $this
+            ->get(route('igrejas.public.show', ['slug' => $igreja->slug, 'celebracao' => Missa::query()->where('titulo', 'Missa da Proxima Semana')->value('id')]))
+            ->assertOk()
+            ->assertSee('Missa da Proxima Semana');
     }
 }
