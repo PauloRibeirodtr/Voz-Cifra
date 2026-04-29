@@ -33,25 +33,56 @@ class IgrejaController extends Controller
     public function index(Request $request): View
     {
         $busca = trim((string) $request->input('busca', ''));
+        $filtroStatus = (string) $request->input('status', 'todas');
 
-        $igrejas = Igreja::with([
+        if (!in_array($filtroStatus, ['todas', 'operacionais', 'aguardando'], true)) {
+            $filtroStatus = 'todas';
+        }
+
+        $igrejasBase = Igreja::with([
             'adminsLocais' => fn ($query) => $query->orderBy('nome'),
             'coordenadores' => fn ($query) => $query->orderBy('nome'),
         ])
-            ->when($busca !== '', function ($query) use ($busca): void {
-                $query->where(function ($subquery) use ($busca): void {
-                    $subquery
-                        ->where('nome', 'like', '%' . $busca . '%')
-                        ->orWhere('cidade', 'like', '%' . $busca . '%');
-                });
-            })
             ->orderBy('nome')
             ->get()
             ->map(fn (Igreja $igreja) => $this->adicionarDadosPublicos($igreja));
 
+        $sugestoesIgrejas = $igrejasBase
+            ->map(fn (Igreja $igreja) => [
+                'nome' => $igreja->nome,
+                'cidade' => $igreja->cidade,
+                'estado' => $igreja->estado,
+            ])
+            ->values();
+
+        if ($busca !== '') {
+            $igrejasBase = $igrejasBase
+                ->filter(fn (Igreja $igreja) => $this->igrejaCombinaComBusca($igreja, $busca))
+                ->values();
+        }
+
+        $totalIgrejas = $igrejasBase->count();
+        $igrejasOperacionais = $igrejasBase->filter(fn (Igreja $igreja) => $igreja->estaOperacional())->count();
+        $igrejasAguardando = $totalIgrejas - $igrejasOperacionais;
+
+        $igrejas = $igrejasBase
+            ->filter(function (Igreja $igreja) use ($filtroStatus): bool {
+                return match ($filtroStatus) {
+                    'operacionais' => $igreja->estaOperacional(),
+                    'aguardando' => !$igreja->estaOperacional(),
+                    default => true,
+                };
+            })
+            ->values();
+
         return view('admin.churches.index', [
             'igrejas' => $igrejas,
             'busca' => $busca,
+            'filtroStatus' => $filtroStatus,
+            'totalIgrejas' => $totalIgrejas,
+            'igrejasOperacionais' => $igrejasOperacionais,
+            'igrejasAguardando' => $igrejasAguardando,
+            'sugestoesIgrejas' => $sugestoesIgrejas,
         ]);
     }
 
@@ -486,6 +517,37 @@ class IgrejaController extends Controller
     protected function discoUploadsPublicos(): string
     {
         return (string) config('filesystems.public_uploads_disk', 'public');
+    }
+
+    protected function igrejaCombinaComBusca(Igreja $igreja, string $busca): bool
+    {
+        $termos = preg_split('/\s+/', $this->normalizarTexto($busca), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        if ($termos === []) {
+            return true;
+        }
+
+        $base = $this->normalizarTexto(implode(' ', [
+            $igreja->nome,
+            $igreja->cidade,
+            $igreja->estado,
+            $igreja->endereco,
+            $igreja->cnpj,
+            $igreja->slug,
+        ]));
+
+        foreach ($termos as $termo) {
+            if (!str_contains($base, $termo)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    protected function normalizarTexto(string $texto): string
+    {
+        return mb_strtolower(Str::ascii($texto));
     }
 
     protected function criarAdminLocalDaIgreja(

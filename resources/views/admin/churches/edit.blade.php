@@ -205,8 +205,8 @@
         </div>
     </form>
 
-        @if (($adminsLocais ?? collect())->isNotEmpty())
-            <div class="admin-section-card p-6">
+        @if (false)
+            <div class="hidden">
                 <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div class="max-w-2xl">
                         <h2 class="text-lg font-bold text-gray-800">Admins locais da igreja</h2>
@@ -291,6 +291,7 @@
                 @forelse (($usuariosVinculados ?? collect()) as $vinculo)
                     @php($usuarioVinculado = $vinculo->usuario)
                     @php($papeisAtivos = $vinculo->listarPapeisAtivos())
+                    @php($ehAdminLocal = $papeisAtivos->contains(fn ($papel) => $papel->value === 'admin_local'))
                     @php($termoBusca = mb_strtolower(trim(($usuarioVinculado->nome ?? '') . ' ' . ($usuarioVinculado->cpf ?? '') . ' ' . ($usuarioVinculado->email ?? ''))))
 
                     <article
@@ -392,8 +393,54 @@
                                         Remover músico
                                     </button>
                                 </form>
+
+                                @if ($ehAdminLocal)
+                                    <button
+                                        type="button"
+                                        class="inline-flex w-full items-center justify-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800 transition hover:bg-amber-100 sm:col-span-2"
+                                        data-reset-vinculo-toggle="reset-vinculo-{{ $usuarioVinculado->id }}"
+                                    >
+                                        Resetar senha
+                                    </button>
+                                @endif
                             </div>
                         </div>
+
+                        @if ($ehAdminLocal)
+                            <form
+                                id="reset-vinculo-{{ $usuarioVinculado->id }}"
+                                action="{{ route('admin.igrejas.admin-local.password.reset', $igreja) }}"
+                                method="POST"
+                                class="mt-4 hidden rounded-2xl border border-amber-100 bg-amber-50 p-4"
+                                data-reset-vinculo-panel
+                                onsubmit="return confirm('Confirma a redefinicao da senha de {{ $usuarioVinculado->nome }}?');"
+                            >
+                                @csrf
+                                <input type="hidden" name="origem" value="edit">
+                                <input type="hidden" name="admin_local_id" value="{{ $usuarioVinculado->id }}">
+
+                                <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                                    <div data-password-strength-container>
+                                        <label class="block text-sm font-medium text-gray-700">Nova senha manual para {{ $usuarioVinculado->nome }}</label>
+                                        <input type="password" name="password" data-password-strength-input class="{{ $classeInput }}" placeholder="Opcional">
+                                        @include('partials.password-strength-meter')
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Confirmar nova senha</label>
+                                        <input type="password" name="password_confirmation" data-password-confirmation-input class="{{ $classeInput }}" placeholder="Repita a nova senha">
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 rounded-2xl border border-amber-200 bg-white/70 px-4 py-4 text-sm text-amber-900">
+                                    Se a nova senha ficar em branco, o sistema usa o CPF deste usuario como senha padrao e obriga a troca no proximo acesso.
+                                </div>
+
+                                <button type="submit" class="mt-4 inline-flex items-center justify-center rounded-xl bg-amber-600 px-5 py-3 font-semibold text-white hover:bg-amber-700">
+                                    Confirmar reset de senha
+                                </button>
+                            </form>
+                        @endif
                     </article>
                 @empty
                     <div class="rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-4 py-5 text-sm text-gray-500">
@@ -541,18 +588,28 @@
                         <a href="{{ $igreja->link_publico_musicos }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
                             Abrir página dos músicos
                         </a>
+                        <a href="{{ $igreja->qr_code_url_musicos }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                            Abrir QR dos músicos
+                        </a>
                     </div>
                 </div>
 
-                <div class="w-full max-w-xs rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                    <span class="block text-xs font-bold uppercase tracking-wider text-gray-400">Prévia do QR dos fiéis</span>
-                    <img src="{{ $igreja->qr_code_url }}" alt="QR Code da igreja {{ $igreja->nome }}" class="mt-4 w-full rounded-xl border border-gray-200 bg-white p-3" />
-                    <div class="mt-3 rounded-xl border border-green-100 bg-green-50 px-3 py-3 text-sm text-green-800">
-                        Aponte a câmera para o QR Code e acompanhe a página pública dos fiéis.
+                <div class="grid w-full max-w-xl grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                        <span class="block text-xs font-bold uppercase tracking-wider text-gray-400">QR dos fiéis</span>
+                        <img src="{{ $igreja->qr_code_url }}" alt="QR Code dos fieis da igreja {{ $igreja->nome }}" class="mt-4 w-full rounded-xl border border-gray-200 bg-white p-3" />
+                        <p class="mt-3 text-xs leading-5 text-gray-500">
+                            Aponta para a pagina publica dos fieis.
+                        </p>
                     </div>
-                    <p class="mt-3 text-xs leading-5 text-gray-500">
-                        O QR aponta sempre para o link público dos fiéis. O link dos músicos pode ser compartilhado separadamente para leitura com cifras.
-                    </p>
+
+                    <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                        <span class="block text-xs font-bold uppercase tracking-wider text-gray-400">QR dos músicos</span>
+                        <img src="{{ $igreja->qr_code_url_musicos }}" alt="QR Code dos musicos da igreja {{ $igreja->nome }}" class="mt-4 w-full rounded-xl border border-gray-200 bg-white p-3" />
+                        <p class="mt-3 text-xs leading-5 text-gray-500">
+                            Aponta para a pagina publica com recursos dos musicos.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -567,16 +624,34 @@
         document.addEventListener('DOMContentLoaded', () => {
             const campoBusca = document.querySelector('[data-vinculos-search-input]');
             const itens = document.querySelectorAll('[data-vinculo-item]');
+            const botoesReset = document.querySelectorAll('[data-reset-vinculo-toggle]');
+
+            const normalizar = (valor) => (valor || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase();
+
+            botoesReset.forEach((botao) => {
+                botao.addEventListener('click', () => {
+                    const alvo = document.getElementById(botao.getAttribute('data-reset-vinculo-toggle'));
+
+                    if (!alvo) {
+                        return;
+                    }
+
+                    alvo.classList.toggle('hidden');
+                });
+            });
 
             if (!campoBusca || itens.length === 0) {
                 return;
             }
 
             campoBusca.addEventListener('input', () => {
-                const termo = campoBusca.value.trim().toLowerCase();
+                const termo = normalizar(campoBusca.value.trim());
 
                 itens.forEach((item) => {
-                    const base = item.dataset.vinculoSearch || '';
+                    const base = normalizar(item.dataset.vinculoSearch || '');
                     const exibir = termo === '' || base.includes(termo);
 
                     item.classList.toggle('hidden', !exibir);

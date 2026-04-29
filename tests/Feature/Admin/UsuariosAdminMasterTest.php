@@ -57,6 +57,39 @@ class UsuariosAdminMasterTest extends TestCase
             ->assertDontSee('Igreja Santo Expedito');
     }
 
+    public function test_admin_master_filtra_igrejas_sem_diferenciar_acento_e_por_status(): void
+    {
+        $adminMaster = Usuario::factory()->adminMaster()->create([
+            'primeiro_acesso' => false,
+        ]);
+
+        Igreja::factory()->create([
+            'nome' => 'Paróquia Nossa Senhora dos Remédios',
+            'cidade' => 'Ladário',
+            'status_operacional' => 'operacional',
+        ]);
+
+        Igreja::factory()->create([
+            'nome' => 'Igreja Santo Expedito',
+            'cidade' => 'Guatambu',
+            'status_operacional' => 'aguardando_admin_local',
+        ]);
+
+        $this
+            ->actingAs($adminMaster)
+            ->get(route('admin.igrejas.index', ['busca' => 'remedios']))
+            ->assertOk()
+            ->assertSee('Paróquia Nossa Senhora dos Remédios')
+            ->assertDontSee('Igreja Santo Expedito');
+
+        $this
+            ->actingAs($adminMaster)
+            ->get(route('admin.igrejas.index', ['status' => 'aguardando']))
+            ->assertOk()
+            ->assertSee('Igreja Santo Expedito')
+            ->assertDontSee('Paróquia Nossa Senhora dos Remédios');
+    }
+
     public function test_edicao_da_igreja_foca_em_dados_e_usuarios_vinculados(): void
     {
         $adminMaster = Usuario::factory()->adminMaster()->create([

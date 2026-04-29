@@ -5,24 +5,25 @@
 
 @section('content')
     @php
-        $totalIgrejas = $igrejas->count();
-        $igrejasOperacionais = $igrejas->filter(fn ($igreja) => $igreja->estaOperacional())->count();
-        $igrejasAguardando = $totalIgrejas - $igrejasOperacionais;
+        $filtroStatus = $filtroStatus ?? 'todas';
+        $buscaAtual = $busca ?? '';
+        $urlFiltro = fn (string $status) => route('admin.igrejas.index', array_filter([
+            'busca' => $buscaAtual,
+            'status' => $status === 'todas' ? null : $status,
+        ], fn ($valor) => filled($valor)));
+        $classeFiltroAtivo = 'ring-4 ring-[#6c4a21]/15 border-[#6c4a21]/30';
+        $sugestoesIgrejasBase64 = base64_encode(json_encode($sugestoesIgrejas ?? []));
     @endphp
 
     <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div class="max-w-3xl">
             <h1 class="text-2xl font-bold text-gray-800">Igrejas cadastradas</h1>
-            <p class="text-sm text-gray-500">Gerencie as igrejas, acompanhe o status operacional, visualize os links públicos e confira quem já está vinculado localmente.</p>
+            <p class="text-sm text-gray-500">Encontre a igreja, confira o status e acesse as acoes principais sem precisar rolar tanto.</p>
         </div>
 
         <a href="{{ route('admin.igrejas.create') }}" class="inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 sm:self-start">
             Cadastrar igreja
         </a>
-    </div>
-
-    <div class="admin-inline-note mb-6 px-5 py-4 text-sm leading-7">
-        Uma igreja pode existir sem administrador local. Ela só fica operacional para missas, repertórios e publicações quando houver administrador local ativo vinculado.
     </div>
 
     @if (session('success'))
@@ -48,44 +49,51 @@
     @endif
 
     <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <article class="admin-section-card p-5">
+        <a href="{{ $urlFiltro('todas') }}" class="admin-section-card border p-5 transition hover:-translate-y-0.5 hover:shadow-lg {{ $filtroStatus === 'todas' ? $classeFiltroAtivo : 'border-transparent' }}">
             <p class="text-xs font-black uppercase tracking-[0.18em] text-gray-400">Total</p>
-            <p class="mt-3 text-3xl font-black text-gray-900">{{ $totalIgrejas }}</p>
-            <p class="mt-2 text-sm text-gray-500">{{ ($busca ?? '') !== '' ? 'Comunidades encontradas na pesquisa.' : 'Comunidades cadastradas no sistema.' }}</p>
-        </article>
+            <p class="mt-3 text-3xl font-black text-gray-900">{{ $totalIgrejas ?? $igrejas->count() }}</p>
+            <p class="mt-2 text-sm text-gray-500">Mostrar todas as igrejas{{ $buscaAtual !== '' ? ' desta busca' : '' }}.</p>
+        </a>
 
-        <article class="admin-section-card p-5">
+        <a href="{{ $urlFiltro('operacionais') }}" class="admin-section-card border p-5 transition hover:-translate-y-0.5 hover:shadow-lg {{ $filtroStatus === 'operacionais' ? $classeFiltroAtivo : 'border-transparent' }}">
             <p class="text-xs font-black uppercase tracking-[0.18em] text-gray-400">Operacionais</p>
-            <p class="mt-3 text-3xl font-black text-blue-700">{{ $igrejasOperacionais }}</p>
-            <p class="mt-2 text-sm text-gray-500">Igrejas já liberadas para rotina local.</p>
-        </article>
+            <p class="mt-3 text-3xl font-black text-blue-700">{{ $igrejasOperacionais ?? 0 }}</p>
+            <p class="mt-2 text-sm text-gray-500">Igrejas liberadas para a rotina local.</p>
+        </a>
 
-        <article class="admin-section-card p-5">
-            <p class="text-xs font-black uppercase tracking-[0.18em] text-gray-400">Aguardando vínculo</p>
-            <p class="mt-3 text-3xl font-black text-amber-700">{{ $igrejasAguardando }}</p>
-            <p class="mt-2 text-sm text-gray-500">Cadastros válidos que ainda dependem de administrador local.</p>
-        </article>
+        <a href="{{ $urlFiltro('aguardando') }}" class="admin-section-card border p-5 transition hover:-translate-y-0.5 hover:shadow-lg {{ $filtroStatus === 'aguardando' ? $classeFiltroAtivo : 'border-transparent' }}">
+            <p class="text-xs font-black uppercase tracking-[0.18em] text-gray-400">Aguardando vinculo</p>
+            <p class="mt-3 text-3xl font-black text-amber-700">{{ $igrejasAguardando ?? 0 }}</p>
+            <p class="mt-2 text-sm text-gray-500">Igrejas que ainda precisam de admin local.</p>
+        </a>
     </div>
 
     <form method="GET" action="{{ route('admin.igrejas.index') }}" class="admin-section-card mb-6 p-5">
+        @if ($filtroStatus !== 'todas')
+            <input type="hidden" name="status" value="{{ $filtroStatus }}">
+        @endif
+
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-            <div>
+            <div class="relative">
                 <label for="busca" class="block text-xs font-black uppercase tracking-[0.18em] text-gray-400">Pesquisar igreja</label>
                 <input
                     id="busca"
                     name="busca"
                     type="search"
-                    value="{{ $busca ?? '' }}"
-                    placeholder="Digite o nome da igreja ou cidade"
+                    value="{{ $buscaAtual }}"
+                    placeholder="Digite nome, cidade, CNPJ ou parte do nome"
+                    autocomplete="off"
                     class="mt-2 block w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-gray-800 shadow-sm outline-none transition focus:border-[#6c4a21] focus:ring-4 focus:ring-[#6c4a21]/10"
+                    data-church-search-input
                 >
+                <div class="absolute z-20 mt-2 hidden w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl" data-church-suggestions></div>
             </div>
 
             <div class="flex flex-col gap-3 sm:flex-row">
                 <button type="submit" class="inline-flex items-center justify-center rounded-2xl bg-[#6c4a21] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#5a3d1b]">
                     Buscar
                 </button>
-                @if (($busca ?? '') !== '')
+                @if ($buscaAtual !== '' || $filtroStatus !== 'todas')
                     <a href="{{ route('admin.igrejas.index') }}" class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
                         Limpar
                     </a>
@@ -93,263 +101,92 @@
             </div>
         </div>
 
-        @if (($busca ?? '') !== '')
+        @if ($buscaAtual !== '' || $filtroStatus !== 'todas')
             <p class="mt-3 text-sm text-gray-500">
-                Exibindo resultados para <span class="font-semibold text-gray-800">{{ $busca }}</span>.
+                Exibindo resultados para
+                @if ($buscaAtual !== '')
+                    <span class="font-semibold text-gray-800">{{ $buscaAtual }}</span>
+                @else
+                    <span class="font-semibold text-gray-800">todas as igrejas</span>
+                @endif
+                @if ($filtroStatus === 'operacionais')
+                    em <span class="font-semibold text-blue-700">operacionais</span>.
+                @elseif ($filtroStatus === 'aguardando')
+                    em <span class="font-semibold text-amber-700">aguardando vinculo</span>.
+                @else
+                    .
+                @endif
             </p>
         @endif
     </form>
 
-    <div class="space-y-5">
+    <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
         @forelse ($igrejas as $igreja)
             @php($adminsLocais = $igreja->adminsLocais)
             @php($coordenadores = $igreja->coordenadores)
-            @php($adminLocal = $adminsLocais->first())
 
-            <article class="admin-section-card overflow-hidden p-5 sm:p-6">
-                <div class="flex flex-col gap-5">
-                    <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                        <div class="flex min-w-0 items-start gap-4">
-                            <a href="{{ route('admin.igrejas.edit', $igreja) }}" class="h-20 w-20 shrink-0 overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition hover:ring-4 hover:ring-[#6c4a21]/15" aria-label="Editar igreja {{ $igreja->nome }}">
-                                <img src="{{ $igreja->imagemUrl() }}" alt="Imagem da igreja {{ $igreja->nome }}" class="h-full w-full object-cover">
-                            </a>
+            <article class="admin-section-card p-5">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-start">
+                    <a href="{{ route('admin.igrejas.edit', $igreja) }}" class="h-20 w-20 shrink-0 overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition hover:ring-4 hover:ring-[#6c4a21]/15" aria-label="Editar igreja {{ $igreja->nome }}">
+                        <img src="{{ $igreja->imagemUrl() }}" alt="Imagem da igreja {{ $igreja->nome }}" class="h-full w-full object-cover">
+                    </a>
 
-                            <div class="min-w-0">
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <h2 class="text-xl font-black text-gray-900">{{ $igreja->nome }}</h2>
-                                    <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $igreja->ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                        {{ $igreja->ativo ? 'Ativa' : 'Inativa' }}
-                                    </span>
-                                    <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $igreja->estaOperacional() ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700' }}">
-                                        {{ $igreja->statusOperacionalLabel() }}
-                                    </span>
-                                </div>
-
-                                <p class="mt-2 break-all text-sm text-gray-500">{{ $igreja->slug }}</p>
-                                <p class="mt-1 text-xs text-gray-400">CNPJ: {{ $igreja->cnpj }}</p>
-                                <p class="mt-3 text-sm text-gray-600">
-                                    {{ $igreja->cidade }} - {{ $igreja->estado }}
-                                    @if ($igreja->endereco)
-                                        <span class="text-gray-400">• {{ $igreja->endereco }}{{ $igreja->numero ? ', '.$igreja->numero : '' }}</span>
-                                    @endif
-                                </p>
-                            </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h2 class="text-lg font-black leading-tight text-gray-900">{{ $igreja->nome }}</h2>
+                            <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $igreja->ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                {{ $igreja->ativo ? 'Ativa' : 'Inativa' }}
+                            </span>
+                            <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $igreja->estaOperacional() ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700' }}">
+                                {{ $igreja->statusOperacionalLabel() }}
+                            </span>
                         </div>
 
-                        <div class="flex flex-wrap gap-3 xl:justify-end">
-                            <a href="{{ route('admin.igrejas.edit', $igreja) }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
-                                Editar igreja
-                            </a>
-                            <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-[#6c4a21]/20 bg-[#f8f1e7] px-4 py-3 text-sm font-semibold text-[#6c4a21] transition hover:bg-[#efe2cf]">
-                                Página dos fiéis
-                            </a>
-                            <a href="{{ $igreja->link_publico_musicos }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-200">
-                                Página dos músicos
-                            </a>
-                            <button
-                                type="button"
-                                class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                                data-copy-url="{{ $igreja->link_publico_musicos }}"
-                            >
-                                Copiar link dos músicos
-                            </button>
-                            @if ($adminLocal)
-                                <button
-                                    type="button"
-                                    class="inline-flex items-center justify-center rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-100"
-                                    data-reset-admin-local
-                                    data-modal-id="resetar-admin-local-{{ $igreja->id }}-{{ $adminLocal->id }}"
-                                >
-                                    Redefinir senha do admin local
-                                </button>
-                            @endif
+                        <p class="mt-2 text-sm text-gray-600">{{ $igreja->cidade }} - {{ $igreja->estado }}</p>
+                        <p class="mt-1 text-xs text-gray-400">CNPJ: {{ $igreja->cnpj }}</p>
+
+                        <div class="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
+                            <span class="rounded-full bg-slate-100 px-3 py-1 text-slate-700">{{ $adminsLocais->count() }} {{ $adminsLocais->count() === 1 ? 'admin' : 'admins' }}</span>
+                            <span class="rounded-full bg-amber-100 px-3 py-1 text-amber-800">{{ $coordenadores->count() }} {{ $coordenadores->count() === 1 ? 'coordenador' : 'coordenadores' }}</span>
                         </div>
                     </div>
+                </div>
 
-                    <div class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-                        <section class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                            <div class="rounded-3xl border border-gray-200 bg-gray-50 p-4">
-                                <p class="text-[11px] font-black uppercase tracking-[0.18em] text-gray-400">Status operacional</p>
-                                <p class="mt-3 text-base font-bold text-gray-900">{{ $igreja->statusOperacionalLabel() }}</p>
-                                <p class="mt-2 text-sm text-gray-600">
-                                    {{ $igreja->estaOperacional() ? 'Liberada para operação local.' : 'Cadastro válido, aguardando administrador local ativo.' }}
-                                </p>
-                            </div>
-
-                            <div class="rounded-3xl border border-gray-200 bg-gray-50 p-4">
-                                <p class="text-[11px] font-black uppercase tracking-[0.18em] text-gray-400">Administrador local</p>
-                                @if ($adminLocal)
-                                    <div class="mt-3 space-y-3">
-                                        @foreach ($adminsLocais as $admin)
-                                            <div class="flex items-start gap-3 @if (!$loop->first) border-t border-gray-200 pt-3 @endif">
-                                                <div class="h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-                                                    <img
-                                                        src="{{ $admin->fotoPerfilUrl() }}"
-                                                        alt="Foto de {{ $admin->nome }}"
-                                                        class="h-full w-full object-cover"
-                                                        onerror="this.onerror=null;this.src='{{ asset('logo/final.png') }}';"
-                                                    >
-                                                </div>
-                                                <div class="min-w-0">
-                                                    <p class="font-semibold text-gray-900">{{ $admin->nome }}</p>
-                                                    <p class="break-all text-sm text-gray-600">{{ $admin->email }}</p>
-                                                    @if ($admin->telefone)
-                                                        <p class="text-sm text-gray-500">{{ $admin->telefone }}</p>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @else
-                                    <p class="mt-3 text-sm font-medium text-amber-700">Nenhum administrador local vinculado.</p>
-                                @endif
-                            </div>
-
-                            <div class="rounded-3xl border border-gray-200 bg-gray-50 p-4 lg:col-span-2">
-                                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                    <p class="text-[11px] font-black uppercase tracking-[0.18em] text-gray-400">Coordenadores vinculados</p>
-                                    <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
-                                        {{ $coordenadores->count() }} {{ \Illuminate\Support\Str::plural('coordenador', $coordenadores->count()) }}
-                                    </span>
-                                </div>
-
-                                @if ($coordenadores->isNotEmpty())
-                                    <div class="mt-3 grid gap-3 sm:grid-cols-2">
-                                        @foreach ($coordenadores as $coordenador)
-                                            <div class="flex items-start gap-3 rounded-2xl border border-amber-100 bg-amber-50 p-3">
-                                                <div class="h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-sm">
-                                                    <img
-                                                        src="{{ $coordenador->fotoPerfilUrl() }}"
-                                                        alt="Foto de {{ $coordenador->nome }}"
-                                                        class="h-full w-full object-cover"
-                                                        onerror="this.onerror=null;this.src='{{ asset('logo/final.png') }}';"
-                                                    >
-                                                </div>
-                                                <div class="min-w-0">
-                                                    <p class="font-semibold text-gray-900">{{ $coordenador->nome }}</p>
-                                                    <p class="break-all text-sm text-gray-600">{{ $coordenador->email }}</p>
-                                                    <p class="text-xs text-gray-400">{{ $coordenador->cpf }}</p>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @else
-                                    <p class="mt-3 text-sm text-gray-500">Nenhum coordenador vinculado a esta igreja.</p>
-                                @endif
-                            </div>
-                        </section>
-
-                        <section class="rounded-3xl border border-gray-200 bg-gray-50 p-4">
-                            <p class="text-[11px] font-black uppercase tracking-[0.18em] text-gray-400">Links públicos</p>
-
-                            <div class="mt-4 space-y-4">
-                                <div class="rounded-2xl border border-white bg-white p-4 shadow-sm">
-                                    <p class="text-[11px] font-black uppercase tracking-[0.18em] text-gray-400">Página dos fiéis</p>
-                                    <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="mt-2 block break-all text-sm font-semibold text-[#6c4a21] hover:underline">
-                                        {{ $igreja->link_publico }}
-                                    </a>
-                                    <button
-                                        type="button"
-                                        class="mt-3 inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-100"
-                                        data-copy-url="{{ $igreja->link_publico }}"
-                                    >
-                                        Copiar link dos fiéis
-                                    </button>
-                                </div>
-
-                                <div class="rounded-2xl border border-white bg-white p-4 shadow-sm">
-                                    <p class="text-[11px] font-black uppercase tracking-[0.18em] text-gray-400">Página dos músicos</p>
-                                    <a href="{{ $igreja->link_publico_musicos }}" target="_blank" rel="noopener noreferrer" class="mt-2 block break-all text-sm font-semibold text-slate-800 hover:underline">
-                                        {{ $igreja->link_publico_musicos }}
-                                    </a>
-                                    <button
-                                        type="button"
-                                        class="mt-3 inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-100"
-                                        data-copy-url="{{ $igreja->link_publico_musicos }}"
-                                    >
-                                        Copiar link dos músicos
-                                    </button>
-                                </div>
-
-                                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                    <a href="{{ $igreja->qr_code_url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-100">
-                                        Abrir QR dos fiéis
-                                    </a>
-                                    <a href="{{ $igreja->qr_code_url_musicos }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-100">
-                                        Abrir QR dos músicos
-                                    </a>
-                                </div>
-
-                                <p class="text-xs leading-6 text-gray-500">Cada igreja tem um link público para fiéis e outro específico para músicos. Os dois podem ser compartilhados separadamente conforme a publicação da missa.</p>
-                            </div>
-                        </section>
-                    </div>
+                <div class="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+                    <a href="{{ route('admin.igrejas.edit', $igreja) }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
+                        Editar
+                    </a>
+                    <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-[#6c4a21]/20 bg-[#f8f1e7] px-3 py-3 text-sm font-semibold text-[#6c4a21] transition hover:bg-[#efe2cf]">
+                        Fieis
+                    </a>
+                    <a href="{{ $igreja->link_publico_musicos }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-slate-100 px-3 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-200">
+                        Musicos
+                    </a>
+                    <button type="button" class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50" data-copy-url="{{ $igreja->link_publico_musicos }}">
+                        Copiar
+                    </button>
                 </div>
             </article>
         @empty
-            <div class="admin-section-card p-10 text-center text-gray-500">
-                {{ ($busca ?? '') !== '' ? 'Nenhuma igreja encontrada para a pesquisa informada.' : 'Nenhuma igreja cadastrada até o momento.' }}
+            <div class="admin-section-card p-10 text-center text-gray-500 xl:col-span-2">
+                {{ $buscaAtual !== '' || $filtroStatus !== 'todas' ? 'Nenhuma igreja encontrada para os filtros informados.' : 'Nenhuma igreja cadastrada ate o momento.' }}
             </div>
         @endforelse
     </div>
-
-    @foreach ($igrejas as $igreja)
-        @foreach ($igreja->adminsLocais as $adminLocal)
-            <div id="resetar-admin-local-{{ $igreja->id }}-{{ $adminLocal->id }}" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 px-4 py-6" data-reset-modal>
-                <div class="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl">
-                    <div class="flex items-start justify-between gap-4">
-                        <div>
-                            <h2 class="text-lg font-bold text-gray-900">Redefinir senha do administrador local</h2>
-                            <p class="mt-1 text-sm text-gray-500">
-                                {{ $adminLocal->nome }} • {{ $igreja->nome }}
-                            </p>
-                        </div>
-                        <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-gray-200 text-gray-500 hover:bg-gray-50" data-fechar-reset-modal>
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
-
-                    <form action="{{ route('admin.igrejas.admin-local.password.reset', $igreja) }}" method="POST" class="mt-6 space-y-4" onsubmit="return confirm('Confirma a redefinição da senha deste administrador local?');">
-                        @csrf
-                        <input type="hidden" name="origem" value="index">
-                        <input type="hidden" name="admin_local_id" value="{{ $adminLocal->id }}">
-
-                        <div class="rounded-2xl border border-red-100 bg-red-50 px-4 py-4 text-sm text-red-800">
-                            Se você deixar a nova senha em branco, o sistema vai usar o CPF do administrador local como senha padrão e obrigar a troca no próximo acesso.
-                        </div>
-
-                        <div data-password-strength-container>
-                            <label class="block text-sm font-medium text-gray-700">Nova senha manual</label>
-                            <input type="password" name="password" data-password-strength-input class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 shadow-sm focus:border-red-500 focus:ring-2 focus:ring-red-100" placeholder="Opcional">
-                            @include('partials.password-strength-meter')
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Confirmar nova senha</label>
-                            <input type="password" name="password_confirmation" data-password-confirmation-input class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 shadow-sm focus:border-red-500 focus:ring-2 focus:ring-red-100" placeholder="Repita a nova senha">
-                        </div>
-
-                        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                            <button type="button" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 font-medium text-gray-700 hover:bg-gray-50" data-fechar-reset-modal>
-                                Cancelar
-                            </button>
-                            <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-red-600 px-5 py-3 font-semibold text-white hover:bg-red-700">
-                                Confirmar redefinição
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        @endforeach
-    @endforeach
 @endsection
 
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const abrirBotoes = document.querySelectorAll('[data-reset-admin-local]');
             const copiarBotoes = document.querySelectorAll('[data-copy-url]');
-            const modalInicialId = @json(session('abrir_reset_modal'));
+            const campoBusca = document.querySelector('[data-church-search-input]');
+            const sugestoesContainer = document.querySelector('[data-church-suggestions]');
+            const sugestoes = JSON.parse(atob(@json($sugestoesIgrejasBase64)));
+
+            const normalizar = (valor) => (valor || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase();
 
             copiarBotoes.forEach((botao) => {
                 botao.addEventListener('click', async () => {
@@ -362,54 +199,84 @@
                     try {
                         await navigator.clipboard.writeText(url);
                         const textoOriginal = botao.textContent;
-                        botao.textContent = 'Link copiado';
+                        botao.textContent = 'Copiado';
 
                         window.setTimeout(() => {
                             botao.textContent = textoOriginal;
                         }, 1800);
                     } catch (error) {
-                        console.debug('Não foi possível copiar o link.', error);
+                        console.debug('Nao foi possivel copiar o link.', error);
                     }
                 });
             });
 
-            abrirBotoes.forEach((botao) => {
-                const modalId = botao.getAttribute('data-modal-id');
-                const modal = modalId ? document.getElementById(modalId) : null;
+            if (!campoBusca || !sugestoesContainer) {
+                return;
+            }
 
-                if (!modal) {
+            const esconderSugestoes = () => {
+                sugestoesContainer.classList.add('hidden');
+                sugestoesContainer.innerHTML = '';
+            };
+
+            campoBusca.addEventListener('input', () => {
+                const termo = normalizar(campoBusca.value.trim());
+
+                if (termo.length < 3) {
+                    esconderSugestoes();
                     return;
                 }
 
-                const fechar = () => {
-                    modal.classList.add('hidden');
-                    modal.classList.remove('flex');
-                    document.body.classList.remove('overflow-hidden');
-                };
+                const resultados = sugestoes
+                    .filter((igreja) => normalizar(`${igreja.nome} ${igreja.cidade} ${igreja.estado}`).includes(termo))
+                    .slice(0, 6);
 
-                botao.addEventListener('click', () => {
-                    modal.classList.remove('hidden');
-                    modal.classList.add('flex');
-                    document.body.classList.add('overflow-hidden');
+                if (resultados.length === 0) {
+                    esconderSugestoes();
+                    return;
+                }
+
+                sugestoesContainer.innerHTML = '';
+
+                resultados.forEach((igreja) => {
+                    const botao = document.createElement('button');
+                    const nome = document.createElement('span');
+                    const local = document.createElement('span');
+
+                    botao.type = 'button';
+                    botao.className = 'block w-full px-4 py-3 text-left hover:bg-[#f8f1e7]';
+                    botao.setAttribute('data-suggestion-value', igreja.nome);
+
+                    nome.className = 'block text-sm font-semibold text-gray-900';
+                    nome.textContent = igreja.nome;
+
+                    local.className = 'block text-xs text-gray-500';
+                    local.textContent = `${igreja.cidade} - ${igreja.estado}`;
+
+                    botao.append(nome, local);
+                    sugestoesContainer.appendChild(botao);
                 });
 
-                modal.querySelectorAll('[data-fechar-reset-modal]').forEach((controle) => {
-                    controle.addEventListener('click', fechar);
-                });
+                sugestoesContainer.classList.remove('hidden');
+            });
 
-                modal.addEventListener('click', (evento) => {
-                    if (evento.target === modal) {
-                        fechar();
-                    }
-                });
+            sugestoesContainer.addEventListener('click', (evento) => {
+                const botao = evento.target.closest('[data-suggestion-value]');
 
-                if (modalInicialId && modal.id === modalInicialId) {
-                    modal.classList.remove('hidden');
-                    modal.classList.add('flex');
-                    document.body.classList.add('overflow-hidden');
+                if (!botao) {
+                    return;
+                }
+
+                campoBusca.value = botao.getAttribute('data-suggestion-value');
+                esconderSugestoes();
+                campoBusca.form?.submit();
+            });
+
+            document.addEventListener('click', (evento) => {
+                if (!sugestoesContainer.contains(evento.target) && evento.target !== campoBusca) {
+                    esconderSugestoes();
                 }
             });
         });
     </script>
-    @include('partials.password-strength-script')
 @endpush
