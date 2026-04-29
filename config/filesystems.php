@@ -1,5 +1,10 @@
 <?php
 
+$publicUploadsDisk = env('PUBLIC_UPLOADS_DISK', 'public');
+$publicUploadsDisk = in_array($publicUploadsDisk, ['public', 's3'], true)
+    ? $publicUploadsDisk
+    : 'public';
+
 return [
 
     /*
@@ -15,7 +20,7 @@ return [
 
     'default' => env('FILESYSTEM_DISK', 'local'),
 
-    'public_uploads_disk' => env('PUBLIC_UPLOADS_DISK', 'public'),
+    'public_uploads_disk' => $publicUploadsDisk,
 
     /*
     |--------------------------------------------------------------------------
