@@ -51,7 +51,7 @@
         <article class="admin-section-card p-5">
             <p class="text-xs font-black uppercase tracking-[0.18em] text-gray-400">Total</p>
             <p class="mt-3 text-3xl font-black text-gray-900">{{ $totalIgrejas }}</p>
-            <p class="mt-2 text-sm text-gray-500">Comunidades cadastradas no sistema.</p>
+            <p class="mt-2 text-sm text-gray-500">{{ ($busca ?? '') !== '' ? 'Comunidades encontradas na pesquisa.' : 'Comunidades cadastradas no sistema.' }}</p>
         </article>
 
         <article class="admin-section-card p-5">
@@ -66,6 +66,39 @@
             <p class="mt-2 text-sm text-gray-500">Cadastros válidos que ainda dependem de administrador local.</p>
         </article>
     </div>
+
+    <form method="GET" action="{{ route('admin.igrejas.index') }}" class="admin-section-card mb-6 p-5">
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+            <div>
+                <label for="busca" class="block text-xs font-black uppercase tracking-[0.18em] text-gray-400">Pesquisar igreja</label>
+                <input
+                    id="busca"
+                    name="busca"
+                    type="search"
+                    value="{{ $busca ?? '' }}"
+                    placeholder="Digite o nome da igreja ou cidade"
+                    class="mt-2 block w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-gray-800 shadow-sm outline-none transition focus:border-[#6c4a21] focus:ring-4 focus:ring-[#6c4a21]/10"
+                >
+            </div>
+
+            <div class="flex flex-col gap-3 sm:flex-row">
+                <button type="submit" class="inline-flex items-center justify-center rounded-2xl bg-[#6c4a21] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#5a3d1b]">
+                    Buscar
+                </button>
+                @if (($busca ?? '') !== '')
+                    <a href="{{ route('admin.igrejas.index') }}" class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
+                        Limpar
+                    </a>
+                @endif
+            </div>
+        </div>
+
+        @if (($busca ?? '') !== '')
+            <p class="mt-3 text-sm text-gray-500">
+                Exibindo resultados para <span class="font-semibold text-gray-800">{{ $busca }}</span>.
+            </p>
+        @endif
+    </form>
 
     <div class="space-y-5">
         @forelse ($igrejas as $igreja)
@@ -255,7 +288,7 @@
             </article>
         @empty
             <div class="admin-section-card p-10 text-center text-gray-500">
-                Nenhuma igreja cadastrada até o momento.
+                {{ ($busca ?? '') !== '' ? 'Nenhuma igreja encontrada para a pesquisa informada.' : 'Nenhuma igreja cadastrada até o momento.' }}
             </div>
         @endforelse
     </div>

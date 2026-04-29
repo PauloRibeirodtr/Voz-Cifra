@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Publico;
 
 use App\Http\Controllers\Controller;
+use App\Models\Acorde;
 use App\Models\Igreja;
 use App\Models\Missa;
 use Carbon\CarbonImmutable;
@@ -58,6 +59,7 @@ class IgrejaPublicaController extends Controller
             'countdownIso' => $estado['countdownIso'],
             'timezoneExibicao' => $timezone,
             'modoPublico' => $audiencia,
+            'bibliotecaAcordes' => $audiencia === 'musicos' ? $this->bibliotecaAcordesPublica() : [],
         ]);
     }
 
@@ -112,7 +114,8 @@ class IgrejaPublicaController extends Controller
             ->first(fn (Missa $missa): bool => $this->missaEstaEmAndamento($missa, $agora, $timezone));
 
         $proximasMissasColecao = $missasOrdenadas
-            ->filter(fn (Missa $missa): bool => $missa->dataHoraInicio($timezone)->greaterThan($agora))
+            ->filter(fn (Missa $missa): bool => $missa->dataHoraInicio($timezone)->greaterThan($agora)
+                && $missa->dataHoraInicio($timezone)->lessThanOrEqualTo($agora->addMonth()))
             ->values();
 
         $missasHojeColecao = $missasOrdenadas
@@ -160,7 +163,6 @@ class IgrejaPublicaController extends Controller
                 ->values(),
             'celebracaoSelecionadaId' => (int) ($missaPublica?->id ?? 0),
             'proximasMissas' => $proximasMissasColecao
-                ->take(3)
                 ->map(fn (Missa $missa) => $this->mapearAgendaMissa($missa, $timezone))
                 ->values(),
             'countdownIso' => $countdownReferencia?->toIso8601String(),
@@ -399,5 +401,30 @@ class IgrejaPublicaController extends Controller
             $missa->dataHoraInicio('America/Cuiaba')->format('Y-m-d H:i:s'),
             $missa->dataHoraFim('America/Cuiaba')->format('Y-m-d H:i:s'),
         ]), (string) Config::get('app.key'));
+    }
+
+    private function bibliotecaAcordesPublica(): array
+    {
+        return Acorde::query()
+            ->where('ativo', true)
+            ->orderBy('nome')
+            ->get()
+            ->map(function (Acorde $acorde): array {
+                $shape = $acorde->dados_diagrama;
+
+                if (is_string($shape) && $shape !== '') {
+                    $decodificado = json_decode($shape, true);
+                    $shape = json_last_error() === JSON_ERROR_NONE ? $decodificado : null;
+                }
+
+                return [
+                    'id' => $acorde->id,
+                    'nome' => $acorde->nome,
+                    'descricao' => $acorde->descricao,
+                    'shape' => is_array($shape) ? $shape : null,
+                ];
+            })
+            ->values()
+            ->all();
     }
 }

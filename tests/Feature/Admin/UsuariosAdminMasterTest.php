@@ -17,6 +17,46 @@ class UsuariosAdminMasterTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_admin_master_filtra_igrejas_por_nome_ou_cidade(): void
+    {
+        $adminMaster = Usuario::factory()->adminMaster()->create([
+            'primeiro_acesso' => false,
+        ]);
+
+        Igreja::factory()->create([
+            'nome' => 'Paroquia Sagrado Coracao',
+            'cidade' => 'Ladario',
+        ]);
+
+        Igreja::factory()->create([
+            'nome' => 'Capela Nossa Senhora',
+            'cidade' => 'Corumba',
+        ]);
+
+        Igreja::factory()->create([
+            'nome' => 'Igreja Santo Expedito',
+            'cidade' => 'Guatambu',
+        ]);
+
+        $this
+            ->actingAs($adminMaster)
+            ->get(route('admin.igrejas.index', ['busca' => 'Corumba']))
+            ->assertOk()
+            ->assertSee('Capela Nossa Senhora')
+            ->assertDontSee('Paroquia Sagrado Coracao')
+            ->assertDontSee('Igreja Santo Expedito')
+            ->assertSee('Exibindo resultados para')
+            ->assertSee('Limpar');
+
+        $this
+            ->actingAs($adminMaster)
+            ->get(route('admin.igrejas.index', ['busca' => 'Sagrado']))
+            ->assertOk()
+            ->assertSee('Paroquia Sagrado Coracao')
+            ->assertDontSee('Capela Nossa Senhora')
+            ->assertDontSee('Igreja Santo Expedito');
+    }
+
     public function test_admin_master_pode_criar_admin_local_sem_vinculo_inicial(): void
     {
         Mail::fake();
@@ -252,7 +292,8 @@ class UsuariosAdminMasterTest extends TestCase
                 'ativo' => '1',
                 'criar_admin_local_agora' => 'nao',
             ])
-            ->assertSessionHasNoErrors();
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('admin.igrejas.index'));
 
         $igreja->refresh();
 

@@ -143,4 +143,43 @@ class IgrejaPublicaFieisTest extends TestCase
         $response->assertSee('Consultar histórico', false);
         $response->assertSee('Missa do Domingo Passado');
     }
+
+    public function test_link_publico_do_fiel_mostra_agenda_futura_publicada_do_mes(): void
+    {
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-04-27 10:00:00', 'America/Cuiaba'));
+
+        $igreja = Igreja::factory()->create([
+            'slug' => 'paroquia-agenda-publica',
+            'ativo' => true,
+        ]);
+
+        Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa da Proxima Semana',
+            'data_missa' => '2026-05-04',
+            'hora_inicio' => '19:00:00',
+            'hora_fim' => '20:00:00',
+            'publica_para_fieis' => true,
+            'publica_para_musicos' => false,
+            'ativo' => true,
+        ]);
+
+        Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa Fora do Mes',
+            'data_missa' => '2026-06-10',
+            'hora_inicio' => '19:00:00',
+            'hora_fim' => '20:00:00',
+            'publica_para_fieis' => true,
+            'publica_para_musicos' => false,
+            'ativo' => true,
+        ]);
+
+        $response = $this->get(route('igrejas.public.show', ['slug' => $igreja->slug]));
+
+        $response->assertOk();
+        $response->assertSee('Proximas missas publicadas');
+        $response->assertSee('Missa da Proxima Semana');
+        $response->assertDontSee('Missa Fora do Mes');
+    }
 }

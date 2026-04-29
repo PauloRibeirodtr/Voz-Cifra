@@ -444,6 +444,127 @@
             font-weight: 800;
         }
 
+        body[data-public-mode='musicos'] .lyrics {
+            --escala-fonte: 1;
+        }
+
+        body[data-public-mode='musicos'] .lyrics .cifra-linha {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 0.16rem;
+            margin-bottom: 0.48rem;
+        }
+
+        body[data-public-mode='musicos'] .lyrics .cifra-segmento {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-end;
+            min-height: 2.65rem;
+        }
+
+        body[data-public-mode='musicos'] .lyrics .cifra-acordes {
+            min-height: 1.1rem;
+            margin-bottom: 0.02rem;
+            color: #ffd99d;
+            font-weight: 900;
+            font-size: calc(0.95rem * var(--escala-fonte));
+            line-height: calc(1rem * var(--escala-fonte));
+            white-space: pre;
+        }
+
+        body[data-public-mode='musicos'] .lyrics .cifra-acorde {
+            display: inline-block;
+            cursor: pointer;
+            padding: 0.02rem 0.14rem;
+            border-radius: 0.35rem;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+
+        body[data-public-mode='musicos'] .lyrics .cifra-acorde:hover,
+        body[data-public-mode='musicos'] .lyrics .cifra-acorde.ativa {
+            background: rgba(255, 217, 157, 0.18);
+            color: #fff7ee;
+        }
+
+        body[data-public-mode='musicos'] .lyrics .cifra-letra {
+            color: var(--text);
+            font-size: calc(1rem * var(--escala-fonte));
+            line-height: calc(1.75rem * var(--escala-fonte));
+            white-space: pre-wrap;
+        }
+
+        body[data-public-mode='musicos'] .lyrics .cifra-marcacao {
+            display: inline-flex;
+            align-items: center;
+            margin: 1rem 0 0.75rem;
+            padding: 0.42rem 0.82rem;
+            border-radius: 999px;
+            background: rgba(227, 190, 132, 0.12);
+            color: var(--accent);
+            font-size: 0.76rem;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .public-chord-tooltip {
+            position: fixed;
+            z-index: 90;
+            width: 230px;
+            pointer-events: none;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 217, 157, 0.34);
+            background: rgba(15, 9, 9, 0.98);
+            box-shadow: var(--shadow);
+            padding: 12px;
+        }
+
+        .public-chord-tooltip[hidden] {
+            display: none;
+        }
+
+        .public-chord-tooltip__name {
+            margin: 0 0 6px;
+            color: var(--accent);
+            font-weight: 900;
+        }
+
+        .public-chord-tooltip svg {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .scroll-controls {
+            display: grid;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--line);
+        }
+
+        .scroll-controls__top {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .scroll-controls button {
+            min-height: 42px;
+            border-radius: 14px;
+            border: 1px solid rgba(227, 190, 132, 0.22);
+            background: rgba(227, 190, 132, 0.12);
+            color: var(--accent);
+            font-weight: 900;
+        }
+
+        .scroll-controls input {
+            width: 100%;
+            accent-color: #ffd99d;
+        }
+
         .access-floating {
             position: fixed;
             right: 14px;
@@ -621,11 +742,32 @@
                         </div>
                     @else
                         <div class="empty-state empty-state--compact">
-                            <h3 class="empty-title empty-title--small">Nenhuma missa publicada hoje.</h3>
+                            <h3 class="empty-title empty-title--small">Ainda não há missas para hoje.</h3>
                             <p class="empty-copy">Volte mais tarde ou consulte celebrações anteriores.</p>
                         </div>
                     @endif
                 </section>
+
+                @if ($proximasMissas->isNotEmpty())
+                    <section class="section">
+                        <div class="section-header">
+                            <p class="section-kicker">Agenda</p>
+                            <h2 class="section-title">Proximas missas publicadas</h2>
+                        </div>
+
+                        <div class="cards">
+                            @foreach ($proximasMissas as $proximaMissaItem)
+                                <article class="card">
+                                    <div class="card-main">
+                                        <span class="card-hour">{{ $proximaMissaItem['horario'] }}</span>
+                                        <h3 class="card-title">{{ $proximaMissaItem['titulo'] }}</h3>
+                                        <p class="card-meta">{{ $proximaMissaItem['dia_semana'] }} • {{ $proximaMissaItem['data'] }}</p>
+                                    </div>
+                                </article>
+                            @endforeach
+                        </div>
+                    </section>
+                @endif
             @else
                 <section class="section">
                     <div class="section-header">
@@ -653,7 +795,8 @@
                         </div>
                     @else
                         <div class="empty-state">
-                            <h3 class="empty-title">Sem repertório publicado.</h3>
+                            <h3 class="empty-title">Ainda não há missas publicadas para ensaio.</h3>
+                            <p class="empty-copy">Este acesso permanece em modo somente leitura.</p>
                         </div>
                     @endif
                 </section>
@@ -689,7 +832,7 @@
                                     </div>
                                     <h3 class="card-title">{{ $item['titulo'] }}</h3>
                                     @if (($modoPublico ?? 'fieis') === 'musicos')
-                                        <div class="lyrics">{!! $item['letra_publica_html'] ?? nl2br(e($item['letra_publica'] ?? ''), false) !!}</div>
+                                        <div class="lyrics" data-public-musician-lyrics data-lyrics="{{ e($item['letra_publica'] ?? '') }}">{!! $item['letra_publica_html'] ?? nl2br(e($item['letra_publica'] ?? ''), false) !!}</div>
                                     @else
                                         <div class="lyrics">{{ $item['letra_publica'] !== '' ? $item['letra_publica'] : 'A letra deste canto ainda não foi preparada para exibição pública.' }}</div>
                                     @endif
@@ -761,6 +904,23 @@
                     <button type="button" data-public-font-reset>A</button>
                     <button type="button" data-public-font="1">A+</button>
                 </div>
+                @if (($modoPublico ?? 'fieis') === 'musicos')
+                    <div class="scroll-controls">
+                        <div class="scroll-controls__top">
+                            <button type="button" data-public-scroll-toggle>Iniciar rolagem</button>
+                            <span data-public-scroll-speed-label>1.00</span>
+                        </div>
+                        <input
+                            type="range"
+                            min="0.25"
+                            max="6"
+                            step="0.25"
+                            value="1"
+                            aria-label="Velocidade da rolagem"
+                            data-public-scroll-speed
+                        >
+                    </div>
+                @endif
             </div>
             <button
                 type="button"
@@ -771,7 +931,18 @@
                 aria-label="Abrir acessibilidade"
             >&#9881;</button>
         </div>
+
+        @if (($modoPublico ?? 'fieis') === 'musicos')
+            <div class="public-chord-tooltip" data-public-chord-tooltip hidden>
+                <p class="public-chord-tooltip__name" data-public-chord-tooltip-name></p>
+                <div data-public-chord-tooltip-diagram></div>
+            </div>
+        @endif
     </main>
+
+    @if (($modoPublico ?? 'fieis') === 'musicos')
+        @include('partials.chord-transposer-script')
+    @endif
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -811,6 +982,195 @@
                     const aberto = accessFloating.dataset.open === 'true';
                     accessFloating.dataset.open = aberto ? 'false' : 'true';
                     accessToggle.setAttribute('aria-expanded', aberto ? 'false' : 'true');
+                });
+            }
+
+            if (document.body.dataset.publicMode === 'musicos') {
+                const helper = window.VozECifraChord;
+                const bibliotecaAcordes = @json($bibliotecaAcordes ?? [], JSON_UNESCAPED_UNICODE);
+                const gruposAcorde = helper ? helper.buildChordGroups(bibliotecaAcordes) : null;
+                const tooltipAcorde = document.querySelector('[data-public-chord-tooltip]');
+                const tooltipNome = document.querySelector('[data-public-chord-tooltip-name]');
+                const tooltipDiagrama = document.querySelector('[data-public-chord-tooltip-diagram]');
+                const botaoRolagem = document.querySelector('[data-public-scroll-toggle]');
+                const controleVelocidade = document.querySelector('[data-public-scroll-speed]');
+                const rotuloVelocidade = document.querySelector('[data-public-scroll-speed-label]');
+                let intervaloRolagem = null;
+
+                const renderizarDiagrama = (shape) => {
+                    if (!shape) {
+                        return '<div>Sem desenho cadastrado.</div>';
+                    }
+
+                    const config = { startX: 30, startY: 40, width: 180, height: 240, numStrings: 6, numFrets: 5 };
+                    const stringGap = config.width / (config.numStrings - 1);
+                    const fretGap = config.height / config.numFrets;
+                    const baseFret = shape.baseFret || 1;
+                    const positions = shape.positions || [];
+                    const barres = shape.barres || [];
+                    const topMarkers = shape.topMarkers || [null, null, null, null, null, null];
+                    let grid = '';
+                    let marks = '';
+
+                    if (baseFret === 1) {
+                        grid += `<rect x="${config.startX}" y="${config.startY - 6}" width="${config.width}" height="6" rx="2" fill="#e5e7eb" />`;
+                    } else {
+                        grid += `<text x="${config.startX - 10}" y="${config.startY + 25}" text-anchor="end" fill="#f5ead9" font-weight="bold" font-size="18">${baseFret}a</text>`;
+                        grid += `<line x1="${config.startX}" y1="${config.startY}" x2="${config.startX + config.width}" y2="${config.startY}" stroke="#cbd5e1" stroke-width="2" />`;
+                    }
+
+                    for (let i = 1; i <= config.numFrets; i++) {
+                        const y = config.startY + (i * fretGap);
+                        grid += `<line x1="${config.startX}" y1="${y}" x2="${config.startX + config.width}" y2="${y}" stroke="#cbd5e1" stroke-width="2" />`;
+                    }
+
+                    for (let i = 0; i < config.numStrings; i++) {
+                        const x = config.startX + (i * stringGap);
+                        const thickness = 0.8 + ((5 - i) * 0.5);
+                        grid += `<line x1="${x}" y1="${config.startY}" x2="${x}" y2="${config.startY + config.height}" stroke="#e2e8f0" stroke-width="${thickness}" />`;
+                    }
+
+                    topMarkers.forEach((marker, i) => {
+                        const x = config.startX + (i * stringGap);
+                        const y = config.startY - 15;
+                        if (marker === 'muted') {
+                            marks += `<text x="${x}" y="${y + 5}" fill="#ef4444" font-size="18" font-weight="900" text-anchor="middle">X</text>`;
+                        } else if (marker === 'open') {
+                            marks += `<circle cx="${x}" cy="${y}" r="5" stroke="#93c5fd" stroke-width="2.5" fill="none" />`;
+                        }
+                    });
+
+                    barres.forEach((barre) => {
+                        const y = config.startY + (barre.fret * fretGap) - (fretGap / 2);
+                        const x1 = config.startX + ((6 - barre.fromString) * stringGap);
+                        const x2 = config.startX + ((6 - barre.toString) * stringGap);
+                        marks += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="#ffd99d" stroke-width="14" stroke-linecap="round" opacity="0.95" />`;
+                    });
+
+                    positions.forEach((position) => {
+                        const y = config.startY + (position.fret * fretGap) - (fretGap / 2);
+                        const x = config.startX + ((6 - position.string) * stringGap);
+                        marks += `<circle cx="${x}" cy="${y}" r="12" fill="#ffd99d" />`;
+                        if (position.finger) {
+                            marks += `<text x="${x}" y="${y + 1}" fill="#160c0d" font-size="14" font-weight="900" text-anchor="middle" dominant-baseline="central">${position.finger}</text>`;
+                        }
+                    });
+
+                    return `<svg viewBox="0 0 240 300" aria-label="Diagrama do acorde"><rect x="30" y="40" width="180" height="240" rx="4" fill="#3b2418" stroke="#1f130d" stroke-width="2"></rect>${grid}${marks}</svg>`;
+                };
+
+                const ativarAcorde = (nome) => {
+                    if (!helper || !gruposAcorde) {
+                        return null;
+                    }
+
+                    const acorde = helper.getChordMatches(gruposAcorde, nome)[0] || null;
+                    const assinaturaAtual = helper.getChordSignature(nome);
+
+                    document.querySelectorAll('[data-acorde-hover]').forEach((elemento) => {
+                        const assinaturaElemento = helper.getChordSignature(elemento.dataset.acordeHover);
+                        const ativo = elemento.dataset.acordeHover === nome || (assinaturaElemento && assinaturaAtual && assinaturaElemento === assinaturaAtual);
+                        elemento.classList.toggle('ativa', ativo);
+                    });
+
+                    return acorde;
+                };
+
+                const mostrarTooltipAcorde = (nome, x, y) => {
+                    const acorde = ativarAcorde(nome);
+                    if (!tooltipAcorde || !tooltipNome || !tooltipDiagrama || !acorde) {
+                        return;
+                    }
+
+                    tooltipNome.textContent = nome;
+                    tooltipDiagrama.innerHTML = renderizarDiagrama(acorde.shape);
+                    tooltipAcorde.hidden = false;
+                    tooltipAcorde.style.left = `${Math.max(12, Math.min(x + 14, window.innerWidth - 244))}px`;
+                    tooltipAcorde.style.top = `${Math.max(y - 220, 12)}px`;
+                };
+
+                if (helper) {
+                    document.querySelectorAll('[data-public-musician-lyrics]').forEach((lyrics) => {
+                        lyrics.innerHTML = helper.renderChordSheetHtml(lyrics.dataset.lyrics || '', { chordAttribute: 'data-acorde-hover' });
+                    });
+                }
+
+                document.addEventListener('mouseover', (event) => {
+                    const acorde = event.target.closest('[data-acorde-hover]');
+                    if (acorde) {
+                        mostrarTooltipAcorde(acorde.dataset.acordeHover, event.clientX, event.clientY);
+                    }
+                });
+
+                document.addEventListener('mousemove', (event) => {
+                    const acorde = event.target.closest('[data-acorde-hover]');
+                    if (acorde) {
+                        mostrarTooltipAcorde(acorde.dataset.acordeHover, event.clientX, event.clientY);
+                    }
+                });
+
+                document.addEventListener('mouseout', (event) => {
+                    if (event.target.closest('[data-acorde-hover]') && tooltipAcorde) {
+                        tooltipAcorde.hidden = true;
+                    }
+                });
+
+                document.addEventListener('click', (event) => {
+                    const acorde = event.target.closest('[data-acorde-hover]');
+                    if (!acorde) {
+                        return;
+                    }
+
+                    const rect = acorde.getBoundingClientRect();
+                    mostrarTooltipAcorde(acorde.dataset.acordeHover, rect.left, rect.top);
+                });
+
+                const pararRolagem = () => {
+                    if (intervaloRolagem) {
+                        window.clearInterval(intervaloRolagem);
+                        intervaloRolagem = null;
+                    }
+
+                    if (botaoRolagem) {
+                        botaoRolagem.textContent = 'Iniciar rolagem';
+                    }
+                };
+
+                const iniciarRolagem = () => {
+                    const velocidade = Number(controleVelocidade?.value || 1);
+                    if (rotuloVelocidade) {
+                        rotuloVelocidade.textContent = velocidade.toFixed(2);
+                    }
+
+                    intervaloRolagem = window.setInterval(() => {
+                        window.scrollBy({ top: velocidade * 0.22, left: 0, behavior: 'auto' });
+
+                        if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
+                            pararRolagem();
+                        }
+                    }, 60);
+                };
+
+                botaoRolagem?.addEventListener('click', () => {
+                    if (intervaloRolagem) {
+                        pararRolagem();
+                        return;
+                    }
+
+                    botaoRolagem.textContent = 'Parar rolagem';
+                    iniciarRolagem();
+                });
+
+                controleVelocidade?.addEventListener('input', () => {
+                    const velocidade = Number(controleVelocidade.value || 1);
+                    if (rotuloVelocidade) {
+                        rotuloVelocidade.textContent = velocidade.toFixed(2);
+                    }
+
+                    if (intervaloRolagem) {
+                        window.clearInterval(intervaloRolagem);
+                        iniciarRolagem();
+                    }
                 });
             }
 

@@ -30,18 +30,28 @@ class IgrejaController extends Controller
     ) {
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $busca = trim((string) $request->input('busca', ''));
+
         $igrejas = Igreja::with([
             'adminsLocais' => fn ($query) => $query->orderBy('nome'),
             'coordenadores' => fn ($query) => $query->orderBy('nome'),
         ])
+            ->when($busca !== '', function ($query) use ($busca): void {
+                $query->where(function ($subquery) use ($busca): void {
+                    $subquery
+                        ->where('nome', 'like', '%' . $busca . '%')
+                        ->orWhere('cidade', 'like', '%' . $busca . '%');
+                });
+            })
             ->orderBy('nome')
             ->get()
             ->map(fn (Igreja $igreja) => $this->adicionarDadosPublicos($igreja));
 
         return view('admin.churches.index', [
             'igrejas' => $igrejas,
+            'busca' => $busca,
         ]);
     }
 
@@ -241,7 +251,7 @@ class IgrejaController extends Controller
         );
 
         return redirect()
-            ->route('admin.igrejas.edit', $igreja)
+            ->route('admin.igrejas.index')
             ->with('success', $igreja->estaOperacional()
                 ? 'Igreja atualizada com sucesso. A unidade segue operacional.'
                 : 'Igreja atualizada com sucesso. A unidade continua aguardando admin local para operar missas, repertorios e publicacoes.');
