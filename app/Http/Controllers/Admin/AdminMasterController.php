@@ -111,10 +111,11 @@ class AdminMasterController extends Controller
 
         if ($request->hasFile('foto_perfil')) {
             $caminhoAnterior = $usuario->foto_perfil_path;
-            $usuario->foto_perfil_path = $request->file('foto_perfil')->store('usuarios/fotos', 'public');
+            $disk = (string) config('filesystems.public_uploads_disk', 'public');
+            $usuario->foto_perfil_path = $request->file('foto_perfil')->store('usuarios/fotos', $disk);
 
             if (is_string($caminhoAnterior) && $caminhoAnterior !== '') {
-                Storage::disk('public')->delete($caminhoAnterior);
+                Storage::disk($disk)->delete($caminhoAnterior);
             }
         }
 

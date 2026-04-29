@@ -137,12 +137,15 @@ class Igreja extends Model
     public function imagemUrl(): string
     {
         $path = trim((string) $this->imagem_path);
+        $disk = (string) config('filesystems.public_uploads_disk', 'public');
 
-        if ($path !== '' && Storage::disk('public')->exists($path)) {
-            $url = route('media.public.show', ['path' => $path], false);
+        if ($path !== '' && Storage::disk($disk)->exists($path)) {
+            $url = $disk === 'public'
+                ? route('media.public.show', ['path' => $path], false)
+                : Storage::disk($disk)->url($path);
 
             try {
-                return $url . '?v=' . Storage::disk('public')->lastModified($path);
+                return $url . '?v=' . Storage::disk($disk)->lastModified($path);
             } catch (\Throwable) {
                 return $url;
             }

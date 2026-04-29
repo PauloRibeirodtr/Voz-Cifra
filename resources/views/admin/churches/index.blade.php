@@ -110,9 +110,9 @@
                 <div class="flex flex-col gap-5">
                     <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                         <div class="flex min-w-0 items-start gap-4">
-                            <div class="h-20 w-20 shrink-0 overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+                            <a href="{{ route('admin.igrejas.edit', $igreja) }}" class="h-20 w-20 shrink-0 overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition hover:ring-4 hover:ring-[#6c4a21]/15" aria-label="Editar igreja {{ $igreja->nome }}">
                                 <img src="{{ $igreja->imagemUrl() }}" alt="Imagem da igreja {{ $igreja->nome }}" class="h-full w-full object-cover">
-                            </div>
+                            </a>
 
                             <div class="min-w-0">
                                 <div class="flex flex-wrap items-center gap-2">

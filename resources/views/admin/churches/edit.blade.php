@@ -138,9 +138,8 @@
             </div>
         </div>
 
-        <div class="admin-section-card p-6">
-            @php($criarAdminLocalAgora = (bool) old('criar_admin_local_agora', (bool) $adminLocal))
-
+        @if (false)
+        <div class="hidden">
             <h2 class="text-lg font-bold text-gray-800 mb-4">Administrador local</h2>
             <p class="mb-4 text-sm text-gray-500">Use a mesma regra do cadastro: a igreja pode existir sem administrador local, mas a operação local depende desse vínculo ativo.</p>
 
@@ -194,6 +193,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <a href="{{ route('admin.igrejas.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 text-gray-700 font-medium hover:bg-gray-50">
@@ -272,6 +272,9 @@
                     <p class="mt-2 text-sm text-gray-500">
                         Esta é a forma mais segura de promover ou revogar `administrador local`, `coordenador` e `músico`: escolha apenas usuários já vinculados a esta igreja e aplique a ação desejada.
                     </p>
+                    <a href="{{ route('admin.usuarios.create', ['igreja_id' => $igreja->id]) }}" class="mt-4 inline-flex items-center justify-center rounded-xl bg-[#6c4a21] px-4 py-3 text-sm font-semibold text-white hover:bg-[#5a3d1b]">
+                        Cadastrar usuário nesta igreja
+                    </a>
                 </div>
                 <div class="w-full max-w-md">
                     <label class="block text-xs font-black uppercase tracking-[0.16em] text-gray-400">Buscar vinculado</label>
@@ -400,7 +403,8 @@
             </div>
         </div>
 
-            <div class="admin-section-card p-6">
+        @if (false)
+            <div class="hidden">
                 <h2 class="text-lg font-bold text-gray-800">Adicionar ou promover admin local</h2>
                 <p class="mt-2 text-sm text-gray-500">
                     Use este formulário apenas quando a pessoa ainda não estiver vinculada a esta igreja ou quando você realmente precisar cadastrar manualmente.
@@ -441,7 +445,7 @@
                 </form>
             </div>
 
-        <div class="admin-section-card p-6">
+        <div class="hidden">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div class="max-w-2xl">
                     <h2 class="text-lg font-bold text-gray-800">Coordenadores da igreja</h2>
@@ -503,6 +507,7 @@
                 </div>
             </form>
         </div>
+        @endif
 
         <div class="admin-section-card p-6">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">

@@ -115,7 +115,7 @@ class IgrejaController extends Controller
         });
 
         if ($request->hasFile('imagem')) {
-            $igreja->imagem_path = $request->file('imagem')->store('igrejas/imagens', 'public');
+            $igreja->imagem_path = $request->file('imagem')->store('igrejas/imagens', $this->discoUploadsPublicos());
             $igreja->save();
         }
 
@@ -226,11 +226,11 @@ class IgrejaController extends Controller
 
         if ($request->hasFile('imagem')) {
             $caminhoAnterior = $igreja->imagem_path;
-            $igreja->imagem_path = $request->file('imagem')->store('igrejas/imagens', 'public');
+            $igreja->imagem_path = $request->file('imagem')->store('igrejas/imagens', $this->discoUploadsPublicos());
             $igreja->save();
 
             if (is_string($caminhoAnterior) && $caminhoAnterior !== '') {
-                Storage::disk('public')->delete($caminhoAnterior);
+                Storage::disk($this->discoUploadsPublicos())->delete($caminhoAnterior);
             }
         }
 
@@ -481,6 +481,11 @@ class IgrejaController extends Controller
         );
 
         return $igreja;
+    }
+
+    protected function discoUploadsPublicos(): string
+    {
+        return (string) config('filesystems.public_uploads_disk', 'public');
     }
 
     protected function criarAdminLocalDaIgreja(

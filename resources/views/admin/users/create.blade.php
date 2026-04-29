@@ -50,11 +50,11 @@
                             <div>
                                 <label class="admin-label">Tipo inicial</label>
                                 <select name="tipo_cadastro" class="admin-select">
-                                    <option value="admin_master" @selected(old('tipo_cadastro') === 'admin_master')>Admin master</option>
-                                    <option value="coordenador" @selected(old('tipo_cadastro') === 'coordenador')>Coordenador</option>
-                                    <option value="admin_local" @selected(old('tipo_cadastro') === 'admin_local')>Admin local</option>
-                                    <option value="musico" @selected(old('tipo_cadastro', 'musico') === 'musico')>Músico</option>
-                                    <option value="padre" @selected(old('tipo_cadastro') === 'padre')>Padre</option>
+                                    <option value="admin_master" @selected(old('tipo_cadastro', request('tipo_cadastro')) === 'admin_master')>Admin master</option>
+                                    <option value="coordenador" @selected(old('tipo_cadastro', request('tipo_cadastro')) === 'coordenador')>Coordenador</option>
+                                    <option value="admin_local" @selected(old('tipo_cadastro', request('tipo_cadastro')) === 'admin_local')>Admin local</option>
+                                    <option value="musico" @selected(old('tipo_cadastro', request('tipo_cadastro', 'musico')) === 'musico')>Músico</option>
+                                    <option value="padre" @selected(old('tipo_cadastro', request('tipo_cadastro')) === 'padre')>Padre</option>
                                 </select>
                             </div>
 
@@ -63,7 +63,7 @@
                                 <select name="igreja_id" class="admin-select">
                                     <option value="">Cadastrar sem vínculo inicial</option>
                                     @foreach ($igrejas as $igreja)
-                                        <option value="{{ $igreja->id }}" @selected((string) old('igreja_id') === (string) $igreja->id)>{{ $igreja->nome }}</option>
+                                        <option value="{{ $igreja->id }}" @selected((string) old('igreja_id', request('igreja_id')) === (string) $igreja->id)>{{ $igreja->nome }}</option>
                                     @endforeach
                                 </select>
                             </div>

@@ -57,6 +57,27 @@ class UsuariosAdminMasterTest extends TestCase
             ->assertDontSee('Igreja Santo Expedito');
     }
 
+    public function test_edicao_da_igreja_foca_em_dados_e_usuarios_vinculados(): void
+    {
+        $adminMaster = Usuario::factory()->adminMaster()->create([
+            'primeiro_acesso' => false,
+        ]);
+        $igreja = Igreja::factory()->create([
+            'nome' => 'Paroquia Sao Joao Bosco',
+        ]);
+
+        $this
+            ->actingAs($adminMaster)
+            ->get(route('admin.igrejas.edit', $igreja))
+            ->assertOk()
+            ->assertSee('Dados da igreja')
+            ->assertSee('Usuários vinculados a esta igreja')
+            ->assertSee('Cadastrar usuário nesta igreja')
+            ->assertDontSee('Cadastrar ou atualizar admin local agora')
+            ->assertDontSee('Adicionar ou promover admin local')
+            ->assertDontSee('Coordenadores da igreja');
+    }
+
     public function test_admin_master_pode_criar_admin_local_sem_vinculo_inicial(): void
     {
         Mail::fake();
