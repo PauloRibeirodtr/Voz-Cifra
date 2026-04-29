@@ -516,7 +516,7 @@ class IgrejaController extends Controller
 
     protected function discoUploadsPublicos(): string
     {
-        return (string) config('filesystems.public_uploads_disk', 'public');
+        return (string) config('filesystems.public_uploads_disk', config('filesystems.default'));
     }
 
     protected function igrejaCombinaComBusca(Igreja $igreja, string $busca): bool

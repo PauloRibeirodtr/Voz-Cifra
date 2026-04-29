@@ -266,7 +266,7 @@ class Usuario extends Authenticatable
     public function fotoPerfilUrl(): string
     {
         $path = trim((string) $this->foto_perfil_path);
-        $disk = (string) config('filesystems.public_uploads_disk', 'public');
+        $disk = (string) config('filesystems.public_uploads_disk', config('filesystems.default'));
 
         if ($path !== '' && Storage::disk($disk)->exists($path)) {
             $url = $disk === 'public'

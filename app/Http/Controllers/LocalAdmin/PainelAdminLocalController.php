@@ -120,7 +120,7 @@ class PainelAdminLocalController extends Controller
 
     private function discoUploadsPublicos(): string
     {
-        return (string) config('filesystems.public_uploads_disk', 'public');
+        return (string) config('filesystems.public_uploads_disk', config('filesystems.default'));
     }
 
     private function obterIgreja(Usuario $usuario): Igreja

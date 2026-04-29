@@ -10,7 +10,7 @@ class PublicStorageController extends Controller
 {
     public function show(string $path): StreamedResponse
     {
-        $disk = (string) config('filesystems.public_uploads_disk', 'public');
+        $disk = (string) config('filesystems.public_uploads_disk', config('filesystems.default'));
 
         abort_unless($path !== '', 404);
         abort_unless(Storage::disk($disk)->exists($path), 404);

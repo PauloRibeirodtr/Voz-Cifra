@@ -137,7 +137,7 @@ class Igreja extends Model
     public function imagemUrl(): string
     {
         $path = trim((string) $this->imagem_path);
-        $disk = (string) config('filesystems.public_uploads_disk', 'public');
+        $disk = (string) config('filesystems.public_uploads_disk', config('filesystems.default'));
 
         if ($this->temImagemPersonalizada()) {
             $url = $disk === 'public'
@@ -157,7 +157,7 @@ class Igreja extends Model
     public function temImagemPersonalizada(): bool
     {
         $path = trim((string) $this->imagem_path);
-        $disk = (string) config('filesystems.public_uploads_disk', 'public');
+        $disk = (string) config('filesystems.public_uploads_disk', config('filesystems.default'));
 
         return $path !== '' && Storage::disk($disk)->exists($path);
     }
