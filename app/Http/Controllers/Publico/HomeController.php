@@ -104,6 +104,7 @@ class HomeController extends Controller
                     'nome' => $igreja->nome,
                     'slug' => $igreja->slug,
                     'imagem_url' => $igreja->imagemUrl(),
+                    'tem_imagem_personalizada' => $igreja->temImagemPersonalizada(),
                     'localidade' => trim(($igreja->cidade ?? '') . ' - ' . ($igreja->estado ?? ''), ' -'),
                     'cidade' => $igreja->cidade,
                     'estado' => $igreja->estado,

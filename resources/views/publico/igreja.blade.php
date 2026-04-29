@@ -125,6 +125,14 @@
             border-radius: 26px;
         }
 
+        .brand img.brand-image--fallback {
+            object-fit: contain;
+            padding: 12px;
+            background:
+                radial-gradient(circle at center, rgba(255, 217, 157, 0.14), transparent 60%),
+                rgba(255, 255, 255, 0.04);
+        }
+
         .brand-kicker,
         .section-kicker {
             margin: 0;
@@ -702,7 +710,7 @@
         <div class="shell">
             <section class="section hero">
                 <a href="{{ route('igrejas.public.show', ['slug' => $igreja->slug]) }}" class="brand">
-                    <img src="{{ $igreja->imagemUrl() }}" alt="Logo {{ $igreja->nome }}">
+                    <img src="{{ $igreja->imagemUrl() }}" alt="Logo {{ $igreja->nome }}" class="{{ $igreja->temImagemPersonalizada() ? '' : 'brand-image--fallback' }}">
                     <div>
                         <p class="brand-kicker">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Músicos' : 'Igreja' }}</p>
                         <h1 class="hero-church">{{ $igreja->nome }}</h1>

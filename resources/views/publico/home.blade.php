@@ -94,7 +94,7 @@
                                 data-search="{{ \Illuminate\Support\Str::lower(\Illuminate\Support\Str::ascii(implode(' ', [$igreja['nome'], $igreja['cidade'], $igreja['estado'], $igreja['bairro'], $igreja['endereco']]))) }}"
                                 data-city="{{ \Illuminate\Support\Str::lower(\Illuminate\Support\Str::ascii((string) $igreja['cidade'])) }}"
                             >
-                                <span class="church-tile__image">
+                                <span class="church-tile__image {{ $igreja['tem_imagem_personalizada'] ? 'church-tile__image--photo' : 'church-tile__image--fallback' }}">
                                     <img src="{{ $igreja['imagem_url'] }}" alt="Imagem da igreja {{ $igreja['nome'] }}" loading="lazy">
                                     <span class="church-tile__image-overlay"></span>
                                 </span>
@@ -222,9 +222,8 @@
                 border-radius: var(--radius-lg);
                 background: var(--panel);
                 box-shadow: var(--shadow);
-                min-height: 100%;
                 grid-template-columns: 6.5rem minmax(0, 1fr);
-                min-height: 9.5rem;
+                min-height: 10.25rem;
                 transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
             }
 
@@ -251,7 +250,7 @@
                 position: relative;
                 display: block;
                 height: 100%;
-                min-height: 9.5rem;
+                min-height: 10.25rem;
                 background: rgba(255, 255, 255, 0.05);
                 overflow: hidden;
             }
@@ -261,6 +260,22 @@
                 height: 100%;
                 object-fit: cover;
                 transition: transform 0.26s ease;
+            }
+
+            .church-tile__image--fallback {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 1rem;
+                background:
+                    radial-gradient(circle at center, rgba(245, 174, 20, 0.18), transparent 58%),
+                    rgba(255, 255, 255, 0.04);
+            }
+
+            .church-tile__image--fallback img {
+                width: 74%;
+                height: 74%;
+                object-fit: contain;
             }
 
             .church-tile:hover .church-tile__image img,
@@ -278,9 +293,9 @@
             }
 
             .church-tile__content {
-                display: grid;
+                display: flex;
+                flex-direction: column;
                 gap: 0.52rem;
-                align-content: start;
                 padding: 0.9rem;
                 min-width: 0;
             }
@@ -296,12 +311,12 @@
             .church-tile__name {
                 color: var(--text);
                 font-family: var(--font-display);
-                font-size: clamp(1.1rem, 1.65vw, 1.38rem);
+                font-size: clamp(1.08rem, 1.55vw, 1.32rem);
                 font-weight: 800;
                 line-height: 1.12;
                 display: -webkit-box;
                 -webkit-box-orient: vertical;
-                -webkit-line-clamp: 2;
+                -webkit-line-clamp: 3;
                 overflow: hidden;
             }
 
@@ -348,7 +363,7 @@
                 color: var(--gold-soft);
                 font-size: 0.9rem;
                 font-weight: 900;
-                margin-top: 0.1rem;
+                margin-top: auto;
                 text-align: center;
                 transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
             }
@@ -368,24 +383,24 @@
                 }
 
                 .church-tile__image {
-                    min-height: 10rem;
+                    min-height: 10.25rem;
                 }
             }
 
             @media (min-width: 1024px) {
-                .church-grid--visual {
-                    grid-template-columns: repeat(4, minmax(0, 1fr));
-                }
-
                 .church-tile {
                     grid-template-columns: 1fr;
                     grid-template-rows: auto 1fr;
-                    min-height: 0;
+                    min-height: 21rem;
                 }
 
                 .church-tile__image {
-                    height: 8.75rem;
+                    height: 8.25rem;
                     min-height: 0;
+                }
+
+                .church-tile__content {
+                    min-height: 12.75rem;
                 }
             }
     </style>
