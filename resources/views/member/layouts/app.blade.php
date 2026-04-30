@@ -15,7 +15,7 @@
     ></div>
 
     <div class="admin-app">
-        @include('admin.partials.sidebar')
+        @include('partials.operational-sidebar', ['sidebarId' => 'admin_sidebar'])
 
         <div class="admin-main">
             <header class="admin-mobile-header sticky top-0 z-20 border-b border-white/10 backdrop-blur lg:hidden">

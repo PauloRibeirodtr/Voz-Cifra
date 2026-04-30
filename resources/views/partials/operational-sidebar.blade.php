@@ -113,10 +113,12 @@
                 </a>
             @endif
 
-            <a href="{{ $temAdminLocalSidebar ? route('local-admin.musicos.index') : route('coordenador.musicos.index') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('local-admin.musicos.*', 'coordenador.musicos.*')) }}">
-                <i class="fa-solid fa-users w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
-                <span>Equipe musical</span>
-            </a>
+            @if ($temAdminLocalSidebar || $temCoordenadorSidebar)
+                <a href="{{ $temAdminLocalSidebar ? route('local-admin.musicos.index') : route('coordenador.musicos.index') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('local-admin.musicos.*', 'coordenador.musicos.*')) }}">
+                    <i class="fa-solid fa-users w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
+                    <span>Equipe musical</span>
+                </a>
+            @endif
         @endif
 
         @if ($temAdminLocalSidebar || $temAcessoMusicalSidebar)
