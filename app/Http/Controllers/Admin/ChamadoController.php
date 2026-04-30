@@ -93,6 +93,12 @@ class ChamadoController extends Controller
             $usuario
         );
 
+        if (in_array($dados['status'], ['resolvido', 'fechado'], true)) {
+            return redirect()
+                ->route('admin.chamados.index')
+                ->with('success', 'Chamado encerrado com sucesso.');
+        }
+
         return back()->with('success', 'Status do chamado atualizado com sucesso.');
     }
 

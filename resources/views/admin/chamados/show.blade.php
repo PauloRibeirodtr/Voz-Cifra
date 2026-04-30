@@ -5,6 +5,8 @@
 @section('desktop_subtitle', 'Detalhe do chamado e historico de suporte')
 
 @section('content')
+    @php($chamadoEncerrado = in_array($chamado->status, ['resolvido', 'fechado'], true))
+
     <div class="mb-6">
         <a href="{{ route('admin.chamados.index') }}" class="text-sm font-semibold text-green-700 hover:text-green-800">&larr; Voltar para chamados</a>
     </div>
@@ -42,7 +44,6 @@
                         <div class="text-[11px] font-black uppercase tracking-[0.16em] text-gray-400">Solicitante</div>
                         <div class="mt-1 text-sm font-semibold text-gray-700">{{ $chamado->solicitante_nome ?: 'Nao informado' }}</div>
                         <div class="text-xs text-gray-500">{{ $chamado->solicitante_email ?: 'Sem email' }}</div>
-                        <div class="text-xs text-gray-500">{{ $chamado->solicitante_telegram_chat_id ?: 'Sem chat Telegram' }}</div>
                     </div>
 
                     <div class="rounded-2xl bg-gray-50 px-4 py-4">
@@ -97,72 +98,99 @@
         </div>
 
         <div class="space-y-6">
-            <section class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-black text-gray-800">Acoes rapidas</h2>
-                <div class="mt-4 space-y-3">
-                    <form action="{{ route('admin.chamados.assumir', $chamado) }}" method="POST">
-                        @csrf
-                        <button type="submit" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50">
-                            Assumir atendimento
-                        </button>
-                    </form>
+            @if ($chamadoEncerrado)
+                <section class="rounded-3xl border border-emerald-100 bg-emerald-50 p-6 shadow-sm">
+                    <h2 class="text-lg font-black text-emerald-900">Atendimento encerrado</h2>
+                    <p class="mt-2 text-sm text-emerald-800">Este chamado esta em modo de visualizacao. Para preservar o historico, as acoes de atendimento ficam bloqueadas depois da resolucao.</p>
+                </section>
 
-                    @if ($supportService->podeAprovarPedidoAcesso($chamado))
-                        <form action="{{ route('admin.chamados.aprovar-pedido-acesso', $chamado) }}" method="POST" onsubmit="return confirm('Deseja aprovar este pedido e liberar o acesso do musico?');">
+                <section class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <h2 class="text-lg font-black text-gray-800">Avaliacao do usuario</h2>
+                    @if ($chamado->avaliacao_nota !== null)
+                        <div class="mt-4 rounded-2xl bg-gray-50 px-4 py-4 text-sm text-gray-700">
+                            <strong class="text-gray-900">Nota:</strong>
+                            {{ $chamado->avaliacao_nota }} {{ (int) $chamado->avaliacao_nota === 1 ? 'estrela' : 'estrelas' }}
+                            @if ($chamado->avaliacao_comentario)
+                                <p class="mt-3 whitespace-pre-line">{{ $chamado->avaliacao_comentario }}</p>
+                            @endif
+                        </div>
+                    @else
+                        <p class="mt-3 text-sm text-gray-500">O usuario ainda nao avaliou este atendimento.</p>
+                    @endif
+                </section>
+            @else
+                <section class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <h2 class="text-lg font-black text-gray-800">Acoes do atendimento</h2>
+                    <div class="mt-4 space-y-3">
+                        <form action="{{ route('admin.chamados.assumir', $chamado) }}" method="POST">
                             @csrf
-                            <button type="submit" class="w-full rounded-xl bg-sky-700 px-4 py-3 text-sm font-semibold text-white hover:bg-sky-800">
-                                Aprovar pedido de acesso
+                            <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50">
+                                <i class="fa-solid fa-play"></i>
+                                <span>{{ $chamado->responsavel_usuario_id ? 'Reassumir atendimento' : 'Iniciar atendimento' }}</span>
                             </button>
                         </form>
-                    @endif
 
-                    <form action="{{ route('admin.chamados.pedir-mais-dados', $chamado) }}" method="POST" class="space-y-3">
+                        @if ($supportService->podeAprovarPedidoAcesso($chamado))
+                            <form action="{{ route('admin.chamados.aprovar-pedido-acesso', $chamado) }}" method="POST" onsubmit="return confirm('Deseja aprovar este pedido e liberar o acesso do musico?');">
+                                @csrf
+                                <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-700 px-4 py-3 text-sm font-semibold text-white hover:bg-sky-800">
+                                    <i class="fa-solid fa-user-check"></i>
+                                    <span>Aprovar pedido de acesso</span>
+                                </button>
+                            </form>
+                        @endif
+
+                        <form action="{{ route('admin.chamados.pedir-mais-dados', $chamado) }}" method="POST" class="space-y-3">
+                            @csrf
+                            <textarea name="mensagem" rows="4" class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-800" placeholder="Escreva o que ainda falta para o usuario responder">{{ old('mensagem') }}</textarea>
+                            <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800 hover:bg-amber-100">
+                                <i class="fa-solid fa-pause"></i>
+                                <span>Pedir mais dados</span>
+                            </button>
+                        </form>
+                    </div>
+                </section>
+
+                <section class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <h2 class="text-lg font-black text-gray-800">Finalizar ou pausar</h2>
+                    <form action="{{ route('admin.chamados.status.update', $chamado) }}" method="POST" class="mt-4 space-y-4">
                         @csrf
-                        <textarea name="mensagem" rows="4" class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-800" placeholder="Escreva o que ainda falta para o usuario responder">{{ old('mensagem') }}</textarea>
-                        <button type="submit" class="w-full rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800 hover:bg-amber-100">
-                            Pedir mais dados
+
+                        <select name="status" class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800">
+                            @foreach ($statusOptions as $valor => $label)
+                                <option value="{{ $valor }}" @selected($chamado->status === $valor)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+
+                        <textarea name="resolucao_resumo" rows="4" class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800" placeholder="Resumo da resolucao, se houver">{{ old('resolucao_resumo', $chamado->resolucao_resumo) }}</textarea>
+
+                        <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-green-700 px-4 py-3 text-sm font-semibold text-white hover:bg-green-800">
+                            <i class="fa-solid fa-check"></i>
+                            <span>Salvar status</span>
                         </button>
                     </form>
-                </div>
-            </section>
+                </section>
 
-            <section class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-black text-gray-800">Atualizar status</h2>
-                <form action="{{ route('admin.chamados.status.update', $chamado) }}" method="POST" class="mt-4 space-y-4">
-                    @csrf
+                <section class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <h2 class="text-lg font-black text-gray-800">Responder atendimento</h2>
+                    <form action="{{ route('admin.chamados.mensagens.store', $chamado) }}" method="POST" class="mt-4 space-y-4">
+                        @csrf
 
-                    <select name="status" class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800">
-                        @foreach ($statusOptions as $valor => $label)
-                            <option value="{{ $valor }}" @selected($chamado->status === $valor)>{{ $label }}</option>
-                        @endforeach
-                    </select>
+                        <textarea name="mensagem" rows="6" required class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800" placeholder="Escreva a resposta para o atendimento">{{ old('mensagem') }}</textarea>
 
-                    <textarea name="resolucao_resumo" rows="4" class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800" placeholder="Resumo da resolucao, se houver">{{ old('resolucao_resumo', $chamado->resolucao_resumo) }}</textarea>
+                        <label class="inline-flex items-center gap-3 text-sm font-medium text-gray-700">
+                            <input type="hidden" name="interno" value="0">
+                            <input type="checkbox" name="interno" value="1" class="rounded border-gray-300 text-green-700 focus:ring-green-500">
+                            <span>Mensagem interna da equipe</span>
+                        </label>
 
-                    <button type="submit" class="w-full rounded-xl bg-green-700 px-4 py-3 text-sm font-semibold text-white hover:bg-green-800">
-                        Salvar status
-                    </button>
-                </form>
-            </section>
-
-            <section class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-black text-gray-800">Responder atendimento</h2>
-                <form action="{{ route('admin.chamados.mensagens.store', $chamado) }}" method="POST" class="mt-4 space-y-4">
-                    @csrf
-
-                    <textarea name="mensagem" rows="6" required class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800" placeholder="Escreva a resposta para o atendimento">{{ old('mensagem') }}</textarea>
-
-                    <label class="inline-flex items-center gap-3 text-sm font-medium text-gray-700">
-                        <input type="hidden" name="interno" value="0">
-                        <input type="checkbox" name="interno" value="1" class="rounded border-gray-300 text-green-700 focus:ring-green-500">
-                        <span>Mensagem interna da equipe</span>
-                    </label>
-
-                    <button type="submit" class="w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">
-                        Registrar resposta
-                    </button>
-                </form>
-            </section>
+                        <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">
+                            <i class="fa-solid fa-reply"></i>
+                            <span>Registrar resposta</span>
+                        </button>
+                    </form>
+                </section>
+            @endif
 
             <section class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
                 <h2 class="text-lg font-black text-gray-800">Metadados</h2>

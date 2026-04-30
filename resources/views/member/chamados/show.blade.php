@@ -5,12 +5,10 @@
 @section('desktop_subtitle', 'Detalhes do atendimento e historico da sua conversa com o suporte')
 
 @section('header_actions')
-    @if ($telegramUrl)
-        <a href="{{ $telegramUrl }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-2.5 text-sm font-semibold text-sky-700 transition hover:bg-sky-100">
-            <i class="fa-brands fa-telegram"></i>
-            <span>Continuar no Telegram</span>
-        </a>
-    @endif
+    <a href="{{ route('member.chamados.index') }}" class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Meus chamados</span>
+    </a>
 @endsection
 
 @section('content')
@@ -91,10 +89,20 @@
                 </div>
             </section>
 
-            @if (in_array($chamado->status, ['resolvido', 'fechado'], true))
+            @if ($chamado->avaliacao_nota !== null)
+                <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <h2 class="text-lg font-black text-slate-900">Avaliacao enviada</h2>
+                    <div class="mt-4 rounded-2xl bg-emerald-50 px-4 py-4 text-sm text-emerald-900">
+                        <strong>Nota:</strong> {{ $chamado->avaliacao_nota }} {{ (int) $chamado->avaliacao_nota === 1 ? 'estrela' : 'estrelas' }}
+                        @if ($chamado->avaliacao_comentario)
+                            <p class="mt-3 whitespace-pre-line">{{ $chamado->avaliacao_comentario }}</p>
+                        @endif
+                    </div>
+                </section>
+            @elseif (in_array($chamado->status, ['resolvido', 'fechado'], true))
                 <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                     <h2 class="text-lg font-black text-slate-900">Avaliar atendimento</h2>
-                    <p class="mt-2 text-sm text-slate-500">Sua avaliacao vale para este chamado inteiro. Se voce avaliar aqui, nao precisa avaliar de novo no Telegram.</p>
+                    <p class="mt-2 text-sm text-slate-500">Sua avaliacao vale para este chamado inteiro e ajuda a melhorar o suporte.</p>
 
                     <form action="{{ route('member.chamados.avaliar', $chamado) }}" method="POST" class="mt-4 space-y-4">
                         @csrf
@@ -102,11 +110,11 @@
                         <select name="avaliacao_nota" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-800">
                             <option value="">Escolha uma nota</option>
                             @for ($nota = 5; $nota >= 1; $nota--)
-                                <option value="{{ $nota }}" @selected(old('avaliacao_nota', $chamado->avaliacao_nota) == $nota)>{{ $nota }} {{ $nota === 1 ? 'estrela' : 'estrelas' }}</option>
+                                <option value="{{ $nota }}" @selected(old('avaliacao_nota') == $nota)>{{ $nota }} {{ $nota === 1 ? 'estrela' : 'estrelas' }}</option>
                             @endfor
                         </select>
 
-                        <textarea name="avaliacao_comentario" rows="4" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-800" placeholder="Conte como foi sua experiencia com o atendimento">{{ old('avaliacao_comentario', $chamado->avaliacao_comentario) }}</textarea>
+                        <textarea name="avaliacao_comentario" rows="4" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-800" placeholder="Conte como foi sua experiencia com o atendimento">{{ old('avaliacao_comentario') }}</textarea>
 
                         <button type="submit" class="w-full rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800">
                             Salvar avaliacao

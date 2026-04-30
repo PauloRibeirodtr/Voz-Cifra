@@ -65,15 +65,24 @@
                     </div>
 
                     <div data-aviso-campo="usuario">
-                        <label for="usuario_id" class="block text-sm font-semibold text-gray-700">Usuario</label>
-                        <select id="usuario_id" name="usuario_id" class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-green-600 focus:ring-2 focus:ring-green-100">
-                            <option value="">Selecione</option>
-                            @foreach ($usuarios as $usuario)
-                                <option value="{{ $usuario->id }}" @selected((string) old('usuario_id') === (string) $usuario->id)>
-                                    {{ $usuario->nome }} - {{ $usuario->email }}
-                                </option>
-                            @endforeach
-                        </select>
+                        @php
+                            $usuarioSelecionado = $usuarios->firstWhere('id', (int) old('usuario_id'));
+                        @endphp
+                        <label for="usuario_busca" class="block text-sm font-semibold text-gray-700">Usuario</label>
+                        <input type="hidden" id="usuario_id" name="usuario_id" value="{{ old('usuario_id') }}" data-aviso-usuario-id>
+                        <div class="relative mt-1" data-aviso-usuario-combobox>
+                            <input
+                                id="usuario_busca"
+                                type="text"
+                                value="{{ $usuarioSelecionado ? $usuarioSelecionado->nome . ' - ' . $usuarioSelecionado->email : '' }}"
+                                class="block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-green-600 focus:ring-2 focus:ring-green-100"
+                                placeholder="Digite ao menos 3 letras do nome ou e-mail"
+                                autocomplete="off"
+                                data-aviso-usuario-busca
+                            >
+                            <div class="absolute left-0 right-0 top-[calc(100%+0.35rem)] z-20 hidden overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl" data-aviso-usuario-resultados></div>
+                        </div>
+                        <p class="mt-2 text-xs text-gray-500" data-aviso-usuario-ajuda>Digite 3 letras para ver sugestoes e clique no usuario correto.</p>
                     </div>
                 </div>
 
@@ -101,6 +110,22 @@
         document.addEventListener('DOMContentLoaded', () => {
             const escopo = document.querySelector('[data-aviso-escopo]');
             const campos = document.querySelectorAll('[data-aviso-campo]');
+            const usuarios = @json($usuarios->map(fn ($usuario) => [
+                'id' => $usuario->id,
+                'nome' => $usuario->nome,
+                'email' => $usuario->email,
+                'busca' => \Illuminate\Support\Str::lower(trim($usuario->nome . ' ' . $usuario->email)),
+            ])->values(), JSON_UNESCAPED_UNICODE);
+            const usuarioId = document.querySelector('[data-aviso-usuario-id]');
+            const usuarioBusca = document.querySelector('[data-aviso-usuario-busca]');
+            const usuarioResultados = document.querySelector('[data-aviso-usuario-resultados]');
+
+            const escaparHtml = (valor) => String(valor || '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
 
             const atualizarCampos = () => {
                 const valor = escopo?.value || 'todos';
@@ -109,7 +134,88 @@
                 });
             };
 
+            const esconderResultados = () => {
+                if (!usuarioResultados) {
+                    return;
+                }
+
+                usuarioResultados.classList.add('hidden');
+                usuarioResultados.innerHTML = '';
+            };
+
+            const selecionarUsuario = (usuario) => {
+                if (usuarioId) {
+                    usuarioId.value = usuario.id;
+                }
+
+                if (usuarioBusca) {
+                    usuarioBusca.value = `${usuario.nome} - ${usuario.email || 'sem e-mail'}`;
+                }
+
+                esconderResultados();
+            };
+
+            const renderizarUsuarios = () => {
+                if (!usuarioBusca || !usuarioResultados) {
+                    return;
+                }
+
+                const termo = usuarioBusca.value.trim().toLowerCase();
+
+                if (usuarioId && termo !== '') {
+                    usuarioId.value = '';
+                }
+
+                if (termo.length < 3) {
+                    esconderResultados();
+
+                    return;
+                }
+
+                const encontrados = usuarios
+                    .filter((usuario) => usuario.busca.includes(termo))
+                    .slice(0, 8);
+
+                if (encontrados.length === 0) {
+                    usuarioResultados.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500">Nenhum usuario encontrado.</div>';
+                    usuarioResultados.classList.remove('hidden');
+
+                    return;
+                }
+
+                usuarioResultados.innerHTML = encontrados.map((usuario) => `
+                    <button type="button" class="block w-full px-4 py-3 text-left hover:bg-emerald-50" data-aviso-usuario-opcao="${usuario.id}">
+                        <span class="block text-sm font-bold text-gray-900">${escaparHtml(usuario.nome)}</span>
+                        <span class="block text-xs text-gray-500">${escaparHtml(usuario.email || 'sem e-mail')}</span>
+                    </button>
+                `).join('');
+                usuarioResultados.classList.remove('hidden');
+            };
+
             escopo?.addEventListener('change', atualizarCampos);
+            usuarioBusca?.addEventListener('input', renderizarUsuarios);
+            usuarioBusca?.addEventListener('focus', renderizarUsuarios);
+
+            usuarioResultados?.addEventListener('click', (event) => {
+                const botao = event.target.closest('[data-aviso-usuario-opcao]');
+
+                if (!botao) {
+                    return;
+                }
+
+                const usuario = usuarios.find((item) => String(item.id) === String(botao.dataset.avisoUsuarioOpcao));
+
+                if (usuario) {
+                    selecionarUsuario(usuario);
+                }
+            });
+
+            document.addEventListener('click', (event) => {
+                if (!event.target.closest('[data-aviso-usuario-combobox]')) {
+                    esconderResultados();
+                }
+            });
+
             atualizarCampos();
         });
     </script>
