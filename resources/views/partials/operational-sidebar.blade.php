@@ -84,6 +84,15 @@
 
         @endif
 
+        @if (!$temAdminMasterSidebar)
+            <div class="{{ $secaoLabelClasseSidebar }}">Painel</div>
+
+            <a href="{{ $linkPainelSidebar }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('local-admin.dashboard', 'coordenador.dashboard', 'member.dashboard')) }}">
+                <i class="fa-solid fa-house w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
+                <span>Painel</span>
+            </a>
+        @endif
+
         @if ($temPapelOperacionalSidebar)
             <div class="{{ $secaoLabelClasseSidebar }}">Minha igreja</div>
 
@@ -192,7 +201,7 @@
 
         <a href="{{ route($perfilRouteSidebar) }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('local-admin.profile', 'local-admin.profile.update', 'coordenador.profile', 'coordenador.profile.update', 'member.profile', 'member.profile.update', 'member.settings')) }}">
             <i class="fa-solid fa-user-gear w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
-            <span>Perfil e acesso</span>
+            <span>Configura&ccedil;&otilde;es</span>
         </a>
     </nav>
 

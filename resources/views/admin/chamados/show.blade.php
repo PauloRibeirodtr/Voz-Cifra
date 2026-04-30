@@ -130,7 +130,6 @@
                 <h2 class="text-lg font-black text-gray-800">Atualizar status</h2>
                 <form action="{{ route('admin.chamados.status.update', $chamado) }}" method="POST" class="mt-4 space-y-4">
                     @csrf
-                    @method('PATCH')
 
                     <select name="status" class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800">
                         @foreach ($statusOptions as $valor => $label)
