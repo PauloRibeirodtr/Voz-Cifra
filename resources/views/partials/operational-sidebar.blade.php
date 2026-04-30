@@ -168,6 +168,11 @@
                 <span>Auditoria</span>
             </a>
 
+            <a href="{{ route('admin.chamados.index') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('admin.chamados.*')) }}">
+                <i class="fa-solid fa-headset w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
+                <span>Chamados</span>
+            </a>
+
             <a href="{{ route('admin.settings') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('admin.settings')) }}">
                 <i class="fa-solid fa-gear w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
                 <span>Configura&ccedil;&otilde;es</span>
@@ -175,6 +180,13 @@
         @endif
 
         <div class="{{ $secaoLabelClasseSidebar }}">Conta</div>
+
+        @if (auth()->user()?->ehMembro())
+            <a href="{{ route('member.chamados.index') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('member.chamados.*')) }}">
+                <i class="fa-solid fa-message w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
+                <span>Feedback e suporte</span>
+            </a>
+        @endif
 
         <a href="{{ route($perfilRouteSidebar) }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('local-admin.profile', 'local-admin.profile.update', 'coordenador.profile', 'coordenador.profile.update', 'member.profile', 'member.profile.update', 'member.settings')) }}">
             <i class="fa-solid fa-user-gear w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>

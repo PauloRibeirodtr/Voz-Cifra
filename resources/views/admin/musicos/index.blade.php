@@ -75,10 +75,10 @@
                                                 {{ $musico->ativo ? 'Inativar' : 'Ativar' }}
                                             </button>
                                         </form>
-                                        <form action="{{ route('admin.musicos.destroy', $musico) }}" method="POST" onsubmit="return confirm('Deseja excluir este músico?');">
+                                        <form action="{{ route('admin.musicos.destroy', $musico) }}" method="POST" onsubmit="return confirm('Deseja inativar este musico? A conta sera preservada no banco.');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="inline-flex rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-100">Excluir</button>
+                                            <button type="submit" class="inline-flex rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-100">Inativar</button>
                                         </form>
                                     </div>
                                 </td>
@@ -114,10 +114,10 @@
                                     {{ $musico->ativo ? 'Inativar' : 'Ativar' }}
                                 </button>
                             </form>
-                            <form action="{{ route('admin.musicos.destroy', $musico) }}" method="POST" onsubmit="return confirm('Deseja excluir este músico?');">
+                            <form action="{{ route('admin.musicos.destroy', $musico) }}" method="POST" onsubmit="return confirm('Deseja inativar este musico? A conta sera preservada no banco.');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 hover:bg-red-100">Excluir</button>
+                                <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 hover:bg-red-100">Inativar</button>
                             </form>
                         </div>
                     </article>

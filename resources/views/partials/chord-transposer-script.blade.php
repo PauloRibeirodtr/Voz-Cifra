@@ -42,6 +42,23 @@
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
 
+        const normalizeSectionLabel = (value) => String(value || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .trim();
+
+        const isSectionLabel = (value) => {
+            const label = normalizeSectionLabel(value);
+            return label.length <= 32 && /^(refrao|entrada|final|ponte|estrofe|verso)(\b|$)/.test(label);
+        };
+
+        const sectionLabelClass = (value) => {
+            return normalizeSectionLabel(value).startsWith('refrao')
+                ? 'cifra-marcacao cifra-marcacao--refrao'
+                : 'cifra-marcacao';
+        };
+
         const isChord = (value) => {
             const chord = String(value || '').trim();
             return chord !== '' && !chord.includes(' ') && CHORD_REGEX.test(chord);
@@ -154,7 +171,11 @@
 
                 const labelMatch = trimmed.match(/^\[(.+)\]$/u);
                 if (labelMatch && !isChord(labelMatch[1])) {
-                    return `<div class="cifra-marcacao">${escapeHtml(labelMatch[1])}</div>`;
+                    return `<div class="${sectionLabelClass(labelMatch[1])}">${escapeHtml(labelMatch[1])}</div>`;
+                }
+
+                if (isSectionLabel(trimmed)) {
+                    return `<div class="${sectionLabelClass(trimmed)}">${escapeHtml(trimmed)}</div>`;
                 }
 
                 const regex = /\[([^\[\]\r\n]+)\]/g;
@@ -257,6 +278,8 @@
             stripBracketedChords,
             renderChordSheetHtml,
             getChordSignature,
+            isSectionLabel,
+            sectionLabelClass,
             buildChordGroups,
             getChordMatches,
             extractChordsFromBracketedText,

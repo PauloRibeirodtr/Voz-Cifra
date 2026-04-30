@@ -198,6 +198,26 @@
             gap: 12px;
         }
 
+        .card-link {
+            color: inherit;
+            text-decoration: none;
+            cursor: pointer;
+            transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease;
+        }
+
+        .card-link:hover,
+        .card-link:focus-visible {
+            border-color: rgba(227, 190, 132, 0.38);
+            background: rgba(62, 33, 28, 0.98);
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        .card-link[aria-expanded='true'] {
+            border-color: rgba(255, 217, 157, 0.48);
+            box-shadow: 0 0 0 1px rgba(255, 217, 157, 0.16), var(--shadow);
+        }
+
         .card-main {
             min-width: 0;
         }
@@ -255,6 +275,10 @@
             background: linear-gradient(135deg, #2f6b4f, #4f8a63);
             color: #fff8ef;
             box-shadow: 0 12px 24px rgba(47, 107, 79, 0.26);
+        }
+
+        .celebration-section[hidden] {
+            display: none;
         }
 
         .empty-action,
@@ -436,10 +460,60 @@
             line-height: 1.95;
         }
 
+        .lyrics p {
+            margin: 0 0 0.95rem;
+        }
+
+        .lyrics-space {
+            height: 0.7rem;
+        }
+
+        .lyrics-section-label {
+            display: inline-flex;
+            align-items: center;
+            margin: 1rem 0 0.7rem;
+            padding: 0.38rem 0.78rem;
+            border-radius: 999px;
+            background: rgba(227, 190, 132, 0.12);
+            border: 1px solid rgba(227, 190, 132, 0.18);
+            color: var(--accent);
+            font-size: 0.76rem;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .lyrics-section-label--refrao {
+            background: rgba(255, 217, 157, 0.18);
+            border-color: rgba(255, 217, 157, 0.34);
+            color: #fff3d7;
+            font-weight: 950;
+        }
+
         body[data-public-mode='musicos'] .lyrics {
             font-family: "Courier New", Courier, monospace;
             font-size: clamp(calc(15px * var(--public-font-scale)), calc(3.8vw * var(--public-font-scale)), calc(20px * var(--public-font-scale)));
             line-height: 2;
+        }
+
+        body[data-public-mode='musicos'] .celebration-list {
+            grid-template-columns: 1fr;
+        }
+
+        body[data-public-mode='musicos'] .celebration-item {
+            background: rgba(13, 8, 8, 0.58);
+            border-color: rgba(255, 217, 157, 0.18);
+        }
+
+        .musician-readonly-note {
+            margin: 0 0 14px;
+            border: 1px solid rgba(255, 217, 157, 0.16);
+            border-radius: 16px;
+            background: rgba(227, 190, 132, 0.08);
+            color: var(--muted);
+            font-size: 14px;
+            font-weight: 800;
+            padding: 10px 12px;
         }
 
         .chord-mark {
@@ -515,6 +589,13 @@
             font-weight: 900;
             letter-spacing: 0.08em;
             text-transform: uppercase;
+        }
+
+        body[data-public-mode='musicos'] .lyrics .cifra-marcacao--refrao {
+            background: rgba(255, 217, 157, 0.18);
+            border: 1px solid rgba(255, 217, 157, 0.34);
+            color: #fff3d7;
+            font-weight: 950;
         }
 
         .public-chord-tooltip {
@@ -692,6 +773,10 @@
                 grid-template-columns: minmax(0, 1fr) auto auto;
                 align-items: end;
             }
+
+            body[data-public-mode='musicos'] .celebration-list {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -727,25 +812,27 @@
             @if (($modoPublico ?? 'fieis') === 'fieis')
                 <section class="section">
                     <div class="section-header">
-                        <p class="section-kicker">Hoje</p>
-                        <h2 class="section-title">Missas de hoje</h2>
+                        <p class="section-kicker">Agenda</p>
+                        <h2 class="section-title">Programação</h2>
                     </div>
 
                     @if ($missasHoje->isNotEmpty())
                         <div class="cards">
                             @foreach ($missasHoje as $missaHoje)
-                                <article class="card">
+                                @php($missaHojeSelecionada = (int) $missaHoje['id'] === (int) ($celebracaoSelecionadaId ?? 0))
+                                <a
+                                    href="{{ route('igrejas.public.show', ['slug' => $igreja->slug, 'celebracao' => $missaHoje['id']]) }}#celebracao-publica"
+                                    class="card card-link"
+                                    data-celebration-card
+                                    data-selected="{{ $missaHojeSelecionada ? 'true' : 'false' }}"
+                                    aria-expanded="{{ $missaHojeSelecionada ? 'true' : 'false' }}"
+                                >
                                     <div class="card-main">
                                         <span class="card-hour">{{ $missaHoje['horario'] }}</span>
                                         <h3 class="card-title">{{ $missaHoje['titulo'] }}</h3>
                                     </div>
-                                    <a
-                                        href="{{ route('igrejas.public.show', ['slug' => $igreja->slug, 'celebracao' => $missaHoje['id']]) }}#celebracao-publica"
-                                        class="card-action"
-                                    >
-                                        Abrir celebração
-                                    </a>
-                                </article>
+                                    <span class="card-action">{{ $missaHojeSelecionada ? 'Fechar celebração' : 'Abrir celebração' }}</span>
+                                </a>
                             @endforeach
                         </div>
                     @else
@@ -760,24 +847,26 @@
                     <section class="section">
                         <div class="section-header">
                             <p class="section-kicker">Agenda</p>
-                            <h2 class="section-title">Proximas missas publicadas</h2>
+                            <h2 class="section-title">Celebrações publicadas</h2>
                         </div>
 
                         <div class="cards">
                             @foreach ($proximasMissas as $proximaMissaItem)
-                                <article class="card">
+                                @php($proximaSelecionada = (int) $proximaMissaItem['id'] === (int) ($celebracaoSelecionadaId ?? 0))
+                                <a
+                                    href="{{ route('igrejas.public.show', ['slug' => $igreja->slug, 'celebracao' => $proximaMissaItem['id']]) }}#celebracao-publica"
+                                    class="card card-link"
+                                    data-celebration-card
+                                    data-selected="{{ $proximaSelecionada ? 'true' : 'false' }}"
+                                    aria-expanded="{{ $proximaSelecionada ? 'true' : 'false' }}"
+                                >
                                     <div class="card-main">
                                         <span class="card-hour">{{ $proximaMissaItem['horario'] }}</span>
                                         <h3 class="card-title">{{ $proximaMissaItem['titulo'] }}</h3>
                                         <p class="card-meta">{{ $proximaMissaItem['dia_semana'] }} • {{ $proximaMissaItem['data'] }}</p>
                                     </div>
-                                    <a
-                                        href="{{ route('igrejas.public.show', ['slug' => $igreja->slug, 'celebracao' => $proximaMissaItem['id']]) }}#celebracao-publica"
-                                        class="card-action"
-                                    >
-                                        Abrir celebração
-                                    </a>
-                                </article>
+                                    <span class="card-action">{{ $proximaSelecionada ? 'Fechar celebração' : 'Abrir celebração' }}</span>
+                                </a>
                             @endforeach
                         </div>
                     </section>
@@ -792,19 +881,21 @@
                     @if ($missasMusicos->isNotEmpty())
                         <div class="cards">
                             @foreach ($missasMusicos as $missaMusico)
-                                <article class="card">
+                                @php($missaMusicoSelecionada = (int) $missaMusico['id'] === (int) ($celebracaoSelecionadaId ?? 0))
+                                <a
+                                    href="{{ route('igrejas.public.musicos.show', ['slug' => $igreja->slug, 'celebracao' => $missaMusico['id']]) }}#celebracao-publica"
+                                    class="card card-link"
+                                    data-celebration-card
+                                    data-selected="{{ $missaMusicoSelecionada ? 'true' : 'false' }}"
+                                    aria-expanded="{{ $missaMusicoSelecionada ? 'true' : 'false' }}"
+                                >
                                     <div class="card-main">
                                         <span class="card-hour">{{ $missaMusico['horario'] }}</span>
                                         <h3 class="card-title">{{ $missaMusico['titulo'] }}</h3>
                                         <p class="card-meta">{{ $missaMusico['dia_semana'] }} • {{ $missaMusico['data'] }}</p>
                                     </div>
-                                    <a
-                                        href="{{ route('igrejas.public.musicos.show', ['slug' => $igreja->slug, 'celebracao' => $missaMusico['id']]) }}#celebracao-publica"
-                                        class="card-action"
-                                    >
-                                        Abrir repertório
-                                    </a>
-                                </article>
+                                    <span class="card-action">{{ $missaMusicoSelecionada ? 'Fechar repertório' : 'Abrir repertório' }}</span>
+                                </a>
                             @endforeach
                         </div>
                     @else
@@ -819,7 +910,7 @@
             @if ($missaPublica)
                 @php($itensPublicos = collect($missaPublica->itens_publicos ?? []))
 
-                <section class="section" id="celebracao-publica">
+                <section class="section celebration-section" id="celebracao-publica" data-celebration-section>
                     <div class="celebration-header">
                         <div>
                             <p class="section-kicker">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Ensaio' : 'Celebração' }}</p>
@@ -830,6 +921,10 @@
                         </div>
                         <span class="badge">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Modo músico' : 'Somente leitura' }}</span>
                     </div>
+
+                    @if (($modoPublico ?? 'fieis') === 'musicos')
+                        <p class="musician-readonly-note">Visualização somente leitura para ensaio: cifras, tons e sequência dos cantos ficam disponíveis sem ações de edição.</p>
+                    @endif
 
                     @if ($itensPublicos->isNotEmpty())
                         <div class="celebration-list">
@@ -848,7 +943,7 @@
                                     @if (($modoPublico ?? 'fieis') === 'musicos')
                                         <div class="lyrics" data-public-musician-lyrics data-lyrics="{{ e($item['letra_publica'] ?? '') }}">{!! $item['letra_publica_html'] ?? nl2br(e($item['letra_publica'] ?? ''), false) !!}</div>
                                     @else
-                                        <div class="lyrics">{{ $item['letra_publica'] !== '' ? $item['letra_publica'] : 'A letra deste canto ainda não foi preparada para exibição pública.' }}</div>
+                                        <div class="lyrics">{!! $item['letra_publica'] !== '' ? ($item['letra_publica_html'] ?? nl2br(e($item['letra_publica']), false)) : 'A letra deste canto ainda não foi preparada para exibição pública.' !!}</div>
                                     @endif
                                 </article>
                             @endforeach
@@ -998,6 +1093,41 @@
                     accessToggle.setAttribute('aria-expanded', aberto ? 'false' : 'true');
                 });
             }
+
+            const celebrationSection = document.querySelector('[data-celebration-section]');
+            const celebrationCards = Array.from(document.querySelectorAll('[data-celebration-card]'));
+            const labelAbrir = document.body.dataset.publicMode === 'musicos' ? 'Abrir repertório' : 'Abrir celebração';
+            const labelFechar = document.body.dataset.publicMode === 'musicos' ? 'Fechar repertório' : 'Fechar celebração';
+
+            const atualizarCardsCelebracao = (cardAberto = null) => {
+                celebrationCards.forEach((card) => {
+                    const aberto = card === cardAberto;
+                    card.dataset.selected = aberto ? 'true' : 'false';
+                    card.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+
+                    const action = card.querySelector('.card-action');
+                    if (action) {
+                        action.textContent = aberto ? labelFechar : labelAbrir;
+                    }
+                });
+            };
+
+            celebrationCards.forEach((card) => {
+                card.addEventListener('click', (event) => {
+                    if (card.dataset.selected !== 'true') {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    const deveFechar = !celebrationSection?.hidden;
+
+                    if (celebrationSection) {
+                        celebrationSection.hidden = deveFechar;
+                    }
+
+                    atualizarCardsCelebracao(deveFechar ? null : card);
+                });
+            });
 
             if (document.body.dataset.publicMode === 'musicos') {
                 const helper = window.VozECifraChord;

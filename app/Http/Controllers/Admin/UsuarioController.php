@@ -25,18 +25,36 @@ class UsuarioController extends Controller
 
     public function index(Request $request): View
     {
-        $busca = trim((string) $request->string('q'));
+        $buscaOriginal = trim((string) $request->string('q'));
+        $busca = $this->normalizarBusca($buscaOriginal);
+        $deveFiltrarBusca = mb_strlen($busca) >= 3;
         $status = trim((string) $request->string('status'));
         $tipo = trim((string) $request->string('tipo'));
 
         $usuarios = Usuario::query()
             ->with(['vinculosIgreja.igreja', 'vinculosIgreja.papeisAtivos'])
-            ->when($busca !== '', function ($query) use ($busca): void {
-                $query->where(function ($subQuery) use ($busca): void {
-                    $subQuery->where('nome', 'like', '%' . $busca . '%')
-                        ->orWhere('email', 'like', '%' . $busca . '%')
-                        ->orWhere('cpf', 'like', '%' . $busca . '%');
-                });
+            ->when($deveFiltrarBusca, function ($query) use ($busca): void {
+                foreach (preg_split('/\s+/', $busca, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $termo) {
+                    $query->where(function ($subQuery) use ($termo): void {
+                        $like = '%' . $termo . '%';
+                        $cpfNumerico = preg_replace('/\D+/', '', $termo) ?? '';
+
+                        $subQuery
+                            ->whereRaw('LOWER(nome) LIKE ?', [$like])
+                            ->orWhereRaw('LOWER(email) LIKE ?', [$like]);
+
+                        if ($cpfNumerico !== '') {
+                            $subQuery->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), '/', ''), ' ', '') LIKE ?", ['%' . $cpfNumerico . '%']);
+                        }
+
+                        $subQuery->orWhereHas('vinculosIgreja.igreja', function ($igrejaQuery) use ($like): void {
+                            $igrejaQuery
+                                ->whereRaw('LOWER(nome) LIKE ?', [$like])
+                                ->orWhereRaw('LOWER(cidade) LIKE ?', [$like])
+                                ->orWhereRaw('LOWER(estado) LIKE ?', [$like]);
+                        });
+                    });
+                }
             })
             ->when($status !== '', fn ($query) => $query->where('ativo', $status === 'ativo'))
             ->when($tipo !== '', function ($query) use ($tipo): void {
@@ -59,9 +77,10 @@ class UsuarioController extends Controller
         return view('admin.users.index', [
             'usuarios' => $usuarios,
             'filtros' => [
-                'q' => $busca,
+                'q' => $buscaOriginal,
                 'status' => $status,
                 'tipo' => $tipo,
+                'busca_minima_atingida' => $buscaOriginal === '' || $deveFiltrarBusca,
             ],
             'metricas' => [
                 'total' => Usuario::count(),
@@ -320,6 +339,12 @@ class UsuarioController extends Controller
             ehPadre: $dados['tipo_cadastro'] === 'padre'
         );
 
+        if ($this->tipoCadastroExigeIgreja((string) $dados['tipo_cadastro']) && blank($dados['igreja_id'] ?? null)) {
+            throw ValidationException::withMessages([
+                'igreja_id' => 'Selecione uma igreja para cadastrar musico, admin local ou coordenador.',
+            ]);
+        }
+
         return $dados;
     }
 
@@ -370,6 +395,11 @@ class UsuarioController extends Controller
         };
     }
 
+    private function tipoCadastroExigeIgreja(string $tipoCadastro): bool
+    {
+        return in_array($tipoCadastro, ['coordenador', 'admin_local', 'musico'], true);
+    }
+
     private function resolverIgrejaOpcional(mixed $igrejaId): ?Igreja
     {
         if (!is_numeric($igrejaId)) {
@@ -398,6 +428,11 @@ class UsuarioController extends Controller
         }
 
         return 'Conta criada e vinculada com sucesso.';
+    }
+
+    private function normalizarBusca(string $busca): string
+    {
+        return mb_strtolower(trim(preg_replace('/\s+/', ' ', $busca) ?? ''));
     }
 
     private function autorizarGestaoDeContaMasterQuandoNecessario(Usuario $usuario): void

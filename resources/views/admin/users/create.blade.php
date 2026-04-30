@@ -10,8 +10,8 @@
                 <p class="admin-page-kicker">Cadastro central</p>
                 <h1 class="admin-page-title mt-2 text-2xl font-black sm:text-3xl">Cadastrar usuário</h1>
                 <p class="admin-page-copy mt-3 max-w-3xl text-sm sm:text-base">
-                    Cadastre a conta base primeiro e, se fizer sentido, aplique o primeiro papel por igreja no mesmo fluxo.
-                    Se a igreja ficar em branco, a pessoa entra na base e pode ser vinculada depois.
+                    Cadastre a conta base primeiro e aplique o primeiro papel por igreja no mesmo fluxo.
+                    Musico, admin local e coordenador precisam de uma igreja inicial.
                 </p>
             </div>
 
@@ -49,7 +49,7 @@
                         <div class="admin-form-grid xl:grid-cols-2">
                             <div>
                                 <label class="admin-label">Tipo inicial</label>
-                                <select name="tipo_cadastro" class="admin-select">
+                                <select name="tipo_cadastro" class="admin-select" data-tipo-cadastro>
                                     <option value="admin_master" @selected(old('tipo_cadastro', request('tipo_cadastro')) === 'admin_master')>Admin master</option>
                                     <option value="coordenador" @selected(old('tipo_cadastro', request('tipo_cadastro')) === 'coordenador')>Coordenador</option>
                                     <option value="admin_local" @selected(old('tipo_cadastro', request('tipo_cadastro')) === 'admin_local')>Admin local</option>
@@ -60,12 +60,15 @@
 
                             <div>
                                 <label class="admin-label">Igreja inicial</label>
-                                <select name="igreja_id" class="admin-select">
-                                    <option value="">Cadastrar sem vínculo inicial</option>
+                                <select name="igreja_id" class="admin-select" data-igreja-inicial>
+                                    <option value="">Selecionar igreja</option>
                                     @foreach ($igrejas as $igreja)
                                         <option value="{{ $igreja->id }}" @selected((string) old('igreja_id', request('igreja_id')) === (string) $igreja->id)>{{ $igreja->nome }}</option>
                                     @endforeach
                                 </select>
+                                <p class="mt-2 text-xs text-gray-500" data-igreja-ajuda>
+                                    Obrigatoria para musico, admin local e coordenador. Admin master nao depende de igreja.
+                                </p>
                             </div>
 
                             <div>
@@ -91,6 +94,9 @@
                             <div data-password-strength-container>
                                 <label class="admin-label">Senha inicial</label>
                                 <input type="password" name="password" data-password-strength-input class="admin-input" placeholder="Se ficar em branco, usa CPF">
+                                <p class="mt-2 rounded-xl border border-amber-100 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
+                                    A senha inicial sera o CPF sem pontos e tracos, caso nenhuma senha seja informada.
+                                </p>
                                 <div class="mt-3">
                                     @include('partials.password-strength-meter')
                                 </div>
@@ -132,7 +138,7 @@
 
                     <div class="mt-4 space-y-3 text-sm leading-7 text-gray-600">
                         <p><strong>Admin master:</strong> ja nasce com acesso global e nao depende de nivel separado.</p>
-                        <p><strong>Coordenador, admin local e musico:</strong> se houver igreja escolhida, o papel ja e aplicado. Sem igreja, a conta fica aguardando vinculo.</p>
+                        <p><strong>Coordenador, admin local e musico:</strong> exigem igreja inicial e ja recebem o papel operacional no cadastro.</p>
                         <p><strong>Padre:</strong> pode existir sem login. Se o e-mail ficar vazio, o sistema cria um e-mail tecnico interno e reaproveita essa mesma conta depois.</p>
                         <p><strong>Sem duplicacao:</strong> CPF e e-mail sao reutilizados para promover a mesma pessoa.</p>
                     </div>
@@ -156,6 +162,10 @@
         document.addEventListener('DOMContentLoaded', () => {
             const campoCpf = document.querySelector('[data-cpf-input]');
             const campoTelefone = document.querySelector('[data-telefone-input]');
+            const tipoCadastro = document.querySelector('[data-tipo-cadastro]');
+            const igrejaInicial = document.querySelector('[data-igreja-inicial]');
+            const igrejaAjuda = document.querySelector('[data-igreja-ajuda]');
+            const tiposComIgrejaObrigatoria = ['coordenador', 'admin_local', 'musico'];
 
             const aplicarMascaraCpf = (valor) => {
                 valor = valor.replace(/\D/g, '').slice(0, 11);
@@ -192,6 +202,24 @@
                     campoTelefone.value = aplicarMascaraTelefone(campoTelefone.value);
                 });
             }
+
+            const atualizarObrigatoriedadeIgreja = () => {
+                if (!tipoCadastro || !igrejaInicial) {
+                    return;
+                }
+
+                const exigeIgreja = tiposComIgrejaObrigatoria.includes(tipoCadastro.value);
+                igrejaInicial.required = exigeIgreja;
+
+                if (igrejaAjuda) {
+                    igrejaAjuda.textContent = exigeIgreja
+                        ? 'Obrigatoria para este tipo de cadastro.'
+                        : 'Opcional para admin master e padre.';
+                }
+            };
+
+            atualizarObrigatoriedadeIgreja();
+            tipoCadastro?.addEventListener('change', atualizarObrigatoriedadeIgreja);
         });
     </script>
     @include('partials.password-strength-script')

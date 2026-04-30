@@ -68,7 +68,15 @@
             <form method="GET" action="{{ route('admin.usuarios.index') }}" class="admin-form-grid xl:grid-cols-4">
                 <div class="xl:col-span-2">
                     <label class="admin-label">Busca</label>
-                    <input type="text" name="q" value="{{ $filtros['q'] }}" class="admin-input" placeholder="Nome, e-mail ou CPF">
+                    <input type="text" name="q" value="{{ $filtros['q'] }}" class="admin-input" placeholder="Nome, e-mail, CPF, igreja ou cidade" minlength="3">
+                    <p class="mt-2 text-xs text-gray-500">
+                        Digite ao menos 3 caracteres. A busca ignora maiusculas/minusculas e aceita partes do texto.
+                    </p>
+                    @if (!($filtros['busca_minima_atingida'] ?? true))
+                        <p class="mt-2 rounded-xl border border-amber-100 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
+                            Informe pelo menos 3 caracteres para aplicar a busca.
+                        </p>
+                    @endif
                 </div>
 
                 <div>

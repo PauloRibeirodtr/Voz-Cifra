@@ -8,6 +8,7 @@ use App\Models\Igreja;
 use App\Models\Missa;
 use App\Models\Usuario;
 use App\Rules\StrongPassword;
+use App\Services\AuditoriaOperacionalService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,11 @@ use Illuminate\View\View;
 
 class PainelAdminLocalController extends Controller
 {
+    public function __construct(
+        private readonly AuditoriaOperacionalService $auditoriaOperacionalService
+    ) {
+    }
+
     public function dashboard(): View
     {
         $usuario = $this->obterUsuario();
@@ -103,7 +109,20 @@ class PainelAdminLocalController extends Controller
 
         $usuario->save();
 
-        return back()->with('success', $primeiroAcesso
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'perfil_atualizado',
+            ator: $usuario,
+            alvo: $usuario,
+            igreja: $this->obterIgreja($usuario),
+            contexto: [
+                'origem' => 'local_admin_profile_update',
+                'primeiro_acesso_finalizado' => $primeiroAcesso && !($usuario->primeiro_acesso ?? false),
+                'foto_perfil_alterada' => $request->hasFile('foto_perfil'),
+                'senha_alterada' => !empty($dados['password']),
+            ]
+        );
+
+        return redirect()->route('local-admin.profile')->with('success', $primeiroAcesso
             ? 'Senha atualizada com sucesso. O acesso completo ao painel da igreja foi liberado.'
             : 'Perfil do administrador local atualizado com sucesso.');
     }

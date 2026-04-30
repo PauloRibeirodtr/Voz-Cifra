@@ -3,7 +3,9 @@
 use App\Http\Controllers\Admin\AcordeController;
 use App\Http\Controllers\Admin\AdminLocalController;
 use App\Http\Controllers\Admin\AdminMasterController;
+use App\Http\Controllers\Admin\AvisoController;
 use App\Http\Controllers\Admin\AuditoriaController;
+use App\Http\Controllers\Admin\ChamadoController as AdminChamadoController;
 use App\Http\Controllers\Admin\IgrejaController;
 use App\Http\Controllers\Admin\MomentoLiturgicoController;
 use App\Http\Controllers\Admin\MusicoController as AdminMusicoController;
@@ -21,7 +23,9 @@ use App\Http\Controllers\LocalAdmin\MissaController as LocalAdminMissaController
 use App\Http\Controllers\Member\BibliotecaMusicalController;
 use App\Http\Controllers\Member\ColecaoEstudoController;
 use App\Http\Controllers\LocalAdmin\PainelAdminLocalController;
+use App\Http\Controllers\LocalAdmin\ChamadoController as LocalAdminChamadoController;
 use App\Http\Controllers\Member\PainelMembroController;
+use App\Http\Controllers\Member\ChamadoController as MemberChamadoController;
 use App\Http\Controllers\Publico\HomeController;
 use App\Http\Controllers\Publico\IgrejaPublicaController;
 use Illuminate\Support\Facades\Route;
@@ -51,6 +55,8 @@ Route::middleware(['auth', 'verified_custom', 'super.admin', 'primeiro_acesso'])
         Route::put('/perfil', [AdminMasterController::class, 'updateProfile'])->name('profile.update');
         Route::post('/perfil/vinculos', [AdminMasterController::class, 'storeProfileVinculo'])->name('profile.vinculos.store');
         Route::get('/configuracoes', [AdminMasterController::class, 'settings'])->name('settings');
+        Route::get('/avisos/criar', [AvisoController::class, 'create'])->name('avisos.create');
+        Route::post('/avisos', [AvisoController::class, 'store'])->name('avisos.store');
 
         Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
         Route::get('/usuarios/criar', [UsuarioController::class, 'create'])->name('usuarios.create');
@@ -132,6 +138,14 @@ Route::middleware(['auth', 'verified_custom', 'super.admin', 'primeiro_acesso'])
 
         Route::get('/auditoria', [AuditoriaController::class, 'index'])->name('auditoria.index');
         Route::get('/auditoria/{auditoria}', [AuditoriaController::class, 'show'])->name('auditoria.show');
+
+        Route::get('/chamados', [AdminChamadoController::class, 'index'])->name('chamados.index');
+        Route::get('/chamados/{chamado}', [AdminChamadoController::class, 'show'])->name('chamados.show');
+        Route::post('/chamados/{chamado}/status', [AdminChamadoController::class, 'updateStatus'])->name('chamados.status.update');
+        Route::post('/chamados/{chamado}/mensagens', [AdminChamadoController::class, 'storeMessage'])->name('chamados.mensagens.store');
+        Route::post('/chamados/{chamado}/assumir', [AdminChamadoController::class, 'assumir'])->name('chamados.assumir');
+        Route::post('/chamados/{chamado}/aprovar-pedido-acesso', [AdminChamadoController::class, 'aprovarPedidoAcesso'])->name('chamados.aprovar-pedido-acesso');
+        Route::post('/chamados/{chamado}/pedir-mais-dados', [AdminChamadoController::class, 'pedirMaisDados'])->name('chamados.pedir-mais-dados');
     });
 
 Route::middleware(['auth', 'verified_custom', 'role:admin_local', 'primeiro_acesso'])
@@ -142,6 +156,8 @@ Route::middleware(['auth', 'verified_custom', 'role:admin_local', 'primeiro_aces
         Route::get('/perfil', [PainelAdminLocalController::class, 'profile'])->name('profile');
         Route::put('/perfil', [PainelAdminLocalController::class, 'updateProfile'])->name('profile.update');
         Route::get('/dados', [PainelAdminLocalController::class, 'church'])->name('church');
+        Route::get('/chamados/pedido-acesso', [LocalAdminChamadoController::class, 'createPedidoAcesso'])->name('chamados.acesso.create');
+        Route::post('/chamados/pedido-acesso', [LocalAdminChamadoController::class, 'storePedidoAcesso'])->name('chamados.acesso.store');
 
         Route::get('/musicos', [LocalAdminMusicoController::class, 'index'])->name('musicos.index');
         Route::get('/musicos/criar', [LocalAdminMusicoController::class, 'create'])->name('musicos.create');
@@ -225,6 +241,12 @@ Route::middleware(['auth', 'verified_custom', 'role:member', 'primeiro_acesso'])
         Route::get('/colecoes/{colecao}', [ColecaoEstudoController::class, 'show'])->name('colecoes.show');
         Route::post('/colecoes/{colecao}/itens', [ColecaoEstudoController::class, 'adicionarItem'])->name('colecoes.itens.store');
         Route::delete('/colecoes/{colecao}/itens/{item}', [ColecaoEstudoController::class, 'removerItem'])->name('colecoes.itens.destroy');
+
+        Route::get('/chamados', [MemberChamadoController::class, 'index'])->name('chamados.index');
+        Route::get('/chamados/criar', [MemberChamadoController::class, 'create'])->name('chamados.create');
+        Route::post('/chamados', [MemberChamadoController::class, 'store'])->name('chamados.store');
+        Route::get('/chamados/{chamado}', [MemberChamadoController::class, 'show'])->name('chamados.show');
+        Route::post('/chamados/{chamado}/avaliar', [MemberChamadoController::class, 'avaliar'])->name('chamados.avaliar');
     });
 
 

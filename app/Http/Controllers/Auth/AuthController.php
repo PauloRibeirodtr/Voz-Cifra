@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Usuario;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -24,19 +26,18 @@ class AuthController extends Controller
     public function login(Request $request): RedirectResponse
     {
         $credenciais = $request->validate([
-            'email' => ['required', 'email'],
+            'email' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string'],
         ]);
+        $identificador = $this->normalizarIdentificador((string) $credenciais['email']);
 
-        $throttleKey = $this->throttleKey($request, $credenciais['email']);
+        $throttleKey = $this->throttleKey($request, $identificador);
 
         $this->ensureIsNotRateLimited($throttleKey);
 
-        if (!Auth::attempt([
-            'email' => $credenciais['email'],
-            'password' => $credenciais['password'],
-            'ativo' => true,
-        ], $request->boolean('remember'))) {
+        $usuario = $this->buscarUsuarioParaLogin($identificador);
+
+        if (!$usuario || !Hash::check((string) $credenciais['password'], (string) $usuario->password)) {
             RateLimiter::hit($throttleKey, self::LOGIN_DECAY_SECONDS);
 
             if (RateLimiter::tooManyAttempts($throttleKey, self::LOGIN_MAX_ATTEMPTS)) {
@@ -51,6 +52,16 @@ class AuthController extends Controller
                 'email' => 'Credenciais invalidas.',
             ]);
         }
+
+        if (!($usuario->ativo ?? false)) {
+            RateLimiter::hit($throttleKey, self::LOGIN_DECAY_SECONDS);
+
+            throw ValidationException::withMessages([
+                'email' => 'Sua conta esta inativa. Fale com o administrador da igreja para reativar o acesso.',
+            ]);
+        }
+
+        Auth::login($usuario, $request->boolean('remember'));
 
         RateLimiter::clear($throttleKey);
         $request->session()->regenerate();
@@ -78,7 +89,7 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login')->withErrors([
-            'email' => 'Credenciais invalidas.',
+            'email' => 'Sua conta ainda nao possui vinculo operacional ativo. Solicite ao administrador que vincule seu usuario a uma igreja e conceda o papel correto.',
         ]);
     }
 
@@ -106,7 +117,24 @@ class AuthController extends Controller
 
     private function throttleKey(Request $request, string $identifier): string
     {
-        return Str::lower(trim($identifier)) . '|' . $request->ip();
+        return $this->normalizarIdentificador($identifier) . '|' . $request->ip();
+    }
+
+    private function buscarUsuarioParaLogin(string $identificador): ?Usuario
+    {
+        $cpf = preg_replace('/\D+/', '', $identificador) ?? '';
+
+        return Usuario::query()
+            ->when($cpf !== '', function ($query) use ($cpf): void {
+                $query->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), '/', ''), ' ', '') = ?", [$cpf]);
+            })
+            ->orWhereRaw('LOWER(email) = ?', [Str::lower($identificador)])
+            ->first();
+    }
+
+    private function normalizarIdentificador(string $identificador): string
+    {
+        return Str::lower(trim($identificador));
     }
 
     private function formatLockoutTime(int $seconds): string

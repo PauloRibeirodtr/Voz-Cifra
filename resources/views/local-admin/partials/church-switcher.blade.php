@@ -20,7 +20,7 @@
                                 @endif
                             </div>
                             <p class="mt-1 text-sm text-gray-500">{{ $igrejaDisponivel->cidade }} - {{ $igrejaDisponivel->estado }}</p>
-                            <p class="mt-2 text-xs text-gray-500">CNPJ: {{ $igrejaDisponivel->cnpj }}</p>
+                            <p class="mt-2 text-xs text-gray-500">{{ $igrejaDisponivel->endereco ?: 'Endereco nao informado' }}</p>
                         </div>
 
                         <form action="{{ route('contexto.igreja-ativa.update') }}" method="POST" class="sm:min-w-[11rem]">

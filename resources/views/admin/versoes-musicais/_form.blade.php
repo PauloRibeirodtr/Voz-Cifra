@@ -55,9 +55,22 @@
                     <p class="text-xs text-gray-500 mt-1">Voce pode informar apenas o ID do video ou colar o link inteiro do YouTube.</p>
                 </div>
 
-                <div class="rounded-2xl border border-blue-100 bg-blue-50 p-5">
-                    <div class="flex items-start gap-3">
-                        <div class="mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-white">
+                <details class="rounded-2xl border border-blue-100 bg-blue-50 p-5">
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-blue-900 [&::-webkit-details-marker]:hidden">
+                        <span class="inline-flex items-center gap-3">
+                            <span class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-white">
+                                <i class="fa-solid fa-circle-info"></i>
+                            </span>
+                            <span>
+                                <span class="block text-base font-bold">Como preencher</span>
+                                <span class="block text-sm text-blue-800">Exemplos de cifra e conversao automatica.</span>
+                            </span>
+                        </span>
+                        <i class="fa-solid fa-chevron-down text-sm"></i>
+                    </summary>
+
+                    <div class="mt-5 flex items-start gap-3">
+                        <div class="mt-1 hidden h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-white sm:flex">
                             <i class="fa-solid fa-circle-info"></i>
                         </div>
 
@@ -124,7 +137,7 @@ Cantarei quao grande e o meu Deus</pre>
                             </div>
                         </div>
                     </div>
-                </div>
+                </details>
 
                 <div>
                     <div class="flex items-center justify-between gap-3">
@@ -148,11 +161,11 @@ Cantarei quao grande e o meu Deus</pre>
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <h2 class="text-lg font-bold text-gray-800 mb-4">Pre-visualizacao</h2>
             <div class="mb-4 flex flex-wrap gap-2">
-                <button type="button" class="rounded-full bg-green-700 px-4 py-2 text-sm font-semibold text-white" data-preview-toggle="com-cifras">
-                    Ver com cifra
+                <button type="button" class="rounded-full bg-green-700 px-4 py-2 text-sm font-semibold text-white ring-2 ring-green-200" data-preview-toggle="com-cifras" aria-pressed="true">
+                    Previa musico
                 </button>
-                <button type="button" class="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700" data-preview-toggle="sem-cifras">
-                    Ver sem cifra
+                <button type="button" class="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700" data-preview-toggle="sem-cifras" aria-pressed="false">
+                    Sem cifra
                 </button>
             </div>
 
@@ -360,6 +373,24 @@ Cantarei quao grande e o meu Deus</pre>
                 .replace(/'/g, '&#039;');
         };
 
+        const normalizarMarcacao = (texto) => String(texto || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .trim();
+
+        const ehMarcacaoSecao = (texto) => {
+            const normalizada = normalizarMarcacao(texto);
+            return normalizada.length <= 32 && /^(refrao|entrada|final|ponte|estrofe|verso)(\b|$)/.test(normalizada);
+        };
+
+        const classeMarcacao = (texto, base = 'bg-slate-700/80 text-slate-100') => {
+            const normalizada = normalizarMarcacao(texto);
+            return normalizada.startsWith('refrao')
+                ? 'bg-amber-200 text-slate-950 font-black'
+                : base;
+        };
+
         const renderizarLinhaComCifras = (linha) => {
             const linhaLimpa = linha.trim();
 
@@ -369,7 +400,11 @@ Cantarei quao grande e o meu Deus</pre>
 
             const marcacao = linhaLimpa.match(/^\[(.+)\]$/);
             if (marcacao && !ehAcorde(marcacao[1])) {
-                return `<div class="my-2 inline-flex rounded-full bg-slate-700/80 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-100">${escaparHtml(marcacao[1])}</div>`;
+                return `<div class="my-2 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] ${classeMarcacao(marcacao[1])}">${escaparHtml(marcacao[1])}</div>`;
+            }
+
+            if (ehMarcacaoSecao(linhaLimpa)) {
+                return `<div class="my-2 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] ${classeMarcacao(linhaLimpa)}">${escaparHtml(linhaLimpa)}</div>`;
             }
 
             const html = linha.replace(/\[([^\[\]\r\n]+)\]/g, (trechoCompleto, interno) => {
@@ -406,7 +441,18 @@ Cantarei quao grande e o meu Deus</pre>
 
                 const marcacao = linhaLimpa.match(/^\[(.+)\]$/);
                 if (marcacao && !ehAcorde(marcacao[1])) {
-                    blocos.push(`<div class="my-4 inline-flex rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-indigo-700">${escaparHtml(marcacao[1])}</div>`);
+                    const classe = normalizarMarcacao(marcacao[1]).startsWith('refrao')
+                        ? 'bg-amber-100 text-amber-900 font-black'
+                        : 'bg-indigo-100 text-indigo-700';
+                    blocos.push(`<div class="my-4 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] ${classe}">${escaparHtml(marcacao[1])}</div>`);
+                    return;
+                }
+
+                if (ehMarcacaoSecao(linhaLimpa)) {
+                    const classe = normalizarMarcacao(linhaLimpa).startsWith('refrao')
+                        ? 'bg-amber-100 text-amber-900 font-black'
+                        : 'bg-indigo-100 text-indigo-700';
+                    blocos.push(`<div class="my-4 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] ${classe}">${escaparHtml(linhaLimpa)}</div>`);
                     return;
                 }
 
@@ -472,10 +518,13 @@ Cantarei quao grande e o meu Deus</pre>
                 const ativo = botao.dataset.previewToggle === modo;
                 botao.classList.toggle('bg-green-700', ativo);
                 botao.classList.toggle('text-white', ativo);
+                botao.classList.toggle('ring-2', ativo);
+                botao.classList.toggle('ring-green-200', ativo);
                 botao.classList.toggle('border', !ativo);
                 botao.classList.toggle('border-gray-200', !ativo);
                 botao.classList.toggle('bg-white', !ativo);
                 botao.classList.toggle('text-gray-700', !ativo);
+                botao.setAttribute('aria-pressed', ativo ? 'true' : 'false');
             });
 
             paineisPreview.forEach((painel) => {

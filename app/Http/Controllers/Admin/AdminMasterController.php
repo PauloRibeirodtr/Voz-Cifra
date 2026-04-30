@@ -13,6 +13,7 @@ use App\Models\UsuarioIgrejaPapel;
 use App\Rules\StrongPassword;
 use App\Services\GestaoUsuariosIgrejaService;
 use App\Services\IgrejaAtivaService;
+use App\Services\AuditoriaOperacionalService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +24,8 @@ use Illuminate\View\View;
 class AdminMasterController extends Controller
 {
     public function __construct(
-        private readonly GestaoUsuariosIgrejaService $gestaoUsuariosIgrejaService
+        private readonly GestaoUsuariosIgrejaService $gestaoUsuariosIgrejaService,
+        private readonly AuditoriaOperacionalService $auditoriaOperacionalService
     ) {
     }
 
@@ -121,7 +123,20 @@ class AdminMasterController extends Controller
 
         $usuario->save();
 
-        return back()->with('success', $primeiroAcesso
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'perfil_atualizado',
+            ator: $usuario,
+            alvo: $usuario,
+            igreja: $usuario->igrejaAtiva(),
+            contexto: [
+                'origem' => 'admin_profile_update',
+                'primeiro_acesso_finalizado' => $primeiroAcesso && !($usuario->primeiro_acesso ?? false),
+                'foto_perfil_alterada' => $request->hasFile('foto_perfil'),
+                'senha_alterada' => !empty($dados['password']),
+            ]
+        );
+
+        return redirect()->route('admin.profile')->with('success', $primeiroAcesso
             ? 'Senha atualizada com sucesso. O painel administrativo foi liberado.'
             : 'Perfil atualizado com sucesso.');
     }

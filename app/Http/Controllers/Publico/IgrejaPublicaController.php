@@ -305,18 +305,19 @@ class IgrejaPublicaController extends Controller
 
         $itens = $missa->missaMusicas->map(function ($item) use ($exibirCifras) {
             $letraBase = $item->versaoMusical?->letra_com_cifras ?: $item->musica?->letra ?: '';
+            $letraPublica = $exibirCifras
+                ? $this->normalizarLetraMusico($letraBase)
+                : $this->limparLetraPublica($letraBase);
 
             return [
                 'ordem' => $item->ordem,
                 'titulo' => $item->musica?->titulo ?: 'Canto sem titulo',
                 'momento' => $item->momentoLiturgico?->nome,
                 'tom' => $item->tomExibicao,
-                'letra_publica' => $exibirCifras
-                    ? $this->normalizarLetraMusico($letraBase)
-                    : $this->limparLetraPublica($letraBase),
+                'letra_publica' => $letraPublica,
                 'letra_publica_html' => $exibirCifras
                     ? $this->formatarLetraMusicoParaHtml($letraBase)
-                    : null,
+                    : $this->formatarLetraFielParaHtml($letraPublica),
             ];
         })->values();
 
@@ -325,11 +326,28 @@ class IgrejaPublicaController extends Controller
 
     private function limparLetraPublica(string $texto): string
     {
-        $textoSemCifras = preg_replace('/\[[^\]]+\]/', '', $texto) ?? $texto;
+        $textoSemCifras = preg_replace_callback(
+            '/\[([^\[\]\r\n]+)\]/',
+            fn (array $matches): string => $this->ehAcordePublico((string) $matches[1])
+                ? ''
+                : trim((string) $matches[1]),
+            $texto
+        ) ?? $texto;
         $textoSemEspacosExtras = preg_replace("/[ \t]+\n/", "\n", $textoSemCifras) ?? $textoSemCifras;
         $textoNormalizado = preg_replace("/\n{3,}/", "\n\n", trim($textoSemEspacosExtras)) ?? trim($textoSemEspacosExtras);
 
         return $textoNormalizado;
+    }
+
+    private function ehAcordePublico(string $valor): bool
+    {
+        $valor = trim($valor);
+
+        if ($valor === '' || str_contains($valor, ' ')) {
+            return false;
+        }
+
+        return preg_match('/^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\\+|-|[0-9#b])|\\([^\\)\\]]+\\))*(?:\\/[A-G](?:#|b)?)?$/u', $valor) === 1;
     }
 
     private function normalizarLetraMusico(string $texto): string
@@ -344,6 +362,47 @@ class IgrejaPublicaController extends Controller
         $textoComCifras = preg_replace('/\[(.*?)\]/', '<span class="chord-mark">[$1]</span>', $textoEscapado) ?? $textoEscapado;
 
         return nl2br($textoComCifras, false);
+    }
+
+    private function formatarLetraFielParaHtml(string $texto): string
+    {
+        $linhas = preg_split('/\r\n|\r|\n/', $texto) ?: [];
+        $html = [];
+
+        foreach ($linhas as $linha) {
+            $linhaLimpa = trim((string) $linha);
+
+            if ($linhaLimpa === '') {
+                $html[] = '<div class="lyrics-space"></div>';
+                continue;
+            }
+
+            if ($this->ehMarcacaoSecaoPublica($linhaLimpa)) {
+                $html[] = '<div class="' . $this->classeMarcacaoSecaoPublica($linhaLimpa) . '">' . e($linhaLimpa) . '</div>';
+                continue;
+            }
+
+            $html[] = '<p>' . e($linhaLimpa) . '</p>';
+        }
+
+        return implode('', $html);
+    }
+
+    private function ehMarcacaoSecaoPublica(string $valor): bool
+    {
+        $normalizado = Str::of($valor)->ascii()->lower()->trim()->toString();
+
+        return strlen($normalizado) <= 32
+            && preg_match('/^(refrao|entrada|final|ponte|estrofe|verso)(\b|$)/', $normalizado) === 1;
+    }
+
+    private function classeMarcacaoSecaoPublica(string $valor): string
+    {
+        $normalizado = Str::of($valor)->ascii()->lower()->trim()->toString();
+
+        return str_starts_with($normalizado, 'refrao')
+            ? 'lyrics-section-label lyrics-section-label--refrao'
+            : 'lyrics-section-label';
     }
 
     private function mapearAgendaMissa(Missa $missa, string $timezone): array

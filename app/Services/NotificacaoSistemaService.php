@@ -150,6 +150,10 @@ class NotificacaoSistemaService
             return false;
         }
 
+        if ($evento === 'aviso_admin') {
+            return true;
+        }
+
         $eventos = config('notificacoes.eventos_sistema_habilitados', []);
 
         return in_array($evento, is_array($eventos) ? $eventos : [], true);

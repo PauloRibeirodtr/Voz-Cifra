@@ -205,6 +205,11 @@
                         <i class="fa-solid fa-shield-halved w-5 text-center group-hover:scale-110 transition"></i>
                         <span>Auditoria</span>
                     </a>
+
+                    <a href="{{ route('admin.chamados.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.chamados.*')) }}">
+                        <i class="fa-solid fa-headset w-5 text-center group-hover:scale-110 transition"></i>
+                        <span>Chamados</span>
+                    </a>
                 @endif
 
                 <a href="{{ route('admin.settings') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.settings', 'admin.profile', 'admin.profile.update')) }}">

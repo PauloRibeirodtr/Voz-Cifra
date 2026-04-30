@@ -101,9 +101,10 @@
                                 <span class="church-tile__content">
                                     <span class="church-tile__city">{{ $igreja['localidade'] !== '' ? $igreja['localidade'] : 'Localidade em configuração' }}</span>
                                     <span class="church-tile__name">{{ $igreja['nome'] }}</span>
+                                    <span class="church-tile__address">{{ $igreja['endereco'] !== '' ? $igreja['endereco'] : 'Endereço não informado' }}</span>
                                     <span class="church-tile__status {{ $temMissaPublicada ? 'church-tile__status--active' : 'church-tile__status--empty' }}">
                                         <span aria-hidden="true">{{ $temMissaPublicada ? '●' : '●' }}</span>
-                                        {{ $temMissaPublicada ? ($igreja['proxima_status'] ?? 'Missa publicada') : 'Sem missa publicada' }}
+                                        {{ $temMissaPublicada ? 'Missa publicada' : 'Sem missa hoje' }}
                                     </span>
                                     @if ($temMissaPublicada)
                                         <span class="church-tile__next">
@@ -330,6 +331,17 @@
                 font-size: 0.78rem;
                 font-weight: 900;
                 line-height: 1;
+            }
+
+            .church-tile__address {
+                color: var(--muted);
+                display: -webkit-box;
+                font-size: 0.8rem;
+                font-weight: 700;
+                line-height: 1.3;
+                -webkit-box-orient: vertical;
+                -webkit-line-clamp: 2;
+                overflow: hidden;
             }
 
             .church-tile__next {

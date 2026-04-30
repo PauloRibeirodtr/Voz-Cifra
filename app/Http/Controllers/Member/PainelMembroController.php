@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Missa;
 use App\Models\Usuario;
 use App\Rules\StrongPassword;
+use App\Services\AuditoriaOperacionalService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
@@ -16,8 +17,9 @@ use Illuminate\View\View;
 
 class PainelMembroController extends Controller
 {
-    public function __construct()
-    {
+    public function __construct(
+        private readonly AuditoriaOperacionalService $auditoriaOperacionalService
+    ) {
         $this->middleware(['auth', 'verified_custom', 'role:member']);
     }
 
@@ -90,7 +92,20 @@ class PainelMembroController extends Controller
 
         $usuario->save();
 
-        return back()->with('success', $primeiroAcesso
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'perfil_atualizado',
+            ator: $usuario,
+            alvo: $usuario,
+            igreja: $usuario->igrejaAtiva() ?? $usuario->igreja,
+            contexto: [
+                'origem' => 'member_profile_update',
+                'primeiro_acesso_finalizado' => $primeiroAcesso && !($usuario->primeiro_acesso ?? false),
+                'foto_perfil_alterada' => $request->hasFile('foto_perfil'),
+                'senha_alterada' => !empty($dados['password']),
+            ]
+        );
+
+        return redirect()->route('member.profile')->with('success', $primeiroAcesso
             ? 'Senha atualizada com sucesso. O acesso do músico foi liberado.'
             : 'Perfil do músico atualizado com sucesso.');
     }

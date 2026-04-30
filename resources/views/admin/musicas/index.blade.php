@@ -79,11 +79,11 @@
                                         <a href="{{ route('admin.musicas.edit', $musica) }}" class="inline-flex px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
                                             Editar
                                         </a>
-                                        <form action="{{ route('admin.musicas.destroy', $musica) }}" method="POST" onsubmit="return confirm('Deseja excluir esta musica?');">
+                                        <form action="{{ route('admin.musicas.destroy', $musica) }}" method="POST" onsubmit="return confirm('Deseja inativar esta musica? Ela sera preservada no banco.');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="inline-flex px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-sm font-medium text-red-700 hover:bg-red-100">
-                                                Excluir
+                                                Inativar
                                             </button>
                                         </form>
                                     </div>
@@ -122,11 +122,11 @@
                         <div class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
                             <a href="{{ route('admin.musicas.show', $musica) }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">Ver</a>
                             <a href="{{ route('admin.musicas.edit', $musica) }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">Editar</a>
-                            <form action="{{ route('admin.musicas.destroy', $musica) }}" method="POST" onsubmit="return confirm('Deseja excluir esta musica?');">
+                            <form action="{{ route('admin.musicas.destroy', $musica) }}" method="POST" onsubmit="return confirm('Deseja inativar esta musica? Ela sera preservada no banco.');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 hover:bg-red-100">
-                                    Excluir
+                                    Inativar
                                 </button>
                             </form>
                         </div>

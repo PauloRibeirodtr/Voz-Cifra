@@ -5,7 +5,11 @@
 
 @push('styles')
     <style>
-        .aba-modo.ativa { background: #166534; color: #fff; box-shadow: 0 8px 18px rgba(22, 101, 52, 0.18); }
+        .abas-modo { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+        .aba-modo { display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; min-height: 2.75rem; border: 1px solid #e5e7eb; background: #fff; color: #4b5563; }
+        .aba-modo.ativa { background: #166534; border-color: #166534; color: #fff; box-shadow: 0 8px 18px rgba(22, 101, 52, 0.18); }
+        .aba-modo__status { display: none; border-radius: 9999px; background: rgba(255, 255, 255, 0.18); padding: 0.12rem 0.45rem; font-size: 0.68rem; font-weight: 900; text-transform: uppercase; }
+        .aba-modo.ativa .aba-modo__status { display: inline-flex; }
         .painel-modo.hidden { display: none; }
         .preview-admin-box { --admin-escala-fonte: 1; }
         .preview-musico-scroll { --escala-fonte: 1; max-height: 68vh; overflow-y: auto; scroll-behavior: smooth; }
@@ -17,8 +21,10 @@
         .cifra-acorde:hover, .cifra-acorde.ativa { background: rgba(249, 115, 22, 0.14); color: #c2410c; }
         .cifra-letra { color: #111827; font-size: calc(1.08rem * var(--escala-fonte)); line-height: calc(1.75rem * var(--escala-fonte)); white-space: pre-wrap; }
         .cifra-marcacao { display: inline-flex; align-items: center; border-radius: 9999px; background: #e5e7eb; color: #374151; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 0.85rem; margin: 1rem 0 0.75rem; }
+        .cifra-marcacao--refrao { background: #fef3c7; color: #92400e; font-weight: 950; box-shadow: inset 0 0 0 1px rgba(217, 119, 6, 0.22); }
         .preview-fiel p { margin-bottom: 0.95rem; color: #1f2937; font-size: calc(1.03rem * var(--escala-fonte)); line-height: calc(1.95rem * var(--escala-fonte)); }
         .preview-fiel .marcacao { display: inline-flex; align-items: center; border-radius: 9999px; background: #eef2ff; color: #4338ca; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 0.85rem; margin: 1.25rem 0 0.8rem; }
+        .preview-fiel .marcacao--refrao { background: #fef3c7; color: #92400e; font-weight: 950; box-shadow: inset 0 0 0 1px rgba(217, 119, 6, 0.22); }
         .acorde-mini-card.ativo { border-color: #f97316; background: #fff7ed; color: #9a3412; }
         .diagrama-acorde svg { width: 100%; height: auto; max-width: 240px; }
         .tooltip-acorde { position: fixed; z-index: 80; width: 240px; pointer-events: none; border-radius: 1rem; border: 1px solid #fed7aa; background: rgba(255,255,255,0.98); box-shadow: 0 18px 50px rgba(15, 23, 42, 0.16); padding: 0.85rem; backdrop-filter: blur(8px); }
@@ -44,7 +50,12 @@
             .musico-layout { grid-template-columns: minmax(0, 1fr); }
         }
         @media (max-width: 767px) {
+            .abas-modo { grid-template-columns: 1fr; width: 100%; }
             .preview-musico-scroll { max-height: none; }
+            .cifra-linha { display: block; margin-bottom: 0.8rem; }
+            .cifra-segmento { display: inline-flex; min-height: 2.25rem; max-width: 100%; }
+            .cifra-acordes { font-size: calc(0.88rem * var(--escala-fonte)); }
+            .cifra-letra { font-size: calc(1rem * var(--escala-fonte)); line-height: calc(1.62rem * var(--escala-fonte)); }
             .tooltip-acorde { width: 180px; padding: 0.65rem; border-radius: 0.9rem; }
             .tooltip-acorde svg { max-width: 140px; margin: 0 auto; display: block; }
             .controle-preview { align-items: stretch; }
@@ -299,6 +310,20 @@
         $linhasSemCifra = preg_split('/\r\n|\r|\n/', $letraSemCifras) ?: [];
         $blocosSemCifra = [];
         $paragrafoAtual = [];
+        $normalizarMarcacao = function (string $texto): string {
+            return \Illuminate\Support\Str::of($texto)->ascii()->lower()->trim()->toString();
+        };
+        $ehMarcacaoSecao = function (string $texto) use ($normalizarMarcacao): bool {
+            $normalizado = $normalizarMarcacao($texto);
+
+            return strlen($normalizado) <= 32
+                && preg_match('/^(refrao|entrada|final|ponte|estrofe|verso)(\b|$)/', $normalizado) === 1;
+        };
+        $classeMarcacaoSemCifra = function (string $texto) use ($normalizarMarcacao): string {
+            return str_starts_with($normalizarMarcacao($texto), 'refrao')
+                ? 'marcacao marcacao--refrao'
+                : 'marcacao';
+        };
 
         foreach ($linhasSemCifra as $linhaSemCifra) {
             $linhaLimpa = trim($linhaSemCifra);
@@ -319,6 +344,16 @@
                 }
 
                 $blocosSemCifra[] = ['tipo' => 'marcacao', 'texto' => $matches[1]];
+                continue;
+            }
+
+            if ($ehMarcacaoSecao($linhaLimpa)) {
+                if ($paragrafoAtual !== []) {
+                    $blocosSemCifra[] = ['tipo' => 'paragrafo', 'texto' => implode(' ', $paragrafoAtual)];
+                    $paragrafoAtual = [];
+                }
+
+                $blocosSemCifra[] = ['tipo' => 'marcacao', 'texto' => $linhaLimpa];
                 continue;
             }
 
@@ -365,17 +400,23 @@
                 <p class="text-sm text-gray-500">Compare como a mesma versao aparece para administracao, leitura pratica do musico e leitura sem cifras.</p>
             </div>
 
-            <div class="inline-flex w-full flex-wrap gap-2 rounded-2xl border border-gray-200 bg-gray-50 p-2 sm:w-auto">
-                <button type="button" class="aba-modo rounded-xl px-4 py-2 text-sm font-semibold text-gray-600 transition" data-modo="admin">Previa admin</button>
-                <button type="button" class="aba-modo rounded-xl px-4 py-2 text-sm font-semibold text-gray-600 transition" data-modo="musico">Previa musico</button>
-                <button type="button" class="aba-modo rounded-xl px-4 py-2 text-sm font-semibold text-gray-600 transition" data-modo="fiel">Previa sem cifra</button>
+            <div class="abas-modo w-full rounded-2xl border border-gray-200 bg-gray-50 p-2 sm:w-auto" role="tablist" aria-label="Modos de pre-visualizacao">
+                <button type="button" class="aba-modo rounded-xl px-4 py-2 text-sm font-semibold transition" data-modo="admin" aria-controls="painel_modo_admin" aria-pressed="false">
+                    Previa admin <span class="aba-modo__status">ativa</span>
+                </button>
+                <button type="button" class="aba-modo rounded-xl px-4 py-2 text-sm font-semibold transition" data-modo="musico" aria-controls="painel_modo_musico" aria-pressed="false">
+                    Previa musico <span class="aba-modo__status">ativa</span>
+                </button>
+                <button type="button" class="aba-modo rounded-xl px-4 py-2 text-sm font-semibold transition" data-modo="fiel" aria-controls="painel_modo_fiel" aria-pressed="false">
+                    Sem cifra <span class="aba-modo__status">ativa</span>
+                </button>
             </div>
         </div>
     </div>
 
     <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
         <div class="xl:col-span-8 space-y-6">
-            <section data-painel-modo="admin" class="painel-modo space-y-6">
+            <section id="painel_modo_admin" data-painel-modo="admin" class="painel-modo space-y-6">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div class="flex items-center justify-between gap-4 mb-4">
                         <div>
@@ -403,7 +444,7 @@
                 </div>
             </section>
 
-            <section data-painel-modo="musico" class="painel-modo hidden space-y-6">
+            <section id="painel_modo_musico" data-painel-modo="musico" class="painel-modo hidden space-y-6">
                 <div class="bg-gradient-to-br from-white via-white to-green-50 p-6 rounded-2xl shadow-sm border border-green-100">
                     <div class="painel-musico-topo">
                         <div>
@@ -469,7 +510,7 @@
                 </div>
             </section>
 
-            <section data-painel-modo="fiel" class="painel-modo hidden">
+            <section id="painel_modo_fiel" data-painel-modo="fiel" class="painel-modo hidden">
                 <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
                     <div class="mb-6">
                         <h2 class="text-xl font-black text-gray-900">Letra</h2>
@@ -479,7 +520,7 @@
                     <div class="preview-fiel">
                         @foreach ($blocosSemCifra as $blocoSemCifra)
                             @if ($blocoSemCifra['tipo'] === 'marcacao')
-                                <div class="marcacao">{{ $blocoSemCifra['texto'] }}</div>
+                                <div class="{{ $classeMarcacaoSemCifra($blocoSemCifra['texto']) }}">{{ $blocoSemCifra['texto'] }}</div>
                             @else
                                 <p>{{ $blocoSemCifra['texto'] }}</p>
                             @endif
@@ -545,10 +586,10 @@
                 <h2 class="text-lg font-bold text-gray-800 mb-4">Acoes</h2>
                 <div class="space-y-3">
                     <a href="{{ route('admin.versoes-musicais.edit', [$musica, $versaoMusical]) }}" class="block w-full text-center px-4 py-3 bg-green-700 text-white rounded-lg font-semibold hover:bg-green-800">Editar versao</a>
-                    <form action="{{ route('admin.versoes-musicais.destroy', [$musica, $versaoMusical]) }}" method="POST" onsubmit="return confirm('Deseja excluir esta versao musical?');">
+                    <form action="{{ route('admin.versoes-musicais.destroy', [$musica, $versaoMusical]) }}" method="POST" onsubmit="return confirm('Deseja inativar esta versao musical? Ela sera preservada no banco.');">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="w-full px-4 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700">Excluir versao</button>
+                        <button type="submit" class="w-full px-4 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700">Inativar versao</button>
                     </form>
                 </div>
             </div>
@@ -597,10 +638,33 @@
             }, {});
             const ehAcorde = (texto) => helper?.isChord?.(texto) ?? false;
             const escaparHtml = (texto) => (texto || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const normalizarMarcacao = (texto) => String(texto || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .trim();
+            const ehMarcacaoSecao = (texto) => {
+                const normalizada = normalizarMarcacao(texto);
+
+                return normalizada.length <= 32 && /^(refrao|entrada|final|ponte|estrofe|verso)(\b|$)/.test(normalizada);
+            };
+            const classeMarcacao = (texto) => normalizarMarcacao(texto).startsWith('refrao')
+                ? 'cifra-marcacao cifra-marcacao--refrao'
+                : 'cifra-marcacao';
 
             const ativarModo = (modo) => {
-                abas.forEach((aba) => aba.classList.toggle('ativa', aba.dataset.modo === modo));
-                paineis.forEach((painel) => painel.classList.toggle('hidden', painel.dataset.painelModo !== modo));
+                abas.forEach((aba) => {
+                    const ativo = aba.dataset.modo === modo;
+                    aba.classList.toggle('ativa', ativo);
+                    aba.setAttribute('aria-pressed', ativo ? 'true' : 'false');
+                });
+
+                paineis.forEach((painel) => {
+                    const ativo = painel.dataset.painelModo === modo;
+                    painel.classList.toggle('hidden', !ativo);
+                    painel.hidden = !ativo;
+                });
+
                 document.querySelectorAll('.dado-admin-only').forEach((elemento) => {
                     elemento.classList.toggle('hidden', modo !== 'admin');
                 });
@@ -615,7 +679,8 @@
                     const linhaLimpa = linha.trim();
                     if (linhaLimpa === '') return '<div class="h-4"></div>';
                     const marcacao = linhaLimpa.match(/^\[(.+)\]$/u);
-                    if (marcacao && !ehAcorde(marcacao[1])) return `<div class="cifra-marcacao">${escaparHtml(marcacao[1])}</div>`;
+                    if (marcacao && !ehAcorde(marcacao[1])) return `<div class="${classeMarcacao(marcacao[1])}">${escaparHtml(marcacao[1])}</div>`;
+                    if (ehMarcacaoSecao(linhaLimpa)) return `<div class="${classeMarcacao(linhaLimpa)}">${escaparHtml(linhaLimpa)}</div>`;
 
                     const regex = /\[([^\[\]\r\n]+)\]/g;
                     let ultimoIndice = 0;
@@ -911,6 +976,3 @@
         });
     </script>
 @endpush
-
-
-

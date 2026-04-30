@@ -92,7 +92,7 @@ class VersaoMusicalController extends Controller
         );
 
         $redirecionamento = redirect()
-            ->route($this->routeName('versoes-musicais.show'), [$musica, $versaoMusical])
+            ->route($this->routeName('musicas.show'), $musica)
             ->with('success', 'Versao musical cadastrada com sucesso.');
 
         if ($resultadoCifras['houve_conversao']) {
@@ -199,7 +199,7 @@ class VersaoMusicalController extends Controller
         );
 
         $redirecionamento = redirect()
-            ->route($this->routeName('versoes-musicais.show'), [$musica, $versaoMusical])
+            ->route($this->routeName('musicas.show'), $musica)
             ->with('success', 'Versao musical atualizada com sucesso.');
 
         if ($resultadoCifras['houve_conversao']) {

@@ -62,7 +62,7 @@ class GestaoUsuariosIgrejaService
             $conta->fill([
                 'nome' => trim((string) $dados['nome']),
                 'cpf' => trim((string) $dados['cpf']),
-                'email' => trim((string) $dados['email']),
+                'email' => $this->normalizarEmail($dados['email'] ?? null),
                 'telefone' => $this->normalizarCampoTexto($dados['telefone'] ?? null),
                 'ativo' => array_key_exists('ativo', $dados) ? (bool) $dados['ativo'] : true,
                 'eh_padre' => (bool) ($conta->eh_padre ?? false) || (bool) ($dados['eh_padre'] ?? false),
@@ -135,7 +135,7 @@ class GestaoUsuariosIgrejaService
         $perfilGlobal = (string) ($dados['perfil_global'] ?? 'usuario');
         $ehAdminMaster = $perfilGlobal === 'admin_master';
         $ehPadre = (bool) ($dados['eh_padre'] ?? false);
-        $emailInformado = $this->normalizarCampoTexto($dados['email'] ?? null);
+        $emailInformado = $this->normalizarEmail($dados['email'] ?? null);
         $senhaInformada = trim((string) ($dados['password'] ?? ''));
 
         $usuario = $this->resolverUsuarioAlvo(
@@ -159,7 +159,7 @@ class GestaoUsuariosIgrejaService
             &$senhaFoiDefinida
         ): Usuario {
             $conta = $usuario ?? new Usuario();
-            $emailAtual = $this->normalizarCampoTexto($conta->email ?? null);
+            $emailAtual = $this->normalizarEmail($conta->email ?? null);
             $emailTecnicoAtual = $emailAtual !== null && $this->ehEmailTecnicoSemLogin($emailAtual);
             $emailFinal = $emailInformado;
 
@@ -579,6 +579,13 @@ class GestaoUsuariosIgrejaService
         $texto = trim((string) $valor);
 
         return $texto !== '' ? $texto : null;
+    }
+
+    private function normalizarEmail(mixed $valor): ?string
+    {
+        $email = $this->normalizarCampoTexto($valor);
+
+        return $email !== null ? mb_strtolower($email) : null;
     }
 
     private function normalizarPapeis(array $papeis): Collection

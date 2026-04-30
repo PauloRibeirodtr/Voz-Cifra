@@ -59,11 +59,46 @@ class IgrejaPublicaFieisTest extends TestCase
         $response = $this->get(route('igrejas.public.show', ['slug' => $igreja->slug]));
 
         $response->assertOk();
-        $response->assertSee('Missas de hoje');
+        $response->assertSee('Programação');
         $response->assertSee('Missa da Manha');
         $response->assertSee('Missa da Noite');
         $response->assertSeeInOrder(['08:00', 'Missa da Manha', '19:00', 'Missa da Noite'], false);
         $response->assertDontSee('Como funciona esta página');
+    }
+
+    public function test_pagina_principal_mostra_endereco_status_simples_e_botao_direto(): void
+    {
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-04-27 07:30:00', 'America/Cuiaba'));
+
+        $igreja = Igreja::factory()->create([
+            'nome' => 'Paroquia Nossa Senhora dos Remedios',
+            'slug' => 'paroquia-remedios',
+            'cidade' => 'Ladario',
+            'estado' => 'MS',
+            'endereco' => 'Rua Cunha Couto, Centro',
+            'cnpj' => '11.222.333/0001-44',
+            'ativo' => true,
+        ]);
+
+        Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa de Sabado',
+            'data_missa' => '2026-05-02',
+            'hora_inicio' => '19:00:00',
+            'hora_fim' => '20:00:00',
+            'publica_para_fieis' => true,
+            'publica_para_musicos' => false,
+            'ativo' => true,
+        ]);
+
+        $this
+            ->get(route('root'))
+            ->assertOk()
+            ->assertSee('Rua Cunha Couto, Centro')
+            ->assertSee('Missa publicada')
+            ->assertSee('Abrir próxima missa')
+            ->assertDontSee('CNPJ')
+            ->assertDontSee($igreja->cnpj);
     }
 
     public function test_link_publico_do_fiel_exibe_repertorio_sem_cifras(): void
@@ -138,7 +173,7 @@ class IgrejaPublicaFieisTest extends TestCase
         $response = $this->get(route('igrejas.public.show', ['slug' => $igreja->slug]));
 
         $response->assertOk();
-        $response->assertSee('Missas de hoje');
+        $response->assertSee('Programação');
         $response->assertSee('Ainda não há missas para hoje.', false);
         $response->assertSee('Consultar histórico', false);
         $response->assertSee('Missa do Domingo Passado');
@@ -178,7 +213,7 @@ class IgrejaPublicaFieisTest extends TestCase
         $response = $this->get(route('igrejas.public.show', ['slug' => $igreja->slug]));
 
         $response->assertOk();
-        $response->assertSee('Proximas missas publicadas');
+        $response->assertSee('Celebrações publicadas');
         $response->assertSee('Missa da Proxima Semana');
         $response->assertSee('Abrir celebração');
         $response->assertSee('Celebração ainda sem repertório público.');

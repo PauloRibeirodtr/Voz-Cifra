@@ -80,10 +80,10 @@
                         <div class="admin-actions mt-4">
                             <a href="{{ route('admin.acordes.show', $acorde->id) }}" class="admin-btn border border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100">Ver</a>
                             <a href="{{ route('admin.acordes.edit', $acorde->id) }}" class="admin-btn border border-[#ead6b3] bg-[#fff8ed] text-[#6c4a21] hover:bg-[#f8ecd7]">Editar</a>
-                            <form action="{{ route('admin.acordes.destroy', $acorde->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir o acorde {{ $acorde->nome }}?');">
+                            <form action="{{ route('admin.acordes.destroy', $acorde->id) }}" method="POST" onsubmit="return confirm('Deseja inativar o acorde {{ $acorde->nome }}? Ele sera preservado no banco.');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="admin-btn admin-btn-danger">Excluir</button>
+                                <button type="submit" class="admin-btn admin-btn-danger">Inativar</button>
                             </form>
                         </div>
                     </div>

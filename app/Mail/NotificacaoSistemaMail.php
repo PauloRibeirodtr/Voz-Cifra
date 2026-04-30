@@ -40,6 +40,7 @@ class NotificacaoSistemaMail extends Mailable
             'musica_inativada' => 'Musica inativada no sistema',
             'acorde_inativado' => 'Acorde inativado no sistema',
             'acordes_marco_alcancado' => 'Marco de acordes atingido no sistema',
+            'aviso_admin' => (string) ($this->contexto['titulo'] ?? 'Aviso do Voz & Cifra'),
             default => 'Atualizacao do sistema',
         };
 

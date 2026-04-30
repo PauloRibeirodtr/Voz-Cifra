@@ -28,6 +28,25 @@
     </div>
 @endif
 
+@if (session('duplicidade_musica'))
+    <div class="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
+        <p class="font-bold">{{ session('duplicidade_musica.mensagem') }}</p>
+        <div class="mt-3 space-y-2">
+            @foreach (session('duplicidade_musica.musicas', []) as $musicaParecida)
+                <div class="rounded-xl bg-white/80 px-4 py-3">
+                    <p class="font-semibold text-gray-900">{{ $musicaParecida['titulo'] }}</p>
+                    <p class="text-xs text-gray-600">
+                        {{ $musicaParecida['artista'] }} • {{ $musicaParecida['ativo'] ? 'Ativa' : 'Inativa' }}
+                    </p>
+                </div>
+            @endforeach
+        </div>
+        <p class="mt-3 text-xs font-semibold">Se for outra musica, clique em salvar novamente para continuar.</p>
+    </div>
+
+    <input type="hidden" name="confirmar_duplicidade" value="1">
+@endif
+
 <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
     <div class="space-y-6 xl:col-span-2">
         <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">

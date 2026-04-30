@@ -17,7 +17,11 @@ class RenderizadorCifrasHtmlService
             }
 
             if (preg_match('/^\[(.+)\]$/u', $linhaLimpa, $matches) === 1 && !$this->ehAcorde($matches[1])) {
-                return '<div class="cifra-marcacao">' . e($matches[1]) . '</div>';
+                return '<div class="' . $this->classeMarcacaoSecao($matches[1]) . '">' . e($matches[1]) . '</div>';
+            }
+
+            if ($this->ehMarcacaoSecao($linhaLimpa)) {
+                return '<div class="' . $this->classeMarcacaoSecao($linhaLimpa) . '">' . e($linhaLimpa) . '</div>';
             }
 
             preg_match_all('/\[([^\[\]\r\n]+)\]/', $linha, $matches, PREG_OFFSET_CAPTURE);
@@ -77,6 +81,26 @@ class RenderizadorCifrasHtmlService
 
         return preg_match('/^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\\+|-|[0-9#b])|\\([^\\)\\]]+\\))*(?:\\/[A-G](?:#|b)?)?$/', $valor) === 1;
     }
+
+    private function ehMarcacaoSecao(string $valor): bool
+    {
+        $normalizado = $this->normalizarMarcacao($valor);
+
+        return strlen($normalizado) <= 32
+            && preg_match('/^(refrao|entrada|final|ponte|estrofe|verso)(\b|$)/', $normalizado) === 1;
+    }
+
+    private function classeMarcacaoSecao(string $valor): string
+    {
+        return str_starts_with($this->normalizarMarcacao($valor), 'refrao')
+            ? 'cifra-marcacao cifra-marcacao--refrao'
+            : 'cifra-marcacao';
+    }
+
+    private function normalizarMarcacao(string $valor): string
+    {
+        $semAcentos = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $valor);
+
+        return strtolower(trim($semAcentos !== false ? $semAcentos : $valor));
+    }
 }
-
-

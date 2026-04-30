@@ -112,9 +112,20 @@ class IgrejaController extends Controller
             'admin_cpf' => ['nullable', 'string', 'max:14'],
             'admin_email' => ['nullable', 'email', 'max:255'],
             'admin_telefone' => ['nullable', 'string', 'max:20'],
+            'confirmar_duplicidade' => ['nullable', 'boolean'],
         ]);
 
         $this->validarConjuntoAdminLocal($request);
+        $duplicidades = $this->detectarIgrejasParecidas($dados);
+
+        if ($duplicidades->isNotEmpty() && !((bool) ($dados['confirmar_duplicidade'] ?? false))) {
+            return back()
+                ->withInput()
+                ->with('duplicidade_igreja', [
+                    'mensagem' => 'Ja existe uma igreja parecida cadastrada. Deseja continuar mesmo assim?',
+                    'igrejas' => $duplicidades->all(),
+                ]);
+        }
 
         /** @var \App\Models\Usuario|null $ator */
         $ator = Auth::user();
@@ -543,6 +554,57 @@ class IgrejaController extends Controller
         }
 
         return true;
+    }
+
+    protected function detectarIgrejasParecidas(array $dados)
+    {
+        $cidade = $this->normalizarTexto((string) ($dados['cidade'] ?? ''));
+        $nome = $this->normalizarTexto((string) ($dados['nome'] ?? ''));
+        $endereco = $this->normalizarTexto((string) ($dados['endereco'] ?? ''));
+
+        if ($cidade === '' || $nome === '') {
+            return collect();
+        }
+
+        return Igreja::query()
+            ->get()
+            ->filter(function (Igreja $igreja) use ($cidade, $nome, $endereco): bool {
+                if ($this->normalizarTexto((string) $igreja->cidade) !== $cidade) {
+                    return false;
+                }
+
+                $nomeExistente = $this->normalizarTexto((string) $igreja->nome);
+                $enderecoExistente = $this->normalizarTexto((string) $igreja->endereco);
+
+                similar_text($nome, $nomeExistente, $similaridadeNome);
+                similar_text($endereco, $enderecoExistente, $similaridadeEndereco);
+
+                return $similaridadeNome >= 70
+                    || ($endereco !== '' && $similaridadeEndereco >= 70)
+                    || $this->compartilhaTermosRelevantes($nome, $nomeExistente);
+            })
+            ->take(5)
+            ->map(fn (Igreja $igreja) => [
+                'nome' => $igreja->nome,
+                'cidade' => $igreja->cidade,
+                'estado' => $igreja->estado,
+                'endereco' => $igreja->endereco,
+            ])
+            ->values();
+    }
+
+    protected function compartilhaTermosRelevantes(string $textoA, string $textoB): bool
+    {
+        $termosIgnorados = ['igreja', 'paroquia', 'capela', 'comunidade', 'sao', 'santa', 'nossa', 'senhora', 'de', 'da', 'do', 'dos', 'das'];
+        $termos = collect(preg_split('/\s+/', $textoA, -1, PREG_SPLIT_NO_EMPTY) ?: [])
+            ->reject(fn (string $termo) => mb_strlen($termo) < 4 || in_array($termo, $termosIgnorados, true))
+            ->values();
+
+        if ($termos->isEmpty()) {
+            return false;
+        }
+
+        return $termos->contains(fn (string $termo) => str_contains($textoB, $termo));
     }
 
     protected function normalizarTexto(string $texto): string

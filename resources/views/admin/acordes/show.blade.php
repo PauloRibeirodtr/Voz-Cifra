@@ -28,10 +28,10 @@
             <div class="admin-actions">
                 <a href="{{ route('admin.acordes.edit', $acorde->id) }}" class="admin-btn border border-[#ead6b3] bg-[#fff8ed] text-[#6c4a21] hover:bg-[#f8ecd7]">Editar</a>
                 <a href="{{ route('admin.acordes.index') }}" class="admin-btn admin-btn-secondary">Voltar</a>
-                <form action="{{ route('admin.acordes.destroy', $acorde->id) }}" method="POST" onsubmit="return confirm('Deseja excluir este acorde?');">
+                <form action="{{ route('admin.acordes.destroy', $acorde->id) }}" method="POST" onsubmit="return confirm('Deseja inativar este acorde? Ele sera preservado no banco.');">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="admin-btn admin-btn-danger">Excluir</button>
+                    <button type="submit" class="admin-btn admin-btn-danger">Inativar</button>
                 </form>
             </div>
         </div>

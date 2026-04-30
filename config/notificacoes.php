@@ -19,7 +19,7 @@ return [
         static fn (string $item): string => trim($item),
         explode(',', (string) env(
             'NOTIFICACOES_SISTEMA_EVENTOS_HABILITADOS',
-            'musica_cadastrada,versao_musical_criada,acorde_cadastrado,musica_inativada,acorde_inativado,acordes_marco_alcancado'
+            'musica_cadastrada,versao_musical_criada,acorde_cadastrado,musica_inativada,acorde_inativado,acordes_marco_alcancado,aviso_admin'
         ))
     )),
 

@@ -111,7 +111,7 @@ class UsuariosAdminMasterTest extends TestCase
             ->assertDontSee('Coordenadores da igreja');
     }
 
-    public function test_admin_master_pode_criar_admin_local_sem_vinculo_inicial(): void
+    public function test_admin_master_nao_pode_criar_papel_operacional_sem_igreja(): void
     {
         Mail::fake();
 
@@ -132,18 +132,103 @@ class UsuariosAdminMasterTest extends TestCase
                 'ativo' => '1',
             ]);
 
+        $response->assertSessionHasErrors(['igreja_id']);
+        $this->assertNull(Usuario::query()->where('email', 'admin.local@example.com')->first());
+        Mail::assertNothingSent();
+    }
+
+    public function test_admin_master_pode_criar_admin_local_com_igreja_inicial(): void
+    {
+        Mail::fake();
+
+        $adminMaster = Usuario::factory()->adminMaster()->create([
+            'primeiro_acesso' => false,
+        ]);
+        $igreja = Igreja::factory()->create();
+
+        $response = $this
+            ->actingAs($adminMaster)
+            ->post(route('admin.usuarios.store'), [
+                'tipo_cadastro' => 'admin_local',
+                'igreja_id' => $igreja->id,
+                'nome' => 'Admin Local Novo',
+                'cpf' => '123.456.789-01',
+                'email' => 'ADMIN.LOCAL@EXAMPLE.COM',
+                'telefone' => '(67) 99999-1111',
+                'password' => '',
+                'password_confirmation' => '',
+                'ativo' => '1',
+            ]);
+
         $usuario = Usuario::query()->where('email', 'admin.local@example.com')->first();
 
         $this->assertNotNull($usuario);
-        $response->assertRedirect(route('admin.usuarios.edit', $usuario));
+        $response->assertRedirect(route('admin.usuarios.index'));
         $this->assertSame('usuario', $usuario->perfil_global);
         $this->assertTrue($usuario->ativo);
-        $this->assertCount(0, $usuario->vinculosIgrejaAtivos()->get());
+        $this->assertTrue($usuario->temPapelNaIgreja(PapelIgreja::ADMIN_LOCAL, $igreja->id));
+        $this->assertTrue(Hash::check('12345678901', (string) $usuario->password));
         Mail::assertSent(ConviteAcessoInicialMail::class, fn (ConviteAcessoInicialMail $mail) => $mail->alvo->is($usuario));
         $this->assertDatabaseHas('historico_envios_email', [
             'usuario_id' => $usuario->id,
             'tipo_email' => 'convite_acesso_inicial',
         ]);
+    }
+
+    public function test_admin_master_pode_criar_admin_master_sem_igreja(): void
+    {
+        Mail::fake();
+
+        $adminMaster = Usuario::factory()->adminMaster()->create([
+            'primeiro_acesso' => false,
+        ]);
+
+        $this
+            ->actingAs($adminMaster)
+            ->post(route('admin.usuarios.store'), [
+                'tipo_cadastro' => 'admin_master',
+                'nome' => 'Nova Admin Master',
+                'cpf' => '321.654.987-00',
+                'email' => 'nova.master@example.com',
+                'password' => 'SenhaForte123!',
+                'password_confirmation' => 'SenhaForte123!',
+                'ativo' => '1',
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('admin.usuarios.index'));
+
+        $usuario = Usuario::query()->where('email', 'nova.master@example.com')->first();
+
+        $this->assertNotNull($usuario);
+        $this->assertTrue($usuario->ehAdminMaster());
+    }
+
+    public function test_admin_master_busca_usuarios_por_igreja_sem_exigir_texto_exato(): void
+    {
+        $adminMaster = Usuario::factory()->adminMaster()->create([
+            'primeiro_acesso' => false,
+        ]);
+        $igreja = Igreja::factory()->create([
+            'nome' => 'Paroquia Santa Rita',
+            'cidade' => 'Ladario',
+        ]);
+        $usuarioEncontrado = Usuario::factory()->create([
+            'nome' => 'Usuario Encontrado Igreja',
+            'email' => 'encontrado.igreja@example.com',
+        ]);
+        $usuarioFora = Usuario::factory()->create([
+            'nome' => 'Usuario Fora Filtro',
+            'email' => 'fora.filtro@example.com',
+        ]);
+
+        $usuarioEncontrado->garantirVinculoNaIgreja($igreja);
+
+        $this
+            ->actingAs($adminMaster)
+            ->get(route('admin.usuarios.index', ['q' => 'san rit']))
+            ->assertOk()
+            ->assertSee('Usuario Encontrado Igreja')
+            ->assertDontSee('Usuario Fora Filtro');
     }
 
     public function test_admin_master_pode_criar_padre_sem_email_e_sem_login_publico(): void

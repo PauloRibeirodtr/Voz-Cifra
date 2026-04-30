@@ -13,6 +13,7 @@
             'musica_inativada' => 'Musica inativada',
             'acorde_inativado' => 'Acorde inativado',
             'acordes_marco_alcancado' => 'Marco de acordes atingido',
+            'aviso_admin' => $contexto['titulo'] ?? 'Aviso do Voz & Cifra',
             default => 'Atualizacao do sistema',
         };
 
@@ -23,6 +24,7 @@
             'musica_inativada' => 'Uma musica foi inativada no acervo principal.',
             'acorde_inativado' => 'Um acorde foi inativado na biblioteca principal.',
             'acordes_marco_alcancado' => 'A biblioteca de acordes atingiu um novo marco numerico.',
+            'aviso_admin' => $contexto['mensagem'] ?? 'Voce recebeu um aviso do admin master.',
             default => 'O sistema registrou uma nova atualizacao relevante.',
         };
 

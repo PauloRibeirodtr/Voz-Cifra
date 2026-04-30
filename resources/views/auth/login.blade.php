@@ -52,18 +52,18 @@
                     @csrf
 
                     <div>
-                        <label class="mb-2 block text-base font-bold text-[#f4ddb4]" for="email">E-mail</label>
+                        <label class="mb-2 block text-base font-bold text-[#f4ddb4]" for="email">E-mail ou CPF</label>
                         <div class="relative">
-                            <i class="fa-solid fa-envelope pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#c9a15f]"></i>
+                            <i class="fa-solid fa-user pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#c9a15f]"></i>
                             <input
                                 id="email"
-                                type="email"
+                                type="text"
                                 name="email"
                                 value="{{ old('email') }}"
                                 required
                                 autofocus
                                 class="w-full rounded-2xl border border-[#e8dcc8]/70 bg-[#f4efe6] py-4 pl-12 pr-4 text-lg text-[#241616] placeholder:text-[#8f7a62] focus:border-[#f4ddb4]/70 focus:outline-none focus:ring-4 focus:ring-[#c9a15f]/10"
-                                placeholder="seu@email.com"
+                                placeholder="seu@email.com ou 00000000000"
                             >
                         </div>
                     </div>

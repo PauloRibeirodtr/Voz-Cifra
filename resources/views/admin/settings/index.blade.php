@@ -50,6 +50,25 @@
             <div class="admin-stat-card p-6">
                 <div class="flex items-start justify-between gap-4">
                     <div>
+                        <h2 class="text-lg font-bold text-gray-800">Avisos</h2>
+                        <p class="mt-2 text-sm text-gray-500">Envie uma mensagem para todos, uma igreja, um papel ou uma pessoa especifica.</p>
+                    </div>
+                    <div class="flex h-11 w-11 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+                        <i class="fa-solid fa-bullhorn"></i>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <a href="{{ route('admin.avisos.create') }}" class="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-4 py-2 font-semibold text-white hover:bg-amber-700">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <span>Enviar aviso</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="admin-stat-card p-6">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
                         <h2 class="text-lg font-bold text-gray-800">Sessao</h2>
                         <p class="text-sm text-gray-500 mt-2">Encerre o acesso atual com seguranca quando terminar de usar o painel.</p>
                     </div>

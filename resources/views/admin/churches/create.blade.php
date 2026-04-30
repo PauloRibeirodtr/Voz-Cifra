@@ -35,6 +35,26 @@
         </div>
     @endif
 
+    @if (session('duplicidade_igreja'))
+        <div class="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
+            <p class="font-bold">{{ session('duplicidade_igreja.mensagem') }}</p>
+            <div class="mt-3 space-y-2">
+                @foreach (session('duplicidade_igreja.igrejas', []) as $igrejaParecida)
+                    <div class="rounded-xl bg-white/80 px-4 py-3">
+                        <p class="font-semibold text-gray-900">{{ $igrejaParecida['nome'] }}</p>
+                        <p class="text-xs text-gray-600">
+                            {{ $igrejaParecida['cidade'] }} - {{ $igrejaParecida['estado'] }}
+                            @if (!empty($igrejaParecida['endereco']))
+                                • {{ $igrejaParecida['endereco'] }}
+                            @endif
+                        </p>
+                    </div>
+                @endforeach
+            </div>
+            <p class="mt-3 text-xs font-semibold">Se for outra comunidade, clique em Salvar igreja novamente para continuar.</p>
+        </div>
+    @endif
+
     @if ($errors->any())
         <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 text-sm rounded">
             <ul class="list-disc pl-4">
@@ -47,6 +67,9 @@
 
     <form action="{{ route('admin.igrejas.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
         @csrf
+        @if (session('duplicidade_igreja'))
+            <input type="hidden" name="confirmar_duplicidade" value="1">
+        @endif
 
         <div class="admin-section-card p-6">
             <h2 class="text-lg font-bold text-gray-800 mb-4">Dados da igreja</h2>

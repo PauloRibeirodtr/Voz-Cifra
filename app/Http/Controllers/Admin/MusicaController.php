@@ -11,6 +11,7 @@ use App\Services\NotificacaoSistemaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class MusicaController extends Controller
@@ -53,6 +54,16 @@ class MusicaController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $dados = $this->validarDados($request);
+        $duplicidades = $this->detectarMusicasDuplicadas($dados);
+
+        if ($duplicidades->isNotEmpty() && !((bool) ($dados['confirmar_duplicidade'] ?? false))) {
+            return back()
+                ->withInput()
+                ->with('duplicidade_musica', [
+                    'mensagem' => 'Ja existe uma musica com titulo e artista parecidos. Deseja continuar mesmo assim?',
+                    'musicas' => $duplicidades->all(),
+                ]);
+        }
 
         /** @var \App\Models\Usuario $usuario */
         $usuario = Auth::user();
@@ -121,6 +132,17 @@ class MusicaController extends Controller
     public function update(Request $request, Musica $musica): RedirectResponse
     {
         $dados = $this->validarDados($request);
+        $duplicidades = $this->detectarMusicasDuplicadas($dados, $musica->id);
+
+        if ($duplicidades->isNotEmpty() && !((bool) ($dados['confirmar_duplicidade'] ?? false))) {
+            return back()
+                ->withInput()
+                ->with('duplicidade_musica', [
+                    'mensagem' => 'Ja existe uma musica com titulo e artista parecidos. Deseja continuar mesmo assim?',
+                    'musicas' => $duplicidades->all(),
+                ]);
+        }
+
         /** @var \App\Models\Usuario|null $usuario */
         $usuario = Auth::user();
 
@@ -214,6 +236,7 @@ class MusicaController extends Controller
                 'tempo_liturgico_id' => ['nullable', 'exists:tempos_liturgicos,id'],
                 'momento_liturgico_id' => ['nullable', 'exists:momentos_liturgicos,id'],
                 'ativo' => ['nullable', 'boolean'],
+                'confirmar_duplicidade' => ['nullable', 'boolean'],
             ],
             [
                 'titulo.required' => 'Informe o titulo da musica base.',
@@ -236,6 +259,45 @@ class MusicaController extends Controller
         }
 
         return $dados;
+    }
+
+    private function detectarMusicasDuplicadas(array $dados, ?int $ignorarMusicaId = null)
+    {
+        $titulo = $this->normalizarTexto((string) ($dados['titulo'] ?? ''));
+        $artista = $this->normalizarTexto((string) ($dados['artista'] ?? ''));
+
+        if ($titulo === '') {
+            return collect();
+        }
+
+        return Musica::query()
+            ->when($ignorarMusicaId, fn ($query) => $query->whereKeyNot($ignorarMusicaId))
+            ->get()
+            ->filter(function (Musica $musica) use ($titulo, $artista): bool {
+                $tituloExistente = $this->normalizarTexto((string) $musica->titulo);
+                $artistaExistente = $this->normalizarTexto((string) $musica->artista);
+
+                similar_text($titulo, $tituloExistente, $similaridadeTitulo);
+                similar_text($artista, $artistaExistente, $similaridadeArtista);
+
+                $mesmoTitulo = $titulo === $tituloExistente || $similaridadeTitulo >= 88;
+                $mesmoArtista = $artista === $artistaExistente
+                    || ($artista !== '' && $artistaExistente !== '' && $similaridadeArtista >= 88);
+
+                return $mesmoTitulo && $mesmoArtista;
+            })
+            ->take(5)
+            ->map(fn (Musica $musica) => [
+                'titulo' => $musica->titulo,
+                'artista' => $musica->artista ?: 'Artista nao informado',
+                'ativo' => (bool) $musica->ativo,
+            ])
+            ->values();
+    }
+
+    private function normalizarTexto(string $texto): string
+    {
+        return mb_strtolower(Str::ascii(trim(preg_replace('/\s+/', ' ', $texto) ?? '')));
     }
 
     private function possuiCifrasNaLetraBase(string $letra): bool
