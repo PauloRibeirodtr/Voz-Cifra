@@ -1,25 +1,22 @@
 @extends('member.layouts.app')
 
-@php($isCoordenadorArea = request()->routeIs('coordenador.*'))
-@php($routePrefix = $isCoordenadorArea ? 'coordenador' : 'member')
-@php($tituloPerfil = $isCoordenadorArea ? 'Perfil do coordenador' : 'Meu perfil')
+@php
+    $isCoordenadorArea = (bool) ($isCoordenadorArea ?? request()->routeIs('coordenador.*'));
+    $tituloPerfil = $tituloPerfil ?? ($isCoordenadorArea ? 'Perfil do coordenador' : 'Meu perfil');
+@endphp
 
 @section('title', $tituloPerfil . ' | Voz & Cifra')
 @section('mobile_title', $tituloPerfil)
 @section('desktop_subtitle', $isCoordenadorArea ? 'Perfil e acesso operacional da igreja' : 'Perfil e configurações do músico')
 
 @section('header_actions')
-    @php($routePrefix = request()->routeIs('coordenador.*') ? 'coordenador' : 'member')
-    <a href="{{ route($routePrefix . '.dashboard') }}" class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
+    <a href="{{ route(request()->routeIs('coordenador.*') ? 'coordenador.dashboard' : 'member.dashboard') }}" class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
         Voltar ao painel
     </a>
 @endsection
 
 @section('content')
     @php
-        $isCoordenadorArea = request()->routeIs('coordenador.*');
-        $routePrefix = $isCoordenadorArea ? 'coordenador' : 'member';
-        $tituloPerfil = $isCoordenadorArea ? 'Perfil do coordenador' : 'Meu perfil';
         $classeInput = 'mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 shadow-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100';
         $papeisAtivos = $igreja ? $user->listarPapeisNaIgreja($igreja) : collect();
     @endphp
@@ -47,7 +44,7 @@
     @endif
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <form action="{{ route($routePrefix . '.profile.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <form action="{{ route($isCoordenadorArea ? 'coordenador.profile.update' : 'member.profile.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PUT')
 

@@ -56,6 +56,23 @@ class LoginTest extends TestCase
         $this->assertAuthenticatedAs($usuario);
     }
 
+    public function test_usuario_apenas_musico_em_primeiro_acesso_consegue_abrir_perfil(): void
+    {
+        $igreja = Igreja::factory()->create();
+        $usuario = Usuario::factory()->create([
+            'password' => '12345678901',
+            'ativo' => true,
+            'primeiro_acesso' => true,
+        ]);
+        $usuario->adicionarPapel(PapelIgreja::MUSICO, $igreja);
+
+        $this
+            ->actingAs($usuario)
+            ->get(route('member.profile'))
+            ->assertOk()
+            ->assertSee('Meu perfil');
+    }
+
     public function test_cadastro_de_musico_sem_senha_define_cpf_sem_pontuacao_como_senha_provisoria(): void
     {
         Mail::fake();

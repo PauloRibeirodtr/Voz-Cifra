@@ -48,10 +48,13 @@ class PainelMembroController extends Controller
     public function profile(): View
     {
         $usuario = $this->obterUsuario();
+        $isCoordenadorArea = request()->routeIs('coordenador.*');
 
         return view('member.profile', [
             'user' => $usuario,
             'igreja' => $usuario->igrejaAtiva() ?? $usuario->igreja,
+            'isCoordenadorArea' => $isCoordenadorArea,
+            'tituloPerfil' => $isCoordenadorArea ? 'Perfil do coordenador' : 'Meu perfil',
         ]);
     }
 
