@@ -70,7 +70,11 @@ class LoginTest extends TestCase
             ->actingAs($usuario)
             ->get(route('member.profile'))
             ->assertOk()
-            ->assertSee('Meu perfil');
+            ->assertSee('Meu perfil')
+            ->assertSee('Repert')
+            ->assertDontSee('Administra&ccedil;&atilde;o central', false)
+            ->assertDontSee('>Igrejas<', false)
+            ->assertDontSee('>Usu&aacute;rios<', false);
     }
 
     public function test_cadastro_de_musico_sem_senha_define_cpf_sem_pontuacao_como_senha_provisoria(): void

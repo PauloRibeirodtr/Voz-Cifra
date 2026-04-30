@@ -5,6 +5,7 @@
 </head>
 @php
     $themePreference = auth()->user()->theme_preference ?? 'system';
+    $profileRoute = request()->routeIs('coordenador.*') ? 'coordenador.profile' : 'member.profile';
 @endphp
 <body class="font-sans text-gray-900" data-theme-preference="{{ $themePreference }}">
     <div
@@ -51,7 +52,7 @@
                             @yield('header_actions')
 
                             @auth
-                                <a href="{{ route('member.profile') }}" class="admin-user-chip admin-user-link" aria-label="Abrir meu perfil">
+                                <a href="{{ route($profileRoute) }}" class="admin-user-chip admin-user-link" aria-label="Abrir meu perfil">
                                     <div class="admin-user-chip-avatar">
                                         @if (filled(auth()->user()->foto_perfil_path))
                                             <img

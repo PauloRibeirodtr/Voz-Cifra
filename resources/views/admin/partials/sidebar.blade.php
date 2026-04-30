@@ -9,6 +9,7 @@
         $usuarioSidebar = auth()->user();
         $igrejaAtivaSidebar = $usuarioSidebar?->igrejaAtiva();
         $igrejaAtivaIdSidebar = $igrejaAtivaSidebar?->id;
+        $temAdminMasterSidebar = (bool) ($usuarioSidebar?->ehAdminMaster());
         $temAdminLocalSidebar = (bool) ($usuarioSidebar?->temPapelNaIgreja(PapelIgreja::ADMIN_LOCAL, $igrejaAtivaIdSidebar));
         $temCoordenadorSidebar = (bool) ($usuarioSidebar?->temPapelNaIgreja(PapelIgreja::COORDENADOR, $igrejaAtivaIdSidebar));
         $temMusicoSidebar = (bool) ($usuarioSidebar?->temPapelNaIgreja(PapelIgreja::MUSICO, $igrejaAtivaIdSidebar));
@@ -21,6 +22,12 @@
         $perfilRouteSidebar = request()->routeIs('local-admin.*')
             ? 'local-admin.profile'
             : (request()->routeIs('coordenador.*') ? 'coordenador.profile' : (request()->routeIs('member.*') ? 'member.profile' : 'admin.profile'));
+        $linkPainelSidebar = $temAdminMasterSidebar
+            ? route('admin.dashboard')
+            : ($temAdminLocalSidebar ? route('local-admin.dashboard') : ($temCoordenadorSidebar ? route('coordenador.dashboard') : route('member.dashboard')));
+        $rotuloMenuSidebar = $temAdminMasterSidebar
+            ? 'Menu administrativo'
+            : ($temAdminLocalSidebar ? 'Menu da igreja' : ($temCoordenadorSidebar ? 'Menu da coordena&ccedil;&atilde;o' : 'Menu do m&uacute;sico'));
 
         $itemMenuClasse = static function (bool $ativo): string {
             return $ativo
@@ -31,11 +38,11 @@
 
     <div class="admin-sidebar-inner">
         <div class="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3 lg:hidden">
-            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3">
+            <a href="{{ $linkPainelSidebar }}" class="flex items-center gap-3">
                 <img src="{{ asset('logo/final.png') }}" alt="Logo Voz e Cifra" class="h-9 w-auto shrink-0">
                 <div>
                     <p class="text-[10px] font-black uppercase tracking-[0.22em] text-[#d6ad6c]">Voz &amp; Cifra</p>
-                    <p class="text-sm font-semibold text-white/90">Menu administrativo</p>
+                    <p class="text-sm font-semibold text-white/90">{!! $rotuloMenuSidebar !!}</p>
                 </div>
             </a>
 
@@ -85,7 +92,7 @@
             </div>
         @endauth
 
-        <a href="{{ route('admin.dashboard') }}" class="admin-sidebar-brand relative hidden shrink-0 flex-col items-center justify-center border-b border-white/10 px-6 py-8 text-center shadow-md lg:flex">
+        <a href="{{ $linkPainelSidebar }}" class="admin-sidebar-brand relative hidden shrink-0 flex-col items-center justify-center border-b border-white/10 px-6 py-8 text-center shadow-md lg:flex">
             <div class="absolute bg-white opacity-5 w-24 h-24 rounded-full blur-xl top-8"></div>
             <img src="{{ asset('logo/final.png') }}" alt="Logo Voz e Cifra" class="relative z-10 mb-4 h-auto w-24 drop-shadow-2xl transition duration-300 hover:scale-105">
             <div class="relative z-10 text-center">
@@ -96,22 +103,29 @@
 
         <div class="admin-sidebar-body">
             <nav class="admin-sidebar-nav">
-                <a href="{{ route('admin.dashboard') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.dashboard')) }}">
-                    <i class="fa-solid fa-house w-5 text-center group-hover:scale-110 transition"></i>
-                    <span>Painel</span>
-                </a>
+                @if ($temAdminMasterSidebar)
+                    <a href="{{ route('admin.dashboard') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.dashboard')) }}">
+                        <i class="fa-solid fa-house w-5 text-center group-hover:scale-110 transition"></i>
+                        <span>Painel</span>
+                    </a>
 
-                <div class="admin-sidebar-section-label pt-3 pb-1 pl-4 text-[11px] font-black uppercase tracking-widest opacity-80">Administra&ccedil;&atilde;o central</div>
+                    <div class="admin-sidebar-section-label pt-3 pb-1 pl-4 text-[11px] font-black uppercase tracking-widest opacity-80">Administra&ccedil;&atilde;o central</div>
 
-                <a href="{{ route('admin.igrejas.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.igrejas.*')) }}">
-                    <i class="fa-solid fa-church w-5 text-center group-hover:scale-110 transition"></i>
-                    <span>Igrejas</span>
-                </a>
+                    <a href="{{ route('admin.igrejas.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.igrejas.*')) }}">
+                        <i class="fa-solid fa-church w-5 text-center group-hover:scale-110 transition"></i>
+                        <span>Igrejas</span>
+                    </a>
 
-                <a href="{{ route('admin.usuarios.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.usuarios.*')) }}">
-                    <i class="fa-solid fa-users w-5 text-center group-hover:scale-110 transition"></i>
-                    <span>Usu&aacute;rios</span>
-                </a>
+                    <a href="{{ route('admin.usuarios.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.usuarios.*')) }}">
+                        <i class="fa-solid fa-users w-5 text-center group-hover:scale-110 transition"></i>
+                        <span>Usu&aacute;rios</span>
+                    </a>
+                @else
+                    <a href="{{ $linkPainelSidebar }}" class="{{ $itemMenuClasse(request()->routeIs('local-admin.dashboard', 'coordenador.dashboard', 'member.dashboard')) }}">
+                        <i class="fa-solid fa-house w-5 text-center group-hover:scale-110 transition"></i>
+                        <span>Painel</span>
+                    </a>
+                @endif
 
                 @if ($temPapelOperacionalSidebar)
                     <div class="admin-sidebar-section-label pt-3 pb-1 pl-4 text-[11px] font-black uppercase tracking-widest opacity-80">Minha igreja</div>
@@ -198,9 +212,9 @@
                     @endif
                 @endif
 
-                <div class="admin-sidebar-section-label pt-3 pb-1 pl-4 text-[11px] font-black uppercase tracking-widest opacity-80">Sistema</div>
+                @if ($temAdminMasterSidebar)
+                    <div class="admin-sidebar-section-label pt-3 pb-1 pl-4 text-[11px] font-black uppercase tracking-widest opacity-80">Sistema</div>
 
-                @if (auth()->user()?->ehAdminMaster())
                     <a href="{{ route('admin.auditoria.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.auditoria.*')) }}">
                         <i class="fa-solid fa-shield-halved w-5 text-center group-hover:scale-110 transition"></i>
                         <span>Auditoria</span>
@@ -210,12 +224,12 @@
                         <i class="fa-solid fa-headset w-5 text-center group-hover:scale-110 transition"></i>
                         <span>Chamados</span>
                     </a>
-                @endif
 
-                <a href="{{ route('admin.settings') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.settings', 'admin.profile', 'admin.profile.update')) }}">
-                    <i class="fa-solid fa-gear w-5 text-center group-hover:scale-110 transition"></i>
-                    <span>Configura&ccedil;&otilde;es</span>
-                </a>
+                    <a href="{{ route('admin.settings') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.settings', 'admin.profile', 'admin.profile.update')) }}">
+                        <i class="fa-solid fa-gear w-5 text-center group-hover:scale-110 transition"></i>
+                        <span>Configura&ccedil;&otilde;es</span>
+                    </a>
+                @endif
             </nav>
 
             <div class="admin-sidebar-footer">
