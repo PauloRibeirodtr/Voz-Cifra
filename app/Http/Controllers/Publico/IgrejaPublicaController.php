@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Acorde;
 use App\Models\Igreja;
 use App\Models\Missa;
+use App\Services\RenderizadorLetrasHtmlService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,11 @@ use Illuminate\View\View;
 
 class IgrejaPublicaController extends Controller
 {
+    public function __construct(
+        private readonly RenderizadorLetrasHtmlService $renderizadorLetrasHtmlService
+    ) {
+    }
+
     public function show(Request $request, string $slug): View
     {
         return $this->renderizarPaginaPublica($request, $slug, 'fieis');
@@ -326,17 +332,7 @@ class IgrejaPublicaController extends Controller
 
     private function limparLetraPublica(string $texto): string
     {
-        $textoSemCifras = preg_replace_callback(
-            '/\[([^\[\]\r\n]+)\]/',
-            fn (array $matches): string => $this->ehAcordePublico((string) $matches[1])
-                ? ''
-                : trim((string) $matches[1]),
-            $texto
-        ) ?? $texto;
-        $textoSemEspacosExtras = preg_replace("/[ \t]+\n/", "\n", $textoSemCifras) ?? $textoSemCifras;
-        $textoNormalizado = preg_replace("/\n{3,}/", "\n\n", trim($textoSemEspacosExtras)) ?? trim($textoSemEspacosExtras);
-
-        return $textoNormalizado;
+        return $this->renderizadorLetrasHtmlService->removerCifras($texto);
     }
 
     private function ehAcordePublico(string $valor): bool
@@ -352,7 +348,7 @@ class IgrejaPublicaController extends Controller
 
     private function normalizarLetraMusico(string $texto): string
     {
-        return preg_replace("/\n{3,}/", "\n\n", trim($texto)) ?? trim($texto);
+        return $this->renderizadorLetrasHtmlService->normalizar($texto);
     }
 
     private function formatarLetraMusicoParaHtml(string $texto): string
@@ -366,26 +362,7 @@ class IgrejaPublicaController extends Controller
 
     private function formatarLetraFielParaHtml(string $texto): string
     {
-        $linhas = preg_split('/\r\n|\r|\n/', $texto) ?: [];
-        $html = [];
-
-        foreach ($linhas as $linha) {
-            $linhaLimpa = trim((string) $linha);
-
-            if ($linhaLimpa === '') {
-                $html[] = '<div class="lyrics-space"></div>';
-                continue;
-            }
-
-            if ($this->ehMarcacaoSecaoPublica($linhaLimpa)) {
-                $html[] = '<div class="' . $this->classeMarcacaoSecaoPublica($linhaLimpa) . '">' . e($linhaLimpa) . '</div>';
-                continue;
-            }
-
-            $html[] = '<p>' . e($linhaLimpa) . '</p>';
-        }
-
-        return implode('', $html);
+        return $this->renderizadorLetrasHtmlService->renderizarSemCifras($texto);
     }
 
     private function ehMarcacaoSecaoPublica(string $valor): bool

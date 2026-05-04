@@ -33,7 +33,7 @@
         const CHORD_REGEX = /^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\+|-|[0-9#b])|\([^\)\]]+\))*(?:\/[A-G](?:#|b)?)?$/;
         const CHORD_PARTS_REGEX = /^([A-G](?:#|b)?)(.*?)(?:\/([A-G](?:#|b)?))?$/;
 
-        const normalizeWhitespace = (value) => (value || '').replace(/\\n/g, '\n').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        const normalizeWhitespace = (value) => (value || '').replace(/\\n/g, '\n').replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n{3,}/g, '\n\n');
 
         const escapeHtml = (value) => String(value || '')
             .replace(/&/g, '&amp;')
@@ -50,11 +50,11 @@
 
         const isSectionLabel = (value) => {
             const label = normalizeSectionLabel(value);
-            return label.length <= 32 && /^(refrao|entrada|final|ponte|estrofe|verso)(\b|$)/.test(label);
+            return label.length <= 32 && /^(refrao:?|refr\.?|ref:|entrada|final|ponte|estrofe|verso)(?:\s|$)/.test(label);
         };
 
         const sectionLabelClass = (value) => {
-            return normalizeSectionLabel(value).startsWith('refrao')
+            return /^(refrao:?|refr\.?|ref:)(?:\s|$)/.test(normalizeSectionLabel(value))
                 ? 'cifra-marcacao cifra-marcacao--refrao'
                 : 'cifra-marcacao';
         };

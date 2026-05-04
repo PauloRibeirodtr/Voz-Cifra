@@ -457,21 +457,21 @@
             white-space: pre-wrap;
             color: var(--text);
             font-size: clamp(calc(17px * var(--public-font-scale)), calc(4vw * var(--public-font-scale)), calc(21px * var(--public-font-scale)));
-            line-height: 1.95;
+            line-height: 1.7;
         }
 
         .lyrics p {
-            margin: 0 0 0.95rem;
+            margin: 0 0 0.55rem;
         }
 
         .lyrics-space {
-            height: 0.7rem;
+            height: 0.55rem;
         }
 
         .lyrics-section-label {
             display: inline-flex;
             align-items: center;
-            margin: 1rem 0 0.7rem;
+            margin: 0.85rem 0 0.5rem;
             padding: 0.38rem 0.78rem;
             border-radius: 999px;
             background: rgba(227, 190, 132, 0.12);
@@ -493,7 +493,7 @@
         body[data-public-mode='musicos'] .lyrics {
             font-family: "Courier New", Courier, monospace;
             font-size: clamp(calc(15px * var(--public-font-scale)), calc(3.8vw * var(--public-font-scale)), calc(20px * var(--public-font-scale)));
-            line-height: 2;
+            line-height: 1.68;
         }
 
         body[data-public-mode='musicos'] .celebration-list {
@@ -535,7 +535,7 @@
             flex-wrap: wrap;
             align-items: flex-end;
             gap: 0.16rem;
-            margin-bottom: 0.48rem;
+            margin-bottom: 0.36rem;
         }
 
         body[data-public-mode='musicos'] .lyrics .cifra-segmento {
@@ -543,7 +543,7 @@
             flex-direction: column;
             align-items: flex-start;
             justify-content: flex-end;
-            min-height: 2.65rem;
+            min-height: 2.35rem;
         }
 
         body[data-public-mode='musicos'] .lyrics .cifra-acordes {
@@ -573,14 +573,14 @@
         body[data-public-mode='musicos'] .lyrics .cifra-letra {
             color: var(--text);
             font-size: calc(1rem * var(--escala-fonte));
-            line-height: calc(1.75rem * var(--escala-fonte));
+            line-height: calc(1.58rem * var(--escala-fonte));
             white-space: pre-wrap;
         }
 
         body[data-public-mode='musicos'] .lyrics .cifra-marcacao {
             display: inline-flex;
             align-items: center;
-            margin: 1rem 0 0.75rem;
+            margin: 0.85rem 0 0.5rem;
             padding: 0.42rem 0.82rem;
             border-radius: 999px;
             background: rgba(227, 190, 132, 0.12);

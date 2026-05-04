@@ -1,7 +1,50 @@
 @extends('admin.layouts.admin')
 
+@inject('renderizadorLetras', 'App\Services\RenderizadorLetrasHtmlService')
+
 @section('title', 'Visualizar musica | Voz & Cifra')
 @section('mobile_title', 'Musica')
+
+@push('styles')
+    <style>
+        .lyrics {
+            white-space: pre-wrap;
+            color: #374151;
+            font-size: 1rem;
+            line-height: 1.65;
+        }
+
+        .lyrics p {
+            margin: 0 0 0.55rem;
+        }
+
+        .lyrics-space {
+            height: 0.55rem;
+        }
+
+        .lyrics-section-label {
+            display: inline-flex;
+            align-items: center;
+            margin: 0.85rem 0 0.5rem;
+            padding: 0.38rem 0.78rem;
+            border-radius: 999px;
+            border: 1px solid #dbeafe;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-size: 0.76rem;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .lyrics-section-label--refrao {
+            border-color: #fde68a;
+            background: #fffbeb;
+            color: #92400e;
+            font-weight: 950;
+        }
+    </style>
+@endpush
 
 @section('content')
     <div class="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -41,7 +84,7 @@
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div class="xl:col-span-2 bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100">
             <h2 class="text-lg font-bold text-gray-800 mb-4">Letra</h2>
-            <div class="prose max-w-none text-gray-700 whitespace-pre-line leading-7">{{ $musica->letra }}</div>
+            <div class="lyrics max-w-none">{!! $renderizadorLetras->renderizarSemCifras($musica->letra) !!}</div>
         </div>
 
         <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100">

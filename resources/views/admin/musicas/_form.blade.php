@@ -118,6 +118,7 @@
                         class="{{ $classeInput }}"
                     >{{ old('letra', $musicaAtual->letra ?? '') }}</textarea>
                     <p class="mt-1 text-xs text-gray-500">Use a letra limpa. Se houver cifra, ela deve ser cadastrada depois na versao musical.</p>
+                    <p class="mt-1 text-xs font-semibold text-amber-700">Separe as estrofes com uma linha em branco. Use "Refrão:" para destacar o refrão.</p>
                     <div id="alerta_cifras" class="hidden mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
                         Voce inseriu cifra na letra base. Salve apenas a letra limpa e deixe a cifra para a versao musical.
                     </div>

@@ -312,7 +312,12 @@ Cantarei quao grande e o meu Deus</pre>
         };
 
         const normalizarFormato = (textoBruto) => {
-            const texto = (textoBruto || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+            const texto = (textoBruto || '')
+                .replace(/\\n/g, '\n')
+                .replace(/\r\n/g, '\n')
+                .replace(/\r/g, '\n')
+                .replace(/\n{3,}/g, '\n\n')
+                .trim();
             const linhas = texto.split('\n');
             const resultado = [];
             let houveConversao = false;
@@ -338,7 +343,7 @@ Cantarei quao grande e o meu Deus</pre>
             }
 
             return {
-                textoNormalizado: resultado.join('\n').trim(),
+                textoNormalizado: resultado.join('\n').replace(/\n{3,}/g, '\n\n').trim(),
                 houveConversao,
             };
         };
@@ -361,7 +366,7 @@ Cantarei quao grande e o meu Deus</pre>
         const removerCifras = (texto) => {
             return texto.replace(/\[([^\[\]\r\n]+)\]/g, (trechoCompleto, interno) => {
                 return ehAcorde(interno) ? '' : trechoCompleto;
-            }).trim();
+            }).replace(/\n{3,}/g, '\n\n').trim();
         };
 
         const escaparHtml = (texto) => {
@@ -381,12 +386,12 @@ Cantarei quao grande e o meu Deus</pre>
 
         const ehMarcacaoSecao = (texto) => {
             const normalizada = normalizarMarcacao(texto);
-            return normalizada.length <= 32 && /^(refrao|entrada|final|ponte|estrofe|verso)(\b|$)/.test(normalizada);
+            return normalizada.length <= 32 && /^(refrao:?|refr\.?|ref:|entrada|final|ponte|estrofe|verso)(?:\s|$)/.test(normalizada);
         };
 
         const classeMarcacao = (texto, base = 'bg-slate-700/80 text-slate-100') => {
             const normalizada = normalizarMarcacao(texto);
-            return normalizada.startsWith('refrao')
+            return /^(refrao:?|refr\.?|ref:)(?:\s|$)/.test(normalizada)
                 ? 'bg-amber-200 text-slate-950 font-black'
                 : base;
         };
