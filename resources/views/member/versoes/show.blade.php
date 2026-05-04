@@ -1,291 +1,10 @@
 @extends('member.layouts.app')
 
-@section('title', ($versaoMusical->titulo ?: 'Versão musical') . ' | Voz & Cifra')
+@section('title', ($versaoMusical->titulo ?: 'Versao musical') . ' | Voz & Cifra')
 @section('mobile_title', 'Estudo da cifra')
-@section('desktop_subtitle', 'Leitura musical para estudo, vídeo e apoio')
+@section('desktop_subtitle', 'Leitura musical simples para estudo')
 
 @section('header_actions')
-    <a href="{{ route('member.versoes.print', [$musica, $versaoMusical]) }}" class="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-100">
-        Imprimir
-    </a>
-    <a href="{{ route('member.versoes.pdf', [$musica, $versaoMusical]) }}" class="inline-flex items-center justify-center rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700 shadow-sm transition hover:border-amber-300 hover:bg-amber-100">
-        Baixar PDF
-    </a>
-    <a href="{{ route('member.colecoes.index') }}" class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
-        Playlists salvas
-    </a>
-    <a href="{{ route('member.musicas.index') }}" class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
-        Voltar para biblioteca
-    </a>
-@endsection
-
-@push('styles')
-    @include('partials.cifra-viewer-styles')
-    <style>
-        .study-stage { margin: -0.5rem; border-radius: 2rem; background: radial-gradient(circle at top left, rgba(16,185,129,.16), transparent 34rem), linear-gradient(135deg,#030712 0%,#08111f 48%,#111827 100%); padding: 1rem; color: #f8fafc; box-shadow: inset 0 1px 0 rgba(255,255,255,.05); }
-        .study-shell { display: grid; gap: 1.5rem; grid-template-columns: minmax(0, 1fr); }
-        .study-panel { border-radius: 1.75rem; border: 1px solid rgba(148,163,184,.18); background: linear-gradient(180deg,rgba(15,23,42,.96) 0%,rgba(2,6,23,.98) 100%); color: #f8fafc; box-shadow: 0 24px 55px rgba(0,0,0,.35); }
-        .study-surface { border-radius: 1.4rem; border: 1px solid rgba(148,163,184,.18); background: rgba(15,23,42,.78); }
-        .study-card { border-radius: 1.65rem; border: 1px solid rgba(148,163,184,.18); background: rgba(15,23,42,.82); box-shadow: 0 18px 40px rgba(0,0,0,.24); }
-        .study-control { display:inline-flex; align-items:center; justify-content:center; min-height:2.75rem; min-width:2.75rem; border-radius:1rem; border:1px solid rgba(148,163,184,.2); background:rgba(30,41,59,.9); color:#e5e7eb; font-weight:700; transition:.2s ease; }
-        .study-control:hover { border-color: rgba(16,185,129,.38); background:rgba(51,65,85,.92); color:#fff; }
-        .study-primary { display:inline-flex; align-items:center; justify-content:center; border-radius:1rem; background:#059669; color:#fff; padding:.85rem 1rem; font-weight:800; transition:.2s ease; }
-        .study-primary:hover { background:#047857; }
-        .study-secondary { display:inline-flex; align-items:center; justify-content:center; border-radius:1rem; border:1px solid rgba(148,163,184,.2); background:rgba(30,41,59,.9); color:#e5e7eb; padding:.75rem 1rem; font-weight:700; transition:.2s ease; }
-        .study-secondary:hover { border-color:rgba(16,185,129,.34); background:rgba(51,65,85,.92); color:#fff; }
-        .study-preview { max-height: none; overflow-y: visible; }
-        .study-video-frame { aspect-ratio: 16 / 9; min-height: 210px; background: #020617; }
-        .study-video-frame iframe { display:block; width:100%; height:100%; }
-        .study-empty-video { display:flex; min-height:210px; align-items:center; justify-content:center; border-radius:1.25rem; border:1px dashed rgba(148,163,184,.25); background:rgba(15,23,42,.72); color:#94a3b8; text-align:center; }
-        .study-mobile-controls-label { display:none; }
-        .diagrama-acorde svg, .tooltip-acorde svg { width:100%; height:auto; max-width:240px; }
-        .tooltip-acorde { position:fixed; z-index:80; width:220px; pointer-events:none; border-radius:1rem; border:1px solid rgba(16,185,129,.35); background:rgba(15,23,42,.96); box-shadow:0 18px 50px rgba(2,6,23,.28); padding:.85rem; backdrop-filter:blur(8px); }
-        .tooltip-acorde.hidden { display:none; }
-        .playlist-card { border-radius:1.15rem; border:1px solid rgba(148,163,184,.15); background:rgba(15,23,42,.82); }
-        .study-action-button { display:inline-flex; align-items:center; gap:.6rem; border-radius:1rem; border:1px solid rgba(16,185,129,.28); background:rgba(16,185,129,.14); color:#d1fae5; padding:.85rem 1rem; font-weight:700; transition:.2s ease; }
-        .study-action-button:hover { background:rgba(16,185,129,.22); }
-        .playlist-modal-backdrop { position:fixed; inset:0; background:rgba(2,6,23,.72); backdrop-filter:blur(3px); z-index:90; }
-        .playlist-modal { position:fixed; inset:0; z-index:91; display:flex; align-items:center; justify-content:center; padding:1rem; }
-        .playlist-modal.hidden, .playlist-modal-backdrop.hidden { display:none; }
-        .playlist-modal-card { width:min(100%, 42rem); max-height:min(88vh, 900px); overflow:auto; border-radius:1.5rem; border:1px solid rgba(148,163,184,.18); background:#0f172a; color:#f8fafc; box-shadow:0 24px 60px rgba(2,6,23,.35); }
-        .playlist-existing-item { border-radius:1rem; border:1px solid rgba(148,163,184,.15); background:rgba(255,255,255,.04); }
-        @media (min-width:1280px) { .study-shell { grid-template-columns: minmax(0, 1.25fr) 24rem; } }
-        @media (max-width:767px) {
-            .study-stage { margin: -1rem; border-radius: 0; padding: .9rem; }
-            .study-mobile-controls-label { display:inline-flex; }
-            .study-controls-details:not([open]) { padding-bottom: 1rem; }
-            .study-controls-details:not([open]) .study-controls-body { display:none; }
-            .study-video-frame, .study-empty-video { min-height: 190px; }
-        }
-    </style>
-@endpush
-
-@section('content')
-    @php
-        $youtubeValor = trim((string) $versaoMusical->youtube_video_id);
-        $youtubeVideoId = null;
-
-        if ($youtubeValor !== '') {
-            if (preg_match('/^[A-Za-z0-9_-]{11}$/', $youtubeValor) === 1) {
-                $youtubeVideoId = $youtubeValor;
-            } elseif (preg_match('/(?:youtube\.com\/watch\?v=|youtube\.com\/embed\/|youtu\.be\/)([A-Za-z0-9_-]{11})/', $youtubeValor, $youtubeMatches) === 1) {
-                $youtubeVideoId = $youtubeMatches[1];
-            }
-        }
-    @endphp
-
-    @if (session('success'))
-        <div class="mb-6 rounded-2xl border border-emerald-400/30 bg-emerald-950 px-5 py-4 text-sm text-emerald-100">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if (session('status'))
-        <div class="mb-6 rounded-2xl border border-amber-400/30 bg-amber-950 px-5 py-4 text-sm text-amber-100">
-            {{ session('status') }}
-        </div>
-    @endif
-
-    @if ($errors->any())
-        <div class="mb-6 rounded-2xl border border-red-400/30 bg-red-950 px-5 py-4 text-sm text-red-100">
-            <ul class="list-disc pl-5">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-    <div class="study-stage">
-    <section class="study-panel px-6 py-6 lg:px-7">
-        <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-            <div class="min-w-0">
-                <p class="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-300">Modo de estudo</p>
-                <h1 class="mt-2 text-3xl font-black text-white">{{ $musica->titulo }}</h1>
-                <p class="mt-2 text-sm text-emerald-100">{{ $versaoMusical->titulo ?: 'Versão principal' }} @if ($missaAtiva) &bull; Missa ativa: {{ $missaAtiva->titulo }} @endif</p>
-            </div>
-            <div class="grid grid-cols-1 gap-3 sm:flex">
-                <button type="button" id="abrir_modal_playlist" class="study-action-button px-4 text-sm">
-                    <i class="fa-solid fa-plus"></i>
-                    <span>Adicionar a playlist</span>
-                </button>
-                <details class="relative">
-                    <summary class="study-control cursor-pointer px-4 text-sm">Ações</summary>
-                    <div class="mt-2 grid gap-2 rounded-2xl border border-white/10 bg-slate-950 p-2 shadow-xl sm:absolute sm:right-0 sm:z-20 sm:w-52">
-                        <a href="{{ route('member.versoes.print', [$musica, $versaoMusical]) }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10">Imprimir</a>
-                        <a href="{{ route('member.versoes.pdf', [$musica, $versaoMusical]) }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10">PDF</a>
-                        <a href="{{ route('member.repertorio') }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10">Meu repertório</a>
-                        <a href="{{ route('member.dashboard') }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10">Painel</a>
-                    </div>
-                </details>
-            </div>
-        </div>
-
-        <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <div class="study-surface p-4"><span class="block text-xs font-black uppercase tracking-wider text-emerald-200">Tom exibido</span><span id="tom_atual_badge" class="mt-2 block text-2xl font-black text-white">{{ $tomExibicao ?: 'Não informado' }}</span></div>
-            <div class="study-surface p-4"><span class="block text-xs font-black uppercase tracking-wider text-emerald-200">Tom original</span><span class="mt-2 block text-2xl font-black text-white">{{ $tomOriginal ?: 'Não informado' }}</span></div>
-            <div class="study-surface p-4"><span class="block text-xs font-black uppercase tracking-wider text-emerald-200">BPM</span><span class="mt-2 block text-2xl font-black text-white">{{ $versaoMusical->bpm ?: '-' }}</span></div>
-            <div class="study-surface p-4"><span class="block text-xs font-black uppercase tracking-wider text-emerald-200">Contexto</span><span class="mt-2 block text-sm font-bold text-white">{{ $itemMissa ? 'Versão usada na missa da sua igreja' : 'Estudo livre da biblioteca musical' }}</span></div>
-        </div>
-    </section>
-
-    <div class="mt-6 study-shell">
-        <section class="space-y-6">
-            <div class="rounded-[1.75rem] border border-gray-100 bg-white p-5 shadow-sm">
-                <div class="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
-                    <div class="space-y-5">
-                        <div class="flex flex-wrap items-center gap-2">
-                            @if ($itemMissa && $itemMissa->tom_usado)
-                                <span class="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Tom da missa {{ $itemMissa->tom_usado }}</span>
-                            @endif
-                            @if ($tomOriginal)
-                                <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">Tom original {{ $tomOriginal }}</span>
-                            @endif
-                            @if ($versaoMusical->bpm)
-                                <span class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">BPM {{ $versaoMusical->bpm }}</span>
-                            @endif
-                        </div>
-
-                        <details open class="rounded-3xl border border-gray-100 bg-gray-50 p-4">
-                            <summary class="flex cursor-pointer items-center justify-between gap-3 text-sm font-black text-gray-800">
-                                <span>Controles de estudo</span>
-                                <span class="rounded-full bg-white px-3 py-1 text-xs font-bold text-gray-500">auto rolagem, tom, fonte e metronomo</span>
-                            </summary>
-
-                            <div class="mt-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                                <div class="flex flex-wrap items-center gap-3">
-                                    <button type="button" id="toggle_autorrolagem" class="inline-flex items-center justify-center rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-800">Iniciar auto rolagem</button>
-                                    <div class="flex items-center gap-3">
-                                        <label for="velocidade_rolagem" class="text-sm font-medium text-gray-600">Velocidade</label>
-                                        <input id="velocidade_rolagem" type="range" min="0.25" max="6" value="1" step="0.25" class="accent-emerald-700">
-                                        <span id="valor_velocidade" class="min-w-[2.5rem] text-sm font-semibold text-gray-700">1.00</span>
-                                    </div>
-                                </div>
-                                <div class="flex flex-wrap items-center gap-3">
-                                    <button type="button" id="toggle_metronomo" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-100">Iniciar metrônomo</button>
-                                    <div class="inline-flex items-center overflow-hidden rounded-xl border border-gray-200 bg-white">
-                                        <button type="button" id="diminuir_bpm" class="h-11 w-11 text-lg font-bold text-gray-700 hover:bg-gray-50">-</button>
-                                        <input id="controle_bpm" type="number" min="20" max="240" value="{{ $versaoMusical->bpm ?: 72 }}" class="w-20 border-0 text-center text-base font-bold text-gray-800 focus:ring-0">
-                                        <button type="button" id="aumentar_bpm" class="h-11 w-11 text-lg font-bold text-gray-700 hover:bg-gray-50">+</button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="mt-4 flex flex-wrap items-center gap-3">
-                                <span class="inline-flex rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700" id="indicador_tom_atual">Tom atual: {{ $tomExibicao ?: 'Não informado' }}</span>
-                                <button type="button" data-transpose="-1" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">Tom -</button>
-                                <button type="button" data-transpose-reset class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">Tom original</button>
-                                <button type="button" data-transpose="1" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">Tom +</button>
-                                <button type="button" data-font="-1" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">A-</button>
-                                <button type="button" data-font-reset class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">Fonte padrão</button>
-                                <button type="button" data-font="1" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">A+</button>
-                            </div>
-                        </details>
-                    </div>
-
-                    <div class="space-y-4">
-                        @if ($versaoMusical->youtube_video_id)
-                            <div class="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
-                                <div class="aspect-video bg-slate-950">
-                                    <iframe class="h-full w-full" src="https://www.youtube.com/embed/{{ $versaoMusical->youtube_video_id }}" title="Vídeo de apoio" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-                                </div>
-                                <div class="border-t border-gray-100 px-4 py-3 text-sm text-gray-500">Vídeo de apoio sincronizado com o estudo da música.</div>
-                            </div>
-                        @else
-                            <div class="rounded-3xl border border-dashed border-gray-300 bg-gray-50 p-5 text-sm text-gray-500">Esta versão ainda não possui vídeo do YouTube vinculado.</div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <section class="study-panel p-5">
-                <div class="study-preview rounded-[1.5rem] border border-white/5 bg-[#172138] p-6 text-emerald-100 shadow-inner" id="preview_musico_container">
-                    <div id="letra_com_cifras_preview" class="space-y-2"></div>
-                </div>
-            </section>
-        </section>
-
-        <aside class="space-y-6">
-            <section class="study-panel p-5">
-                <h2 class="text-lg font-bold text-white">Dicionário de acordes</h2>
-                <p class="mt-1 text-sm text-slate-300">Passe o mouse ou toque num acorde da cifra para ver o shape correspondente.</p>
-                <div class="mt-4 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
-                    <div class="diagrama-acorde flex justify-center" id="painel_diagrama_acorde"></div>
-                    <div class="mt-4 text-center"><div id="nome_acorde_ativo" class="text-lg font-black text-white">Nenhum acorde selecionado</div><p id="descricao_acorde_ativo" class="mt-1 text-sm text-slate-300">Selecione um acorde para visualizar o desenho.</p></div>
-                    <div id="variacoes_acorde" class="mt-4 flex flex-wrap justify-center gap-2"></div>
-                </div>
-                <div class="mt-4 flex flex-wrap gap-2" id="lista_acordes_transpostos">
-                    @foreach ($acordesDaVersao as $acorde)
-                        <button type="button" class="study-control px-3 text-sm" data-acorde-card="{{ $acorde }}">{{ $acorde }}</button>
-                    @endforeach
-                </div>
-            </section>
-        </aside>
-    </div>
-
-    <div id="tooltip_acorde" class="tooltip-acorde hidden"><div class="text-center"><div id="tooltip_acorde_nome" class="text-sm font-black text-white">Acorde</div><div id="tooltip_acorde_diagrama" class="mt-3 diagrama-acorde"></div></div></div>
-    <div id="playlist_modal_backdrop" class="playlist-modal-backdrop hidden"></div>
-    <div id="playlist_modal" class="playlist-modal hidden" aria-hidden="true">
-        <div class="playlist-modal-card p-5 sm:p-6">
-            <div class="flex items-start justify-between gap-4">
-                <div>
-                    <p class="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-300">Playlist</p>
-                    <h2 class="mt-2 text-2xl font-black text-white">Adicionar "{{ $musica->titulo }}"</h2>
-                    <p class="mt-2 text-sm text-slate-300">Escolha uma playlist existente ou crie uma nova sem sair da tela de estudo.</p>
-                </div>
-                <button type="button" id="fechar_modal_playlist" class="study-control" aria-label="Fechar modal">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-
-            <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
-                <section class="playlist-card p-4">
-                    <h3 class="text-base font-bold text-white">Criar nova playlist</h3>
-                    <p class="mt-1 text-sm text-slate-300">Perfeito para separar por ensaio, missa ou repertório pessoal.</p>
-                    <form action="{{ route('member.colecoes.store') }}" method="POST" class="mt-4 space-y-3">
-                        @csrf
-                        <input type="hidden" name="musica_id" value="{{ $musica->id }}">
-                        <input type="hidden" name="versao_musical_id" value="{{ $versaoMusical->id }}">
-                        <input type="text" name="nome" class="block w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-slate-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" placeholder="Ex.: Ensaio de quarta" required>
-                        <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-500">
-                            <i class="fa-solid fa-folder-plus mr-2"></i>
-                            Criar e adicionar
-                        </button>
-                    </form>
-                </section>
-
-                <section class="playlist-card p-4">
-                    <h3 class="text-base font-bold text-white">Adicionar em playlist existente</h3>
-                    <p class="mt-1 text-sm text-slate-300">Toque numa playlist para incluir esta versão rapidamente.</p>
-                    <div class="mt-4 space-y-3">
-                        @forelse ($colecoes as $colecao)
-                            <form action="{{ route('member.colecoes.itens.store', $colecao) }}" method="POST" class="playlist-existing-item flex items-center gap-3 px-3 py-3">
-                                @csrf
-                                <input type="hidden" name="musica_id" value="{{ $musica->id }}">
-                                <input type="hidden" name="versao_musical_id" value="{{ $versaoMusical->id }}">
-                                <div class="min-w-0 flex-1">
-                                    <p class="truncate text-sm font-semibold text-white">{{ $colecao->nome }}</p>
-                                    <p class="text-xs text-slate-400">{{ $colecao->itens_count }} itens</p>
-                                </div>
-                                @if ($colecaoIdsComMusica->contains($colecao->id))
-                                    <span class="inline-flex items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-300">Já adicionada</span>
-                                @else
-                                    <button type="submit" class="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold text-white hover:bg-white/20">
-                                        <i class="fa-solid fa-plus mr-2"></i>
-                                        Adicionar
-                                    </button>
-                                @endif
-                            </form>
-                        @empty
-                            <div class="rounded-xl border border-dashed border-white/10 bg-white/5 p-4 text-sm text-slate-300">
-                                Nenhuma playlist criada ainda. Use o formulário ao lado para criar a primeira.
-                            </div>
-                        @endforelse
-                    </div>
-                </section>
-            </div>
-        </div>
-    </div>
 @endsection
 
 @push('scripts')
@@ -321,6 +40,10 @@
             const modalPlaylistBackdrop = document.getElementById('playlist_modal_backdrop');
             const abrirModalPlaylist = document.getElementById('abrir_modal_playlist');
             const fecharModalPlaylist = document.getElementById('fechar_modal_playlist');
+            const modalControles = document.getElementById('controles_modal');
+            const modalControlesBackdrop = document.getElementById('controles_modal_backdrop');
+            const abrirModalControles = document.getElementById('abrir_modal_controles');
+            const fecharModalControles = document.getElementById('fechar_modal_controles');
             let transposicaoAtual = 0;
             let fonteAtual = 18;
             let rolagemAtiva = false;
@@ -328,10 +51,25 @@
             let intervaloMetronomo = null;
             let contextoAudio = null;
             let bpmAtual = bpmInicial;
-            if (!preview || !helper || !previewContainer) return;
+
+            if (!preview || !helper || !previewContainer) {
+                return;
+            }
+
+            const abrirModal = (modal, backdrop) => {
+                modal?.classList.remove('hidden');
+                backdrop?.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            };
+
+            const fecharModal = (modal, backdrop) => {
+                modal?.classList.add('hidden');
+                backdrop?.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            };
 
             const renderizarDiagrama = (shape) => {
-                if (!shape) return '<div class="text-sm text-slate-300">Sem desenho disponível.</div>';
+                if (!shape) return '<div class="text-sm text-slate-300">Sem desenho disponivel.</div>';
                 const config = { startX: 30, startY: 40, width: 180, height: 240, numStrings: 6, numFrets: 5 };
                 const stringGap = config.width / (config.numStrings - 1);
                 const fretGap = config.height / config.numFrets;
@@ -341,22 +79,63 @@
                 const topMarkers = shape.topMarkers || [null, null, null, null, null, null];
                 let grid = '';
                 let marks = '';
-                if (baseFret === 1) { grid += `<rect x="${config.startX}" y="${config.startY - 6}" width="${config.width}" height="6" rx="2" fill="#e5e7eb" />`; }
-                else { grid += `<text x="${config.startX - 10}" y="${config.startY + 25}" text-anchor="end" fill="#94a3b8" font-weight="bold" font-size="18">${baseFret}a</text>`; grid += `<line x1="${config.startX}" y1="${config.startY}" x2="${config.startX + config.width}" y2="${config.startY}" stroke="#94a3b8" stroke-width="2" />`; }
-                for (let i = 1; i <= config.numFrets; i++) { const y = config.startY + (i * fretGap); grid += `<line x1="${config.startX}" y1="${y}" x2="${config.startX + config.width}" y2="${y}" stroke="#cbd5e1" stroke-width="2" />`; }
-                for (let i = 0; i < config.numStrings; i++) { const x = config.startX + (i * stringGap); const thickness = 0.8 + ((5 - i) * 0.5); grid += `<line x1="${x}" y1="${config.startY}" x2="${x}" y2="${config.startY + config.height}" stroke="#e2e8f0" stroke-width="${thickness}" />`; }
-                topMarkers.forEach((marker, i) => { const x = config.startX + (i * stringGap); const y = config.startY - 15; if (marker === 'muted') marks += `<text x="${x}" y="${y + 5}" fill="#ef4444" font-size="18" font-weight="900" text-anchor="middle">X</text>`; else if (marker === 'open') marks += `<circle cx="${x}" cy="${y}" r="5" stroke="#2563eb" stroke-width="2.5" fill="none" />`; });
-                barres.forEach((barre) => { const y = config.startY + (barre.fret * fretGap) - (fretGap / 2); const x1 = config.startX + ((6 - barre.fromString) * stringGap); const x2 = config.startX + ((6 - barre.toString) * stringGap); marks += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="#f97316" stroke-width="14" stroke-linecap="round" opacity="0.95" />`; });
-                positions.forEach((position) => { const y = config.startY + (position.fret * fretGap) - (fretGap / 2); const x = config.startX + ((6 - position.string) * stringGap); marks += `<circle cx="${x}" cy="${y}" r="12" fill="#f97316" />`; if (position.finger) { marks += `<text x="${x}" y="${y + 1}" fill="white" font-size="14" font-weight="800" text-anchor="middle" dominant-baseline="central">${position.finger}</text>`; } });
+
+                if (baseFret === 1) {
+                    grid += `<rect x="${config.startX}" y="${config.startY - 6}" width="${config.width}" height="6" rx="2" fill="#e5e7eb" />`;
+                } else {
+                    grid += `<text x="${config.startX - 10}" y="${config.startY + 25}" text-anchor="end" fill="#94a3b8" font-weight="bold" font-size="18">${baseFret}a</text>`;
+                    grid += `<line x1="${config.startX}" y1="${config.startY}" x2="${config.startX + config.width}" y2="${config.startY}" stroke="#94a3b8" stroke-width="2" />`;
+                }
+
+                for (let i = 1; i <= config.numFrets; i++) {
+                    const y = config.startY + (i * fretGap);
+                    grid += `<line x1="${config.startX}" y1="${y}" x2="${config.startX + config.width}" y2="${y}" stroke="#cbd5e1" stroke-width="2" />`;
+                }
+
+                for (let i = 0; i < config.numStrings; i++) {
+                    const x = config.startX + (i * stringGap);
+                    const thickness = 0.8 + ((5 - i) * 0.5);
+                    grid += `<line x1="${x}" y1="${config.startY}" x2="${x}" y2="${config.startY + config.height}" stroke="#e2e8f0" stroke-width="${thickness}" />`;
+                }
+
+                topMarkers.forEach((marker, i) => {
+                    const x = config.startX + (i * stringGap);
+                    const y = config.startY - 15;
+                    if (marker === 'muted') marks += `<text x="${x}" y="${y + 5}" fill="#ef4444" font-size="18" font-weight="900" text-anchor="middle">X</text>`;
+                    if (marker === 'open') marks += `<circle cx="${x}" cy="${y}" r="5" stroke="#2563eb" stroke-width="2.5" fill="none" />`;
+                });
+
+                barres.forEach((barre) => {
+                    const y = config.startY + (barre.fret * fretGap) - (fretGap / 2);
+                    const x1 = config.startX + ((6 - barre.fromString) * stringGap);
+                    const x2 = config.startX + ((6 - barre.toString) * stringGap);
+                    marks += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="#f97316" stroke-width="14" stroke-linecap="round" opacity="0.95" />`;
+                });
+
+                positions.forEach((position) => {
+                    const y = config.startY + (position.fret * fretGap) - (fretGap / 2);
+                    const x = config.startX + ((6 - position.string) * stringGap);
+                    marks += `<circle cx="${x}" cy="${y}" r="12" fill="#f97316" />`;
+                    if (position.finger) {
+                        marks += `<text x="${x}" y="${y + 1}" fill="white" font-size="14" font-weight="800" text-anchor="middle" dominant-baseline="central">${position.finger}</text>`;
+                    }
+                });
+
                 return `<svg viewBox="0 0 240 300" aria-label="Diagrama do acorde"><rect x="30" y="40" width="180" height="240" rx="4" fill="#3b2418" stroke="#1f130d" stroke-width="2"></rect>${grid}${marks}</svg>`;
             };
 
             const preencherVariacoes = (nome, indiceAtivo = 0) => {
                 const variacoes = helper.getChordMatches(gruposAcorde, nome);
                 if (!variacoesAcorde) return;
-                if (variacoes.length <= 1) { variacoesAcorde.innerHTML = ''; return; }
-                variacoesAcorde.innerHTML = variacoes.map((variacao, indice) => `<button type="button" class="study-control px-3 text-xs ${indice === indiceAtivo ? 'bg-emerald-600 text-white' : ''}" data-variacao-acorde="${helper.escapeHtml(nome)}" data-variacao-indice="${indice}">${variacao.descricao ? helper.escapeHtml(variacao.descricao) : `Variacao ${indice + 1}`}</button>`).join('');
-                variacoesAcorde.querySelectorAll('[data-variacao-acorde]').forEach((botao) => { botao.addEventListener('click', () => ativarAcorde(nome, Number(botao.dataset.variacaoIndice))); });
+                if (variacoes.length <= 1) {
+                    variacoesAcorde.innerHTML = '';
+                    return;
+                }
+
+                variacoesAcorde.innerHTML = variacoes.map((variacao, indice) => `<button type="button" class="study-button px-3 py-2 text-xs ${indice === indiceAtivo ? 'study-button-primary' : ''}" data-variacao-acorde="${helper.escapeHtml(nome)}" data-variacao-indice="${indice}">${variacao.descricao ? helper.escapeHtml(variacao.descricao) : `Variacao ${indice + 1}`}</button>`).join('');
+                variacoesAcorde.querySelectorAll('[data-variacao-acorde]').forEach((botao) => {
+                    botao.addEventListener('click', () => ativarAcorde(nome, Number(botao.dataset.variacaoIndice)));
+                });
             };
 
             const ativarAcorde = (nome, indice = 0) => {
@@ -369,7 +148,14 @@
                     elemento.classList.toggle('ring-2', ativo);
                     elemento.classList.toggle('ring-emerald-400', ativo);
                 });
-                if (!acorde) { if (painelDiagrama) painelDiagrama.innerHTML = '<div class="text-sm text-slate-300">Sem desenho disponível.</div>'; if (nomeAcordeAtivo) nomeAcordeAtivo.textContent = nome || 'Nenhum acorde selecionado'; if (descricaoAcordeAtivo) descricaoAcordeAtivo.textContent = 'Esse acorde não possui desenho cadastrado na biblioteca.'; return; }
+
+                if (!acorde) {
+                    if (painelDiagrama) painelDiagrama.innerHTML = '<div class="text-sm text-slate-300">Sem desenho disponivel.</div>';
+                    if (nomeAcordeAtivo) nomeAcordeAtivo.textContent = nome || 'Nenhum acorde selecionado';
+                    if (descricaoAcordeAtivo) descricaoAcordeAtivo.textContent = 'Esse acorde nao possui desenho cadastrado.';
+                    return;
+                }
+
                 if (painelDiagrama) painelDiagrama.innerHTML = renderizarDiagrama(acorde.shape);
                 if (nomeAcordeAtivo) nomeAcordeAtivo.textContent = nome;
                 if (descricaoAcordeAtivo) descricaoAcordeAtivo.textContent = acorde.descricao || 'Shape salvo na biblioteca de acordes.';
@@ -389,52 +175,441 @@
             const renderizarListaAcordes = (textoTransposto) => {
                 if (!listaAcordes) return;
                 const acordesAtuais = helper.extractChordsFromBracketedText(textoTransposto);
-                listaAcordes.innerHTML = acordesAtuais.map((acorde) => `<button type="button" class="study-control px-3 text-sm" data-acorde-card="${helper.escapeHtml(acorde)}">${helper.escapeHtml(acorde)}</button>`).join('');
+                listaAcordes.innerHTML = acordesAtuais.map((acorde) => `<button type="button" class="study-button px-3 py-2 text-sm" data-acorde-card="${helper.escapeHtml(acorde)}">${helper.escapeHtml(acorde)}</button>`).join('');
             };
 
             const atualizarTomBadge = () => {
-                const valorAtual = !tomBase || !helper.isChord(tomBase) ? 'Não informado' : helper.transposeChord(tomBase, transposicaoAtual);
-                if (tomBadge) tomBadge.textContent = valorAtual;
+                const valorAtual = !tomBase || !helper.isChord(tomBase) ? 'nao informado' : helper.transposeChord(tomBase, transposicaoAtual);
+                if (tomBadge) tomBadge.textContent = `Tom atual ${valorAtual}`;
                 if (tomIndicador) tomIndicador.textContent = `Tom atual: ${valorAtual}`;
             };
 
             const renderizar = () => {
                 const textoTransposto = helper.transposeBracketedText(textoOriginal, transposicaoAtual);
                 preview.innerHTML = helper.renderChordSheetHtml(textoTransposto, { chordAttribute: 'data-acorde-hover' });
-                preview.style.setProperty('--escala-fonte', String(fonteAtual / 18));
+                previewContainer.style.setProperty('--escala-fonte', String(fonteAtual / 18));
                 renderizarListaAcordes(textoTransposto);
                 atualizarTomBadge();
             };
 
-            const pararRolagem = () => { if (intervaloRolagem) { window.clearInterval(intervaloRolagem); intervaloRolagem = null; } rolagemAtiva = false; if (botaoRolagem) botaoRolagem.textContent = 'Iniciar auto rolagem'; };
             const formatarVelocidade = (valor) => Number(valor || 0).toFixed(2);
-            const iniciarRolagem = () => { const velocidade = Number(controleVelocidade?.value || 1); if (valorVelocidade) valorVelocidade.textContent = formatarVelocidade(velocidade); intervaloRolagem = window.setInterval(() => { previewContainer.scrollTop += velocidade * 0.18; if (previewContainer.scrollTop + previewContainer.clientHeight >= previewContainer.scrollHeight) pararRolagem(); }, 60); };
-            const tocarPulso = () => { try { contextoAudio = contextoAudio || new (window.AudioContext || window.webkitAudioContext)(); const oscilador = contextoAudio.createOscillator(); const ganho = contextoAudio.createGain(); oscilador.type = 'square'; oscilador.frequency.value = 880; ganho.gain.setValueAtTime(0.0001, contextoAudio.currentTime); ganho.gain.exponentialRampToValueAtTime(0.08, contextoAudio.currentTime + 0.01); ganho.gain.exponentialRampToValueAtTime(0.0001, contextoAudio.currentTime + 0.12); oscilador.connect(ganho); ganho.connect(contextoAudio.destination); oscilador.start(); oscilador.stop(contextoAudio.currentTime + 0.13); } catch (error) { console.error(error); } };
-            const atualizarBpm = (novoBpm) => { bpmAtual = Math.max(20, Math.min(240, Number(novoBpm) || 72)); if (controleBpm) controleBpm.value = String(bpmAtual); if (intervaloMetronomo) { window.clearInterval(intervaloMetronomo); intervaloMetronomo = window.setInterval(tocarPulso, Math.round(60000 / bpmAtual)); } };
-            const abrirModal = () => { modalPlaylist?.classList.remove('hidden'); modalPlaylistBackdrop?.classList.remove('hidden'); document.body.classList.add('overflow-hidden'); };
-            const fecharModal = () => { modalPlaylist?.classList.add('hidden'); modalPlaylistBackdrop?.classList.add('hidden'); document.body.classList.remove('overflow-hidden'); };
+            const pararRolagem = () => {
+                if (intervaloRolagem) {
+                    window.clearInterval(intervaloRolagem);
+                    intervaloRolagem = null;
+                }
+                rolagemAtiva = false;
+                if (botaoRolagem) botaoRolagem.textContent = 'Iniciar auto rolagem';
+            };
 
-            document.querySelectorAll('[data-transpose]').forEach((botao) => { botao.addEventListener('click', () => { transposicaoAtual += Number(botao.dataset.transpose || 0); renderizar(); }); });
+            const iniciarRolagem = () => {
+                const velocidade = Number(controleVelocidade?.value || 1);
+                if (valorVelocidade) valorVelocidade.textContent = formatarVelocidade(velocidade);
+                intervaloRolagem = window.setInterval(() => {
+                    const passo = velocidade * 0.75;
+                    window.scrollBy({ top: passo, left: 0, behavior: 'auto' });
+                    const chegouAoFim = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+                    if (chegouAoFim) pararRolagem();
+                }, 40);
+            };
+
+            const tocarPulso = () => {
+                try {
+                    contextoAudio = contextoAudio || new (window.AudioContext || window.webkitAudioContext)();
+                    const oscilador = contextoAudio.createOscillator();
+                    const ganho = contextoAudio.createGain();
+                    oscilador.type = 'square';
+                    oscilador.frequency.value = 880;
+                    ganho.gain.setValueAtTime(0.0001, contextoAudio.currentTime);
+                    ganho.gain.exponentialRampToValueAtTime(0.08, contextoAudio.currentTime + 0.01);
+                    ganho.gain.exponentialRampToValueAtTime(0.0001, contextoAudio.currentTime + 0.12);
+                    oscilador.connect(ganho);
+                    ganho.connect(contextoAudio.destination);
+                    oscilador.start();
+                    oscilador.stop(contextoAudio.currentTime + 0.13);
+                } catch (error) {
+                    console.error(error);
+                }
+            };
+
+            const atualizarBpm = (novoBpm) => {
+                bpmAtual = Math.max(20, Math.min(240, Number(novoBpm) || 72));
+                if (controleBpm) controleBpm.value = String(bpmAtual);
+                if (intervaloMetronomo) {
+                    window.clearInterval(intervaloMetronomo);
+                    intervaloMetronomo = window.setInterval(tocarPulso, Math.round(60000 / bpmAtual));
+                }
+            };
+
+            document.querySelectorAll('[data-transpose]').forEach((botao) => {
+                botao.addEventListener('click', () => {
+                    transposicaoAtual += Number(botao.dataset.transpose || 0);
+                    renderizar();
+                });
+            });
             document.querySelector('[data-transpose-reset]')?.addEventListener('click', () => { transposicaoAtual = 0; renderizar(); });
-            document.querySelectorAll('[data-font]').forEach((botao) => { botao.addEventListener('click', () => { fonteAtual = Math.min(32, Math.max(14, fonteAtual + (Number(botao.dataset.font || 0) * 2))); renderizar(); }); });
+            document.querySelectorAll('[data-font]').forEach((botao) => {
+                botao.addEventListener('click', () => {
+                    fonteAtual = Math.min(32, Math.max(14, fonteAtual + (Number(botao.dataset.font || 0) * 2)));
+                    renderizar();
+                });
+            });
             document.querySelector('[data-font-reset]')?.addEventListener('click', () => { fonteAtual = 18; renderizar(); });
-            botaoRolagem?.addEventListener('click', () => { if (rolagemAtiva) { pararRolagem(); return; } rolagemAtiva = true; botaoRolagem.textContent = 'Parar auto rolagem'; iniciarRolagem(); });
-            controleVelocidade?.addEventListener('input', () => { if (valorVelocidade) valorVelocidade.textContent = formatarVelocidade(controleVelocidade.value); if (rolagemAtiva) { window.clearInterval(intervaloRolagem); iniciarRolagem(); } });
-            botaoMetronomo?.addEventListener('click', () => { if (intervaloMetronomo) { window.clearInterval(intervaloMetronomo); intervaloMetronomo = null; botaoMetronomo.textContent = 'Iniciar metrônomo'; return; } tocarPulso(); intervaloMetronomo = window.setInterval(tocarPulso, Math.round(60000 / bpmAtual)); botaoMetronomo.textContent = 'Parar metrônomo'; });
+            botaoRolagem?.addEventListener('click', () => {
+                if (rolagemAtiva) {
+                    pararRolagem();
+                    return;
+                }
+                rolagemAtiva = true;
+                botaoRolagem.textContent = 'Parar auto rolagem';
+                iniciarRolagem();
+                fecharModal(modalControles, modalControlesBackdrop);
+            });
+            controleVelocidade?.addEventListener('input', () => {
+                if (valorVelocidade) valorVelocidade.textContent = formatarVelocidade(controleVelocidade.value);
+                if (rolagemAtiva) {
+                    window.clearInterval(intervaloRolagem);
+                    iniciarRolagem();
+                }
+            });
+            botaoMetronomo?.addEventListener('click', () => {
+                if (intervaloMetronomo) {
+                    window.clearInterval(intervaloMetronomo);
+                    intervaloMetronomo = null;
+                    botaoMetronomo.textContent = 'Iniciar metronomo';
+                    return;
+                }
+                tocarPulso();
+                intervaloMetronomo = window.setInterval(tocarPulso, Math.round(60000 / bpmAtual));
+                botaoMetronomo.textContent = 'Parar metronomo';
+            });
             botaoDiminuirBpm?.addEventListener('click', () => atualizarBpm(bpmAtual - 1));
             botaoAumentarBpm?.addEventListener('click', () => atualizarBpm(bpmAtual + 1));
             controleBpm?.addEventListener('input', () => atualizarBpm(controleBpm.value));
-            abrirModalPlaylist?.addEventListener('click', abrirModal);
-            fecharModalPlaylist?.addEventListener('click', fecharModal);
-            modalPlaylistBackdrop?.addEventListener('click', fecharModal);
-            document.addEventListener('mouseover', (event) => { const acorde = event.target.closest('[data-acorde-hover]'); if (!acorde) return; ativarAcorde(acorde.dataset.acordeHover); mostrarTooltipAcorde(acorde.dataset.acordeHover, event.clientX, event.clientY); });
-            document.addEventListener('mousemove', (event) => { const acorde = event.target.closest('[data-acorde-hover]'); if (!acorde) return; mostrarTooltipAcorde(acorde.dataset.acordeHover, event.clientX, event.clientY); });
-            document.addEventListener('mouseout', (event) => { if (event.target.closest('[data-acorde-hover]')) tooltipAcorde?.classList.add('hidden'); });
-            document.addEventListener('click', (event) => { const acorde = event.target.closest('[data-acorde-hover], [data-acorde-card]'); if (acorde) ativarAcorde(acorde.dataset.acordeHover || acorde.dataset.acordeCard); });
-            document.addEventListener('keydown', (event) => { if (event.key === 'Escape') fecharModal(); });
+            abrirModalPlaylist?.addEventListener('click', () => abrirModal(modalPlaylist, modalPlaylistBackdrop));
+            fecharModalPlaylist?.addEventListener('click', () => fecharModal(modalPlaylist, modalPlaylistBackdrop));
+            modalPlaylistBackdrop?.addEventListener('click', () => fecharModal(modalPlaylist, modalPlaylistBackdrop));
+            abrirModalControles?.addEventListener('click', () => abrirModal(modalControles, modalControlesBackdrop));
+            fecharModalControles?.addEventListener('click', () => fecharModal(modalControles, modalControlesBackdrop));
+            modalControlesBackdrop?.addEventListener('click', () => fecharModal(modalControles, modalControlesBackdrop));
+            document.addEventListener('mouseover', (event) => {
+                const acorde = event.target.closest('[data-acorde-hover]');
+                if (!acorde) return;
+                ativarAcorde(acorde.dataset.acordeHover);
+                mostrarTooltipAcorde(acorde.dataset.acordeHover, event.clientX, event.clientY);
+            });
+            document.addEventListener('mousemove', (event) => {
+                const acorde = event.target.closest('[data-acorde-hover]');
+                if (!acorde) return;
+                mostrarTooltipAcorde(acorde.dataset.acordeHover, event.clientX, event.clientY);
+            });
+            document.addEventListener('mouseout', (event) => {
+                if (event.target.closest('[data-acorde-hover]')) tooltipAcorde?.classList.add('hidden');
+            });
+            document.addEventListener('click', (event) => {
+                const acorde = event.target.closest('[data-acorde-hover], [data-acorde-card]');
+                if (acorde) ativarAcorde(acorde.dataset.acordeHover || acorde.dataset.acordeCard);
+            });
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    fecharModal(modalPlaylist, modalPlaylistBackdrop);
+                    fecharModal(modalControles, modalControlesBackdrop);
+                }
+            });
+
             atualizarBpm(bpmInicial);
             if (valorVelocidade && controleVelocidade) valorVelocidade.textContent = formatarVelocidade(controleVelocidade.value);
             renderizar();
         });
     </script>
 @endpush
+
+@push('styles')
+    @include('partials.cifra-viewer-styles')
+    <style>
+        .study-stage { margin: -0.75rem; min-height: calc(100vh - 2rem); border-radius: 2rem; background: radial-gradient(circle at top left, rgba(16,185,129,.16), transparent 32rem), linear-gradient(135deg,#030712 0%,#08111f 48%,#111827 100%); color:#f8fafc; padding:1rem; }
+        .study-panel { border:1px solid rgba(148,163,184,.18); background:rgba(15,23,42,.88); border-radius:1.5rem; box-shadow:0 20px 50px rgba(0,0,0,.28); }
+        .study-shell { display:grid; grid-template-columns:minmax(0,1fr); gap:1rem; }
+        .study-side { display:grid; gap:1rem; }
+        .study-button { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; min-height:2.75rem; border-radius:1rem; border:1px solid rgba(148,163,184,.24); background:rgba(30,41,59,.92); color:#e5e7eb; padding:.75rem 1rem; font-weight:800; transition:.2s ease; }
+        .study-button:hover { border-color:rgba(16,185,129,.42); background:rgba(51,65,85,.96); color:#fff; }
+        .study-button-primary { border-color:rgba(16,185,129,.35); background:#059669; color:#fff; }
+        .study-button-primary:hover { background:#047857; }
+        .study-badge { display:inline-flex; align-items:center; border-radius:9999px; padding:.35rem .75rem; font-size:.75rem; font-weight:900; }
+        .study-badge-yellow { background:rgba(251,191,36,.14); color:#fde68a; }
+        .study-badge-blue { background:rgba(96,165,250,.14); color:#bfdbfe; }
+        .study-cifra-card { border:1px solid rgba(148,163,184,.18); background:#101a2d; border-radius:1.5rem; padding:1rem; }
+        .study-cifra-scroll { overflow:visible; min-height:55vh; }
+        .study-video-frame { aspect-ratio:16/9; overflow:hidden; border-radius:1.25rem; background:#020617; }
+        .study-video-frame iframe { width:100%; height:100%; display:block; }
+        .study-empty-video { display:flex; min-height:11rem; align-items:center; justify-content:center; border:1px dashed rgba(148,163,184,.3); border-radius:1.25rem; background:rgba(15,23,42,.72); color:#94a3b8; text-align:center; }
+        .study-modal-backdrop { position:fixed; inset:0; z-index:90; background:rgba(2,6,23,.76); backdrop-filter:blur(4px); }
+        .study-modal { position:fixed; inset:0; z-index:91; display:flex; align-items:center; justify-content:center; padding:1rem; }
+        .study-modal.hidden, .study-modal-backdrop.hidden { display:none; }
+        .study-modal-card { width:min(100%,44rem); max-height:min(88vh,900px); overflow:auto; border:1px solid rgba(148,163,184,.2); border-radius:1.5rem; background:#0f172a; color:#f8fafc; box-shadow:0 24px 70px rgba(0,0,0,.45); }
+        .study-floating-controls { position:fixed; right:1rem; bottom:1rem; z-index:70; box-shadow:0 18px 40px rgba(0,0,0,.35); }
+        .playlist-card { border-radius:1.15rem; border:1px solid rgba(148,163,184,.15); background:rgba(15,23,42,.82); }
+        .playlist-existing-item { border-radius:1rem; border:1px solid rgba(148,163,184,.15); background:rgba(255,255,255,.04); }
+        .tooltip-acorde { position:fixed; z-index:80; width:220px; pointer-events:none; border-radius:1rem; border:1px solid rgba(16,185,129,.35); background:rgba(15,23,42,.96); box-shadow:0 18px 50px rgba(2,6,23,.28); padding:.85rem; backdrop-filter:blur(8px); }
+        .tooltip-acorde.hidden { display:none; }
+        .diagrama-acorde svg, .tooltip-acorde svg { width:100%; height:auto; max-width:240px; }
+        .study-stage .cifra-linha { margin-bottom:.25rem; gap:.12rem; }
+        .study-stage .cifra-segmento { min-height:2.2rem; }
+        .study-stage .cifra-acordes { color:#fb923c; font-size:calc(.9rem * var(--escala-fonte, 1)); line-height:1; }
+        .study-stage .cifra-letra { color:#d1fae5; font-size:calc(1.02rem * var(--escala-fonte, 1)); line-height:1.35; }
+        .study-stage .cifra-marcacao { margin:.7rem 0 .45rem; background:rgba(16,185,129,.16); color:#a7f3d0; }
+        @media (min-width:1280px) {
+            .study-shell { grid-template-columns:minmax(0,1fr) 23rem; gap:1.25rem; }
+            .study-cifra-card { padding:1.35rem; }
+        }
+        @media (max-width:767px) {
+            .study-stage { margin:-1rem; border-radius:0; padding:.75rem; }
+            .study-side .desktop-video { display:none; }
+            .study-cifra-card { padding:.85rem; }
+            .study-stage .cifra-linha { margin-bottom:.18rem; }
+            .study-stage .cifra-segmento { min-height:2rem; max-width:100%; }
+            .study-stage .cifra-acordes { white-space:normal; }
+            .study-stage .cifra-letra { overflow-wrap:anywhere; }
+        }
+    </style>
+@endpush
+
+@section('content')
+    @php
+        $youtubeValor = trim((string) $versaoMusical->youtube_video_id);
+        $youtubeVideoId = null;
+
+        if ($youtubeValor !== '') {
+            if (preg_match('/^[A-Za-z0-9_-]{11}$/', $youtubeValor) === 1) {
+                $youtubeVideoId = $youtubeValor;
+            } elseif (preg_match('/(?:youtube\.com\/watch\?v=|youtube\.com\/embed\/|youtu\.be\/)([A-Za-z0-9_-]{11})/', $youtubeValor, $youtubeMatches) === 1) {
+                $youtubeVideoId = $youtubeMatches[1];
+            }
+        }
+    @endphp
+
+    <div class="study-stage">
+        @if (session('success'))
+            <div class="mb-4 rounded-2xl border border-emerald-400/30 bg-emerald-950 px-5 py-4 text-sm text-emerald-100">{{ session('success') }}</div>
+        @endif
+        @if (session('status'))
+            <div class="mb-4 rounded-2xl border border-amber-400/30 bg-amber-950 px-5 py-4 text-sm text-amber-100">{{ session('status') }}</div>
+        @endif
+        @if ($errors->any())
+            <div class="mb-4 rounded-2xl border border-red-400/30 bg-red-950 px-5 py-4 text-sm text-red-100">
+                <ul class="list-disc pl-5">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <section class="study-panel p-5 lg:p-6">
+            <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                <div class="min-w-0">
+                    <p class="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-300">Modo de estudo</p>
+                    <h1 class="mt-2 text-3xl font-black text-white md:text-4xl">{{ $musica->titulo }}</h1>
+                    <p class="mt-2 text-sm text-slate-300">
+                        {{ $versaoMusical->titulo ?: $musica->artista ?: 'Versao principal' }}
+                        @if ($missaAtiva)
+                            <span class="text-slate-500">/</span> Missa ativa: {{ $missaAtiva->titulo }}
+                        @endif
+                    </p>
+                </div>
+
+                <details class="relative">
+                    <summary class="study-button cursor-pointer">Acoes</summary>
+                    <div class="mt-2 grid gap-2 rounded-2xl border border-white/10 bg-slate-950 p-2 shadow-xl md:absolute md:right-0 md:z-30 md:w-56">
+                        <button type="button" id="abrir_modal_playlist" class="rounded-xl px-3 py-2 text-left text-sm font-semibold text-slate-100 hover:bg-white/10">Adicionar a playlist</button>
+                        <a href="{{ route('member.versoes.print', [$musica, $versaoMusical]) }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10">Imprimir</a>
+                        <a href="{{ route('member.versoes.pdf', [$musica, $versaoMusical]) }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10">PDF</a>
+                        <a href="{{ route('member.colecoes.index') }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10">Playlists salvas</a>
+                        <a href="{{ route('member.musicas.index') }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10">Biblioteca musical</a>
+                        <a href="{{ route('member.repertorio') }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10">Meu repertorio</a>
+                        <a href="{{ route('member.dashboard') }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10">Painel</a>
+                    </div>
+                </details>
+            </div>
+
+            <div class="mt-5 flex flex-wrap gap-2">
+                @if ($itemMissa && $itemMissa->tom_usado)
+                    <span class="study-badge study-badge-yellow">Tom da missa {{ $itemMissa->tom_usado }}</span>
+                @endif
+                @if ($tomOriginal)
+                    <span class="study-badge study-badge-yellow">Tom original {{ $tomOriginal }}</span>
+                @endif
+                @if ($versaoMusical->bpm)
+                    <span class="study-badge study-badge-blue">BPM {{ $versaoMusical->bpm }}</span>
+                @endif
+                <span id="tom_atual_badge" class="study-badge bg-emerald-400/15 text-emerald-200">Tom atual {{ $tomExibicao ?: 'nao informado' }}</span>
+            </div>
+        </section>
+
+        <div class="mt-4 study-shell">
+            <main class="study-cifra-card">
+                <div class="study-cifra-scroll" id="preview_musico_container">
+                    <div id="letra_com_cifras_preview" class="space-y-1"></div>
+                </div>
+            </main>
+
+            <aside class="study-side">
+                <section class="study-panel desktop-video p-4">
+                    <h2 class="text-base font-black text-white">Video</h2>
+                    @if ($youtubeVideoId)
+                        <div class="study-video-frame mt-3">
+                            <iframe src="https://www.youtube.com/embed/{{ $youtubeVideoId }}" title="Video de apoio" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                        </div>
+                    @else
+                        <div class="study-empty-video mt-3 p-4">
+                            <div>
+                                <p class="font-black text-slate-200">Video nao informado</p>
+                                <p class="mt-1 text-sm">Nenhum ID ou link valido do YouTube foi vinculado.</p>
+                            </div>
+                        </div>
+                    @endif
+                </section>
+
+                <details class="study-panel p-4 md:hidden">
+                    <summary class="cursor-pointer text-base font-black text-white">Ver video</summary>
+                    @if ($youtubeVideoId)
+                        <div class="study-video-frame mt-3">
+                            <iframe src="https://www.youtube.com/embed/{{ $youtubeVideoId }}" title="Video de apoio" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                        </div>
+                    @else
+                        <div class="study-empty-video mt-3 p-4 text-sm">Video nao informado.</div>
+                    @endif
+                </details>
+
+                <details class="study-panel p-4 xl:block">
+                    <summary class="cursor-pointer text-base font-black text-white">Dicionario de acordes</summary>
+                    <p class="mt-1 text-sm text-slate-300">Toque ou passe sobre um acorde para ver o shape.</p>
+                    <div class="mt-4 rounded-[1.25rem] border border-white/10 bg-white/5 p-4">
+                        <div class="diagrama-acorde flex justify-center" id="painel_diagrama_acorde"></div>
+                        <div class="mt-4 text-center">
+                            <div id="nome_acorde_ativo" class="text-lg font-black text-white">Nenhum acorde selecionado</div>
+                            <p id="descricao_acorde_ativo" class="mt-1 text-sm text-slate-300">Selecione um acorde para visualizar o desenho.</p>
+                        </div>
+                        <div id="variacoes_acorde" class="mt-4 flex flex-wrap justify-center gap-2"></div>
+                    </div>
+                    <div class="mt-4 flex flex-wrap gap-2" id="lista_acordes_transpostos">
+                        @foreach ($acordesDaVersao as $acorde)
+                            <button type="button" class="study-button px-3 py-2 text-sm" data-acorde-card="{{ $acorde }}">{{ $acorde }}</button>
+                        @endforeach
+                    </div>
+                </details>
+            </aside>
+        </div>
+
+        <button type="button" id="abrir_modal_controles" class="study-floating-controls study-button study-button-primary">
+            <i class="fa-solid fa-sliders"></i>
+            Controles
+        </button>
+
+        <div id="tooltip_acorde" class="tooltip-acorde hidden"><div class="text-center"><div id="tooltip_acorde_nome" class="text-sm font-black text-white">Acorde</div><div id="tooltip_acorde_diagrama" class="mt-3 diagrama-acorde"></div></div></div>
+
+        <div id="controles_modal_backdrop" class="study-modal-backdrop hidden"></div>
+        <div id="controles_modal" class="study-modal hidden" aria-hidden="true">
+            <div class="study-modal-card p-5">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <p class="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-300">Controles</p>
+                        <h2 class="mt-2 text-2xl font-black text-white">Ajustes da leitura</h2>
+                    </div>
+                    <button type="button" id="fechar_modal_controles" class="study-button" aria-label="Fechar controles"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <div class="mt-6 grid gap-5">
+                    <section class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                        <h3 class="font-black text-white">Auto rolagem</h3>
+                        <div class="mt-4 flex flex-wrap items-center gap-3">
+                            <button type="button" id="toggle_autorrolagem" class="study-button study-button-primary text-sm">Iniciar auto rolagem</button>
+                            <label for="velocidade_rolagem" class="text-sm font-semibold text-slate-300">Velocidade</label>
+                            <input id="velocidade_rolagem" type="range" min="0.25" max="6" value="1" step="0.25" class="accent-emerald-500">
+                            <span id="valor_velocidade" class="min-w-[2.5rem] text-sm font-black text-slate-100">1.00</span>
+                        </div>
+                    </section>
+
+                    <section class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                        <h3 class="font-black text-white">Metronomo</h3>
+                        <div class="mt-4 flex flex-wrap items-center gap-3">
+                            <button type="button" id="toggle_metronomo" class="study-button text-sm">Iniciar metronomo</button>
+                            <div class="inline-flex items-center overflow-hidden rounded-xl border border-white/10 bg-slate-950">
+                                <button type="button" id="diminuir_bpm" class="h-11 w-11 text-lg font-bold text-slate-100 hover:bg-white/10">-</button>
+                                <input id="controle_bpm" type="number" min="20" max="240" value="{{ $versaoMusical->bpm ?: 72 }}" class="w-20 border-0 bg-slate-900 text-center text-base font-bold text-white focus:ring-0">
+                                <button type="button" id="aumentar_bpm" class="h-11 w-11 text-lg font-bold text-slate-100 hover:bg-white/10">+</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                        <h3 class="font-black text-white">Tom e fonte</h3>
+                        <div class="mt-4 flex flex-wrap items-center gap-3">
+                            <span class="study-badge study-badge-yellow" id="indicador_tom_atual">Tom atual: {{ $tomExibicao ?: 'nao informado' }}</span>
+                            <button type="button" data-transpose="-1" class="study-button py-2 text-sm">Tom -</button>
+                            <button type="button" data-transpose-reset class="study-button py-2 text-sm">Tom original</button>
+                            <button type="button" data-transpose="1" class="study-button py-2 text-sm">Tom +</button>
+                            <button type="button" data-font="-1" class="study-button py-2 text-sm">A-</button>
+                            <button type="button" data-font-reset class="study-button py-2 text-sm">Fonte padrao</button>
+                            <button type="button" data-font="1" class="study-button py-2 text-sm">A+</button>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+
+        <div id="playlist_modal_backdrop" class="study-modal-backdrop hidden"></div>
+        <div id="playlist_modal" class="study-modal hidden" aria-hidden="true">
+            <div class="study-modal-card p-5 sm:p-6">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <p class="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-300">Playlist</p>
+                        <h2 class="mt-2 text-2xl font-black text-white">Adicionar "{{ $musica->titulo }}"</h2>
+                        <p class="mt-2 text-sm text-slate-300">Escolha uma playlist existente ou crie uma nova sem sair da tela de estudo.</p>
+                    </div>
+                    <button type="button" id="fechar_modal_playlist" class="study-button" aria-label="Fechar modal">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
+                    <section class="playlist-card p-4">
+                        <h3 class="text-base font-bold text-white">Criar nova playlist</h3>
+                        <p class="mt-1 text-sm text-slate-300">Separe por ensaio, missa ou estudo pessoal.</p>
+                        <form action="{{ route('member.colecoes.store') }}" method="POST" class="mt-4 space-y-3">
+                            @csrf
+                            <input type="hidden" name="musica_id" value="{{ $musica->id }}">
+                            <input type="hidden" name="versao_musical_id" value="{{ $versaoMusical->id }}">
+                            <input type="text" name="nome" class="block w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-slate-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" placeholder="Ex.: Ensaio de quarta" required>
+                            <button type="submit" class="study-button study-button-primary w-full text-sm">Criar e adicionar</button>
+                        </form>
+                    </section>
+
+                    <section class="playlist-card p-4">
+                        <h3 class="text-base font-bold text-white">Playlist existente</h3>
+                        <div class="mt-4 space-y-3">
+                            @forelse ($colecoes as $colecao)
+                                <form action="{{ route('member.colecoes.itens.store', $colecao) }}" method="POST" class="playlist-existing-item flex items-center gap-3 px-3 py-3">
+                                    @csrf
+                                    <input type="hidden" name="musica_id" value="{{ $musica->id }}">
+                                    <input type="hidden" name="versao_musical_id" value="{{ $versaoMusical->id }}">
+                                    <div class="min-w-0 flex-1">
+                                        <p class="truncate text-sm font-semibold text-white">{{ $colecao->nome }}</p>
+                                        <p class="text-xs text-slate-400">{{ $colecao->itens_count }} itens</p>
+                                    </div>
+                                    @if ($colecaoIdsComMusica->contains($colecao->id))
+                                        <span class="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-300">Ja adicionada</span>
+                                    @else
+                                        <button type="submit" class="study-button px-3 py-2 text-xs">Adicionar</button>
+                                    @endif
+                                </form>
+                            @empty
+                                <div class="rounded-xl border border-dashed border-white/10 bg-white/5 p-4 text-sm text-slate-300">Nenhuma playlist criada ainda.</div>
+                            @endforelse
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
