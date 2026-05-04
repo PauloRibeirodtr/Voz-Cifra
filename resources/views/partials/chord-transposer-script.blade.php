@@ -33,7 +33,7 @@
         const CHORD_REGEX = /^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\+|-|[0-9#b])|\([^\)\]]+\))*(?:\/[A-G](?:#|b)?)?$/;
         const CHORD_PARTS_REGEX = /^([A-G](?:#|b)?)(.*?)(?:\/([A-G](?:#|b)?))?$/;
 
-        const normalizeWhitespace = (value) => (value || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        const normalizeWhitespace = (value) => (value || '').replace(/\\n/g, '\n').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
         const escapeHtml = (value) => String(value || '')
             .replace(/&/g, '&amp;')

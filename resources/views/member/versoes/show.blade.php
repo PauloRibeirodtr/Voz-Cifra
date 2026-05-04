@@ -51,6 +51,12 @@
         </div>
     @endif
 
+    @if (session('status'))
+        <div class="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
+            {{ session('status') }}
+        </div>
+    @endif
+
     @if ($errors->any())
         <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
             <ul class="list-disc pl-5">
@@ -68,15 +74,20 @@
                 <h1 class="mt-2 text-3xl font-black text-white">{{ $musica->titulo }}</h1>
                 <p class="mt-2 text-sm text-emerald-100">{{ $versaoMusical->titulo ?: 'Versão principal' }} @if ($missaAtiva) &bull; Missa ativa: {{ $missaAtiva->titulo }} @endif</p>
             </div>
-            <div class="grid grid-cols-2 gap-3 sm:flex">
+            <div class="grid grid-cols-1 gap-3 sm:flex">
                 <button type="button" id="abrir_modal_playlist" class="study-action-button px-4 text-sm">
                     <i class="fa-solid fa-plus"></i>
                     <span>Adicionar a playlist</span>
                 </button>
-                <a href="{{ route('member.versoes.print', [$musica, $versaoMusical]) }}" class="study-control px-4 text-sm">Imprimir</a>
-                <a href="{{ route('member.versoes.pdf', [$musica, $versaoMusical]) }}" class="study-control px-4 text-sm">PDF</a>
-                <a href="{{ route('member.repertorio') }}" class="study-control px-4 text-sm">Meu repertório</a>
-                <a href="{{ route('member.dashboard') }}" class="study-control px-4 text-sm">Painel</a>
+                <details class="relative">
+                    <summary class="study-control cursor-pointer px-4 text-sm">Ações</summary>
+                    <div class="mt-2 grid gap-2 rounded-2xl border border-white/10 bg-slate-950 p-2 shadow-xl sm:absolute sm:right-0 sm:z-20 sm:w-52">
+                        <a href="{{ route('member.versoes.print', [$musica, $versaoMusical]) }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10">Imprimir</a>
+                        <a href="{{ route('member.versoes.pdf', [$musica, $versaoMusical]) }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10">PDF</a>
+                        <a href="{{ route('member.repertorio') }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10">Meu repertório</a>
+                        <a href="{{ route('member.dashboard') }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10">Painel</a>
+                    </div>
+                </details>
             </div>
         </div>
 
@@ -105,8 +116,13 @@
                             @endif
                         </div>
 
-                        <div class="rounded-3xl border border-gray-100 bg-gray-50 p-4">
-                            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                        <details open class="rounded-3xl border border-gray-100 bg-gray-50 p-4">
+                            <summary class="flex cursor-pointer items-center justify-between gap-3 text-sm font-black text-gray-800">
+                                <span>Controles de estudo</span>
+                                <span class="rounded-full bg-white px-3 py-1 text-xs font-bold text-gray-500">auto rolagem, tom, fonte e metronomo</span>
+                            </summary>
+
+                            <div class="mt-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                                 <div class="flex flex-wrap items-center gap-3">
                                     <button type="button" id="toggle_autorrolagem" class="inline-flex items-center justify-center rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-800">Iniciar auto rolagem</button>
                                     <div class="flex items-center gap-3">
@@ -134,7 +150,7 @@
                                 <button type="button" data-font-reset class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">Fonte padrão</button>
                                 <button type="button" data-font="1" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">A+</button>
                             </div>
-                        </div>
+                        </details>
                     </div>
 
                     <div class="space-y-4">
@@ -221,7 +237,7 @@
                                     <p class="truncate text-sm font-semibold text-white">{{ $colecao->nome }}</p>
                                     <p class="text-xs text-slate-400">{{ $colecao->itens_count }} itens</p>
                                 </div>
-                                @if ($colecaoIdsComVersao->contains($colecao->id))
+                                @if ($colecaoIdsComMusica->contains($colecao->id))
                                     <span class="inline-flex items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-300">Já adicionada</span>
                                 @else
                                     <button type="submit" class="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold text-white hover:bg-white/20">

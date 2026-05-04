@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
 use App\Models\Acorde;
+use App\Models\MomentoLiturgico;
 use App\Models\Musica;
+use App\Models\TempoLiturgico;
 use App\Models\Usuario;
 use App\Models\VersaoMusical;
 use App\Services\FolhaVersaoMusicalService;
@@ -61,8 +63,33 @@ class BibliotecaMusicalController extends Controller
             $consulta->where(function ($query) use ($termo): void {
                 $query->where('titulo', 'like', "%{$termo}%")
                     ->orWhere('artista', 'like', "%{$termo}%")
-                    ->orWhere('letra', 'like', "%{$termo}%");
+                    ->orWhere('letra', 'like', "%{$termo}%")
+                    ->orWhereHas('versoesMusicais', function ($versaoQuery) use ($termo): void {
+                        $versaoQuery->where('ativo', true)
+                            ->where(function ($query) use ($termo): void {
+                                $query->where('titulo', 'like', "%{$termo}%")
+                                    ->orWhere('tom_musical', 'like', "%{$termo}%")
+                                    ->orWhere('letra_com_cifras', 'like', "%{$termo}%");
+                            });
+                    })
+                    ->orWhereHas('tempoLiturgico', fn ($tempoQuery) => $tempoQuery->where('nome', 'like', "%{$termo}%"))
+                    ->orWhereHas('momentoLiturgico', fn ($momentoQuery) => $momentoQuery->where('nome', 'like', "%{$termo}%"));
             });
+        }
+
+        if ($request->filled('tempo_liturgico_id')) {
+            $consulta->where('tempo_liturgico_id', $request->integer('tempo_liturgico_id'));
+        }
+
+        if ($request->filled('momento_liturgico_id')) {
+            $consulta->where('momento_liturgico_id', $request->integer('momento_liturgico_id'));
+        }
+
+        if ($request->filled('tom')) {
+            $tom = trim((string) $request->input('tom'));
+            $consulta->whereHas('versoesMusicais', fn ($query) => $query
+                ->where('ativo', true)
+                ->where('tom_musical', 'like', "%{$tom}%"));
         }
 
         $musicas = $consulta
@@ -82,6 +109,18 @@ class BibliotecaMusicalController extends Controller
             'igreja' => $igreja,
             'musicas' => $musicas,
             'busca' => (string) $request->input('busca', ''),
+            'tempoSelecionado' => (string) $request->input('tempo_liturgico_id', ''),
+            'momentoSelecionado' => (string) $request->input('momento_liturgico_id', ''),
+            'tomSelecionado' => (string) $request->input('tom', ''),
+            'temposLiturgicos' => TempoLiturgico::query()->where('ativo', true)->orderBy('nome')->get(),
+            'momentosLiturgicos' => MomentoLiturgico::query()->where('ativo', true)->orderBy('ordem_exibicao')->orderBy('nome')->get(),
+            'musicasJaAdicionadas' => $usuario->colecoesEstudo()
+                ->whereHas('itens')
+                ->with('itens:id,colecao_estudo_id,musica_id')
+                ->get()
+                ->flatMap(fn ($colecao) => $colecao->itens->pluck('musica_id'))
+                ->unique()
+                ->values(),
             'colecoes' => $usuario->colecoesEstudo()
                 ->withCount('itens')
                 ->with([
@@ -135,8 +174,8 @@ class BibliotecaMusicalController extends Controller
                 ->withCount('itens')
                 ->latest()
                 ->get(),
-            'colecaoIdsComVersao' => $usuario->colecoesEstudo()
-                ->whereHas('itens', fn ($query) => $query->where('versao_musical_id', $versaoMusical->id))
+            'colecaoIdsComMusica' => $usuario->colecoesEstudo()
+                ->whereHas('itens', fn ($query) => $query->where('musica_id', $musica->id))
                 ->pluck('id'),
         ]);
     }
