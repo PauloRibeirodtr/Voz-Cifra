@@ -49,6 +49,7 @@ class IgrejaPublicaController extends Controller
         $estado = $this->montarEstadoPublico($request, $igreja, $timezone, $audiencia);
         $historicoBusca = trim((string) $request->input('historico', ''));
         $historicoMissas = $this->buscarHistorico($igreja, $timezone, $historicoBusca, $audiencia);
+        $historicoSugestoes = $this->buscarHistoricoSugestoes($igreja, $timezone, $audiencia);
 
         return view('publico.igreja', [
             'igreja' => $igreja,
@@ -61,6 +62,7 @@ class IgrejaPublicaController extends Controller
             'missasMusicos' => $estado['missasMusicos'],
             'celebracaoSelecionadaId' => $estado['celebracaoSelecionadaId'],
             'historicoMissas' => $historicoMissas,
+            'historicoSugestoes' => $historicoSugestoes,
             'historicoBusca' => $historicoBusca,
             'countdownIso' => $estado['countdownIso'],
             'timezoneExibicao' => $timezone,
@@ -279,6 +281,22 @@ class IgrejaPublicaController extends Controller
                 return str_contains($conteudo, $buscaNormalizada);
             })
             ->take(12)
+            ->values();
+    }
+
+    private function buscarHistoricoSugestoes(Igreja $igreja, string $timezone, string $audiencia)
+    {
+        $agora = CarbonImmutable::now($timezone);
+
+        return $this->queryMissasPublicas($igreja, $audiencia)
+            ->with(['tempoLiturgico'])
+            ->whereDate('data_missa', '<=', $agora->toDateString())
+            ->orderByDesc('data_missa')
+            ->orderByDesc('hora_inicio')
+            ->limit(30)
+            ->get()
+            ->filter(fn (Missa $missa): bool => $missa->dataHoraFim($timezone)->lessThan($agora))
+            ->map(fn (Missa $missa) => $this->mapearHistoricoMissa($missa, $timezone))
             ->values();
     }
 

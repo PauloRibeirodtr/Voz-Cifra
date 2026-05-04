@@ -496,6 +496,23 @@
             text-align: center;
         }
 
+        .history-live-results {
+            display: grid;
+            gap: 8px;
+        }
+
+        .history-live-results[hidden],
+        .history-empty[hidden] {
+            display: none;
+        }
+
+        .history-search-hint {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
         .celebration-header {
             display: flex;
             align-items: flex-start;
@@ -1024,7 +1041,8 @@
                 <summary>Consultar histórico</summary>
 
                 <div class="history-content history-content--subtle">
-                    <form method="GET" action="{{ ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slug]) : route('igrejas.public.show', ['slug' => $igreja->slug]) }}" class="history-form">
+                    @php($historicoBaseUrl = ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slug]) : route('igrejas.public.show', ['slug' => $igreja->slug]))
+                    <form method="GET" action="{{ $historicoBaseUrl }}" class="history-form" data-history-form data-history-base-url="{{ $historicoBaseUrl }}" data-history-selected="{{ (int) ($celebracaoSelecionadaId ?? 0) }}">
                         <div>
                             <label for="historico">Buscar no historico</label>
                             <input
@@ -1033,22 +1051,34 @@
                                 type="text"
                                 value="{{ $historicoBusca }}"
                                 placeholder="Buscar por data, dia ou nome da missa"
+                                autocomplete="off"
+                                data-history-input
                             >
+                            <p class="history-search-hint">Digite 3 letras ou uma data, como 02/05.</p>
                         </div>
                         <button type="submit">Buscar</button>
-                        <a href="{{ ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slug]) : route('igrejas.public.show', ['slug' => $igreja->slug]) }}">Limpar</a>
+                        <a href="{{ $historicoBaseUrl }}" data-history-clear>Limpar</a>
                     </form>
 
+                    <script type="application/json" data-history-items>@json($historicoSugestoes ?? [], JSON_UNESCAPED_UNICODE)</script>
+                    <div class="history-live-results" data-history-live-results hidden></div>
+                    <div class="history-empty" data-history-live-empty hidden>Nenhum resultado encontrado.</div>
+
                     @if ($historicoMissas->isNotEmpty())
-                        <div class="history-list history-list--compact">
+                        <div class="history-list history-list--compact" data-history-server-results>
                             @foreach ($historicoMissas as $missaHistorica)
+                                @php($historicoSelecionado = (int) $missaHistorica['id'] === (int) ($celebracaoSelecionadaId ?? 0))
                                 <a
                                     href="{{ ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slug, 'celebracao' => $missaHistorica['id']]) : route('igrejas.public.show', ['slug' => $igreja->slug, 'celebracao' => $missaHistorica['id']]) }}"
                                     class="history-link"
+                                    data-history-card
+                                    data-history-id="{{ $missaHistorica['id'] }}"
+                                    data-selected="{{ $historicoSelecionado ? 'true' : 'false' }}"
                                 >
                                     <div class="history-badges">
                                         <span class="history-date">{{ $missaHistorica['data'] }}</span>
                                         <span class="badge history-badge-muted">Historico</span>
+                                        <span class="badge history-badge-muted" data-history-action>{{ $historicoSelecionado ? (($modoPublico ?? 'fieis') === 'musicos' ? 'Fechar repertorio' : 'Fechar celebracao') : (($modoPublico ?? 'fieis') === 'musicos' ? 'Abrir repertorio' : 'Abrir celebracao') }}</span>
                                     </div>
                                     <h3 class="card-title">{{ $missaHistorica['titulo'] }}</h3>
                                     <p class="history-meta">{{ $missaHistorica['dia_semana'] }} • {{ $missaHistorica['horario'] }} @if (!empty($missaHistorica['tempo_liturgico'])) • {{ $missaHistorica['tempo_liturgico'] }} @endif</p>
@@ -1193,6 +1223,158 @@
                     atualizarCardsCelebracao(deveFechar ? null : card);
                 });
             });
+
+            const historyForm = document.querySelector('[data-history-form]');
+            const historyInput = document.querySelector('[data-history-input]');
+            const historyItemsScript = document.querySelector('[data-history-items]');
+            const historyLiveResults = document.querySelector('[data-history-live-results]');
+            const historyLiveEmpty = document.querySelector('[data-history-live-empty]');
+            const historyServerResults = document.querySelector('[data-history-server-results]');
+            const historyCards = Array.from(document.querySelectorAll('[data-history-card]'));
+            const historyBaseUrl = historyForm?.dataset.historyBaseUrl || window.location.pathname;
+            const selectedHistoryId = Number(historyForm?.dataset.historySelected || 0);
+            const historyOpenLabel = document.body.dataset.publicMode === 'musicos' ? 'Abrir repertorio' : 'Abrir celebracao';
+            const historyCloseLabel = document.body.dataset.publicMode === 'musicos' ? 'Fechar repertorio' : 'Fechar celebracao';
+
+            const normalizeSearch = (value) => value
+                .toString()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .trim();
+
+            const montarHistoryUrl = (item) => {
+                const url = new URL(historyBaseUrl, window.location.origin);
+                url.searchParams.set('celebracao', item.id);
+                url.hash = 'celebracao-publica';
+                return url.toString();
+            };
+
+            const fecharCelebracaoHistorica = () => {
+                if (celebrationSection) {
+                    celebrationSection.hidden = true;
+                }
+
+                historyCards.forEach((card) => {
+                    card.dataset.selected = 'false';
+                    const action = card.querySelector('[data-history-action]');
+                    if (action) {
+                        action.textContent = historyOpenLabel;
+                    }
+                });
+
+                const url = new URL(historyBaseUrl, window.location.origin);
+                url.hash = 'historico-publico';
+                window.history.replaceState(null, '', url.toString());
+            };
+
+            historyCards.forEach((card) => {
+                card.addEventListener('click', (event) => {
+                    if (card.dataset.selected !== 'true') {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    fecharCelebracaoHistorica();
+                });
+            });
+
+            let historyItems = [];
+            try {
+                historyItems = JSON.parse(historyItemsScript?.textContent || '[]');
+            } catch (error) {
+                historyItems = [];
+            }
+
+            const criarHistoryLink = (item) => {
+                const link = document.createElement('a');
+                const badges = document.createElement('div');
+                const data = document.createElement('span');
+                const tipo = document.createElement('span');
+                const action = document.createElement('span');
+                const titulo = document.createElement('h3');
+                const meta = document.createElement('p');
+                const selecionado = Number(item.id) === selectedHistoryId && !celebrationSection?.hidden;
+
+                link.href = montarHistoryUrl(item);
+                link.className = 'history-link';
+
+                if (selecionado) {
+                    link.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        fecharCelebracaoHistorica();
+                    });
+                }
+
+                badges.className = 'history-badges';
+                data.className = 'history-date';
+                data.textContent = item.data || '';
+                tipo.className = 'badge history-badge-muted';
+                tipo.textContent = 'Historico';
+                action.className = 'badge history-badge-muted';
+                action.textContent = selecionado ? historyCloseLabel : historyOpenLabel;
+
+                titulo.className = 'card-title';
+                titulo.textContent = item.titulo || 'Missa sem titulo';
+
+                meta.className = 'history-meta';
+                meta.textContent = [item.dia_semana, item.horario, item.tempo_liturgico]
+                    .filter(Boolean)
+                    .join(' • ');
+
+                badges.append(data, tipo, action);
+                link.append(badges, titulo, meta);
+
+                return link;
+            };
+
+            const renderizarHistoricoAoDigitar = () => {
+                if (!historyInput || !historyLiveResults || !historyLiveEmpty) {
+                    return;
+                }
+
+                const termoOriginal = historyInput.value.trim();
+                const termo = normalizeSearch(termoOriginal);
+                const digitos = termoOriginal.replace(/\D/g, '');
+                const deveBuscar = termo.length >= 3 || digitos.length >= 2;
+
+                historyLiveResults.hidden = true;
+                historyLiveResults.replaceChildren();
+                historyLiveEmpty.hidden = true;
+
+                if (historyServerResults) {
+                    historyServerResults.hidden = deveBuscar;
+                }
+
+                if (!deveBuscar) {
+                    return;
+                }
+
+                const encontrados = historyItems
+                    .filter((item) => {
+                        const conteudo = normalizeSearch([
+                            item.titulo || '',
+                            item.data || '',
+                            item.dia_semana || '',
+                            item.horario || '',
+                            item.tempo_liturgico || '',
+                        ].join(' '));
+                        const dataNumerica = (item.data || '').toString().replace(/\D/g, '');
+
+                        return conteudo.includes(termo) || (digitos.length >= 2 && dataNumerica.includes(digitos));
+                    })
+                    .slice(0, 8);
+
+                if (encontrados.length === 0) {
+                    historyLiveEmpty.hidden = false;
+                    return;
+                }
+
+                encontrados.forEach((item) => historyLiveResults.appendChild(criarHistoryLink(item)));
+                historyLiveResults.hidden = false;
+            };
+
+            historyInput?.addEventListener('input', renderizarHistoricoAoDigitar);
 
             if (document.body.dataset.publicMode === 'musicos') {
                 const helper = window.VozECifraChord;

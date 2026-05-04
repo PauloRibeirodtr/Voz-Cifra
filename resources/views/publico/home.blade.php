@@ -434,10 +434,11 @@
 
                 const applyFilter = () => {
                     const term = normalize(input ? input.value : '');
+                    const effectiveTerm = term.length >= 3 ? term : '';
                     let visibleCount = 0;
 
                     cards.forEach((card) => {
-                        const matchesText = term === '' || card.dataset.search.includes(term);
+                        const matchesText = effectiveTerm === '' || card.dataset.search.includes(effectiveTerm);
                         const matchesCity = activeCity === '' || card.dataset.city === activeCity;
                         const visible = matchesText && matchesCity;
 
