@@ -22,12 +22,22 @@
 @push('styles')
     @include('partials.cifra-viewer-styles')
     <style>
+        .study-stage { margin: -0.5rem; border-radius: 2rem; background: radial-gradient(circle at top left, rgba(16,185,129,.16), transparent 34rem), linear-gradient(135deg,#030712 0%,#08111f 48%,#111827 100%); padding: 1rem; color: #f8fafc; box-shadow: inset 0 1px 0 rgba(255,255,255,.05); }
         .study-shell { display: grid; gap: 1.5rem; grid-template-columns: minmax(0, 1fr); }
-        .study-panel { border-radius: 1.75rem; border: 1px solid rgba(148,163,184,.15); background: linear-gradient(180deg,#050816 0%,#0f172a 100%); color: #f8fafc; box-shadow: 0 20px 45px rgba(2,6,23,.28); }
-        .study-surface { border-radius: 1.4rem; border: 1px solid rgba(148,163,184,.16); background: rgba(15,23,42,.88); }
-        .study-control { display:inline-flex; align-items:center; justify-content:center; min-height:2.75rem; min-width:2.75rem; border-radius:1rem; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.06); color:#fff; font-weight:700; transition:.2s ease; }
-        .study-control:hover { background: rgba(255,255,255,.12); }
-        .study-preview { max-height: 68vh; overflow-y: auto; }
+        .study-panel { border-radius: 1.75rem; border: 1px solid rgba(148,163,184,.18); background: linear-gradient(180deg,rgba(15,23,42,.96) 0%,rgba(2,6,23,.98) 100%); color: #f8fafc; box-shadow: 0 24px 55px rgba(0,0,0,.35); }
+        .study-surface { border-radius: 1.4rem; border: 1px solid rgba(148,163,184,.18); background: rgba(15,23,42,.78); }
+        .study-card { border-radius: 1.65rem; border: 1px solid rgba(148,163,184,.18); background: rgba(15,23,42,.82); box-shadow: 0 18px 40px rgba(0,0,0,.24); }
+        .study-control { display:inline-flex; align-items:center; justify-content:center; min-height:2.75rem; min-width:2.75rem; border-radius:1rem; border:1px solid rgba(148,163,184,.2); background:rgba(30,41,59,.9); color:#e5e7eb; font-weight:700; transition:.2s ease; }
+        .study-control:hover { border-color: rgba(16,185,129,.38); background:rgba(51,65,85,.92); color:#fff; }
+        .study-primary { display:inline-flex; align-items:center; justify-content:center; border-radius:1rem; background:#059669; color:#fff; padding:.85rem 1rem; font-weight:800; transition:.2s ease; }
+        .study-primary:hover { background:#047857; }
+        .study-secondary { display:inline-flex; align-items:center; justify-content:center; border-radius:1rem; border:1px solid rgba(148,163,184,.2); background:rgba(30,41,59,.9); color:#e5e7eb; padding:.75rem 1rem; font-weight:700; transition:.2s ease; }
+        .study-secondary:hover { border-color:rgba(16,185,129,.34); background:rgba(51,65,85,.92); color:#fff; }
+        .study-preview { max-height: none; overflow-y: visible; }
+        .study-video-frame { aspect-ratio: 16 / 9; min-height: 210px; background: #020617; }
+        .study-video-frame iframe { display:block; width:100%; height:100%; }
+        .study-empty-video { display:flex; min-height:210px; align-items:center; justify-content:center; border-radius:1.25rem; border:1px dashed rgba(148,163,184,.25); background:rgba(15,23,42,.72); color:#94a3b8; text-align:center; }
+        .study-mobile-controls-label { display:none; }
         .diagrama-acorde svg, .tooltip-acorde svg { width:100%; height:auto; max-width:240px; }
         .tooltip-acorde { position:fixed; z-index:80; width:220px; pointer-events:none; border-radius:1rem; border:1px solid rgba(16,185,129,.35); background:rgba(15,23,42,.96); box-shadow:0 18px 50px rgba(2,6,23,.28); padding:.85rem; backdrop-filter:blur(8px); }
         .tooltip-acorde.hidden { display:none; }
@@ -39,26 +49,45 @@
         .playlist-modal.hidden, .playlist-modal-backdrop.hidden { display:none; }
         .playlist-modal-card { width:min(100%, 42rem); max-height:min(88vh, 900px); overflow:auto; border-radius:1.5rem; border:1px solid rgba(148,163,184,.18); background:#0f172a; color:#f8fafc; box-shadow:0 24px 60px rgba(2,6,23,.35); }
         .playlist-existing-item { border-radius:1rem; border:1px solid rgba(148,163,184,.15); background:rgba(255,255,255,.04); }
-        @media (min-width:1280px) { .study-shell { grid-template-columns: minmax(0, 1.2fr) 23rem; } }
-        @media (max-width:767px) { .study-preview { max-height:none; } }
+        @media (min-width:1280px) { .study-shell { grid-template-columns: minmax(0, 1.25fr) 24rem; } }
+        @media (max-width:767px) {
+            .study-stage { margin: -1rem; border-radius: 0; padding: .9rem; }
+            .study-mobile-controls-label { display:inline-flex; }
+            .study-controls-details:not([open]) { padding-bottom: 1rem; }
+            .study-controls-details:not([open]) .study-controls-body { display:none; }
+            .study-video-frame, .study-empty-video { min-height: 190px; }
+        }
     </style>
 @endpush
 
 @section('content')
+    @php
+        $youtubeValor = trim((string) $versaoMusical->youtube_video_id);
+        $youtubeVideoId = null;
+
+        if ($youtubeValor !== '') {
+            if (preg_match('/^[A-Za-z0-9_-]{11}$/', $youtubeValor) === 1) {
+                $youtubeVideoId = $youtubeValor;
+            } elseif (preg_match('/(?:youtube\.com\/watch\?v=|youtube\.com\/embed\/|youtu\.be\/)([A-Za-z0-9_-]{11})/', $youtubeValor, $youtubeMatches) === 1) {
+                $youtubeVideoId = $youtubeMatches[1];
+            }
+        }
+    @endphp
+
     @if (session('success'))
-        <div class="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800">
+        <div class="mb-6 rounded-2xl border border-emerald-400/30 bg-emerald-950 px-5 py-4 text-sm text-emerald-100">
             {{ session('success') }}
         </div>
     @endif
 
     @if (session('status'))
-        <div class="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
+        <div class="mb-6 rounded-2xl border border-amber-400/30 bg-amber-950 px-5 py-4 text-sm text-amber-100">
             {{ session('status') }}
         </div>
     @endif
 
     @if ($errors->any())
-        <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
+        <div class="mb-6 rounded-2xl border border-red-400/30 bg-red-950 px-5 py-4 text-sm text-red-100">
             <ul class="list-disc pl-5">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -67,6 +96,7 @@
         </div>
     @endif
 
+    <div class="study-stage">
     <section class="study-panel px-6 py-6 lg:px-7">
         <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div class="min-w-0">
