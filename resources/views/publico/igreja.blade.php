@@ -408,6 +408,10 @@
             padding: 14px;
         }
 
+        .history-content--subtle {
+            background: rgba(13, 8, 8, 0.22);
+        }
+
         .history-top {
             display: flex;
             align-items: flex-start;
@@ -430,6 +434,66 @@
             font-weight: 800;
             letter-spacing: 0.06em;
             text-transform: uppercase;
+        }
+
+        .history-list--compact {
+            gap: 8px;
+        }
+
+        .history-link {
+            display: block;
+            color: inherit;
+            text-decoration: none;
+            border-radius: 18px;
+            border: 1px solid rgba(227, 190, 132, 0.10);
+            background: rgba(255, 255, 255, 0.035);
+            padding: 12px;
+            transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease;
+        }
+
+        .history-link:hover,
+        .history-link:focus-visible {
+            border-color: rgba(227, 190, 132, 0.34);
+            background: rgba(227, 190, 132, 0.08);
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        .history-link .card-title {
+            margin-top: 6px;
+            font-size: clamp(calc(18px * var(--public-font-scale)), calc(4.4vw * var(--public-font-scale)), calc(22px * var(--public-font-scale)));
+            line-height: 1.15;
+        }
+
+        .history-link .history-meta {
+            margin-top: 6px;
+            font-size: clamp(calc(14px * var(--public-font-scale)), calc(3.5vw * var(--public-font-scale)), calc(16px * var(--public-font-scale)));
+            line-height: 1.45;
+        }
+
+        .history-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .history-badge-muted {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
+            color: var(--muted);
+        }
+
+        .history-empty {
+            border-radius: 18px;
+            border: 1px dashed rgba(227, 190, 132, 0.18);
+            background: rgba(255, 255, 255, 0.035);
+            color: var(--muted);
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 800;
+            text-align: center;
         }
 
         .celebration-header {
@@ -959,40 +1023,41 @@
             <details class="section history-toggle" id="historico-publico" @if($historicoBusca !== '') open @endif>
                 <summary>Consultar histórico</summary>
 
-                <div class="history-content">
+                <div class="history-content history-content--subtle">
                     <form method="GET" action="{{ ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slug]) : route('igrejas.public.show', ['slug' => $igreja->slug]) }}" class="history-form">
                         <div>
-                            <label for="historico">Buscar missas passadas</label>
+                            <label for="historico">Buscar no historico</label>
                             <input
                                 id="historico"
                                 name="historico"
                                 type="text"
                                 value="{{ $historicoBusca }}"
-                                placeholder="Ex.: domingo, 24/03"
+                                placeholder="Buscar por data, dia ou nome da missa"
                             >
                         </div>
-                        @if (($celebracaoSelecionadaId ?? 0) > 0)
-                            <input type="hidden" name="celebracao" value="{{ $celebracaoSelecionadaId }}">
-                        @endif
                         <button type="submit">Buscar</button>
                         <a href="{{ ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slug]) : route('igrejas.public.show', ['slug' => $igreja->slug]) }}">Limpar</a>
                     </form>
 
                     @if ($historicoMissas->isNotEmpty())
-                        <div class="history-list">
+                        <div class="history-list history-list--compact">
                             @foreach ($historicoMissas as $missaHistorica)
-                                <article class="history-item">
-                                    <div class="history-top">
-                                        <h3 class="card-title">{{ $missaHistorica['titulo'] }}</h3>
+                                <a
+                                    href="{{ ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slug, 'celebracao' => $missaHistorica['id']]) : route('igrejas.public.show', ['slug' => $igreja->slug, 'celebracao' => $missaHistorica['id']]) }}"
+                                    class="history-link"
+                                >
+                                    <div class="history-badges">
                                         <span class="history-date">{{ $missaHistorica['data'] }}</span>
+                                        <span class="badge history-badge-muted">Historico</span>
                                     </div>
-                                    <p class="history-meta">{{ $missaHistorica['dia_semana'] }} • {{ $missaHistorica['horario'] }}</p>
-                                </article>
+                                    <h3 class="card-title">{{ $missaHistorica['titulo'] }}</h3>
+                                    <p class="history-meta">{{ $missaHistorica['dia_semana'] }} • {{ $missaHistorica['horario'] }} @if (!empty($missaHistorica['tempo_liturgico'])) • {{ $missaHistorica['tempo_liturgico'] }} @endif</p>
+                                </a>
                             @endforeach
                         </div>
-                    @else
-                        <div class="empty-state">
-                            <h3 class="empty-title">Nenhuma missa encontrada.</h3>
+                    @elseif ($historicoBusca !== '')
+                        <div class="history-empty">
+                            Nenhum resultado encontrado.
                         </div>
                     @endif
                 </div>

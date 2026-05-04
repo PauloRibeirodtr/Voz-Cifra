@@ -138,9 +138,14 @@ class IgrejaPublicaController extends Controller
 
         $proximaMissa = $proximasMissasColecao->first();
         $celebracaoSelecionadaId = max(0, (int) $request->integer('celebracao'));
-        $missaPublica = $audiencia === 'musicos'
-            ? $this->resolverMissaPublicaMusicos($missasMusicosColecao, $celebracaoSelecionadaId, $missaEmAndamento, $proximaMissa)
-            : $this->resolverMissaPublicaFieis($missasFieisColecao, $celebracaoSelecionadaId, $missaEmAndamento, $proximaMissa);
+        $missaSelecionadaPublica = $celebracaoSelecionadaId > 0
+            ? $missasOrdenadas->firstWhere('id', $celebracaoSelecionadaId)
+            : null;
+        $missaPublica = $missaSelecionadaPublica instanceof Missa
+            ? $missaSelecionadaPublica
+            : ($audiencia === 'musicos'
+                ? $this->resolverMissaPublicaMusicos($missasMusicosColecao, $celebracaoSelecionadaId, $missaEmAndamento, $proximaMissa)
+                : $this->resolverMissaPublicaFieis($missasFieisColecao, $celebracaoSelecionadaId, $missaEmAndamento, $proximaMissa));
 
         $this->anexarRepertorioPublico($missaPublica, $audiencia === 'musicos');
 
@@ -244,6 +249,10 @@ class IgrejaPublicaController extends Controller
 
     private function buscarHistorico(Igreja $igreja, string $timezone, string $busca, string $audiencia)
     {
+        if ($busca === '') {
+            return collect();
+        }
+
         $agora = CarbonImmutable::now($timezone);
 
         return $this->queryMissasPublicas($igreja, $audiencia)
@@ -436,6 +445,7 @@ class IgrejaPublicaController extends Controller
         $inicio = $missa->dataHoraInicio($timezone);
 
         return [
+            'id' => $missa->id,
             'titulo' => $missa->titulo,
             'data' => $inicio->format('d/m/Y'),
             'dia_semana' => mb_convert_case($inicio->locale('pt_BR')->isoFormat('dddd'), MB_CASE_TITLE, 'UTF-8'),
