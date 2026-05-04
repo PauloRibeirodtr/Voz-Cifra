@@ -12,7 +12,7 @@
         $senhaExplicacao = match ($contexto['senha_inicial'] ?? null) {
             'cpf_sem_pontuacao' => 'A senha inicial foi preparada com o CPF sem pontos nem tracos.',
             'definida_manual' => 'Uma senha inicial foi definida manualmente para a sua conta.',
-            default => 'Use a senha inicial informada pelo administrador responsavel.',
+            default => 'Use a senha inicial informada pela Equipe Voz & Cifra.',
         };
         $papeis = [];
 
@@ -65,20 +65,6 @@
                                 <td style="padding:8px 0; color:#1c1917;">{{ $papeis->implode(' / ') }}</td>
                             </tr>
                         @endif
-                        @if (!empty($contexto['responsavel_nome']))
-                            <tr>
-                                <td style="padding:8px 0; font-weight:700; width:170px; vertical-align:top; color:#44403c;">Cadastro realizado por</td>
-                                <td style="padding:8px 0; color:#1c1917;">
-                                    {{ trim($contexto['responsavel_nome'] . (!empty($contexto['responsavel_funcao']) ? ' - ' . $contexto['responsavel_funcao'] : '')) }}
-                                </td>
-                            </tr>
-                        @endif
-                        @if (!empty($contexto['protocolo']))
-                            <tr>
-                                <td style="padding:8px 0; font-weight:700; width:170px; vertical-align:top; color:#44403c;">Protocolo</td>
-                                <td style="padding:8px 0; color:#1c1917;">{{ $contexto['protocolo'] }}</td>
-                            </tr>
-                        @endif
                     </tbody>
                 </table>
             </div>
@@ -101,7 +87,7 @@
             </div>
 
             <p style="margin:24px 0 0; color:#57534e; font-size:13px;">
-                Se voce não reconhece este convite, desconsidere esta mensagem e avise o administrador responsável.
+                Se voce nao reconhece este convite, desconsidere esta mensagem e fale com a Equipe Voz &amp; Cifra.
             </p>
         </div>
     </div>

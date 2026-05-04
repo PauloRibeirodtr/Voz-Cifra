@@ -26,11 +26,8 @@
             default => 'Registramos uma atualizacao de seguranca relacionada a sua conta.',
         };
 
+        $dataEnvio = now('America/Sao_Paulo');
         $detalhes = [];
-
-        if (!empty($contexto['responsavel_nome'])) {
-            $detalhes['Responsavel pela acao'] = trim($contexto['responsavel_nome'] . (!empty($contexto['responsavel_funcao']) ? ' - ' . $contexto['responsavel_funcao'] : ''));
-        }
 
         if (!empty($contexto['igreja_nome'])) {
             $detalhes['Igreja'] = $contexto['igreja_nome'];
@@ -43,16 +40,8 @@
             $detalhes[$rotuloPapel] = $contexto['papel'];
         }
 
-        if (!empty($contexto['nivel_anterior']) || array_key_exists('nivel_anterior', $contexto)) {
-            $detalhes['Acesso anterior'] = $contexto['nivel_anterior'] === null ? 'nao informado' : (string) $contexto['nivel_anterior'];
-        }
-
         if (!empty($contexto['nivel_novo'])) {
             $detalhes['Novo acesso'] = (string) $contexto['nivel_novo'];
-        }
-
-        if (!empty($contexto['protocolo'])) {
-            $detalhes['Protocolo'] = $contexto['protocolo'];
         }
 
         $senhaExplicacao = null;
@@ -101,7 +90,11 @@
                         @endforeach
                         <tr>
                             <td style="padding:8px 0; font-weight:700; width:180px; vertical-align:top; color:#374151;">Data e hora</td>
-                            <td style="padding:8px 0; color:#111827;">{{ now('America/Cuiaba')->format('d/m/Y H:i:s') }} (America/Cuiaba)</td>
+                            <td style="padding:8px 0; color:#111827;">{{ $dataEnvio->format('d/m/Y') }} &agrave;s {{ $dataEnvio->format('H:i') }}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px 0; font-weight:700; width:180px; vertical-align:top; color:#374151;">Acao</td>
+                            <td style="padding:8px 0; color:#111827;">Realizada pela Equipe Voz &amp; Cifra</td>
                         </tr>
                         </tbody>
                     </table>
@@ -110,7 +103,7 @@
 
             <div style="margin-top:24px; padding:16px 18px; border-radius:14px; background:#fef2f2; border:1px solid #fecaca; color:#7f1d1d;">
                 <strong style="display:block; margin-bottom:6px;">Nao reconhece esta acao?</strong>
-                <span>Procure o {{ $canalSuporte }} e informe o protocolo acima para agilizar o atendimento.</span>
+                <span>Procure o {{ $canalSuporte }} para validar a situacao e pedir uma revisao do acesso.</span>
             </div>
 
             @if ($canalSuporteUrl !== '')

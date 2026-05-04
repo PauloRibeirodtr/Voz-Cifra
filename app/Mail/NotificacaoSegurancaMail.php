@@ -47,12 +47,6 @@ class NotificacaoSegurancaMail extends Mailable
             default => 'Aviso de seguranca da conta',
         };
 
-        $protocolo = $this->contexto['protocolo'] ?? null;
-
-        if (!is_string($protocolo) || trim($protocolo) === '') {
-            return $assuntoBase;
-        }
-
-        return $assuntoBase . ' [' . trim($protocolo) . ']';
+        return $assuntoBase;
     }
 }

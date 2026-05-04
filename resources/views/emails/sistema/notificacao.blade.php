@@ -28,26 +28,15 @@
             default => 'O sistema registrou uma nova atualizacao relevante.',
         };
 
+        $dataEnvio = now('America/Sao_Paulo');
         $detalhes = [];
 
-        if (!empty($contexto['titulo'])) {
-            $detalhes['Titulo'] = $contexto['titulo'];
-        }
-
-        if (!empty($contexto['nome'])) {
-            $detalhes['Nome'] = $contexto['nome'];
-        }
-
-        if (!empty($contexto['quantidade'])) {
-            $detalhes['Quantidade atual'] = $contexto['quantidade'];
-        }
-
-        if (!empty($contexto['responsavel_nome'])) {
-            $detalhes['Responsavel'] = trim($contexto['responsavel_nome'] . (!empty($contexto['responsavel_funcao']) ? ' - ' . $contexto['responsavel_funcao'] : ''));
-        }
-
-        if (!empty($contexto['protocolo'])) {
-            $detalhes['Protocolo'] = $contexto['protocolo'];
+        if ($evento !== 'aviso_admin' && !empty($contexto['nome'])) {
+            $detalhes[match ($evento) {
+                'musica_cadastrada', 'musica_inativada', 'versao_musical_criada' => 'Musica',
+                'acorde_cadastrado', 'acorde_inativado' => 'Acorde',
+                default => 'Item',
+            }] = $contexto['nome'];
         }
     @endphp
 
@@ -61,7 +50,7 @@
             <p style="margin-top:0;">Ola.</p>
             <p>{{ $mensagemPrincipal }}</p>
 
-            @if ($detalhes)
+            @if ($evento !== 'aviso_admin' && $detalhes)
                 <div style="margin:22px 0; padding:18px; border:1px solid #e7e5e4; border-radius:14px; background:#fafaf9;">
                     <h2 style="margin:0 0 12px; font-size:16px;">Detalhes</h2>
                     <table role="presentation" style="width:100%; border-collapse:collapse;">
@@ -74,7 +63,11 @@
                         @endforeach
                         <tr>
                             <td style="padding:8px 0; font-weight:700; width:180px; vertical-align:top; color:#44403c;">Data e hora</td>
-                            <td style="padding:8px 0; color:#1c1917;">{{ now('America/Sao_Paulo')->format('d/m/Y H:i:s') }} (America/Sao_Paulo)</td>
+                            <td style="padding:8px 0; color:#1c1917;">{{ $dataEnvio->format('d/m/Y') }} &agrave;s {{ $dataEnvio->format('H:i') }}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px 0; font-weight:700; width:180px; vertical-align:top; color:#44403c;">Acao</td>
+                            <td style="padding:8px 0; color:#1c1917;">Realizada pela Equipe Voz &amp; Cifra</td>
                         </tr>
                         </tbody>
                     </table>
@@ -82,7 +75,7 @@
             @endif
 
             <p style="margin:24px 0 0; color:#57534e; font-size:13px;">
-                Esta mensagem foi enviada automaticamente pelo sistema.
+                Equipe Voz &amp; Cifra
             </p>
         </div>
     </div>

@@ -44,12 +44,6 @@ class NotificacaoSistemaMail extends Mailable
             default => 'Atualizacao do sistema',
         };
 
-        $protocolo = $this->contexto['protocolo'] ?? null;
-
-        if (!is_string($protocolo) || trim($protocolo) === '') {
-            return $assuntoBase;
-        }
-
-        return $assuntoBase . ' [' . trim($protocolo) . ']';
+        return $assuntoBase;
     }
 }

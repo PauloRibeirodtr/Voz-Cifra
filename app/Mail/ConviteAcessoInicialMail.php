@@ -22,15 +22,8 @@ class ConviteAcessoInicialMail extends Mailable
 
     public function envelope(): Envelope
     {
-        $protocolo = $this->contexto['protocolo'] ?? null;
-        $assunto = 'Convite de acesso ao Voz & Cifra';
-
-        if (is_string($protocolo) && trim($protocolo) !== '') {
-            $assunto .= ' [' . trim($protocolo) . ']';
-        }
-
         return new Envelope(
-            subject: $assunto
+            subject: 'Convite de acesso ao Voz & Cifra'
         );
     }
 
