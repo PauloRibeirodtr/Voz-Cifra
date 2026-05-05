@@ -47,13 +47,6 @@
                                 <x-public.button :href="route('login')" variant="secondary">Entrar</x-public.button>
                             </div>
                         </div>
-
-                        <div class="hero__foot">
-                            <div class="hero-stat">
-                                <span class="hero-stat__label">Acesso rápido</span>
-                                <span class="hero-stat__value">Missas, horários e páginas públicas em um só lugar</span>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -74,7 +67,9 @@
                         <label class="field church-finder__field" for="busca_igreja">
                             <span>Cidade ou igreja</span>
                             <input id="busca_igreja" type="search" placeholder="Ex.: Corumbá, Catedral, Centro" data-church-search>
+                            <div class="church-search-suggestions" data-church-suggestions hidden></div>
                         </label>
+                        <button type="button" class="church-search-button" data-church-search-button>Buscar</button>
 
                         <div class="city-badges" aria-label="Cidades com igrejas cadastradas">
                             <button type="button" class="city-badge is-active" data-city-filter="">Todas</button>
@@ -93,6 +88,9 @@
                                 data-church-card
                                 data-search="{{ \Illuminate\Support\Str::lower(\Illuminate\Support\Str::ascii(implode(' ', [$igreja['nome'], $igreja['cidade'], $igreja['estado'], $igreja['bairro'], $igreja['endereco']]))) }}"
                                 data-city="{{ \Illuminate\Support\Str::lower(\Illuminate\Support\Str::ascii((string) $igreja['cidade'])) }}"
+                                data-name="{{ $igreja['nome'] }}"
+                                data-location="{{ $igreja['localidade'] !== '' ? $igreja['localidade'] : trim(($igreja['cidade'] ?? '') . ' - ' . ($igreja['estado'] ?? ''), ' -') }}"
+                                data-missa="{{ $igreja['proxima_missa'] }}"
                             >
                                 <span class="church-tile__image {{ $igreja['tem_imagem_personalizada'] ? 'church-tile__image--photo' : 'church-tile__image--fallback' }}">
                                     <img src="{{ $igreja['imagem_url'] }}" alt="Imagem da igreja {{ $igreja['nome'] }}" loading="lazy">
@@ -114,7 +112,6 @@
                                             @endif
                                         </span>
                                     @endif
-                                    <span class="church-tile__button">{{ $temMissaPublicada ? 'Abrir próxima missa' : 'Ver missas' }}</span>
                                 </span>
                             </a>
                         @endforeach
@@ -184,10 +181,74 @@
                 font-weight: 700;
             }
 
+            .church-finder__field {
+                position: relative;
+            }
+
+            .church-search-button {
+                min-height: 3rem;
+                border: 1px solid rgba(210, 170, 102, 0.26);
+                border-radius: 1rem;
+                background: rgba(201, 161, 95, 0.18);
+                color: var(--gold-soft);
+                cursor: pointer;
+                font: inherit;
+                font-weight: 900;
+                padding: 0 1.1rem;
+            }
+
+            .church-search-suggestions {
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: calc(100% + 0.45rem);
+                z-index: 20;
+                display: grid;
+                gap: 0.25rem;
+                max-height: min(20rem, 65vh);
+                overflow: auto;
+                border: 1px solid rgba(210, 170, 102, 0.18);
+                border-radius: 1rem;
+                background: rgba(20, 12, 12, 0.98);
+                box-shadow: var(--shadow);
+                padding: 0.4rem;
+            }
+
+            .church-search-suggestions[hidden] {
+                display: none;
+            }
+
+            .church-search-suggestion {
+                display: grid;
+                gap: 0.15rem;
+                border: 0;
+                border-radius: 0.8rem;
+                background: transparent;
+                color: var(--text);
+                cursor: pointer;
+                font: inherit;
+                padding: 0.7rem 0.8rem;
+                text-align: left;
+            }
+
+            .church-search-suggestion:hover,
+            .church-search-suggestion:focus-visible {
+                background: rgba(201, 161, 95, 0.16);
+                outline: none;
+            }
+
+            .church-search-suggestion small {
+                color: var(--muted);
+                font-weight: 700;
+            }
+
             .city-badges {
                 display: flex;
-                flex-wrap: wrap;
+                flex-wrap: nowrap;
                 gap: 0.55rem;
+                overflow-x: auto;
+                padding-bottom: 0.2rem;
+                scrollbar-width: thin;
             }
 
             .city-badge {
@@ -363,23 +424,6 @@
                 color: #ffe2ad;
             }
 
-            .church-tile__button {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                min-height: 2.55rem;
-                width: 100%;
-                border-radius: 999px;
-                border: 1px solid rgba(210, 170, 102, 0.28);
-                background: rgba(201, 161, 95, 0.14);
-                color: var(--gold-soft);
-                font-size: 0.9rem;
-                font-weight: 900;
-                margin-top: auto;
-                text-align: center;
-                transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
-            }
-
             .church-finder__empty {
                 margin: 0;
                 border: 1px dashed var(--line);
@@ -390,7 +434,7 @@
 
             @media (min-width: 768px) {
                 .church-finder__bar {
-                    grid-template-columns: minmax(18rem, 0.8fr) minmax(0, 1.2fr);
+                    grid-template-columns: minmax(18rem, 0.8fr) auto minmax(0, 1.2fr);
                     padding: 1.2rem;
                 }
 
@@ -420,6 +464,8 @@
     <script>
             document.addEventListener('DOMContentLoaded', () => {
                 const input = document.querySelector('[data-church-search]');
+                const searchButton = document.querySelector('[data-church-search-button]');
+                const suggestions = document.querySelector('[data-church-suggestions]');
                 const cards = Array.from(document.querySelectorAll('[data-church-card]'));
                 const empty = document.querySelector('[data-church-empty]');
                 const cityButtons = Array.from(document.querySelectorAll('[data-city-filter]'));
@@ -431,6 +477,21 @@
                     .replace(/[\u0300-\u036f]/g, '')
                     .toLowerCase()
                     .trim();
+
+                const hideSuggestions = () => {
+                    if (!suggestions) {
+                        return;
+                    }
+
+                    suggestions.hidden = true;
+                    suggestions.replaceChildren();
+                };
+
+                const openCard = (card) => {
+                    if (card?.href) {
+                        window.location.href = card.href;
+                    }
+                };
 
                 const applyFilter = () => {
                     const term = normalize(input ? input.value : '');
@@ -453,9 +514,79 @@
                     }
                 };
 
+                const renderSuggestions = () => {
+                    if (!input || !suggestions) {
+                        return;
+                    }
+
+                    const term = normalize(input.value);
+                    if (term.length < 3) {
+                        hideSuggestions();
+                        return;
+                    }
+
+                    const results = cards
+                        .filter((card) => {
+                            const haystack = [
+                                card.dataset.search || '',
+                                card.dataset.missa || '',
+                                card.dataset.location || '',
+                            ].map(normalize).join(' ');
+
+                            return haystack.includes(term);
+                        })
+                        .slice(0, 8);
+
+                    suggestions.replaceChildren();
+
+                    if (results.length === 0) {
+                        const emptyItem = document.createElement('div');
+                        emptyItem.className = 'church-search-suggestion';
+                        emptyItem.textContent = 'Nenhuma sugestão encontrada.';
+                        suggestions.appendChild(emptyItem);
+                        suggestions.hidden = false;
+                        return;
+                    }
+
+                    results.forEach((card) => {
+                        const button = document.createElement('button');
+                        const title = document.createElement('strong');
+                        const meta = document.createElement('small');
+
+                        button.type = 'button';
+                        button.className = 'church-search-suggestion';
+                        title.textContent = card.dataset.name || 'Igreja';
+                        meta.textContent = [card.dataset.location, card.dataset.missa].filter(Boolean).join(' • ');
+
+                        button.append(title, meta);
+                        button.addEventListener('click', () => openCard(card));
+                        suggestions.appendChild(button);
+                    });
+
+                    suggestions.hidden = false;
+                };
+
                 if (input) {
-                    input.addEventListener('input', applyFilter);
+                    input.addEventListener('input', () => {
+                        applyFilter();
+                        renderSuggestions();
+                    });
+                    input.addEventListener('keydown', (event) => {
+                        if (event.key === 'Enter') {
+                            const firstVisible = cards.find((card) => !card.hidden);
+                            if (firstVisible) {
+                                event.preventDefault();
+                                openCard(firstVisible);
+                            }
+                        }
+                    });
                 }
+
+                searchButton?.addEventListener('click', () => {
+                    applyFilter();
+                    const firstVisible = cards.find((card) => !card.hidden);
+                    openCard(firstVisible);
+                });
 
                 cityButtons.forEach((button) => {
                     button.addEventListener('click', () => {
@@ -463,6 +594,12 @@
                         cityButtons.forEach((item) => item.classList.toggle('is-active', item === button));
                         applyFilter();
                     });
+                });
+
+                document.addEventListener('click', (event) => {
+                    if (!event.target.closest('[data-church-search], [data-church-suggestions]')) {
+                        hideSuggestions();
+                    }
                 });
             });
     </script>

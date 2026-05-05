@@ -173,6 +173,30 @@
             gap: 12px;
         }
 
+        .schedule-shell {
+            position: relative;
+        }
+
+        .schedule-carousel {
+            display: grid;
+            grid-auto-columns: minmax(235px, 82%);
+            grid-auto-flow: column;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 2px 2px 8px;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: thin;
+        }
+
+        .schedule-carousel .card {
+            min-height: 132px;
+            scroll-snap-align: start;
+        }
+
+        .schedule-nav {
+            display: none;
+        }
+
         .card,
         .history-item,
         .celebration-item,
@@ -213,11 +237,6 @@
             transform: translateY(-1px);
         }
 
-        .card-link[aria-expanded='true'] {
-            border-color: rgba(255, 217, 157, 0.48);
-            box-shadow: 0 0 0 1px rgba(255, 217, 157, 0.16), var(--shadow);
-        }
-
         .card-main {
             min-width: 0;
         }
@@ -237,8 +256,8 @@
         }
 
         .card-title {
-            margin-top: 10px;
-            font-size: clamp(calc(22px * var(--public-font-scale)), calc(4.8vw * var(--public-font-scale)), calc(28px * var(--public-font-scale)));
+            margin-top: 8px;
+            font-size: clamp(calc(19px * var(--public-font-scale)), calc(4.3vw * var(--public-font-scale)), calc(25px * var(--public-font-scale)));
             line-height: 1.1;
         }
 
@@ -250,7 +269,7 @@
             margin: 10px 0 0;
             color: var(--muted);
             font-size: clamp(calc(16px * var(--public-font-scale)), calc(3.8vw * var(--public-font-scale)), calc(18px * var(--public-font-scale)));
-            line-height: 1.8;
+            line-height: 1.5;
         }
 
         .card-action,
@@ -451,6 +470,11 @@
             transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease;
         }
 
+        .history-link[data-selected="true"] {
+            border-color: rgba(255, 217, 157, 0.38);
+            background: rgba(227, 190, 132, 0.10);
+        }
+
         .history-link:hover,
         .history-link:focus-visible {
             border-color: rgba(227, 190, 132, 0.34);
@@ -584,17 +608,6 @@
         body[data-public-mode='musicos'] .celebration-item {
             background: rgba(13, 8, 8, 0.58);
             border-color: rgba(255, 217, 157, 0.18);
-        }
-
-        .musician-readonly-note {
-            margin: 0 0 14px;
-            border: 1px solid rgba(255, 217, 157, 0.16);
-            border-radius: 16px;
-            background: rgba(227, 190, 132, 0.08);
-            color: var(--muted);
-            font-size: 14px;
-            font-weight: 800;
-            padding: 10px 12px;
         }
 
         .chord-mark {
@@ -850,6 +863,36 @@
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
 
+            .schedule-carousel {
+                grid-auto-columns: minmax(250px, 31%);
+            }
+
+            .schedule-nav {
+                position: absolute;
+                top: 50%;
+                z-index: 5;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 42px;
+                height: 42px;
+                border-radius: 999px;
+                border: 1px solid rgba(227, 190, 132, 0.22);
+                background: rgba(13, 8, 8, 0.92);
+                color: var(--accent);
+                box-shadow: var(--shadow);
+                cursor: pointer;
+                transform: translateY(-50%);
+            }
+
+            .schedule-nav--prev {
+                left: -12px;
+            }
+
+            .schedule-nav--next {
+                right: -12px;
+            }
+
             .history-form {
                 grid-template-columns: minmax(0, 1fr) auto auto;
                 align-items: end;
@@ -898,23 +941,24 @@
                     </div>
 
                     @if ($missasHoje->isNotEmpty())
-                        <div class="cards">
+                        <div class="schedule-shell">
+                            <button type="button" class="schedule-nav schedule-nav--prev" data-schedule-prev aria-label="Ver missas anteriores">‹</button>
+                            <div class="cards schedule-carousel" data-schedule-carousel>
                             @foreach ($missasHoje as $missaHoje)
                                 @php($missaHojeSelecionada = (int) $missaHoje['id'] === (int) ($celebracaoSelecionadaId ?? 0))
                                 <a
                                     href="{{ route('igrejas.public.show', ['slug' => $igreja->slug, 'celebracao' => $missaHoje['id']]) }}#celebracao-publica"
                                     class="card card-link"
-                                    data-celebration-card
                                     data-selected="{{ $missaHojeSelecionada ? 'true' : 'false' }}"
-                                    aria-expanded="{{ $missaHojeSelecionada ? 'true' : 'false' }}"
                                 >
                                     <div class="card-main">
                                         <span class="card-hour">{{ $missaHoje['horario'] }}</span>
                                         <h3 class="card-title">{{ $missaHoje['titulo'] }}</h3>
                                     </div>
-                                    <span class="card-action">{{ $missaHojeSelecionada ? 'Fechar celebração' : 'Abrir celebração' }}</span>
                                 </a>
                             @endforeach
+                            </div>
+                            <button type="button" class="schedule-nav schedule-nav--next" data-schedule-next aria-label="Ver próximas missas">›</button>
                         </div>
                     @else
                         <div class="empty-state empty-state--compact">
@@ -931,58 +975,60 @@
                             <h2 class="section-title">Celebrações publicadas</h2>
                         </div>
 
-                        <div class="cards">
+                        <div class="schedule-shell">
+                            <button type="button" class="schedule-nav schedule-nav--prev" data-schedule-prev aria-label="Ver celebrações anteriores">‹</button>
+                            <div class="cards schedule-carousel" data-schedule-carousel>
                             @foreach ($proximasMissas as $proximaMissaItem)
                                 @php($proximaSelecionada = (int) $proximaMissaItem['id'] === (int) ($celebracaoSelecionadaId ?? 0))
                                 <a
                                     href="{{ route('igrejas.public.show', ['slug' => $igreja->slug, 'celebracao' => $proximaMissaItem['id']]) }}#celebracao-publica"
                                     class="card card-link"
-                                    data-celebration-card
                                     data-selected="{{ $proximaSelecionada ? 'true' : 'false' }}"
-                                    aria-expanded="{{ $proximaSelecionada ? 'true' : 'false' }}"
                                 >
                                     <div class="card-main">
                                         <span class="card-hour">{{ $proximaMissaItem['horario'] }}</span>
                                         <h3 class="card-title">{{ $proximaMissaItem['titulo'] }}</h3>
                                         <p class="card-meta">{{ $proximaMissaItem['dia_semana'] }} • {{ $proximaMissaItem['data'] }}</p>
                                     </div>
-                                    <span class="card-action">{{ $proximaSelecionada ? 'Fechar celebração' : 'Abrir celebração' }}</span>
                                 </a>
                             @endforeach
+                            </div>
+                            <button type="button" class="schedule-nav schedule-nav--next" data-schedule-next aria-label="Ver próximas celebrações">›</button>
                         </div>
                     </section>
                 @endif
             @else
                 <section class="section">
                     <div class="section-header">
-                        <p class="section-kicker">Ensaio</p>
+                        <p class="section-kicker">Repertório</p>
                         <h2 class="section-title">Celebrações publicadas</h2>
                     </div>
 
                     @if ($missasMusicos->isNotEmpty())
-                        <div class="cards">
+                        <div class="schedule-shell">
+                            <button type="button" class="schedule-nav schedule-nav--prev" data-schedule-prev aria-label="Ver repertórios anteriores">‹</button>
+                            <div class="cards schedule-carousel" data-schedule-carousel>
                             @foreach ($missasMusicos as $missaMusico)
                                 @php($missaMusicoSelecionada = (int) $missaMusico['id'] === (int) ($celebracaoSelecionadaId ?? 0))
                                 <a
                                     href="{{ route('igrejas.public.musicos.show', ['slug' => $igreja->slug, 'celebracao' => $missaMusico['id']]) }}#celebracao-publica"
                                     class="card card-link"
-                                    data-celebration-card
                                     data-selected="{{ $missaMusicoSelecionada ? 'true' : 'false' }}"
-                                    aria-expanded="{{ $missaMusicoSelecionada ? 'true' : 'false' }}"
                                 >
                                     <div class="card-main">
                                         <span class="card-hour">{{ $missaMusico['horario'] }}</span>
                                         <h3 class="card-title">{{ $missaMusico['titulo'] }}</h3>
                                         <p class="card-meta">{{ $missaMusico['dia_semana'] }} • {{ $missaMusico['data'] }}</p>
                                     </div>
-                                    <span class="card-action">{{ $missaMusicoSelecionada ? 'Fechar repertório' : 'Abrir repertório' }}</span>
                                 </a>
                             @endforeach
+                            </div>
+                            <button type="button" class="schedule-nav schedule-nav--next" data-schedule-next aria-label="Ver próximos repertórios">›</button>
                         </div>
                     @else
                         <div class="empty-state">
-                            <h3 class="empty-title">Ainda não há missas publicadas para ensaio.</h3>
-                            <p class="empty-copy">Este acesso permanece em modo somente leitura.</p>
+                            <h3 class="empty-title">Ainda não há repertórios publicados.</h3>
+                            <p class="empty-copy">Volte mais tarde para consultar as cifras disponíveis.</p>
                         </div>
                     @endif
                 </section>
@@ -994,18 +1040,14 @@
                 <section class="section celebration-section" id="celebracao-publica" data-celebration-section>
                     <div class="celebration-header">
                         <div>
-                            <p class="section-kicker">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Ensaio' : 'Celebração' }}</p>
-                            <h2 class="celebration-title">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Repertório publicado' : $missaPublica->titulo }}</h2>
+                            <p class="section-kicker">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Repertório' : 'Celebração' }}</p>
+                            <h2 class="celebration-title">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Cifras disponíveis' : $missaPublica->titulo }}</h2>
                             <p class="celebration-meta-text">
                                 {{ $missaPublica->data_missa->format('d/m/Y') }} • {{ substr((string) $missaPublica->hora_inicio, 0, 5) }}
                             </p>
                         </div>
-                        <span class="badge">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Modo músico' : 'Somente leitura' }}</span>
+                        <span class="badge">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Repertório' : 'Abrir celebração' }}</span>
                     </div>
-
-                    @if (($modoPublico ?? 'fieis') === 'musicos')
-                        <p class="musician-readonly-note">Visualização somente leitura para ensaio: cifras, tons e sequência dos cantos ficam disponíveis sem ações de edição.</p>
-                    @endif
 
                     @if ($itensPublicos->isNotEmpty())
                         <div class="celebration-list">
@@ -1078,7 +1120,7 @@
                                     <div class="history-badges">
                                         <span class="history-date">{{ $missaHistorica['data'] }}</span>
                                         <span class="badge history-badge-muted">Historico</span>
-                                        <span class="badge history-badge-muted" data-history-action>{{ $historicoSelecionado ? (($modoPublico ?? 'fieis') === 'musicos' ? 'Fechar repertorio' : 'Fechar celebracao') : (($modoPublico ?? 'fieis') === 'musicos' ? 'Abrir repertorio' : 'Abrir celebracao') }}</span>
+                                        <span class="badge history-badge-muted" data-history-action>{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Abrir repertorio' : 'Abrir celebracao' }}</span>
                                     </div>
                                     <h3 class="card-title">{{ $missaHistorica['titulo'] }}</h3>
                                     <p class="history-meta">{{ $missaHistorica['dia_semana'] }} • {{ $missaHistorica['horario'] }} @if (!empty($missaHistorica['tempo_liturgico'])) • {{ $missaHistorica['tempo_liturgico'] }} @endif</p>
@@ -1189,6 +1231,25 @@
                 });
             }
 
+            document.querySelectorAll('.schedule-shell').forEach((shell) => {
+                const carousel = shell.querySelector('[data-schedule-carousel]');
+                const previous = shell.querySelector('[data-schedule-prev]');
+                const next = shell.querySelector('[data-schedule-next]');
+                const move = (direction) => {
+                    if (!carousel) {
+                        return;
+                    }
+
+                    carousel.scrollBy({
+                        left: direction * Math.max(240, carousel.clientWidth * 0.82),
+                        behavior: 'smooth',
+                    });
+                };
+
+                previous?.addEventListener('click', () => move(-1));
+                next?.addEventListener('click', () => move(1));
+            });
+
             const celebrationSection = document.querySelector('[data-celebration-section]');
             const celebrationCards = Array.from(document.querySelectorAll('[data-celebration-card]'));
             const labelAbrir = document.body.dataset.publicMode === 'musicos' ? 'Abrir repertório' : 'Abrir celebração';
@@ -1234,7 +1295,6 @@
             const historyBaseUrl = historyForm?.dataset.historyBaseUrl || window.location.pathname;
             const selectedHistoryId = Number(historyForm?.dataset.historySelected || 0);
             const historyOpenLabel = document.body.dataset.publicMode === 'musicos' ? 'Abrir repertorio' : 'Abrir celebracao';
-            const historyCloseLabel = document.body.dataset.publicMode === 'musicos' ? 'Fechar repertorio' : 'Fechar celebracao';
 
             const normalizeSearch = (value) => value
                 .toString()
@@ -1270,7 +1330,7 @@
 
             historyCards.forEach((card) => {
                 card.addEventListener('click', (event) => {
-                    if (card.dataset.selected !== 'true') {
+                    if (true || card.dataset.selected !== 'true') {
                         return;
                     }
 
@@ -1294,7 +1354,7 @@
                 const action = document.createElement('span');
                 const titulo = document.createElement('h3');
                 const meta = document.createElement('p');
-                const selecionado = Number(item.id) === selectedHistoryId && !celebrationSection?.hidden;
+                const selecionado = false;
 
                 link.href = montarHistoryUrl(item);
                 link.className = 'history-link';
@@ -1312,7 +1372,7 @@
                 tipo.className = 'badge history-badge-muted';
                 tipo.textContent = 'Historico';
                 action.className = 'badge history-badge-muted';
-                action.textContent = selecionado ? historyCloseLabel : historyOpenLabel;
+                action.textContent = historyOpenLabel;
 
                 titulo.className = 'card-title';
                 titulo.textContent = item.titulo || 'Missa sem titulo';
