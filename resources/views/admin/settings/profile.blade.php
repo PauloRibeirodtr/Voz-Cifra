@@ -46,7 +46,7 @@
                 <p class="admin-page-kicker">Conta principal</p>
                 <h1 class="admin-page-title mt-2 text-2xl font-black sm:text-3xl">Meu perfil</h1>
                 <p class="admin-page-copy mt-3 max-w-3xl text-sm sm:text-base">
-                    Aqui voce ajusta a conta global de admin master e tambem pode acumular papeis operacionais por igreja sem criar usuario duplicado.
+                    Aqui você ajusta a conta de admin master e tambem pode acumular papeis operacionais por igreja sem criar usuario duplicado.
                 </p>
             </div>
         </section>
