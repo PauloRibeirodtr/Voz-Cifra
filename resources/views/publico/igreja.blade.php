@@ -293,6 +293,10 @@
             display: none;
         }
 
+        .celebration-section {
+            --celebration-font-scale: 1;
+        }
+
         .empty-action,
         .history-form button {
             background: rgba(160, 107, 53, 0.18);
@@ -554,7 +558,7 @@
             margin-top: 14px;
             white-space: pre-wrap;
             color: var(--text);
-            font-size: clamp(calc(17px * var(--public-font-scale)), calc(4vw * var(--public-font-scale)), calc(21px * var(--public-font-scale)));
+            font-size: clamp(calc(17px * var(--celebration-font-scale, 1)), calc(4vw * var(--celebration-font-scale, 1)), calc(21px * var(--celebration-font-scale, 1)));
             line-height: 1.7;
         }
 
@@ -590,7 +594,7 @@
 
         body[data-public-mode='musicos'] .lyrics {
             font-family: "Courier New", Courier, monospace;
-            font-size: clamp(calc(15px * var(--public-font-scale)), calc(3.8vw * var(--public-font-scale)), calc(20px * var(--public-font-scale)));
+            font-size: clamp(calc(15px * var(--celebration-font-scale, 1)), calc(3.8vw * var(--celebration-font-scale, 1)), calc(20px * var(--celebration-font-scale, 1)));
             line-height: 1.68;
         }
 
@@ -614,7 +618,7 @@
         }
 
         body[data-public-mode='musicos'] .lyrics {
-            --escala-fonte: 1;
+            --escala-fonte: var(--celebration-font-scale, 1);
         }
 
         body[data-public-mode='musicos'] .lyrics .cifra-linha {
@@ -734,6 +738,12 @@
             background: rgba(227, 190, 132, 0.12);
             color: var(--accent);
             font-weight: 900;
+        }
+
+        .scroll-controls button.is-active {
+            background: #ffd99d;
+            color: #160c0d;
+            border-color: #ffd99d;
         }
 
         .scroll-controls input {
@@ -1148,14 +1158,14 @@
                     <div class="scroll-controls">
                         <div class="scroll-controls__top">
                             <button type="button" data-public-scroll-toggle>Iniciar rolagem</button>
-                            <span data-public-scroll-speed-label>1.00</span>
+                            <span data-public-scroll-speed-label>2.00</span>
                         </div>
                         <input
                             type="range"
-                            min="0.25"
+                            min="1"
                             max="6"
                             step="0.25"
-                            value="1"
+                            value="2"
                             aria-label="Velocidade da rolagem"
                             data-public-scroll-speed
                         >
@@ -1186,17 +1196,17 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const root = document.documentElement;
             const statusSync = document.querySelector('[data-public-status-sync]');
             const accessFloating = document.querySelector('[data-access-floating]');
             const accessToggle = document.querySelector('[data-access-toggle]');
-            const fontKey = 'vozecifra-public-font-scale';
-            let escalaFonte = Number(localStorage.getItem(fontKey) || '1.02');
+            const celebrationFontTarget = document.querySelector('[data-celebration-section]');
+            const fontKey = 'vozecifra-public-celebration-font-scale';
+            let escalaFonte = Number(localStorage.getItem(fontKey) || '1');
 
             const aplicarEscalaFonte = () => {
-                const escalaSegura = Math.max(0.92, Math.min(1.45, escalaFonte));
+                const escalaSegura = Math.max(0.9, Math.min(1.45, escalaFonte));
                 escalaFonte = escalaSegura;
-                root.style.setProperty('--public-font-scale', escalaSegura.toFixed(2));
+                celebrationFontTarget?.style.setProperty('--celebration-font-scale', escalaSegura.toFixed(2));
                 localStorage.setItem(fontKey, escalaSegura.toFixed(2));
             };
 
@@ -1212,7 +1222,7 @@
             const resetButton = document.querySelector('[data-public-font-reset]');
             if (resetButton) {
                 resetButton.addEventListener('click', () => {
-                    escalaFonte = 1.02;
+                    escalaFonte = 1;
                     aplicarEscalaFonte();
                 });
             }
@@ -1366,6 +1376,17 @@
                 const controleVelocidade = document.querySelector('[data-public-scroll-speed]');
                 const rotuloVelocidade = document.querySelector('[data-public-scroll-speed-label]');
                 let intervaloRolagem = null;
+                const intervaloMsRolagem = 30;
+
+                const atualizarRotuloVelocidade = () => {
+                    if (!controleVelocidade || !rotuloVelocidade) {
+                        return Number(controleVelocidade?.value || 2);
+                    }
+
+                    const velocidade = Number(controleVelocidade.value || 2);
+                    rotuloVelocidade.textContent = velocidade.toFixed(2);
+                    return velocidade;
+                };
 
                 const renderizarDiagrama = (shape) => {
                     if (!shape) {
@@ -1503,22 +1524,28 @@
 
                     if (botaoRolagem) {
                         botaoRolagem.textContent = 'Iniciar rolagem';
+                        botaoRolagem.classList.remove('is-active');
                     }
                 };
 
                 const iniciarRolagem = () => {
-                    const velocidade = Number(controleVelocidade?.value || 1);
-                    if (rotuloVelocidade) {
-                        rotuloVelocidade.textContent = velocidade.toFixed(2);
+                    pararRolagem();
+
+                    const velocidade = atualizarRotuloVelocidade();
+                    const passo = Math.max(0.75, velocidade * 0.9);
+
+                    if (botaoRolagem) {
+                        botaoRolagem.textContent = 'Parar rolagem';
+                        botaoRolagem.classList.add('is-active');
                     }
 
                     intervaloRolagem = window.setInterval(() => {
-                        window.scrollBy({ top: velocidade * 0.22, left: 0, behavior: 'auto' });
+                        window.scrollBy({ top: passo, left: 0, behavior: 'auto' });
 
                         if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
                             pararRolagem();
                         }
-                    }, 60);
+                    }, intervaloMsRolagem);
                 };
 
                 botaoRolagem?.addEventListener('click', () => {
@@ -1527,21 +1554,18 @@
                         return;
                     }
 
-                    botaoRolagem.textContent = 'Parar rolagem';
                     iniciarRolagem();
                 });
 
                 controleVelocidade?.addEventListener('input', () => {
-                    const velocidade = Number(controleVelocidade.value || 1);
-                    if (rotuloVelocidade) {
-                        rotuloVelocidade.textContent = velocidade.toFixed(2);
-                    }
+                    atualizarRotuloVelocidade();
 
                     if (intervaloRolagem) {
-                        window.clearInterval(intervaloRolagem);
                         iniciarRolagem();
                     }
                 });
+
+                atualizarRotuloVelocidade();
             }
 
             if (!statusSync || !statusSync.dataset.statusUrl) {
