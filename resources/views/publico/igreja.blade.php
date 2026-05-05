@@ -68,17 +68,17 @@
         }
 
         .section {
-            margin-top: 10px;
+            margin-top: 9px;
             border-radius: 22px;
             border: 1px solid var(--line);
             background: var(--panel);
             box-shadow: var(--shadow);
-            padding: 14px;
+            padding: 12px;
             backdrop-filter: blur(12px);
         }
 
         .hero {
-            padding: 16px;
+            padding: 14px;
         }
 
         .home-floating {
@@ -118,8 +118,8 @@
         }
 
         .brand img {
-            width: 138px;
-            height: 138px;
+            width: 124px;
+            height: 124px;
             object-fit: cover;
             flex-shrink: 0;
             border-radius: 26px;
@@ -155,7 +155,7 @@
 
         .hero-church {
             margin: 4px 0 0;
-            font-size: clamp(calc(26px * var(--public-font-scale)), calc(6.5vw * var(--public-font-scale)), calc(42px * var(--public-font-scale)));
+            font-size: clamp(calc(24px * var(--public-font-scale)), calc(6vw * var(--public-font-scale)), calc(38px * var(--public-font-scale)));
             line-height: 1.15;
         }
 
@@ -170,7 +170,7 @@
         .history-list,
         .celebration-list {
             display: grid;
-            gap: 12px;
+            gap: 9px;
         }
 
         .schedule-shell {
@@ -181,7 +181,7 @@
             display: grid;
             grid-auto-columns: minmax(235px, 82%);
             grid-auto-flow: column;
-            gap: 12px;
+            gap: 10px;
             overflow-x: auto;
             padding: 2px 2px 8px;
             scroll-snap-type: x mandatory;
@@ -189,7 +189,7 @@
         }
 
         .schedule-carousel .card {
-            min-height: 132px;
+            min-height: 116px;
             scroll-snap-align: start;
         }
 
@@ -212,7 +212,7 @@
         .history-item,
         .celebration-item,
         .empty-state {
-            padding: 18px;
+            padding: 14px;
         }
 
         .card {
@@ -245,19 +245,19 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 84px;
-            padding: 8px 12px;
+            min-width: 72px;
+            padding: 7px 11px;
             border-radius: 16px;
             background: rgba(227, 190, 132, 0.12);
             color: var(--accent);
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 900;
             letter-spacing: -0.03em;
         }
 
         .card-title {
             margin-top: 8px;
-            font-size: clamp(calc(19px * var(--public-font-scale)), calc(4.3vw * var(--public-font-scale)), calc(25px * var(--public-font-scale)));
+            font-size: clamp(calc(18px * var(--public-font-scale)), calc(4vw * var(--public-font-scale)), calc(24px * var(--public-font-scale)));
             line-height: 1.1;
         }
 
@@ -268,11 +268,10 @@
         .celebration-meta-text {
             margin: 10px 0 0;
             color: var(--muted);
-            font-size: clamp(calc(16px * var(--public-font-scale)), calc(3.8vw * var(--public-font-scale)), calc(18px * var(--public-font-scale)));
+            font-size: clamp(calc(14px * var(--public-font-scale)), calc(3.4vw * var(--public-font-scale)), calc(16px * var(--public-font-scale)));
             line-height: 1.5;
         }
 
-        .card-action,
         .empty-action,
         .history-form button,
         .history-form a {
@@ -288,12 +287,6 @@
             font-weight: 800;
             font-family: inherit;
             cursor: pointer;
-        }
-
-        .card-action {
-            background: linear-gradient(135deg, #2f6b4f, #4f8a63);
-            color: #fff8ef;
-            box-shadow: 0 12px 24px rgba(47, 107, 79, 0.26);
         }
 
         .celebration-section[hidden] {
@@ -318,13 +311,13 @@
         }
 
         .empty-state--compact {
-            padding: 18px;
+            padding: 14px;
         }
 
         .empty-title {
             margin-top: 0;
             font-family: Georgia, "Times New Roman", serif;
-            font-size: clamp(calc(28px * var(--public-font-scale)), calc(6vw * var(--public-font-scale)), calc(36px * var(--public-font-scale)));
+            font-size: clamp(calc(22px * var(--public-font-scale)), calc(5.2vw * var(--public-font-scale)), calc(30px * var(--public-font-scale)));
             line-height: 1.08;
             letter-spacing: -0.03em;
         }
@@ -340,7 +333,7 @@
 
         .section-title {
             margin-top: 6px;
-            font-size: clamp(calc(26px * var(--public-font-scale)), calc(6vw * var(--public-font-scale)), calc(36px * var(--public-font-scale)));
+            font-size: clamp(calc(22px * var(--public-font-scale)), calc(5vw * var(--public-font-scale)), calc(32px * var(--public-font-scale)));
             line-height: 1.08;
         }
 
@@ -797,7 +790,6 @@
                 align-items: stretch;
             }
 
-            .card-action,
             .empty-action,
             .history-form button,
             .history-form a {
@@ -1034,7 +1026,9 @@
                 </section>
             @endif
 
-            @if ($missaPublica)
+            @php($celebracaoFoiEscolhida = request()->filled('celebracao'))
+
+            @if ($missaPublica && $celebracaoFoiEscolhida)
                 @php($itensPublicos = collect($missaPublica->itens_publicos ?? []))
 
                 <section class="section celebration-section" id="celebracao-publica" data-celebration-section>
@@ -1250,50 +1244,13 @@
                 next?.addEventListener('click', () => move(1));
             });
 
-            const celebrationSection = document.querySelector('[data-celebration-section]');
-            const celebrationCards = Array.from(document.querySelectorAll('[data-celebration-card]'));
-            const labelAbrir = document.body.dataset.publicMode === 'musicos' ? 'Abrir repertório' : 'Abrir celebração';
-            const labelFechar = document.body.dataset.publicMode === 'musicos' ? 'Fechar repertório' : 'Fechar celebração';
-
-            const atualizarCardsCelebracao = (cardAberto = null) => {
-                celebrationCards.forEach((card) => {
-                    const aberto = card === cardAberto;
-                    card.dataset.selected = aberto ? 'true' : 'false';
-                    card.setAttribute('aria-expanded', aberto ? 'true' : 'false');
-
-                    const action = card.querySelector('.card-action');
-                    if (action) {
-                        action.textContent = aberto ? labelFechar : labelAbrir;
-                    }
-                });
-            };
-
-            celebrationCards.forEach((card) => {
-                card.addEventListener('click', (event) => {
-                    if (card.dataset.selected !== 'true') {
-                        return;
-                    }
-
-                    event.preventDefault();
-                    const deveFechar = !celebrationSection?.hidden;
-
-                    if (celebrationSection) {
-                        celebrationSection.hidden = deveFechar;
-                    }
-
-                    atualizarCardsCelebracao(deveFechar ? null : card);
-                });
-            });
-
             const historyForm = document.querySelector('[data-history-form]');
             const historyInput = document.querySelector('[data-history-input]');
             const historyItemsScript = document.querySelector('[data-history-items]');
             const historyLiveResults = document.querySelector('[data-history-live-results]');
             const historyLiveEmpty = document.querySelector('[data-history-live-empty]');
             const historyServerResults = document.querySelector('[data-history-server-results]');
-            const historyCards = Array.from(document.querySelectorAll('[data-history-card]'));
             const historyBaseUrl = historyForm?.dataset.historyBaseUrl || window.location.pathname;
-            const selectedHistoryId = Number(historyForm?.dataset.historySelected || 0);
             const historyOpenLabel = document.body.dataset.publicMode === 'musicos' ? 'Abrir repertorio' : 'Abrir celebracao';
 
             const normalizeSearch = (value) => value
@@ -1310,35 +1267,6 @@
                 return url.toString();
             };
 
-            const fecharCelebracaoHistorica = () => {
-                if (celebrationSection) {
-                    celebrationSection.hidden = true;
-                }
-
-                historyCards.forEach((card) => {
-                    card.dataset.selected = 'false';
-                    const action = card.querySelector('[data-history-action]');
-                    if (action) {
-                        action.textContent = historyOpenLabel;
-                    }
-                });
-
-                const url = new URL(historyBaseUrl, window.location.origin);
-                url.hash = 'historico-publico';
-                window.history.replaceState(null, '', url.toString());
-            };
-
-            historyCards.forEach((card) => {
-                card.addEventListener('click', (event) => {
-                    if (true || card.dataset.selected !== 'true') {
-                        return;
-                    }
-
-                    event.preventDefault();
-                    fecharCelebracaoHistorica();
-                });
-            });
-
             let historyItems = [];
             try {
                 historyItems = JSON.parse(historyItemsScript?.textContent || '[]');
@@ -1354,17 +1282,8 @@
                 const action = document.createElement('span');
                 const titulo = document.createElement('h3');
                 const meta = document.createElement('p');
-                const selecionado = false;
-
                 link.href = montarHistoryUrl(item);
                 link.className = 'history-link';
-
-                if (selecionado) {
-                    link.addEventListener('click', (event) => {
-                        event.preventDefault();
-                        fecharCelebracaoHistorica();
-                    });
-                }
 
                 badges.className = 'history-badges';
                 data.className = 'history-date';
