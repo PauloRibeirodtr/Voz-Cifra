@@ -543,7 +543,7 @@
         }
 
         .celebration-title {
-            font-size: clamp(calc(28px * var(--public-font-scale)), calc(6vw * var(--public-font-scale)), calc(40px * var(--public-font-scale)));
+            font-size: clamp(calc(28px * var(--celebration-font-scale, 1)), calc(6vw * var(--celebration-font-scale, 1)), calc(40px * var(--celebration-font-scale, 1)));
             line-height: 1.06;
         }
 
@@ -1375,8 +1375,8 @@
                 const botaoRolagem = document.querySelector('[data-public-scroll-toggle]');
                 const controleVelocidade = document.querySelector('[data-public-scroll-speed]');
                 const rotuloVelocidade = document.querySelector('[data-public-scroll-speed-label]');
-                let intervaloRolagem = null;
-                const intervaloMsRolagem = 30;
+                let quadroRolagem = null;
+                let ultimoFrameRolagem = 0;
 
                 const atualizarRotuloVelocidade = () => {
                     if (!controleVelocidade || !rotuloVelocidade) {
@@ -1517,9 +1517,10 @@
                 });
 
                 const pararRolagem = () => {
-                    if (intervaloRolagem) {
-                        window.clearInterval(intervaloRolagem);
-                        intervaloRolagem = null;
+                    if (quadroRolagem) {
+                        window.cancelAnimationFrame(quadroRolagem);
+                        quadroRolagem = null;
+                        ultimoFrameRolagem = 0;
                     }
 
                     if (botaoRolagem) {
@@ -1531,25 +1532,40 @@
                 const iniciarRolagem = () => {
                     pararRolagem();
 
-                    const velocidade = atualizarRotuloVelocidade();
-                    const passo = Math.max(0.75, velocidade * 0.9);
-
                     if (botaoRolagem) {
                         botaoRolagem.textContent = 'Parar rolagem';
                         botaoRolagem.classList.add('is-active');
                     }
 
-                    intervaloRolagem = window.setInterval(() => {
-                        window.scrollBy({ top: passo, left: 0, behavior: 'auto' });
+                    const animarRolagem = (timestamp) => {
+                        if (!quadroRolagem) {
+                            return;
+                        }
+
+                        if (!ultimoFrameRolagem) {
+                            ultimoFrameRolagem = timestamp;
+                        }
+
+                        const deltaSegundos = Math.min((timestamp - ultimoFrameRolagem) / 1000, 0.08);
+                        ultimoFrameRolagem = timestamp;
+                        const velocidade = atualizarRotuloVelocidade();
+                        const pixelsPorSegundo = Math.max(28, velocidade * 34);
+
+                        window.scrollBy({ top: pixelsPorSegundo * deltaSegundos, left: 0, behavior: 'auto' });
 
                         if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
                             pararRolagem();
+                            return;
                         }
-                    }, intervaloMsRolagem);
+
+                        quadroRolagem = window.requestAnimationFrame(animarRolagem);
+                    };
+
+                    quadroRolagem = window.requestAnimationFrame(animarRolagem);
                 };
 
                 botaoRolagem?.addEventListener('click', () => {
-                    if (intervaloRolagem) {
+                    if (quadroRolagem) {
                         pararRolagem();
                         return;
                     }
@@ -1559,10 +1575,6 @@
 
                 controleVelocidade?.addEventListener('input', () => {
                     atualizarRotuloVelocidade();
-
-                    if (intervaloRolagem) {
-                        iniciarRolagem();
-                    }
                 });
 
                 atualizarRotuloVelocidade();
