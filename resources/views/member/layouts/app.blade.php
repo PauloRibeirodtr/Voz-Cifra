@@ -5,7 +5,10 @@
 </head>
 @php
     $themePreference = auth()->user()->theme_preference ?? 'system';
-    $profileRoute = request()->routeIs('coordenador.*') ? 'coordenador.profile' : 'member.profile';
+    $isAdminMasterLayout = auth()->user()?->ehAdminMaster();
+    $profileRoute = $isAdminMasterLayout
+        ? 'admin.profile'
+        : (request()->routeIs('coordenador.*') ? 'coordenador.profile' : 'member.profile');
 @endphp
 <body class="font-sans text-gray-900" data-theme-preference="{{ $themePreference }}">
     <div
@@ -15,7 +18,11 @@
     ></div>
 
     <div class="admin-app">
-        @include('partials.operational-sidebar', ['sidebarId' => 'admin_sidebar'])
+        @if ($isAdminMasterLayout)
+            @include('admin.partials.sidebar')
+        @else
+            @include('partials.operational-sidebar', ['sidebarId' => 'admin_sidebar'])
+        @endif
 
         <div class="admin-main">
             <header class="admin-mobile-header sticky top-0 z-20 border-b border-white/10 backdrop-blur lg:hidden">
@@ -44,7 +51,7 @@
                 <div class="admin-main-content">
                     <div class="admin-topbar-card hidden items-center justify-between gap-4 px-5 py-4 lg:flex lg:px-6">
                         <div class="min-w-0">
-                            <p class="admin-page-kicker">@yield('desktop_kicker', 'Painel operacional')</p>
+                            <p class="admin-page-kicker">@yield('desktop_kicker', $isAdminMasterLayout ? 'Painel Admin Master' : 'Painel operacional')</p>
                             <p class="mt-2 truncate text-sm text-gray-500">@yield('desktop_subtitle', 'Area do musico')</p>
                         </div>
 

@@ -207,7 +207,7 @@
 
     <div class="shrink-0 border-t border-white/10 bg-black/20 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
         @auth
-            <div class="mb-4 rounded-2xl border border-white/10 bg-white/5 px-3 py-3">
+            <a href="{{ route($perfilRouteSidebar) }}" class="admin-sidebar-profile-link mb-4 block rounded-2xl border border-white/10 bg-white/5 px-3 py-3" aria-label="Abrir meu perfil">
                 <div class="flex items-center gap-3">
                     <div class="flex h-11 w-11 items-center justify-center rounded-full border border-[#8c6933] bg-[#6c4a21] font-bold text-white shadow-sm">
                         @if (filled(auth()->user()->foto_perfil_path))
@@ -234,7 +234,7 @@
                         @endforeach
                     </div>
                 @endif
-            </div>
+            </a>
         @endauth
 
         <form action="{{ route('logout') }}" method="POST">

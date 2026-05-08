@@ -360,17 +360,6 @@ class ChamadoSupportService
                 );
             }
 
-            $this->notificacaoSegurancaService->enviarEventoConta(
-                alvo: $musico,
-                evento: 'reset_senha',
-                ator: $ator,
-                contexto: [
-                    'origem' => 'admin_chamados_aprovar_pedido_acesso',
-                    'igreja_id' => $chamado->igreja_id,
-                    'igreja_nome' => $chamado->igreja_nome,
-                ]
-            );
-
             $this->notificacaoAcessoInicialService->enviarConvite(
                 alvo: $musico,
                 ator: $ator,

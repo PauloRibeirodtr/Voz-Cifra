@@ -528,6 +528,10 @@ body:not(.theme-dark) .hover\:bg-gray-100:hover {
     transform: translate3d(0, 0, 0);
 }
 
+#admin_sidebar.is-open {
+    transform: translate3d(0, 0, 0) !important;
+}
+
 .admin-sidebar-inner {
     display: flex;
     flex: 1 1 auto;
@@ -688,24 +692,26 @@ body:not(.theme-dark) .hover\:bg-gray-100:hover {
 }
 
 body.theme-dark {
-    --admin-bg: #09101c;
-    --admin-bg-soft: #0c1524;
-    --admin-surface: #0f172a;
-    --admin-surface-strong: #0f172a;
-    --admin-surface-muted: #111c31;
-    --admin-border: #243247;
-    --admin-border-strong: #334155;
+    --admin-bg: #140c0c;
+    --admin-bg-soft: #1d1211;
+    --admin-surface: #211514;
+    --admin-surface-strong: #251817;
+    --admin-surface-muted: #2a1b19;
+    --admin-border: rgba(214, 173, 108, 0.16);
+    --admin-border-strong: rgba(234, 214, 179, 0.24);
     --admin-text: #f8fafc;
-    --admin-text-soft: #94a3b8;
-    --admin-text-muted: #64748b;
+    --admin-text-soft: #d8c4a6;
+    --admin-text-muted: #a58b6a;
     --admin-accent: #d0a15d;
     --admin-accent-strong: #e8be84;
-    --admin-shadow: 0 18px 40px rgba(2, 6, 23, 0.35);
+    --admin-shadow: 0 18px 40px rgba(5, 2, 1, 0.38);
 }
 
 body.theme-dark,
 .theme-dark body {
-    background-color: #08111f !important;
+    background:
+        radial-gradient(circle at top left, rgba(208, 161, 93, 0.08), transparent 24%),
+        linear-gradient(180deg, #160d0d 0%, #0f0909 100%) !important;
     color: var(--admin-text) !important;
 }
 
@@ -721,7 +727,7 @@ body.theme-dark .bg-slate-50 {
 }
 
 body.theme-dark .bg-gray-100 {
-    background-color: #162236 !important;
+    background-color: #2a1b19 !important;
 }
 
 body.theme-dark .bg-slate-900,
@@ -730,7 +736,7 @@ body.theme-dark .bg-slate-950\/50,
 body.theme-dark .bg-green-900,
 body.theme-dark .bg-green-950,
 body.theme-dark .bg-green-950\/50 {
-    background-color: #0b1424 !important;
+    background-color: #1a1111 !important;
 }
 
 body.theme-dark .border-gray-100,
@@ -766,7 +772,7 @@ body.theme-dark .text-emerald-700,
 body.theme-dark .text-blue-700,
 body.theme-dark .text-amber-700,
 body.theme-dark .text-red-700 {
-    color: #dbeafe !important;
+    color: #f3dfbd !important;
 }
 
 body.theme-dark .shadow-sm,
@@ -895,7 +901,7 @@ body.theme-dark .admin-table tbody tr:hover {
 body.theme-dark .admin-sidebar {
     background:
         radial-gradient(circle at top, rgba(214, 173, 108, 0.08), transparent 24%),
-        linear-gradient(180deg, #111827 0%, #0f172a 100%);
+        linear-gradient(180deg, #1a1111 0%, #120b0b 100%);
 }
 
 body.theme-dark .admin-sidebar-link:hover {

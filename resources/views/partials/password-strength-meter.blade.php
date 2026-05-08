@@ -9,10 +9,11 @@
     </div>
 
     <ul class="mt-4 space-y-2 text-xs text-gray-600">
-        <li data-password-rule="length">Pelo menos 8 caracteres</li>
-        <li data-password-rule="lower">Ao menos 1 letra minuscula</li>
-        <li data-password-rule="upper">Ao menos 1 letra maiuscula</li>
-        <li data-password-rule="number">Ao menos 1 numero</li>
-        <li data-password-rule="symbol">Ao menos 1 caractere especial</li>
+        <li class="flex items-center gap-2" data-password-rule="length"><span class="inline-flex h-4 w-4 items-center justify-center rounded-full border border-gray-300 text-[10px]" data-password-rule-icon>•</span><span>Pelo menos 8 caracteres</span></li>
+        <li class="flex items-center gap-2" data-password-rule="lower"><span class="inline-flex h-4 w-4 items-center justify-center rounded-full border border-gray-300 text-[10px]" data-password-rule-icon>•</span><span>Ao menos 1 letra minuscula</span></li>
+        <li class="flex items-center gap-2" data-password-rule="upper"><span class="inline-flex h-4 w-4 items-center justify-center rounded-full border border-gray-300 text-[10px]" data-password-rule-icon>•</span><span>Ao menos 1 letra maiuscula</span></li>
+        <li class="flex items-center gap-2" data-password-rule="number"><span class="inline-flex h-4 w-4 items-center justify-center rounded-full border border-gray-300 text-[10px]" data-password-rule-icon>•</span><span>Ao menos 1 numero</span></li>
+        <li class="flex items-center gap-2" data-password-rule="symbol"><span class="inline-flex h-4 w-4 items-center justify-center rounded-full border border-gray-300 text-[10px]" data-password-rule-icon>•</span><span>Ao menos 1 caractere especial</span></li>
+        <li class="flex items-center gap-2" data-password-match hidden><span class="inline-flex h-4 w-4 items-center justify-center rounded-full border border-gray-300 text-[10px]" data-password-match-icon>•</span><span data-password-match-text>As senhas precisam conferir</span></li>
     </ul>
 </div>

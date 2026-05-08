@@ -36,6 +36,9 @@
 
             const label = grupo.querySelector('[data-password-strength-label]');
             const barra = grupo.querySelector('[data-password-strength-bar]');
+            const itemConfirmacao = grupo.querySelector('[data-password-match]');
+            const textoConfirmacao = grupo.querySelector('[data-password-match-text]');
+            const iconeConfirmacao = grupo.querySelector('[data-password-match-icon]');
             const required = grupo.dataset.passwordRequired === 'true';
 
             const atualizarEstadoEnvio = (senhaValida, senhaPreenchida) => {
@@ -63,6 +66,7 @@
 
                 Object.entries(regras).forEach(([regra, valida]) => {
                     const item = grupo.querySelector(`[data-password-rule="${regra}"]`);
+                    const icone = item?.querySelector('[data-password-rule-icon]');
 
                     if (!item) {
                         return;
@@ -71,7 +75,41 @@
                     item.classList.toggle('text-green-700', valida);
                     item.classList.toggle('font-semibold', valida);
                     item.classList.toggle('text-gray-600', !valida);
+                    item.classList.toggle('opacity-75', valida);
+
+                    if (icone) {
+                        icone.textContent = valida ? '✓' : '•';
+                        icone.classList.toggle('border-green-600', valida);
+                        icone.classList.toggle('bg-green-600', valida);
+                        icone.classList.toggle('text-white', valida);
+                        icone.classList.toggle('border-gray-300', !valida);
+                    }
                 });
+
+                if (itemConfirmacao && campoConfirmacao) {
+                    const confirmacaoPreenchida = campoConfirmacao.value.length > 0;
+                    const confirmacaoOk = confirmacaoPreenchida && campoConfirmacao.value === campoSenha.value;
+
+                    itemConfirmacao.hidden = !preenchida && !confirmacaoPreenchida;
+                    itemConfirmacao.classList.toggle('text-green-700', confirmacaoOk);
+                    itemConfirmacao.classList.toggle('font-semibold', confirmacaoOk);
+                    itemConfirmacao.classList.toggle('text-red-600', confirmacaoPreenchida && !confirmacaoOk);
+                    itemConfirmacao.classList.toggle('text-gray-600', !confirmacaoPreenchida);
+
+                    if (textoConfirmacao) {
+                        textoConfirmacao.textContent = confirmacaoOk
+                            ? 'As senhas conferem'
+                            : 'As senhas precisam conferir';
+                    }
+
+                    if (iconeConfirmacao) {
+                        iconeConfirmacao.textContent = confirmacaoOk ? '✓' : '•';
+                        iconeConfirmacao.classList.toggle('border-green-600', confirmacaoOk);
+                        iconeConfirmacao.classList.toggle('bg-green-600', confirmacaoOk);
+                        iconeConfirmacao.classList.toggle('text-white', confirmacaoOk);
+                        iconeConfirmacao.classList.toggle('border-gray-300', !confirmacaoOk);
+                    }
+                }
 
                 if (label) {
                     label.textContent = nivel.texto;

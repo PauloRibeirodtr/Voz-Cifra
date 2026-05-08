@@ -41,7 +41,7 @@
                     </div>
                 @endif
 
-                <form action="{{ route('password.setup.store') }}" method="POST" class="mt-8 space-y-6">
+                <form action="{{ route('password.setup.store') }}" method="POST" class="mt-8 space-y-6" data-password-strength-container>
                     @csrf
                     <input type="hidden" name="email" value="{{ $email }}">
                     <input type="hidden" name="token" value="{{ $token }}">
@@ -52,11 +52,13 @@
                             id="password"
                             type="password"
                             name="password"
+                            data-password-strength-input
                             required
                             autofocus
                             class="w-full rounded-2xl border border-[#e8dcc8]/70 bg-[#f4efe6] px-4 py-4 text-lg text-[#241616] placeholder:text-[#8f7a62] focus:border-[#f4ddb4]/70 focus:outline-none focus:ring-4 focus:ring-[#c9a15f]/10"
                             placeholder="Minimo de 8 caracteres"
                         >
+                        @include('partials.password-strength-meter', ['required' => true])
                     </div>
 
                     <div>
@@ -65,6 +67,7 @@
                             id="password_confirmation"
                             type="password"
                             name="password_confirmation"
+                            data-password-confirmation-input
                             required
                             class="w-full rounded-2xl border border-[#e8dcc8]/70 bg-[#f4efe6] px-4 py-4 text-lg text-[#241616] placeholder:text-[#8f7a62] focus:border-[#f4ddb4]/70 focus:outline-none focus:ring-4 focus:ring-[#c9a15f]/10"
                             placeholder="Repita a nova senha"
@@ -85,5 +88,6 @@
             </section>
         </main>
     </div>
+    @include('partials.password-strength-script')
 </body>
 </html>

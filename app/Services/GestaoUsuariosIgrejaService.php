@@ -200,7 +200,7 @@ class GestaoUsuariosIgrejaService
             $nivelNovo = $usuario->nivelGlobal();
             $mudouAcessoGlobal = !$eraAdminMaster || $nivelAnterior !== $nivelNovo;
 
-            if ($mudouAcessoGlobal) {
+            if ($mudouAcessoGlobal && !($usuario->primeiro_acesso ?? false)) {
                 $this->notificacaoSegurancaService->enviarEventoConta(
                     alvo: $usuario,
                     evento: 'troca_nivel_global',
@@ -212,18 +212,6 @@ class GestaoUsuariosIgrejaService
                     ]
                 );
             }
-        }
-
-        if (!$usuario->ehAdminMaster() && $senhaFoiDefinida) {
-            $this->notificacaoSegurancaService->enviarEventoConta(
-                alvo: $usuario,
-                evento: 'reset_senha',
-                ator: $ator,
-                contexto: [
-                    'origem' => $origem,
-                    'resumo' => 'Link de definicao de senha solicitado para a conta.',
-                ]
-            );
         }
 
         if ($usuario->primeiro_acesso && $senhaFoiDefinida && filter_var((string) $usuario->email, FILTER_VALIDATE_EMAIL)) {
@@ -465,15 +453,6 @@ class GestaoUsuariosIgrejaService
             ]
         );
 
-        $this->notificacaoSegurancaService->enviarEventoConta(
-            alvo: $usuario,
-            evento: 'reset_senha',
-            ator: $ator,
-            contexto: $contexto + [
-                'resumo' => 'Link de definicao de senha solicitado para a conta.',
-            ]
-        );
-
         if (filter_var((string) $usuario->email, FILTER_VALIDATE_EMAIL)) {
             $this->notificacaoAcessoInicialService->enviarConvite(
                 alvo: $usuario,
@@ -611,18 +590,20 @@ class GestaoUsuariosIgrejaService
                     ]
                 );
 
-                $this->notificacaoSegurancaService->enviarEventoConta(
-                    alvo: $usuario,
-                    evento: 'papel_local_concedido',
-                    ator: $ator,
-                    contexto: [
-                        'origem' => $origem,
-                        'igreja_id' => $igreja->id,
-                        'igreja_nome' => $igreja->nome,
-                        'papel' => $papel->value,
-                        'papel_label' => $papel->label(),
-                    ]
-                );
+                if (!($usuario->primeiro_acesso ?? false)) {
+                    $this->notificacaoSegurancaService->enviarEventoConta(
+                        alvo: $usuario,
+                        evento: 'papel_local_concedido',
+                        ator: $ator,
+                        contexto: [
+                            'origem' => $origem,
+                            'igreja_id' => $igreja->id,
+                            'igreja_nome' => $igreja->nome,
+                            'papel' => $papel->value,
+                            'papel_label' => $papel->label(),
+                        ]
+                    );
+                }
             });
     }
 
