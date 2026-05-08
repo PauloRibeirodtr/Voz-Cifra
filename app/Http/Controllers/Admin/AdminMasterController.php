@@ -136,7 +136,7 @@ class AdminMasterController extends Controller
             ]
         );
 
-        return redirect()->route('admin.profile')->with('success', $primeiroAcesso
+        return redirect()->route('admin.dashboard')->with('success', $primeiroAcesso
             ? 'Senha atualizada com sucesso. O painel administrativo foi liberado.'
             : 'Perfil atualizado com sucesso.');
     }

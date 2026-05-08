@@ -108,7 +108,11 @@ class PainelMembroController extends Controller
             ]
         );
 
-        return redirect()->route('member.profile')->with('success', $primeiroAcesso
+        $rotaDestino = $request->routeIs('coordenador.*')
+            ? 'coordenador.dashboard'
+            : 'member.dashboard';
+
+        return redirect()->route($rotaDestino)->with('success', $primeiroAcesso
             ? 'Senha atualizada com sucesso. O acesso do músico foi liberado.'
             : 'Perfil do músico atualizado com sucesso.');
     }

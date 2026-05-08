@@ -122,7 +122,7 @@ class PainelAdminLocalController extends Controller
             ]
         );
 
-        return redirect()->route('local-admin.profile')->with('success', $primeiroAcesso
+        return redirect()->route('local-admin.dashboard')->with('success', $primeiroAcesso
             ? 'Senha atualizada com sucesso. O acesso completo ao painel da igreja foi liberado.'
             : 'Perfil do administrador local atualizado com sucesso.');
     }
