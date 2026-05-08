@@ -238,19 +238,8 @@
                                 <input type="hidden" name="origem" value="edit">
                                 <input type="hidden" name="admin_local_id" value="{{ $admin->id }}">
 
-                                <div data-password-strength-container>
-                                    <label class="block text-sm font-medium text-gray-700">Nova senha manual para {{ $admin->nome }}</label>
-                                    <input type="password" name="password" data-password-strength-input class="{{ $classeInput }}" placeholder="Opcional">
-                                    @include('partials.password-strength-meter')
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Confirmar nova senha</label>
-                                    <input type="password" name="password_confirmation" data-password-confirmation-input class="{{ $classeInput }}" placeholder="Repita a nova senha">
-                                </div>
-
                                 <div class="lg:col-span-2 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm text-amber-900">
-                                    Se a nova senha ficar em branco, o sistema vai usar o CPF deste administrador local como senha padrão e obrigar a troca no próximo acesso.
+                                    O sistema enviara um link seguro para {{ $admin->nome }} definir a propria senha. O link expira em 60 minutos.
                                 </div>
 
                                 <div class="lg:col-span-2">
@@ -419,21 +408,8 @@
                                 <input type="hidden" name="origem" value="edit">
                                 <input type="hidden" name="admin_local_id" value="{{ $usuarioVinculado->id }}">
 
-                                <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                                    <div data-password-strength-container>
-                                        <label class="block text-sm font-medium text-gray-700">Nova senha manual para {{ $usuarioVinculado->nome }}</label>
-                                        <input type="password" name="password" data-password-strength-input class="{{ $classeInput }}" placeholder="Opcional">
-                                        @include('partials.password-strength-meter')
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">Confirmar nova senha</label>
-                                        <input type="password" name="password_confirmation" data-password-confirmation-input class="{{ $classeInput }}" placeholder="Repita a nova senha">
-                                    </div>
-                                </div>
-
                                 <div class="mt-4 rounded-2xl border border-amber-200 bg-white/70 px-4 py-4 text-sm text-amber-900">
-                                    Se a nova senha ficar em branco, o sistema usa o CPF deste usuario como senha padrao e obriga a troca no proximo acesso.
+                                    O sistema enviara um link seguro para {{ $usuarioVinculado->nome }} definir a propria senha. O link expira em 60 minutos.
                                 </div>
 
                                 <button type="submit" class="mt-4 inline-flex items-center justify-center rounded-xl bg-amber-600 px-5 py-3 font-semibold text-white hover:bg-amber-700">
@@ -481,7 +457,7 @@
                     </div>
 
                     <div class="md:col-span-2 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm text-blue-800">
-                        A senha inicial será o CPF informado para contas novas. Quando a pessoa já existir, o sistema reaproveita a conta e concede o novo papel nesta igreja.
+                        Para contas novas, o sistema enviara um link seguro por e-mail para a pessoa definir a propria senha. Quando a pessoa ja existir, o sistema reaproveita a conta e concede o novo papel nesta igreja.
                     </div>
 
                     <div class="md:col-span-2">

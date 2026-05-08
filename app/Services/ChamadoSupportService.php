@@ -14,6 +14,7 @@ class ChamadoSupportService
     public function __construct(
         private readonly TelegramNotificacaoService $telegramNotificacaoService,
         private readonly NotificacaoSegurancaService $notificacaoSegurancaService,
+        private readonly NotificacaoAcessoInicialService $notificacaoAcessoInicialService,
     ) {
     }
 
@@ -325,7 +326,7 @@ class ChamadoSupportService
             $musico->forceFill([
                 'ativo' => true,
                 'primeiro_acesso' => true,
-                'password' => preg_replace('/\D+/', '', (string) $musico->cpf) ?: (string) $musico->cpf,
+                'password' => Str::password(32),
             ])->save();
 
             $chamado->forceFill([
@@ -333,7 +334,7 @@ class ChamadoSupportService
                 'responsavel_usuario_id' => $ator?->id,
                 'ultima_interacao_em' => now(),
                 'resolvido_em' => now(),
-                'resolucao_resumo' => 'Acesso do musico aprovado. Conta liberada para novo acesso com senha baseada no CPF.',
+                'resolucao_resumo' => 'Acesso do musico aprovado. Link de definicao de senha enviado por e-mail.',
             ])->save();
 
             ChamadoMensagem::create([
@@ -343,7 +344,7 @@ class ChamadoSupportService
                 'origem' => 'suporte',
                 'canal' => 'painel_admin',
                 'interno' => false,
-                'mensagem' => 'Pedido aprovado. O musico foi liberado para acessar novamente e devera redefinir a senha no proximo acesso.',
+                'mensagem' => 'Pedido aprovado. O musico foi liberado para acessar novamente e recebera um link para definir a senha.',
             ]);
 
             if ($musicoFoiInativo) {
@@ -367,7 +368,17 @@ class ChamadoSupportService
                     'origem' => 'admin_chamados_aprovar_pedido_acesso',
                     'igreja_id' => $chamado->igreja_id,
                     'igreja_nome' => $chamado->igreja_nome,
-                    'senha_inicial' => 'cpf_sem_pontuacao',
+                ]
+            );
+
+            $this->notificacaoAcessoInicialService->enviarConvite(
+                alvo: $musico,
+                ator: $ator,
+                contexto: [
+                    'origem' => 'admin_chamados_aprovar_pedido_acesso',
+                    'origem_id' => $chamado->id,
+                    'igreja_id' => $chamado->igreja_id,
+                    'igreja_nome' => $chamado->igreja_nome,
                 ]
             );
         });

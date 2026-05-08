@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\TempoLiturgicoController;
 use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\Admin\VersaoMusicalController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\DefinirSenhaController;
 use App\Http\Controllers\Auth\IgrejaAtivaController;
 use App\Http\Controllers\Media\PublicStorageController;
 use App\Http\Controllers\Coordenador\GestaoIgrejaController as CoordenadorGestaoIgrejaController;
@@ -36,6 +37,8 @@ Route::get('/desenvolvedores', [HomeController::class, 'desenvolvedores'])->name
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
+    Route::get('/definir-senha', [DefinirSenhaController::class, 'show'])->name('password.setup');
+    Route::post('/definir-senha', [DefinirSenhaController::class, 'store'])->name('password.setup.store');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])

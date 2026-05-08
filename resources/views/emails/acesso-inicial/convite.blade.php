@@ -8,12 +8,8 @@
     @php
         $appName = config('app.name', 'Voz & Cifra');
         $appUrl = rtrim((string) config('app.url', ''), '/');
-        $loginUrl = $appUrl !== '' ? $appUrl . route('login', [], false) : route('login');
-        $senhaExplicacao = match ($contexto['senha_inicial'] ?? null) {
-            'cpf_sem_pontuacao' => 'A senha inicial foi preparada com o CPF sem pontos nem tracos.',
-            'definida_manual' => 'Uma senha inicial foi definida manualmente para a sua conta.',
-            default => 'Use a senha inicial informada pela Equipe Voz & Cifra.',
-        };
+        $definirSenhaUrl = (string) ($contexto['definir_senha_url'] ?? ($appUrl !== '' ? $appUrl . route('login', [], false) : route('login')));
+        $expiraEmMinutos = (int) ($contexto['expira_em_minutos'] ?? 60);
         $papeis = [];
 
         if (!empty($contexto['papel_label'])) {
@@ -42,7 +38,7 @@
             <p>Uma conta foi preparada para voce no sistema {{ $appName }}.</p>
 
             <div style="margin:22px 0; padding:18px; border:1px solid #e7e5e4; border-radius:14px; background:#fafaf9;">
-                <h2 style="margin:0 0 12px; font-size:16px;">Como acessar</h2>
+                <h2 style="margin:0 0 12px; font-size:16px;">Como liberar seu acesso</h2>
                 <table role="presentation" style="width:100%; border-collapse:collapse;">
                     <tbody>
                         <tr>
@@ -50,8 +46,8 @@
                             <td style="padding:8px 0; color:#1c1917;">{{ $alvo->email }}</td>
                         </tr>
                         <tr>
-                            <td style="padding:8px 0; font-weight:700; width:170px; vertical-align:top; color:#44403c;">Senha inicial</td>
-                            <td style="padding:8px 0; color:#1c1917;">{{ $senhaExplicacao }}</td>
+                            <td style="padding:8px 0; font-weight:700; width:170px; vertical-align:top; color:#44403c;">Validade do link</td>
+                            <td style="padding:8px 0; color:#1c1917;">{{ $expiraEmMinutos }} minutos</td>
                         </tr>
                         @if (!empty($contexto['igreja_nome']))
                             <tr>
@@ -71,19 +67,19 @@
 
             <div style="margin-top:20px;">
                 <a
-                    href="{{ $loginUrl }}"
+                    href="{{ $definirSenhaUrl }}"
                     style="display:inline-block; border-radius:12px; background:#6f4726; color:#ffffff; text-decoration:none; font-weight:700; padding:12px 18px;"
                 >
-                    Entrar no sistema
+                    Definir minha senha
                 </a>
                 <p style="margin:12px 0 0; word-break:break-all; color:#57534e; font-size:12px;">
-                    Link direto: <a href="{{ $loginUrl }}" style="color:#2563eb;">{{ $loginUrl }}</a>
+                    Link direto: <a href="{{ $definirSenhaUrl }}" style="color:#2563eb;">{{ $definirSenhaUrl }}</a>
                 </p>
             </div>
 
             <div style="margin-top:24px; padding:16px 18px; border-radius:14px; background:#eff6ff; border:1px solid #bfdbfe; color:#1e3a8a;">
-                <strong style="display:block; margin-bottom:6px;">Primeiro acesso</strong>
-                <span>Assim que entrar, o sistema vai exigir a troca da senha provisória para liberar o uso normal da conta.</span>
+                <strong style="display:block; margin-bottom:6px;">Acesso seguro</strong>
+                <span>O link so pode ser usado uma vez. Depois de definir a senha, voce sera direcionado ao painel correto.</span>
             </div>
 
             <p style="margin:24px 0 0; color:#57534e; font-size:13px;">

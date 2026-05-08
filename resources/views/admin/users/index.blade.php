@@ -197,7 +197,7 @@
                                             Senha e status do master são geridos apenas pelo próprio titular
                                         </span>
                                     @else
-                                        <form action="{{ route('admin.usuarios.password.reset', $usuario) }}" method="POST" onsubmit="return confirm('Deseja redefinir a senha provisória deste usuário?');">
+                                        <form action="{{ route('admin.usuarios.password.reset', $usuario) }}" method="POST" onsubmit="return confirm('Deseja enviar um novo link de definicao de senha para este usuario?');">
                                             @csrf
                                             <button type="submit" class="admin-btn admin-btn-warm">Redefinir senha</button>
                                         </form>

@@ -81,7 +81,7 @@
                             <div class="rounded-2xl bg-gray-50 px-4 py-3">
                                 <div class="text-[11px] font-black uppercase tracking-[0.16em] text-gray-400">Documento</div>
                                 <div class="mt-1 text-sm font-semibold text-gray-700">{{ $adminLocal->cpf }}</div>
-                                <div class="text-xs text-gray-500">CPF usado para identificacao operacional e eventual recuperacao de acesso.</div>
+                                <div class="text-xs text-gray-500">CPF usado apenas para identificacao operacional.</div>
                             </div>
                         </div>
                     </div>
@@ -93,7 +93,7 @@
                             </a>
                         @endif
 
-                        <form action="{{ route('admin.admins-locais.password.reset', $adminLocal) }}" method="POST" onsubmit="return confirm('Deseja resetar a senha deste admin local para o CPF e exigir troca no proximo acesso?');">
+                        <form action="{{ route('admin.admins-locais.password.reset', $adminLocal) }}" method="POST" onsubmit="return confirm('Deseja enviar um novo link de definicao de senha para este admin local?');">
                             @csrf
                             <button type="submit" class="w-full rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800 hover:bg-amber-100">
                                 Resetar senha

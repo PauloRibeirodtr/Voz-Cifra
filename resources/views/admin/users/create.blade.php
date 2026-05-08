@@ -91,20 +91,8 @@
                                 <input type="text" name="telefone" value="{{ old('telefone') }}" data-telefone-input class="admin-input">
                             </div>
 
-                            <div data-password-strength-container>
-                                <label class="admin-label">Senha inicial</label>
-                                <input type="password" name="password" data-password-strength-input class="admin-input" placeholder="Se ficar em branco, usa CPF">
-                                <p class="mt-2 rounded-xl border border-amber-100 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
-                                    A senha inicial sera o CPF sem pontos e tracos, caso nenhuma senha seja informada.
-                                </p>
-                                <div class="mt-3">
-                                    @include('partials.password-strength-meter')
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="admin-label">Confirmar senha</label>
-                                <input type="password" name="password_confirmation" data-password-confirmation-input class="admin-input">
+                            <div class="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-4 text-sm font-semibold text-emerald-900">
+                                Ao salvar, o sistema enviara um link seguro para a pessoa definir a propria senha. O link expira em 60 minutos.
                             </div>
 
                             <div class="xl:col-span-2">

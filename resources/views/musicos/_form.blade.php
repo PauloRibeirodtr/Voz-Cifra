@@ -58,18 +58,11 @@
 
     <aside class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
         <h2 class="text-lg font-bold text-gray-900">Acesso do músico</h2>
-        <p class="mt-2 text-sm text-gray-500">Se a senha inicial ficar em branco, o sistema usa o CPF como senha padrão e obriga a troca no primeiro acesso.</p>
+        <p class="mt-2 text-sm text-gray-500">Ao cadastrar, o sistema envia um link seguro para o musico definir a propria senha. O link expira em 60 minutos.</p>
 
         @unless ($musico->exists)
-            <div class="mt-5" data-password-strength-container>
-                <label class="block text-sm font-medium text-gray-700">Senha inicial</label>
-                <input type="password" name="password" data-password-strength-input class="{{ $classeInput }}" placeholder="Opcional">
-                @include('partials.password-strength-meter')
-            </div>
-
-            <div class="mt-4">
-                <label class="block text-sm font-medium text-gray-700">Confirmar senha inicial</label>
-                <input type="password" name="password_confirmation" data-password-confirmation-input class="{{ $classeInput }}" placeholder="Repita a senha">
+            <div class="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-4 text-sm font-semibold text-emerald-900">
+                Nenhuma senha sera exibida ou baseada em CPF.
             </div>
         @endunless
 

@@ -41,9 +41,7 @@ class GestaoUsuariosIgrejaService
         );
 
         $papeisConcedidos = collect();
-        $senhaInformada = trim((string) ($dados['password'] ?? ''));
-        $deveLiberarPrimeiroAcesso = $senhaInformada !== ''
-            || !$usuario
+        $deveLiberarPrimeiroAcesso = !$usuario
             || ($usuario && $this->ehEmailTecnicoSemLogin((string) $usuario->email));
 
         $usuario = DB::transaction(function () use (
@@ -53,7 +51,6 @@ class GestaoUsuariosIgrejaService
             $ator,
             $origem,
             $usuario,
-            $senhaInformada,
             $deveLiberarPrimeiroAcesso,
             &$papeisConcedidos
         ): Usuario {
@@ -71,9 +68,7 @@ class GestaoUsuariosIgrejaService
             if (!$conta->exists) {
                 $conta->perfil_global = 'usuario';
                 $conta->nivel_global = 1;
-                $conta->password = $senhaInformada !== ''
-                    ? $senhaInformada
-                    : $this->senhaPadraoPorCpf((string) $dados['cpf']);
+                $conta->password = Str::password(32);
                 $conta->primeiro_acesso = true;
             } else {
                 if (!$conta->ehAdminMaster()) {
@@ -82,9 +77,7 @@ class GestaoUsuariosIgrejaService
                 }
 
                 if ($deveLiberarPrimeiroAcesso) {
-                    $conta->password = $senhaInformada !== ''
-                        ? $senhaInformada
-                        : $this->senhaPadraoPorCpf((string) $dados['cpf']);
+                    $conta->password = Str::password(32);
                     $conta->primeiro_acesso = true;
                 }
             }
@@ -116,7 +109,6 @@ class GestaoUsuariosIgrejaService
                     'igreja_id' => $igreja->id,
                     'igreja_nome' => $igreja->nome,
                     'papeis_labels' => $papeisNormalizados->map(fn (PapelIgreja $papel) => $papel->label())->values()->all(),
-                    'senha_inicial' => $senhaInformada !== '' ? 'definida_manual' : 'cpf_sem_pontuacao',
                 ]
             );
         }
@@ -136,7 +128,6 @@ class GestaoUsuariosIgrejaService
         $ehAdminMaster = $perfilGlobal === 'admin_master';
         $ehPadre = (bool) ($dados['eh_padre'] ?? false);
         $emailInformado = $this->normalizarEmail($dados['email'] ?? null);
-        $senhaInformada = trim((string) ($dados['password'] ?? ''));
 
         $usuario = $this->resolverUsuarioAlvo(
             cpf: (string) ($dados['cpf'] ?? ''),
@@ -154,7 +145,6 @@ class GestaoUsuariosIgrejaService
             $ehAdminMaster,
             $ehPadre,
             $emailInformado,
-            $senhaInformada,
             $usuario,
             &$senhaFoiDefinida
         ): Usuario {
@@ -184,9 +174,7 @@ class GestaoUsuariosIgrejaService
 
             if (!$conta->exists) {
                 if ($emailFinal !== null && !$this->ehEmailTecnicoSemLogin($emailFinal)) {
-                    $conta->password = $senhaInformada !== ''
-                        ? $senhaInformada
-                        : $this->senhaPadraoPorCpf((string) $dados['cpf']);
+                    $conta->password = Str::password(32);
                     $conta->primeiro_acesso = true;
                     $senhaFoiDefinida = true;
                 } else {
@@ -196,10 +184,8 @@ class GestaoUsuariosIgrejaService
             } else {
                 $mudouEmailTecnicoParaLogin = $emailInformado !== null && $emailTecnicoAtual;
 
-                if ($senhaInformada !== '' || $mudouEmailTecnicoParaLogin) {
-                    $conta->password = $senhaInformada !== ''
-                        ? $senhaInformada
-                        : $this->senhaPadraoPorCpf((string) $dados['cpf']);
+                if ($mudouEmailTecnicoParaLogin) {
+                    $conta->password = Str::password(32);
                     $conta->primeiro_acesso = true;
                     $senhaFoiDefinida = true;
                 }
@@ -235,7 +221,7 @@ class GestaoUsuariosIgrejaService
                 ator: $ator,
                 contexto: [
                     'origem' => $origem,
-                    'senha_inicial' => $senhaInformada !== '' ? 'definida_manual' : 'cpf_sem_pontuacao',
+                    'resumo' => 'Link de definicao de senha solicitado para a conta.',
                 ]
             );
         }
@@ -247,7 +233,6 @@ class GestaoUsuariosIgrejaService
                 contexto: [
                     'origem' => $origem,
                     'origem_id' => $usuario->id,
-                    'senha_inicial' => $senhaInformada !== '' ? 'definida_manual' : 'cpf_sem_pontuacao',
                 ]
             );
         }
@@ -460,16 +445,13 @@ class GestaoUsuariosIgrejaService
         return $usuario;
     }
 
-    public function redefinirSenhaProvisoria(
+    public function enviarLinkDefinicaoSenha(
         Usuario $usuario,
-        ?string $senha,
         ?Usuario $ator = null,
         array $contexto = []
     ): Usuario {
-        $senhaNormalizada = trim((string) $senha);
-
         $usuario->forceFill([
-            'password' => $senhaNormalizada !== '' ? $senhaNormalizada : $this->senhaPadraoPorCpf((string) $usuario->cpf),
+            'password' => Str::password(32),
             'primeiro_acesso' => true,
         ])->save();
 
@@ -479,8 +461,7 @@ class GestaoUsuariosIgrejaService
             alvo: $usuario,
             igreja: $contexto['igreja_id'] ?? $usuario->igrejaAtiva()?->id ?? $usuario->igreja_id,
             contexto: $contexto + [
-                'senha_inicial' => $senhaNormalizada !== '' ? 'definida_manual' : 'cpf_sem_pontuacao',
-                'resumo' => 'Senha provisoria redefinida com obrigacao de troca no proximo acesso.',
+                'resumo' => 'Link de definicao de senha enviado com validade temporaria.',
             ]
         );
 
@@ -489,9 +470,20 @@ class GestaoUsuariosIgrejaService
             evento: 'reset_senha',
             ator: $ator,
             contexto: $contexto + [
-                'senha_inicial' => $senhaNormalizada !== '' ? 'definida_manual' : 'cpf_sem_pontuacao',
+                'resumo' => 'Link de definicao de senha solicitado para a conta.',
             ]
         );
+
+        if (filter_var((string) $usuario->email, FILTER_VALIDATE_EMAIL)) {
+            $this->notificacaoAcessoInicialService->enviarConvite(
+                alvo: $usuario,
+                ator: $ator,
+                contexto: $contexto + [
+                    'origem' => $contexto['origem'] ?? 'reset_senha',
+                    'origem_id' => $usuario->id,
+                ]
+            );
+        }
 
         return $usuario->fresh();
     }
@@ -553,11 +545,6 @@ class GestaoUsuariosIgrejaService
             ->when($ignorarUsuarioId, fn ($query) => $query->whereKeyNot($ignorarUsuarioId))
             ->whereRaw('LOWER(email) = ?', [$emailNormalizado])
             ->first();
-    }
-
-    private function senhaPadraoPorCpf(string $cpf): string
-    {
-        return preg_replace('/\D+/', '', $cpf) ?: $cpf;
     }
 
     private function gerarEmailTecnicoPadre(string $cpf): string

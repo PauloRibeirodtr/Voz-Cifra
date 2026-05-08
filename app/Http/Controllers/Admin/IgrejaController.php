@@ -6,7 +6,6 @@ use App\Enums\PapelIgreja;
 use App\Http\Controllers\Controller;
 use App\Models\Igreja;
 use App\Models\Usuario;
-use App\Rules\StrongPassword;
 use App\Services\AuditoriaOperacionalService;
 use App\Services\GestaoUsuariosIgrejaService;
 use App\Services\StatusOperacionalIgrejaService;
@@ -312,30 +311,8 @@ class IgrejaController extends Controller
                 ->with('error', 'Esta igreja ainda nao possui administrador local cadastrado.');
         }
 
-        $validator = Validator::make($request->all(), [
-            'password' => ['nullable', 'confirmed', new StrongPassword()],
-        ], [
-            'password.confirmed' => 'A confirmacao da nova senha nao confere.',
-        ]);
-
-        if ($validator->fails()) {
-            $redirecionamento = redirect()
-                ->route($origem === 'edit' ? 'admin.igrejas.edit' : 'admin.igrejas.index', $origem === 'edit' ? $igreja : [])
-                ->withErrors($validator)
-                ->withInput();
-
-            if ($origem === 'index') {
-                $redirecionamento->with('abrir_reset_modal', 'resetar-admin-local-' . $igreja->id . '-' . $adminLocal?->id);
-            }
-
-            return $redirecionamento;
-        }
-
-        $dados = $validator->validated();
-
-        $this->gestaoUsuariosIgrejaService->redefinirSenhaProvisoria(
+        $this->gestaoUsuariosIgrejaService->enviarLinkDefinicaoSenha(
             usuario: $adminLocal,
-            senha: $dados['password'] ?? null,
             ator: Auth::user(),
             contexto: [
                 'origem' => 'admin_igrejas_reset_admin_local',
@@ -346,7 +323,7 @@ class IgrejaController extends Controller
 
         return redirect()
             ->route($origem === 'edit' ? 'admin.igrejas.edit' : 'admin.igrejas.index', $origem === 'edit' ? $igreja : [])
-            ->with('success', 'Senha redefinida com sucesso. O usuario devera trocar no proximo acesso.');
+            ->with('success', 'Link de definicao de senha enviado por e-mail. Ele expira em 60 minutos.');
     }
 
     public function storeAdminLocal(Request $request, Igreja $igreja): RedirectResponse

@@ -198,8 +198,7 @@
                     </div>
 
                     <div class="admin-inline-note-warm md:col-span-2 p-4 text-sm">
-                        Se você preencher os dados acima, o administrador local acessará o sistema com o e-mail informado e a senha inicial será o CPF digitado, usando apenas os números.
-                        No primeiro acesso, ele deverá trocar a senha.
+                        Se voce preencher os dados acima, o administrador local recebera um link seguro por e-mail para definir a propria senha. O link expira em 60 minutos.
                     </div>
                 </div>
             </div>

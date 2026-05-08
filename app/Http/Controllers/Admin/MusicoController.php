@@ -6,7 +6,6 @@ use App\Enums\PapelIgreja;
 use App\Http\Controllers\Controller;
 use App\Models\Igreja;
 use App\Models\Usuario;
-use App\Rules\StrongPassword;
 use App\Services\GestaoUsuariosIgrejaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -114,9 +113,8 @@ class MusicoController extends Controller
     {
         $this->garantirMusico($musico);
 
-        $this->gestaoUsuariosIgrejaService->redefinirSenhaProvisoria(
+        $this->gestaoUsuariosIgrejaService->enviarLinkDefinicaoSenha(
             usuario: $musico,
-            senha: null,
             ator: Auth::user(),
             contexto: [
                 'origem' => 'admin_musicos_reset',
@@ -127,7 +125,7 @@ class MusicoController extends Controller
 
         return redirect()
             ->route('admin.musicos.index')
-            ->with('success', 'Senha redefinida com sucesso. O usuario devera trocar no proximo acesso.');
+            ->with('success', 'Link de definicao de senha enviado por e-mail. Ele expira em 60 minutos.');
     }
 
     public function destroy(Usuario $musico): RedirectResponse
@@ -160,7 +158,6 @@ class MusicoController extends Controller
             'cpf' => ['required', 'string', 'max:14'],
             'email' => ['required', 'email', 'max:255'],
             'telefone' => ['nullable', 'string', 'max:20'],
-            'password' => ['nullable', 'confirmed', new StrongPassword()],
             'ativo' => ['nullable', 'boolean'],
         ]);
     }

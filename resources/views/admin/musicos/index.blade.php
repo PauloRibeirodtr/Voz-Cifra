@@ -65,7 +65,7 @@
                                 <td class="px-6 py-4 text-right">
                                     <div class="inline-flex flex-wrap items-center justify-end gap-2">
                                         <a href="{{ route('admin.musicos.edit', $musico) }}" class="inline-flex rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Editar</a>
-                                        <form action="{{ route('admin.musicos.password.reset', $musico) }}" method="POST" onsubmit="return confirm('Deseja resetar a senha deste músico para o CPF e exigir troca no próximo acesso?');">
+                                        <form action="{{ route('admin.musicos.password.reset', $musico) }}" method="POST" onsubmit="return confirm('Deseja enviar um novo link de definicao de senha para este musico?');">
                                             @csrf
                                             <button type="submit" class="inline-flex rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-800 hover:bg-amber-100">Resetar senha</button>
                                         </form>
@@ -104,7 +104,7 @@
 
                         <div class="mt-4 grid grid-cols-1 gap-2">
                             <a href="{{ route('admin.musicos.edit', $musico) }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">Editar</a>
-                            <form action="{{ route('admin.musicos.password.reset', $musico) }}" method="POST" onsubmit="return confirm('Deseja resetar a senha deste músico para o CPF e exigir troca no próximo acesso?');">
+                            <form action="{{ route('admin.musicos.password.reset', $musico) }}" method="POST" onsubmit="return confirm('Deseja enviar um novo link de definicao de senha para este musico?');">
                                 @csrf
                                 <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800 hover:bg-amber-100">Resetar senha</button>
                             </form>

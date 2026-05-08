@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Igreja;
 use App\Models\Usuario;
 use App\Models\UsuarioIgrejaPapel;
-use App\Rules\StrongPassword;
 use App\Services\GestaoUsuariosIgrejaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -121,7 +120,6 @@ class UsuarioController extends Controller
                 'cpf' => $dados['cpf'],
                 'email' => $dados['email'] ?? null,
                 'telefone' => $dados['telefone'] ?? null,
-                'password' => $dados['password'] ?? null,
                 'ativo' => (bool) ($dados['ativo'] ?? true),
                 'eh_padre' => $tipoCadastro === 'padre',
                 'perfil_global' => $tipoCadastro === 'admin_master' ? 'admin_master' : 'usuario',
@@ -199,7 +197,6 @@ class UsuarioController extends Controller
                 'cpf' => $dados['cpf'],
                 'email' => $dados['email'] ?? null,
                 'telefone' => $dados['telefone'] ?? null,
-                'password' => $dados['password'] ?? null,
                 'ativo' => (bool) ($dados['ativo'] ?? true),
                 'eh_padre' => (bool) ($dados['eh_padre'] ?? false),
                 'perfil_global' => $dados['perfil_global'],
@@ -298,13 +295,8 @@ class UsuarioController extends Controller
             abort(403, 'A senha de admin master so pode ser alterada pelo proprio titular em Perfil.');
         }
 
-        $dados = $request->validate([
-            'password' => ['nullable', 'confirmed', new StrongPassword()],
-        ]);
-
-        $this->gestaoUsuariosIgrejaService->redefinirSenhaProvisoria(
+        $this->gestaoUsuariosIgrejaService->enviarLinkDefinicaoSenha(
             usuario: $usuario,
-            senha: $dados['password'] ?? null,
             ator: $ator,
             contexto: [
                 'origem' => 'admin_usuarios_reset_password',
@@ -312,7 +304,7 @@ class UsuarioController extends Controller
             ]
         );
 
-        return back()->with('success', 'Senha redefinida com sucesso. O usuario devera trocar no proximo acesso.');
+        return back()->with('success', 'Link de definicao de senha enviado por e-mail. Ele expira em 60 minutos.');
     }
 
     public function hierarchy(): RedirectResponse
@@ -329,7 +321,6 @@ class UsuarioController extends Controller
             'cpf' => ['required', 'string', 'max:14'],
             'email' => ['nullable', 'email', 'max:255'],
             'telefone' => ['nullable', 'string', 'max:20'],
-            'password' => ['nullable', 'confirmed', new StrongPassword()],
             'ativo' => ['nullable', 'boolean'],
         ]);
 
@@ -356,7 +347,6 @@ class UsuarioController extends Controller
             'cpf' => ['required', 'string', 'max:14'],
             'email' => ['nullable', 'email', 'max:255'],
             'telefone' => ['nullable', 'string', 'max:20'],
-            'password' => ['nullable', 'confirmed', new StrongPassword()],
             'ativo' => ['nullable', 'boolean'],
             'eh_padre' => ['nullable', 'boolean'],
         ]);

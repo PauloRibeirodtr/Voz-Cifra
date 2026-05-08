@@ -6,6 +6,7 @@ use App\Mail\ConviteAcessoInicialMail;
 use App\Models\AuditoriaEvento;
 use App\Models\HistoricoEnvioEmail;
 use App\Models\Usuario;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
@@ -35,6 +36,8 @@ class NotificacaoAcessoInicialService
         }
 
         $contexto = $this->normalizarContexto($alvo, $ator, $contexto);
+        $contexto['definir_senha_url'] = $this->gerarLinkDefinicaoSenha($alvo);
+        $contexto['expira_em_minutos'] = (int) config('auth.passwords.users.expire', 60);
         $mailable = new ConviteAcessoInicialMail(
             alvo: $alvo,
             ator: $ator,
@@ -159,7 +162,8 @@ class NotificacaoAcessoInicialService
                     'protocolo' => $contexto['protocolo'] ?? null,
                     'origem' => $contexto['origem'] ?? null,
                     'igreja_nome' => $contexto['igreja_nome'] ?? null,
-                    'senha_inicial' => $contexto['senha_inicial'] ?? null,
+                    'definir_senha_url' => $contexto['definir_senha_url'] ?? null,
+                    'expira_em_minutos' => $contexto['expira_em_minutos'] ?? null,
                 ],
             ]);
         } catch (Throwable $e) {
@@ -250,5 +254,24 @@ class NotificacaoAcessoInicialService
             'status_envio' => 'falhou',
             'mensagem_retorno' => $e->getMessage(),
         ])->save();
+    }
+
+    private function gerarLinkDefinicaoSenha(Usuario $alvo): string
+    {
+        $email = Str::lower(trim((string) $alvo->email));
+        $token = Str::random(64);
+
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $email],
+            [
+                'token' => hash('sha256', $token),
+                'created_at' => now(),
+            ]
+        );
+
+        return route('password.setup', [
+            'email' => $email,
+            'token' => $token,
+        ]);
     }
 }

@@ -99,17 +99,8 @@
                                     <input type="text" name="telefone" value="{{ old('telefone', $usuario->telefone) }}" data-telefone-input class="admin-input">
                                 </div>
 
-                                <div data-password-strength-container>
-                                    <label class="admin-label">Nova senha provisoria</label>
-                                    <input type="password" name="password" data-password-strength-input class="admin-input" placeholder="Opcional">
-                                    <div class="mt-3">
-                                        @include('partials.password-strength-meter')
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="admin-label">Confirmar senha</label>
-                                    <input type="password" name="password_confirmation" data-password-confirmation-input class="admin-input">
+                                <div class="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-4 text-sm font-semibold text-emerald-900">
+                                    Para redefinir o acesso, use o botao de reset. O usuario recebera um link seguro para criar a senha.
                                 </div>
                             </div>
 
@@ -138,7 +129,7 @@
                         </form>
 
                         @unless ($usuario->ehAdminMaster())
-                            <form id="reset-senha-usuario" action="{{ route('admin.usuarios.password.reset', $usuario) }}" method="POST" onsubmit="return confirm('Deseja resetar a senha provisoria deste usuario para o CPF sem pontuacao?');">
+                            <form id="reset-senha-usuario" action="{{ route('admin.usuarios.password.reset', $usuario) }}" method="POST" onsubmit="return confirm('Deseja enviar um novo link de definicao de senha para este usuario?');">
                                 @csrf
                             </form>
                         @endunless

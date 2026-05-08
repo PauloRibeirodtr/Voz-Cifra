@@ -99,9 +99,8 @@ class AdminLocalController extends Controller
         /** @var \App\Models\Usuario|null $ator */
         $ator = Auth::user();
 
-        $this->gestaoUsuariosIgrejaService->redefinirSenhaProvisoria(
+        $this->gestaoUsuariosIgrejaService->enviarLinkDefinicaoSenha(
             usuario: $usuario,
-            senha: null,
             ator: $ator,
             contexto: [
                 'origem' => 'admin_admins_locais_reset',
@@ -110,7 +109,7 @@ class AdminLocalController extends Controller
             ]
         );
 
-        return back()->with('success', 'Senha do admin local redefinida com sucesso.');
+        return back()->with('success', 'Link de definicao de senha enviado ao admin local. Ele expira em 60 minutos.');
     }
 
     private function autorizarAdminMaster(): void

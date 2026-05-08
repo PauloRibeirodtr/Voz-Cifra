@@ -17,7 +17,7 @@
         };
 
         $mensagemPrincipal = match ($evento) {
-            'reset_senha' => 'Registramos uma redefinicao de senha na sua conta. No proximo acesso, a senha devera ser trocada.',
+            'reset_senha' => 'Registramos uma solicitacao de redefinicao de senha na sua conta. Use o e-mail de definicao de senha para liberar o acesso.',
             'conta_inativada' => 'Sua conta foi temporariamente inativada no sistema.',
             'conta_reativada' => 'Sua conta foi reativada no sistema.',
             'troca_nivel_global' => 'O acesso global da sua conta foi alterado.',
@@ -44,13 +44,6 @@
             $detalhes['Novo acesso'] = (string) $contexto['nivel_novo'];
         }
 
-        $senhaExplicacao = null;
-        if (($contexto['senha_inicial'] ?? null) === 'cpf_sem_pontuacao') {
-            $senhaExplicacao = 'Se a senha provisoria foi definida pelo CPF, use somente os numeros do seu CPF, sem pontos nem tracos. Exemplo de formato: 12345678900.';
-        } elseif (($contexto['senha_inicial'] ?? null) === 'definida_manual') {
-            $senhaExplicacao = 'Uma senha provisoria foi definida manualmente pelo administrador responsavel.';
-        }
-
         $canalSuporte = trim((string) ($contexto['canal_suporte'] ?? 'suporte oficial do sistema'));
         $canalSuporteUrl = trim((string) ($contexto['canal_suporte_url'] ?? ''));
     @endphp
@@ -68,13 +61,6 @@
 
             @if ($evento === 'conta_inativada')
                 <p>Se esta acao nao foi esperada por voce, entre em contato com o suporte para validar o motivo e pedir a revisao do acesso.</p>
-            @endif
-
-            @if ($senhaExplicacao)
-                <div style="margin:20px 0; padding:16px 18px; border-radius:14px; background:#eff6ff; border:1px solid #bfdbfe; color:#1e3a8a;">
-                    <strong style="display:block; margin-bottom:6px;">Orientacao de acesso</strong>
-                    <span>{{ $senhaExplicacao }}</span>
-                </div>
             @endif
 
             @if ($detalhes)
