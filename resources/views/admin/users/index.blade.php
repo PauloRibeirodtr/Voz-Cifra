@@ -199,7 +199,9 @@
                                     @else
                                         <form action="{{ route('admin.usuarios.password.reset', $usuario) }}" method="POST" onsubmit="return confirm('Deseja enviar um novo link de definicao de senha para este usuario?');">
                                             @csrf
-                                            <button type="submit" class="admin-btn admin-btn-warm">Redefinir senha</button>
+                                            <button type="submit" class="admin-btn admin-btn-warm">
+                                                {{ $usuario->primeiro_acesso ? 'Reenviar convite' : 'Redefinir senha' }}
+                                            </button>
                                         </form>
 
                                         <form action="{{ route('admin.usuarios.toggle', $usuario) }}" method="POST" onsubmit="return confirm('Confirma alterar o status desta conta?');">

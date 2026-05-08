@@ -100,7 +100,7 @@
                                 </div>
 
                                 <div class="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-4 text-sm font-semibold text-emerald-900">
-                                    Para redefinir o acesso, use o botao de reset. O usuario recebera um link seguro para criar a senha.
+                                    Para liberar ou redefinir o acesso, envie um link seguro. O link expira e deve ser reenviado se o usuario perder o prazo.
                                 </div>
                             </div>
 
@@ -122,7 +122,7 @@
                                 <button type="submit" class="admin-btn admin-btn-primary">Salvar dados</button>
                                 @unless ($usuario->ehAdminMaster())
                                     <button type="submit" form="reset-senha-usuario" class="admin-btn admin-btn-warm">
-                                        Resetar senha
+                                        {{ $usuario->primeiro_acesso ? 'Reenviar convite' : 'Resetar senha' }}
                                     </button>
                                 @endunless
                             </div>
@@ -196,6 +196,11 @@
                         <p><strong>Status:</strong> {{ $usuario->ativo ? 'Ativo' : 'Inativo' }}</p>
                         <p><strong>Perfil global:</strong> {{ $usuario->ehAdminMaster() ? 'Admin master' : 'Usuario operacional' }}</p>
                         <p><strong>Primeiro acesso:</strong> {{ $usuario->primeiro_acesso ? 'Pendente' : 'Liberado' }}</p>
+                        @if ($usuario->primeiro_acesso && !$emailTecnico)
+                            <p class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900">
+                                Se o convite venceu, use Reenviar convite para gerar um novo link.
+                            </p>
+                        @endif
                         <p><strong>Padre:</strong> {{ $usuario->ehPadre() ? 'Sim' : 'Nao' }}</p>
                         @if ($emailTecnico)
                             <p><strong>Login:</strong> Conta tecnica sem login publico</p>

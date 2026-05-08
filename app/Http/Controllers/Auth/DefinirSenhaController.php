@@ -21,9 +21,7 @@ class DefinirSenhaController extends Controller
         $token = (string) $request->query('token');
 
         if (!$this->tokenValido($email, $token)) {
-            return redirect()
-                ->route('login')
-                ->withErrors(['email' => 'O link para definir senha expirou ou ja foi utilizado. Solicite um novo envio ao administrador.']);
+            return $this->viewLinkExpirado();
         }
 
         return view('auth.definir-senha', [
@@ -32,7 +30,7 @@ class DefinirSenhaController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|View
     {
         $dados = $request->validate([
             'email' => ['required', 'email'],
@@ -46,9 +44,7 @@ class DefinirSenhaController extends Controller
         $token = (string) $dados['token'];
 
         if (!$this->tokenValido($email, $token)) {
-            return redirect()
-                ->route('login')
-                ->withErrors(['email' => 'O link para definir senha expirou ou ja foi utilizado. Solicite um novo envio ao administrador.']);
+            return $this->viewLinkExpirado();
         }
 
         /** @var Usuario|null $usuario */
@@ -113,5 +109,12 @@ class DefinirSenhaController extends Controller
     private function normalizarEmail(string $email): string
     {
         return Str::lower(trim($email));
+    }
+
+    private function viewLinkExpirado(): View
+    {
+        return view('auth.definir-senha-expirada', [
+            'expiraEmMinutos' => (int) config('auth.passwords.users.expire', 60),
+        ]);
     }
 }
