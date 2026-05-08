@@ -47,14 +47,7 @@ class NotificacaoAcessoInicialService
         $historicoEmail = $this->registrarHistorico($alvo, $contexto, $auditoriaEvento, $mailable);
 
         try {
-            $mensagem = Mail::to($alvo->email);
-
-            $cc = (string) config('notificacoes.cc_acesso_inicial');
-            if ($cc !== '' && filter_var($cc, FILTER_VALIDATE_EMAIL)) {
-                $mensagem->cc($cc);
-            }
-
-            $mensagem->send($mailable);
+            Mail::to($alvo->email)->send($mailable);
 
             $this->marcarAuditoriaComoEnviada($auditoriaEvento);
             $this->marcarHistoricoComoEnviado($historicoEmail);
@@ -109,6 +102,8 @@ class NotificacaoAcessoInicialService
         }
 
         try {
+            $contextoAuditavel = $this->contextoAuditavel($contexto);
+
             return AuditoriaEvento::create([
                 'protocolo' => $contexto['protocolo'] ?? null,
                 'evento' => 'convite_acesso_inicial',
@@ -121,7 +116,7 @@ class NotificacaoAcessoInicialService
                 'alvo_email' => $alvo->email,
                 'igreja_id' => $contexto['igreja_id'] ?? $alvo->igrejaAtiva()?->id ?? $alvo->igreja_id,
                 'igreja_nome' => $contexto['igreja_nome'] ?? $alvo->igrejaAtiva()?->nome ?? $alvo->igreja?->nome,
-                'contexto' => $contexto,
+                'contexto' => $contextoAuditavel,
                 'resultado' => 'registrado',
                 'ip' => request()?->ip(),
                 'user_agent' => request()?->userAgent(),
@@ -162,7 +157,7 @@ class NotificacaoAcessoInicialService
                     'protocolo' => $contexto['protocolo'] ?? null,
                     'origem' => $contexto['origem'] ?? null,
                     'igreja_nome' => $contexto['igreja_nome'] ?? null,
-                    'definir_senha_url' => $contexto['definir_senha_url'] ?? null,
+                    'link_definicao_senha_enviado' => true,
                     'expira_em_minutos' => $contexto['expira_em_minutos'] ?? null,
                 ],
             ]);
@@ -254,6 +249,13 @@ class NotificacaoAcessoInicialService
             'status_envio' => 'falhou',
             'mensagem_retorno' => $e->getMessage(),
         ])->save();
+    }
+
+    private function contextoAuditavel(array $contexto): array
+    {
+        unset($contexto['definir_senha_url']);
+
+        return $contexto;
     }
 
     private function gerarLinkDefinicaoSenha(Usuario $alvo): string

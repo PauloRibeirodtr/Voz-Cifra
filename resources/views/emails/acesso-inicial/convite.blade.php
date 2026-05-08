@@ -42,10 +42,6 @@
                 <table role="presentation" style="width:100%; border-collapse:collapse;">
                     <tbody>
                         <tr>
-                            <td style="padding:8px 0; font-weight:700; width:170px; vertical-align:top; color:#44403c;">E-mail de acesso</td>
-                            <td style="padding:8px 0; color:#1c1917;">{{ $alvo->email }}</td>
-                        </tr>
-                        <tr>
                             <td style="padding:8px 0; font-weight:700; width:170px; vertical-align:top; color:#44403c;">Validade do link</td>
                             <td style="padding:8px 0; color:#1c1917;">{{ $expiraEmMinutos }} minutos</td>
                         </tr>

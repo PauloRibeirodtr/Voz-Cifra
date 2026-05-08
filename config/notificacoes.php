@@ -25,8 +25,6 @@ return [
 
     'cc_admin' => env('NOTIFICACOES_EMAIL_CC_ADMIN'),
 
-    'cc_acesso_inicial' => env('NOTIFICACOES_ACESSO_INICIAL_CC'),
-
     'protocolo_prefixo' => env('NOTIFICACOES_PROTOCOLO_PREFIXO', 'SEG'),
 
     'canal_suporte' => env('NOTIFICACOES_CANAL_SUPORTE', 'suporte oficial do sistema'),
