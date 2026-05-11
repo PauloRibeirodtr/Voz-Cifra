@@ -74,12 +74,22 @@
 
     <div class="space-y-4">
         @forelse ($eventos as $item)
+            @php
+                $risco = $item->contexto['risco'] ?? 'baixo';
+                $riscoClasse = match ($risco) {
+                    'critico' => 'bg-red-100 text-red-700',
+                    'alto' => 'bg-orange-100 text-orange-700',
+                    'medio' => 'bg-amber-100 text-amber-700',
+                    default => 'bg-emerald-100 text-emerald-700',
+                };
+            @endphp
             <article class="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm">
                 <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                     <div class="min-w-0 flex-1">
                         <div class="flex flex-wrap items-center gap-2">
                             <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-700">{{ $item->protocolo }}</span>
                             <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">{{ ucfirst($item->categoria) }}</span>
+                            <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $riscoClasse }}">Risco {{ $risco }}</span>
                             <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">{{ $eventosDisponiveis[$item->evento] ?? $item->evento }}</span>
                             <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $item->resultado === 'email_falhou' ? 'bg-red-100 text-red-700' : ($item->resultado === 'email_enviado' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700') }}">
                                 {{ $resultadosDisponiveis[$item->resultado] ?? $item->resultado }}

@@ -43,6 +43,8 @@ class GestaoUsuariosIgrejaService
         $papeisConcedidos = collect();
         $deveLiberarPrimeiroAcesso = !$usuario
             || ($usuario && $this->ehEmailTecnicoSemLogin((string) $usuario->email));
+        $contaJaExistia = $usuario?->exists ?? false;
+        $auditoriaAntes = $this->snapshotAuditoriaUsuario($usuario);
 
         $usuario = DB::transaction(function () use (
             $dados,
@@ -97,6 +99,21 @@ class GestaoUsuariosIgrejaService
             return $conta->fresh();
         });
 
+        $this->auditoriaOperacionalService->registrar(
+            evento: $contaJaExistia ? 'usuario_editado' : 'usuario_criado',
+            ator: $ator,
+            alvo: $usuario,
+            igreja: $igreja,
+            contexto: [
+                'origem' => $origem,
+                'resumo' => $contaJaExistia
+                    ? 'Conta operacional atualizada pela gestao da igreja.'
+                    : 'Conta operacional criada pela gestao da igreja.',
+                'papeis_solicitados' => $papeisNormalizados->map(fn (PapelIgreja $papel) => $papel->value)->values()->all(),
+                'alteracoes' => $this->diffAuditoriaUsuario($auditoriaAntes, $this->snapshotAuditoriaUsuario($usuario)),
+            ]
+        );
+
         $this->notificarPapeisConcedidos($usuario, $igreja, $papeisConcedidos, $ator, $origem);
 
         if ($usuario->primeiro_acesso && filter_var((string) $usuario->email, FILTER_VALIDATE_EMAIL)) {
@@ -138,6 +155,8 @@ class GestaoUsuariosIgrejaService
         $eraAdminMaster = $usuario?->ehAdminMaster() ?? false;
         $nivelAnterior = $usuario?->nivelGlobal();
         $senhaFoiDefinida = false;
+        $contaJaExistia = $usuario?->exists ?? false;
+        $auditoriaAntes = $this->snapshotAuditoriaUsuario($usuario);
 
         $usuario = DB::transaction(function () use (
             $dados,
@@ -195,6 +214,20 @@ class GestaoUsuariosIgrejaService
 
             return $conta->fresh();
         });
+
+        $this->auditoriaOperacionalService->registrar(
+            evento: $contaJaExistia ? 'usuario_editado' : 'usuario_criado',
+            ator: $ator,
+            alvo: $usuario,
+            igreja: $usuario->igrejaAtiva()?->id ?? $usuario->igreja_id,
+            contexto: [
+                'origem' => $origem,
+                'resumo' => $contaJaExistia
+                    ? 'Dados da conta base atualizados.'
+                    : 'Conta base criada no sistema.',
+                'alteracoes' => $this->diffAuditoriaUsuario($auditoriaAntes, $this->snapshotAuditoriaUsuario($usuario)),
+            ]
+        );
 
         if ($usuario->ehAdminMaster()) {
             $nivelNovo = $usuario->nivelGlobal();
@@ -404,6 +437,8 @@ class GestaoUsuariosIgrejaService
             return $usuario;
         }
 
+        $ativoAnterior = (bool) $usuario->ativo;
+
         $usuario->forceFill([
             'ativo' => $ativo,
         ])->save();
@@ -418,6 +453,12 @@ class GestaoUsuariosIgrejaService
                 'resumo' => $ativo
                     ? 'Conta reativada para voltar a operar no sistema.'
                     : 'Conta inativada e retirada do fluxo operacional ativo.',
+                'alteracoes' => [
+                    'ativo' => [
+                        'antes' => $ativoAnterior,
+                        'depois' => $ativo,
+                    ],
+                ],
             ]
         );
         $this->notificacaoSegurancaService->enviarEventoConta(
@@ -438,6 +479,8 @@ class GestaoUsuariosIgrejaService
         ?Usuario $ator = null,
         array $contexto = []
     ): Usuario {
+        $primeiroAcessoAnterior = (bool) $usuario->primeiro_acesso;
+
         $usuario->forceFill([
             'password' => Str::password(32),
             'primeiro_acesso' => true,
@@ -450,6 +493,16 @@ class GestaoUsuariosIgrejaService
             igreja: $contexto['igreja_id'] ?? $usuario->igrejaAtiva()?->id ?? $usuario->igreja_id,
             contexto: $contexto + [
                 'resumo' => 'Link de definicao de senha enviado com validade temporaria.',
+                'alteracoes' => [
+                    'primeiro_acesso' => [
+                        'antes' => $primeiroAcessoAnterior,
+                        'depois' => true,
+                    ],
+                    'credencial' => [
+                        'antes' => 'mantida internamente',
+                        'depois' => 'invalidada e aguardando definicao pelo usuario',
+                    ],
+                ],
             ]
         );
 
@@ -560,6 +613,45 @@ class GestaoUsuariosIgrejaService
             ->map(fn (PapelIgreja|string $papel) => PapelIgreja::fromValue($papel))
             ->unique(fn (PapelIgreja $papel) => $papel->value)
             ->values();
+    }
+
+    private function snapshotAuditoriaUsuario(?Usuario $usuario): array
+    {
+        if (!$usuario) {
+            return [];
+        }
+
+        return [
+            'nome' => $usuario->nome,
+            'cpf' => $usuario->cpf,
+            'email' => $usuario->email,
+            'telefone' => $usuario->telefone,
+            'perfil_global' => $usuario->perfil_global,
+            'nivel_global' => $usuario->nivel_global,
+            'eh_padre' => (bool) $usuario->eh_padre,
+            'ativo' => (bool) $usuario->ativo,
+            'primeiro_acesso' => (bool) $usuario->primeiro_acesso,
+        ];
+    }
+
+    private function diffAuditoriaUsuario(array $antes, array $depois): array
+    {
+        $alteracoes = [];
+
+        foreach ($depois as $campo => $valorDepois) {
+            $valorAntes = $antes[$campo] ?? null;
+
+            if ($valorAntes === $valorDepois) {
+                continue;
+            }
+
+            $alteracoes[$campo] = [
+                'antes' => $valorAntes,
+                'depois' => $valorDepois,
+            ];
+        }
+
+        return $alteracoes;
     }
 
     private function notificarPapeisConcedidos(

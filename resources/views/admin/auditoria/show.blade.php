@@ -5,6 +5,16 @@
 @section('desktop_subtitle', 'Rastreamento completo da acao sensivel')
 
 @section('content')
+    @php
+        $risco = $contexto['risco'] ?? 'baixo';
+        $riscoClasse = match ($risco) {
+            'critico' => 'bg-red-100 text-red-700',
+            'alto' => 'bg-orange-100 text-orange-700',
+            'medio' => 'bg-amber-100 text-amber-700',
+            default => 'bg-emerald-100 text-emerald-700',
+        };
+    @endphp
+
     <div class="mb-6">
         <a href="{{ route('admin.auditoria.index') }}" class="text-sm font-semibold text-green-700 hover:text-green-800">&larr; Voltar para auditoria</a>
     </div>
@@ -15,6 +25,7 @@
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-700">{{ $auditoria->protocolo }}</span>
                     <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">{{ ucfirst($auditoria->categoria) }}</span>
+                    <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $riscoClasse }}">Risco {{ $risco }}</span>
                     <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">{{ $auditoria->evento }}</span>
                     <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $auditoria->resultado === 'email_falhou' ? 'bg-red-100 text-red-700' : ($auditoria->resultado === 'email_enviado' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700') }}">
                         {{ $auditoria->resultado }}
