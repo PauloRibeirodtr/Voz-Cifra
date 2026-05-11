@@ -17,6 +17,8 @@ use App\Services\AuditoriaOperacionalService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -44,11 +46,25 @@ class AdminMasterController extends Controller
                 ->where('papel', PapelIgreja::MUSICO->value)
                 ->where('ativo', true)
                 ->count(),
+            'usuarios_online' => $this->contarUsuariosOnline(),
         ];
 
         return view('admin.dashboard', [
             'metrics' => $metricas,
         ]);
+    }
+
+    private function contarUsuariosOnline(): int
+    {
+        if (!Schema::hasTable('sessions')) {
+            return 0;
+        }
+
+        return DB::table('sessions')
+            ->whereNotNull('user_id')
+            ->where('last_activity', '>=', now()->subMinutes(5)->timestamp)
+            ->distinct('user_id')
+            ->count('user_id');
     }
 
     public function settings(): View
