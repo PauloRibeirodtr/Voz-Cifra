@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Builder;
 class ChamadoSupportService
 {
     public function __construct(
-        private readonly TelegramNotificacaoService $telegramNotificacaoService,
         private readonly NotificacaoSegurancaService $notificacaoSegurancaService,
         private readonly NotificacaoAcessoInicialService $notificacaoAcessoInicialService,
     ) {
@@ -152,9 +151,6 @@ class ChamadoSupportService
         }
 
         $chamado->save();
-
-        $chamado->loadMissing('solicitante');
-        $this->telegramNotificacaoService->notificarAtualizacaoChamado($chamado, 'status');
     }
 
     public function registrarMensagem(Chamado $chamado, string $mensagem, bool $interno, ?Usuario $autor): ChamadoMensagem
@@ -177,11 +173,6 @@ class ChamadoSupportService
         }
 
         $chamado->save();
-
-        if (!$interno) {
-            $chamado->loadMissing('solicitante');
-            $this->telegramNotificacaoService->notificarAtualizacaoChamado($chamado, 'mensagem', trim($mensagem));
-        }
 
         return $registro;
     }
@@ -291,9 +282,6 @@ class ChamadoSupportService
         }
 
         $chamado->save();
-
-        $chamado->loadMissing('solicitante');
-        $this->telegramNotificacaoService->notificarAtualizacaoChamado($chamado, 'status');
     }
 
     public function podeAprovarPedidoAcesso(Chamado $chamado): bool
@@ -371,9 +359,6 @@ class ChamadoSupportService
                 ]
             );
         });
-
-        $chamado->loadMissing('solicitante');
-        $this->telegramNotificacaoService->notificarAtualizacaoChamado($chamado, 'status');
 
         return $musico->fresh();
     }

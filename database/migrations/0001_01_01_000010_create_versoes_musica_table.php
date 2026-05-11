@@ -11,7 +11,6 @@ return new class extends Migration
         Schema::create('versoes_musicais', function (Blueprint $table) {
             $table->id();
             $table->foreignId('musica_id')->constrained('musicas')->cascadeOnDelete();
-            $table->foreignId('melodia_id')->nullable()->constrained('melodias')->nullOnDelete();
             $table->string('titulo')->nullable();
             $table->string('tom_musical', 10)->nullable();
             $table->smallInteger('bpm')->nullable();
@@ -22,7 +21,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index('ativo');
-            $table->index(['musica_id', 'melodia_id']);
+            $table->index('musica_id');
         });
     }
 

@@ -195,7 +195,7 @@
         @if (auth()->user()?->ehMembro())
             <a href="{{ route('member.chamados.index') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('member.chamados.*')) }}">
                 <i class="fa-solid fa-message w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
-                <span>Feedback e suporte</span>
+                <span>Suporte</span>
             </a>
         @endif
 

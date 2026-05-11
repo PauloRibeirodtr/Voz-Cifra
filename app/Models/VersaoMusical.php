@@ -15,7 +15,6 @@ class VersaoMusical extends Model
 
     protected $fillable = [
         'musica_id',
-        'melodia_id',
         'titulo',
         'tom_musical',
         'bpm',
@@ -36,11 +35,6 @@ class VersaoMusical extends Model
     public function musica(): BelongsTo
     {
         return $this->belongsTo(Musica::class, 'musica_id');
-    }
-
-    public function melodia(): BelongsTo
-    {
-        return $this->belongsTo(Melodia::class, 'melodia_id');
     }
 
     public function criadoPor(): BelongsTo

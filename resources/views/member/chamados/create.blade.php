@@ -7,7 +7,7 @@
 @section('content')
     <div class="mb-6">
         <h1 class="text-2xl font-black text-slate-900 sm:text-3xl">Abrir novo chamado</h1>
-        <p class="mt-2 max-w-3xl text-sm text-slate-500">Use esta tela para pedir novos acordes, solicitar ajuda de acesso ou contestar uma inativacao. Se sua conta ja estiver inativa e voce nao conseguir entrar, use o link do Telegram enviado no aviso de seguranca.</p>
+        <p class="mt-2 max-w-3xl text-sm text-slate-500">Use esta tela para pedir novos acordes, solicitar ajuda de acesso ou contestar uma inativacao.</p>
     </div>
 
     @if ($errors->any())

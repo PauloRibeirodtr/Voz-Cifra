@@ -24,7 +24,6 @@ return new class extends Migration
             $table->foreignId('solicitante_usuario_id')->nullable()->constrained('usuarios')->nullOnDelete();
             $table->string('solicitante_nome')->nullable();
             $table->string('solicitante_email')->nullable();
-            $table->string('solicitante_telegram_chat_id')->nullable();
             $table->foreignId('responsavel_usuario_id')->nullable()->constrained('usuarios')->nullOnDelete();
             $table->foreignId('igreja_id')->nullable()->constrained('igrejas')->nullOnDelete();
             $table->string('igreja_nome')->nullable();

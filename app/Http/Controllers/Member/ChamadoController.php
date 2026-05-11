@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Chamado;
 use App\Models\Usuario;
 use App\Services\ChamadoSupportService;
-use App\Services\SuporteTelegramService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -16,7 +15,6 @@ class ChamadoController extends Controller
 {
     public function __construct(
         private readonly ChamadoSupportService $supportService,
-        private readonly SuporteTelegramService $telegramService,
     ) {
         $this->middleware(['auth', 'verified_custom', 'role:member']);
     }
@@ -103,7 +101,6 @@ class ChamadoController extends Controller
             'usuario' => $usuario,
             'chamado' => $chamado,
             'supportService' => $this->supportService,
-            'telegramUrl' => $this->telegramService->gerarUrl($chamado->protocolo),
         ]);
     }
 

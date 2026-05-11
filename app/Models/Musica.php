@@ -45,11 +45,6 @@ class Musica extends Model
         return $this->belongsTo(Usuario::class, 'criado_por');
     }
 
-    public function melodias(): HasMany
-    {
-        return $this->hasMany(Melodia::class, 'musica_id');
-    }
-
     public function versoesMusicais(): HasMany
     {
         return $this->hasMany(VersaoMusical::class, 'musica_id');

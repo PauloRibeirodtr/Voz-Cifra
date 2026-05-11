@@ -27,7 +27,6 @@ class Chamado extends Model
         'solicitante_usuario_id',
         'solicitante_nome',
         'solicitante_email',
-        'solicitante_telegram_chat_id',
         'responsavel_usuario_id',
         'igreja_id',
         'igreja_nome',
