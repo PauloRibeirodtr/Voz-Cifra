@@ -80,11 +80,11 @@
 
             <div class="admin-panel-body">
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    <div class="admin-stat-card p-5 sm:p-6">
+                    <a href="{{ route('admin.usuarios.index', ['presenca' => 'online']) }}" class="admin-stat-card block p-5 sm:p-6">
                         <div class="admin-stat-label text-sm font-bold uppercase tracking-[0.18em]">Online agora</div>
                         <div class="admin-stat-value mt-4 text-3xl font-black sm:text-4xl">{{ $metrics['usuarios_online'] ?? 0 }}</div>
-                        <p class="mt-3 text-sm text-gray-500">Usuarios com atividade registrada nos ultimos 5 minutos.</p>
-                    </div>
+                        <p class="mt-3 text-sm text-gray-500">Ver usuarios com atividade registrada nos ultimos 5 minutos.</p>
+                    </a>
 
                     <a href="{{ route('admin.usuarios.index') }}" class="admin-stat-card block p-5 sm:p-6">
                         <div class="admin-stat-label text-sm font-bold uppercase tracking-[0.18em]">Usuarios</div>

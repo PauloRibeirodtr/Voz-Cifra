@@ -43,6 +43,7 @@ Um mesmo usuario pode acumular papeis na mesma igreja ou em igrejas diferentes. 
 - Home publica com busca/listagem de igrejas.
 - Chamados de suporte com mensagens, status, prioridade e avaliacao do atendimento.
 - Auditoria operacional e historico de envio de e-mails.
+- Indicador de usuarios online no painel admin master e na listagem de usuarios, com base na atividade dos ultimos 5 minutos.
 - Paginas de erro personalizadas.
 - Locale padrao `pt_BR` e paginacao em portugues.
 
@@ -443,6 +444,7 @@ Tambem existem testes de referencia para a area publica de fieis e musicos em `t
 - A pagina publica dos musicos depende da publicacao para musicos.
 - O QR Code usa links fixos baseados no slug da igreja.
 - A aplicacao usa `pt_BR` como locale padrao.
+- A presenca online usa a tabela tecnica `sessions`: usuarios com atividade nos ultimos 5 minutos aparecem como online; demais usuarios mostram a ultima atividade registrada enquanto a sessao existir.
 
 ## Modulos Ainda Em Evolucao
 

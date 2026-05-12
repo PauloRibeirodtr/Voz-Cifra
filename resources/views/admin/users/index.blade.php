@@ -37,11 +37,15 @@
             </div>
         @endif
 
-        <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-6">
+        <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-7">
             <div class="admin-stat-card p-5">
                 <div class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Total</div>
                 <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['total'] }}</div>
             </div>
+            <a href="{{ route('admin.usuarios.index', ['presenca' => 'online']) }}" class="admin-stat-card block p-5">
+                <div class="text-xs font-black uppercase tracking-[0.2em] text-emerald-500">Online agora</div>
+                <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['online'] }}</div>
+            </a>
             <div class="admin-stat-card p-5">
                 <div class="text-xs font-black uppercase tracking-[0.2em] text-indigo-500">Admins master</div>
                 <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['admins_master'] }}</div>
@@ -65,7 +69,7 @@
         </section>
 
         <section class="admin-filter-surface p-5">
-            <form method="GET" action="{{ route('admin.usuarios.index') }}" class="admin-form-grid xl:grid-cols-4">
+            <form method="GET" action="{{ route('admin.usuarios.index') }}" class="admin-form-grid xl:grid-cols-5">
                 <div class="xl:col-span-2">
                     <label class="admin-label">Busca</label>
                     <input type="text" name="q" value="{{ $filtros['q'] }}" class="admin-input" placeholder="Nome, e-mail, CPF, igreja ou cidade" minlength="3">
@@ -93,6 +97,15 @@
                 </div>
 
                 <div>
+                    <label class="admin-label">Presenca</label>
+                    <select name="presenca" class="admin-select">
+                        <option value="">Todos</option>
+                        <option value="online" @selected(($filtros['presenca'] ?? '') === 'online')>Online agora</option>
+                        <option value="offline" @selected(($filtros['presenca'] ?? '') === 'offline')>Offline</option>
+                    </select>
+                </div>
+
+                <div>
                     <label class="admin-label">Status</label>
                     <select name="status" class="admin-select">
                         <option value="">Todos</option>
@@ -101,7 +114,7 @@
                     </select>
                 </div>
 
-                <div class="xl:col-span-4 admin-actions">
+                <div class="xl:col-span-5 admin-actions">
                     <button type="submit" class="admin-btn admin-btn-warm">Filtrar</button>
                     <a href="{{ route('admin.usuarios.index') }}" class="admin-btn admin-btn-secondary">Limpar</a>
                 </div>
@@ -141,11 +154,30 @@
                                                     Primeiro acesso
                                                 </span>
                                             @endif
+                                            @if ($usuario->getAttribute('presenca_online'))
+                                                <span class="admin-badge admin-badge-success">
+                                                    Online agora
+                                                </span>
+                                            @else
+                                                <span class="admin-badge {{ $badgeClasse('cinza') }}">
+                                                    Offline
+                                                </span>
+                                            @endif
                                         </div>
 
                                         <div class="mt-2 flex flex-col gap-1 text-sm text-gray-500">
                                             <span class="break-all">{{ $usuario->email }}</span>
                                             <span>CPF: {{ $usuario->cpfMascarado() }}</span>
+                                            @php($ultimaAtividade = $usuario->getAttribute('ultima_atividade_em'))
+                                            <span>
+                                                @if ($usuario->getAttribute('presenca_online'))
+                                                    Ativo agora, visto {{ $ultimaAtividade?->diffForHumans() }}
+                                                @elseif ($ultimaAtividade)
+                                                    Ultima atividade {{ $ultimaAtividade->diffForHumans() }}
+                                                @else
+                                                    Sem atividade registrada nesta sessao
+                                                @endif
+                                            </span>
                                         </div>
 
                                         <div class="mt-3 flex flex-wrap gap-2">

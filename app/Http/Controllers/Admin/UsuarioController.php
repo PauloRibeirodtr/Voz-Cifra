@@ -8,9 +8,12 @@ use App\Models\Igreja;
 use App\Models\Usuario;
 use App\Models\UsuarioIgrejaPapel;
 use App\Services\GestaoUsuariosIgrejaService;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -29,6 +32,14 @@ class UsuarioController extends Controller
         $deveFiltrarBusca = mb_strlen($busca) >= 3;
         $status = trim((string) $request->string('status'));
         $tipo = trim((string) $request->string('tipo'));
+        $presenca = trim((string) $request->string('presenca'));
+        $limiteOnline = now()->subMinutes(5)->timestamp;
+        $presencas = $this->obterPresencasUsuarios();
+        $usuariosOnlineIds = $presencas
+            ->filter(fn (int $lastActivity): bool => $lastActivity >= $limiteOnline)
+            ->keys()
+            ->map(fn ($id): int => (int) $id)
+            ->values();
 
         $usuarios = Usuario::query()
             ->with(['vinculosIgreja.igreja', 'vinculosIgreja.papeisAtivos'])
@@ -69,9 +80,27 @@ class UsuarioController extends Controller
                     default => null,
                 };
             })
+            ->when($presenca === 'online', function ($query) use ($usuariosOnlineIds): void {
+                if ($usuariosOnlineIds->isEmpty()) {
+                    $query->whereRaw('1 = 0');
+                    return;
+                }
+
+                $query->whereIn('id', $usuariosOnlineIds->all());
+            })
+            ->when($presenca === 'offline' && $usuariosOnlineIds->isNotEmpty(), fn ($query) => $query->whereNotIn('id', $usuariosOnlineIds->all()))
             ->orderBy('nome')
             ->paginate(20)
             ->withQueryString();
+
+        $usuarios->getCollection()->each(function (Usuario $usuario) use ($presencas, $limiteOnline): void {
+            $ultimaAtividade = $presencas->get((int) $usuario->id);
+
+            $usuario->setAttribute('presenca_online', is_int($ultimaAtividade) && $ultimaAtividade >= $limiteOnline);
+            $usuario->setAttribute('ultima_atividade_em', is_int($ultimaAtividade)
+                ? CarbonImmutable::createFromTimestamp($ultimaAtividade)
+                : null);
+        });
 
         return view('admin.users.index', [
             'usuarios' => $usuarios,
@@ -79,10 +108,12 @@ class UsuarioController extends Controller
                 'q' => $buscaOriginal,
                 'status' => $status,
                 'tipo' => $tipo,
+                'presenca' => $presenca,
                 'busca_minima_atingida' => $buscaOriginal === '' || $deveFiltrarBusca,
             ],
             'metricas' => [
                 'total' => Usuario::count(),
+                'online' => $usuariosOnlineIds->count(),
                 'admins_master' => Usuario::query()->where('perfil_global', 'admin_master')->count(),
                 'padres' => Usuario::query()->where('eh_padre', true)->count(),
                 'admins_locais' => UsuarioIgrejaPapel::query()->ativos()->doPapel(PapelIgreja::ADMIN_LOCAL)->count(),
@@ -94,6 +125,20 @@ class UsuarioController extends Controller
                     ->count(),
             ],
         ]);
+    }
+
+    private function obterPresencasUsuarios(): \Illuminate\Support\Collection
+    {
+        if (!Schema::hasTable('sessions')) {
+            return collect();
+        }
+
+        return DB::table('sessions')
+            ->select('user_id', DB::raw('MAX(last_activity) as last_activity'))
+            ->whereNotNull('user_id')
+            ->groupBy('user_id')
+            ->pluck('last_activity', 'user_id')
+            ->map(fn ($lastActivity): int => (int) $lastActivity);
     }
 
     public function create(): View
