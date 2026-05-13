@@ -40,31 +40,37 @@
         <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-7">
             <div class="admin-stat-card p-5">
                 <div class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Total</div>
-                <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['total'] }}</div>
+                <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['total'] ?? 0 }}</div>
             </div>
+
             <a href="{{ route('admin.usuarios.index', ['presenca' => 'online']) }}" class="admin-stat-card block p-5">
                 <div class="text-xs font-black uppercase tracking-[0.2em] text-emerald-500">Online agora</div>
-                <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['online'] }}</div>
+                <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['online'] ?? 0 }}</div>
             </a>
+
             <div class="admin-stat-card p-5">
                 <div class="text-xs font-black uppercase tracking-[0.2em] text-indigo-500">Admins master</div>
-                <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['admins_master'] }}</div>
+                <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['admins_master'] ?? 0 }}</div>
             </div>
+
             <div class="admin-stat-card p-5">
                 <div class="text-xs font-black uppercase tracking-[0.2em] text-violet-500">Coordenadores</div>
-                <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['coordenadores'] }}</div>
+                <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['coordenadores'] ?? 0 }}</div>
             </div>
+
             <div class="admin-stat-card p-5">
                 <div class="text-xs font-black uppercase tracking-[0.2em] text-emerald-500">Admins locais</div>
-                <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['admins_locais'] }}</div>
+                <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['admins_locais'] ?? 0 }}</div>
             </div>
+
             <div class="admin-stat-card p-5">
                 <div class="text-xs font-black uppercase tracking-[0.2em] text-amber-500">Músicos</div>
-                <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['musicos'] }}</div>
+                <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['musicos'] ?? 0 }}</div>
             </div>
+
             <div class="admin-stat-card p-5">
                 <div class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Sem vínculo</div>
-                <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['sem_vinculo'] }}</div>
+                <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['sem_vinculo'] ?? 0 }}</div>
             </div>
         </section>
 
@@ -72,10 +78,11 @@
             <form method="GET" action="{{ route('admin.usuarios.index') }}" class="admin-form-grid xl:grid-cols-5">
                 <div class="xl:col-span-2">
                     <label class="admin-label">Busca</label>
-                    <input type="text" name="q" value="{{ $filtros['q'] }}" class="admin-input" placeholder="Nome, e-mail, CPF, igreja ou cidade" minlength="3">
+                    <input type="text" name="q" value="{{ $filtros['q'] ?? '' }}" class="admin-input" placeholder="Nome, e-mail, CPF, igreja ou cidade" minlength="3">
                     <p class="mt-2 text-xs text-gray-500">
-                        Digite ao menos 3 caracteres. A busca ignora maiusculas/minusculas e aceita partes do texto.
+                        Digite ao menos 3 caracteres. A busca ignora maiúsculas/minúsculas e aceita partes do texto.
                     </p>
+
                     @if (!($filtros['busca_minima_atingida'] ?? true))
                         <p class="mt-2 rounded-xl border border-amber-100 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
                             Informe pelo menos 3 caracteres para aplicar a busca.
@@ -87,17 +94,17 @@
                     <label class="admin-label">Tipo</label>
                     <select name="tipo" class="admin-select">
                         <option value="">Todos</option>
-                        <option value="admin_master" @selected($filtros['tipo'] === 'admin_master')>Admin master</option>
-                        <option value="coordenador" @selected($filtros['tipo'] === 'coordenador')>Coordenador</option>
-                        <option value="admin_local" @selected($filtros['tipo'] === 'admin_local')>Admin local</option>
-                        <option value="musico" @selected($filtros['tipo'] === 'musico')>Músico</option>
-                        <option value="padre" @selected($filtros['tipo'] === 'padre')>Padre</option>
-                        <option value="sem_vinculo" @selected($filtros['tipo'] === 'sem_vinculo')>Sem vínculo</option>
+                        <option value="admin_master" @selected(($filtros['tipo'] ?? '') === 'admin_master')>Admin master</option>
+                        <option value="coordenador" @selected(($filtros['tipo'] ?? '') === 'coordenador')>Coordenador</option>
+                        <option value="admin_local" @selected(($filtros['tipo'] ?? '') === 'admin_local')>Admin local</option>
+                        <option value="musico" @selected(($filtros['tipo'] ?? '') === 'musico')>Músico</option>
+                        <option value="padre" @selected(($filtros['tipo'] ?? '') === 'padre')>Padre</option>
+                        <option value="sem_vinculo" @selected(($filtros['tipo'] ?? '') === 'sem_vinculo')>Sem vínculo</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="admin-label">Presenca</label>
+                    <label class="admin-label">Presença</label>
                     <select name="presenca" class="admin-select">
                         <option value="">Todos</option>
                         <option value="online" @selected(($filtros['presenca'] ?? '') === 'online')>Online agora</option>
@@ -109,8 +116,8 @@
                     <label class="admin-label">Status</label>
                     <select name="status" class="admin-select">
                         <option value="">Todos</option>
-                        <option value="ativo" @selected($filtros['status'] === 'ativo')>Ativo</option>
-                        <option value="inativo" @selected($filtros['status'] === 'inativo')>Inativo</option>
+                        <option value="ativo" @selected(($filtros['status'] ?? '') === 'ativo')>Ativo</option>
+                        <option value="inativo" @selected(($filtros['status'] ?? '') === 'inativo')>Inativo</option>
                     </select>
                 </div>
 
@@ -131,6 +138,12 @@
             <div class="admin-panel-body pt-0">
                 <div class="divide-y divide-gray-100">
                     @forelse ($usuarios as $usuario)
+                        @php
+                            $vinculosAtivosUsuario = $usuario->vinculosIgreja?->where('ativo', true) ?? collect();
+                            $ultimaAtividade = $usuario->getAttribute('ultima_atividade_em');
+                            $presencaOnline = (bool) $usuario->getAttribute('presenca_online');
+                        @endphp
+
                         <article class="px-1 py-5 sm:px-2">
                             <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                                 <div class="min-w-0 flex flex-1 gap-4">
@@ -146,15 +159,18 @@
                                     <div class="min-w-0 flex-1">
                                         <div class="flex flex-wrap items-center gap-2">
                                             <h3 class="text-base font-bold text-gray-800">{{ $usuario->nome }}</h3>
+
                                             <span class="admin-badge {{ $usuario->ativo ? 'admin-badge-success' : 'admin-badge-danger' }}">
                                                 {{ $usuario->ativo ? 'Ativo' : 'Inativo' }}
                                             </span>
+
                                             @if ($usuario->primeiro_acesso)
                                                 <span class="admin-badge {{ $badgeClasse('ambar') }}">
                                                     Primeiro acesso
                                                 </span>
                                             @endif
-                                            @if ($usuario->getAttribute('presenca_online'))
+
+                                            @if ($presencaOnline)
                                                 <span class="admin-badge admin-badge-success">
                                                     Online agora
                                                 </span>
@@ -168,14 +184,13 @@
                                         <div class="mt-2 flex flex-col gap-1 text-sm text-gray-500">
                                             <span class="break-all">{{ $usuario->email }}</span>
                                             <span>CPF: {{ $usuario->cpfMascarado() }}</span>
-                                            @php($ultimaAtividade = $usuario->getAttribute('ultima_atividade_em'))
                                             <span>
-                                                @if ($usuario->getAttribute('presenca_online'))
+                                                @if ($presencaOnline)
                                                     Ativo agora, visto {{ $ultimaAtividade?->diffForHumans() }}
                                                 @elseif ($ultimaAtividade)
-                                                    Ultima atividade {{ $ultimaAtividade->diffForHumans() }}
+                                                    Última atividade {{ $ultimaAtividade->diffForHumans() }}
                                                 @else
-                                                    Sem atividade registrada nesta sessao
+                                                    Sem atividade registrada nesta sessão
                                                 @endif
                                             </span>
                                         </div>
@@ -193,11 +208,7 @@
                                                 </span>
                                             @endif
 
-                                            @php
-                                                $vinculosAtivos = $usuario->vinculosIgreja->where('ativo', true);
-                                            @endphp
-
-                                            @forelse ($vinculosAtivos as $vinculo)
+                                            @forelse ($vinculosAtivosUsuario as $vinculo)
                                                 @foreach ($vinculo->listarPapeisAtivos() as $papel)
                                                     <span class="admin-badge {{ $badgeClasse('verde') }}">
                                                         {{ $papel->label() }} em {{ $vinculo->igreja?->nome }}
@@ -229,7 +240,7 @@
                                             Senha e status do master são geridos apenas pelo próprio titular
                                         </span>
                                     @else
-                                        <form action="{{ route('admin.usuarios.password.reset', $usuario) }}" method="POST" onsubmit="return confirm('Deseja enviar um novo link de definicao de senha para este usuario?');">
+                                        <form action="{{ route('admin.usuarios.password.reset', $usuario) }}" method="POST" onsubmit="return confirm('Deseja enviar um novo link de definição de senha para este usuário?');">
                                             @csrf
                                             <button type="submit" class="admin-btn admin-btn-warm">
                                                 {{ $usuario->primeiro_acesso ? 'Reenviar convite' : 'Redefinir senha' }}
