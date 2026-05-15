@@ -565,9 +565,9 @@ body:not(.theme-dark) .hover\:bg-gray-100:hover {
     align-items: center;
     gap: 1rem;
     width: 100%;
-    min-height: 3rem;
+    min-height: 2.65rem;
     border-radius: 1rem;
-    padding: 0.8rem 1rem;
+    padding: 0.65rem 0.9rem;
     color: var(--admin-sidebar-text);
     transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease, color 0.18s ease;
 }
@@ -616,8 +616,8 @@ body:not(.theme-dark) .hover\:bg-gray-100:hover {
     flex-shrink: 0;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     background: linear-gradient(180deg, rgba(8, 5, 5, 0), rgba(0, 0, 0, 0.18) 18%, rgba(0, 0, 0, 0.24) 100%);
-    padding: 1rem;
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    padding: 0.75rem;
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
 }
 
 .admin-mobile-header {
@@ -942,12 +942,12 @@ body.theme-dark .admin-sidebar-link:hover {
     }
 
     .admin-sidebar-nav {
-        padding: 1.15rem 1rem 1rem;
-        gap: 0.55rem;
+        padding: 0.85rem 0.85rem 0.85rem;
+        gap: 0.38rem;
     }
 
     .admin-sidebar-footer {
-        padding: 1rem;
+        padding: 0.75rem;
     }
 
     .admin-shell {

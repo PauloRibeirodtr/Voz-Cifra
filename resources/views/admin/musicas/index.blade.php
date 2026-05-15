@@ -3,6 +3,34 @@
 @section('title', 'Musicas | Voz & Cifra')
 @section('mobile_title', 'Musicas')
 
+@push('styles')
+    <style>
+        .musicas-toolbar {
+            border: 1px solid #e5e7eb;
+            background: linear-gradient(180deg, #ffffff, #f9fafb);
+            border-radius: 1.25rem;
+        }
+
+        .musica-row-title {
+            color: #111827;
+        }
+
+        .musica-row:hover .musica-row-title {
+            color: #166534;
+        }
+
+        .musica-mobile-card {
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+        }
+
+        .musica-mobile-card:hover {
+            border-color: #bbf7d0;
+            box-shadow: 0 18px 34px rgba(15, 23, 42, 0.08);
+            transform: translateY(-1px);
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
@@ -30,6 +58,19 @@
         </div>
     </div>
 
+    <div class="musicas-toolbar mb-6 flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <p class="text-sm font-bold text-gray-900">{{ $musicas->total() }} musica(s) encontrada(s)</p>
+            <p class="mt-1 text-xs text-gray-500">Abra uma musica para conferir a letra, cadastrar versoes e revisar cifras.</p>
+        </div>
+
+        @if (request('search'))
+            <a href="{{ route('admin.musicas.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                Limpar busca
+            </a>
+        @endif
+    </div>
+
     @if (session('success'))
         <div class="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 text-sm rounded">
             {{ session('success') }}
@@ -55,9 +96,9 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @foreach ($musicas as $musica)
-                            <tr class="hover:bg-gray-50">
+                            <tr class="musica-row hover:bg-gray-50">
                                 <td class="px-6 py-4">
-                                    <div class="font-semibold text-gray-800">{{ $musica->titulo }}</div>
+                                    <div class="musica-row-title font-semibold">{{ $musica->titulo }}</div>
                                     <div class="text-sm text-gray-500">{{ $musica->artista ?: 'Artista nao informado' }}</div>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-600">
@@ -96,7 +137,7 @@
 
             <div class="space-y-4 p-4 md:hidden">
                 @foreach ($musicas as $musica)
-                    <article class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+                    <article class="musica-mobile-card rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
                         <div class="flex items-start justify-between gap-3">
                             <div class="min-w-0">
                                 <h2 class="break-words text-base font-bold text-gray-800">{{ $musica->titulo }}</h2>

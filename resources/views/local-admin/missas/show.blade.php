@@ -7,6 +7,39 @@
     $tonsMusicais = config('musical.tons', []);
 @endphp
 
+@push('styles')
+    <style>
+        .missa-step {
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            background: #ffffff;
+            padding: 1rem;
+        }
+
+        .missa-step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 9999px;
+            background: #6c4a21;
+            color: #ffffff;
+            font-size: 0.8rem;
+            font-weight: 900;
+        }
+
+        .repertorio-item-card {
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .repertorio-item-card:hover {
+            border-color: #bbf7d0;
+            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.07);
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between" id="missa-resumo">
         <div>
@@ -61,6 +94,36 @@
             </ul>
         </div>
     @endif
+
+    <section class="mb-6 grid grid-cols-1 gap-3 lg:grid-cols-3">
+        <div class="missa-step">
+            <div class="flex items-center gap-3">
+                <span class="missa-step-number">1</span>
+                <div>
+                    <p class="text-sm font-black text-gray-900">Dados da missa</p>
+                    <p class="mt-1 text-xs text-gray-500">Data, horario, celebrante e publicacao.</p>
+                </div>
+            </div>
+        </div>
+        <div class="missa-step">
+            <div class="flex items-center gap-3">
+                <span class="missa-step-number">2</span>
+                <div>
+                    <p class="text-sm font-black text-gray-900">Montagem do repertorio</p>
+                    <p class="mt-1 text-xs text-gray-500">Adicione musicas, versoes, ordem e tom usado.</p>
+                </div>
+            </div>
+        </div>
+        <div class="missa-step">
+            <div class="flex items-center gap-3">
+                <span class="missa-step-number">3</span>
+                <div>
+                    <p class="text-sm font-black text-gray-900">Visualizacao final</p>
+                    <p class="mt-1 text-xs text-gray-500">Confira a missa antes de apresentar ou gerar PDF.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div class="space-y-6 xl:col-span-2">
@@ -149,7 +212,7 @@
                 @else
                     <div class="space-y-4">
                         @foreach ($missa->missaMusicas as $item)
-                            <article class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                            <article class="repertorio-item-card rounded-2xl border border-gray-200 bg-gray-50 p-4">
                                 <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                                     <div class="min-w-0">
                                         <div class="flex flex-wrap items-center gap-2">

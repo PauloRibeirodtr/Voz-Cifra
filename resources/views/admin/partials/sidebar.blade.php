@@ -92,12 +92,12 @@
             </div>
         @endauth
 
-        <a href="{{ $linkPainelSidebar }}" class="admin-sidebar-brand relative hidden shrink-0 flex-col items-center justify-center border-b border-white/10 px-6 py-8 text-center shadow-md lg:flex">
-            <div class="absolute bg-white opacity-5 w-24 h-24 rounded-full blur-xl top-8"></div>
-            <img src="{{ asset('logo/final.png') }}" alt="Logo Voz e Cifra" class="relative z-10 mb-4 h-auto w-24 drop-shadow-2xl transition duration-300 hover:scale-105">
+        <a href="{{ $linkPainelSidebar }}" class="admin-sidebar-brand relative hidden shrink-0 flex-col items-center justify-center border-b border-white/10 px-5 py-5 text-center shadow-md lg:flex">
+            <div class="absolute bg-white opacity-5 w-20 h-20 rounded-full blur-xl top-5"></div>
+            <img src="{{ asset('logo/final.png') }}" alt="Logo Voz e Cifra" class="relative z-10 mb-3 h-auto w-16 drop-shadow-2xl transition duration-300 hover:scale-105">
             <div class="relative z-10 text-center">
-                <h1 class="font-extrabold text-xl tracking-widest leading-none text-white drop-shadow-md">VOZ</h1>
-                <h2 class="font-bold text-lg tracking-wider text-[#ead6b3] opacity-90 leading-tight">&amp; CIFRA</h2>
+                <h1 class="font-extrabold text-lg tracking-widest leading-none text-white drop-shadow-md">VOZ</h1>
+                <h2 class="font-bold text-base tracking-wider text-[#ead6b3] opacity-90 leading-tight">&amp; CIFRA</h2>
             </div>
         </a>
 

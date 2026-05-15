@@ -21,6 +21,11 @@
             overflow: hidden;
         }
 
+        .missa-card[open] {
+            border-color: rgba(16, 185, 129, 0.24);
+            box-shadow: 0 22px 48px rgba(15, 23, 42, 0.1);
+        }
+
         .missa-card summary {
             cursor: pointer;
             list-style: none;
@@ -43,6 +48,11 @@
             border: 1px solid rgba(226, 232, 240, 0.96);
             background: #ffffff;
             overflow: hidden;
+        }
+
+        .musica-item[open] {
+            border-color: rgba(16, 185, 129, 0.26);
+            box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
         }
 
         .musica-item summary {
@@ -133,7 +143,7 @@
             <p class="mt-2 text-sm text-gray-500">Assim que a igreja publicar a celebracao, as musicas vao aparecer aqui para estudo e leitura.</p>
         </div>
     @else
-        <details class="missa-card mt-6" data-missa-card>
+        <details class="missa-card mt-6" data-missa-card open>
             <summary class="p-5 sm:p-6">
                 <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div class="min-w-0">
@@ -158,7 +168,7 @@
 
             <div class="border-t border-[#8c6933]/10 bg-white p-4 sm:p-6">
                 <div class="mb-5 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm text-amber-900">
-                    As musicas aparecem na ordem da missa. Toque em uma musica para abrir ou fechar a cifra.
+                    <strong>Sequencia da celebracao:</strong> as musicas aparecem na ordem da missa. Toque em uma musica para abrir ou fechar a cifra.
                 </div>
 
                 <div class="space-y-4" data-musicas-lista>

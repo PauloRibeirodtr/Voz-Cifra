@@ -3,6 +3,32 @@
 @section('title', 'Missas da igreja | Voz & Cifra')
 @section('mobile_title', 'Missas')
 
+@push('styles')
+    <style>
+        .missa-list-card {
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+        }
+
+        .missa-list-card:hover {
+            border-color: rgba(140, 105, 51, 0.28);
+            box-shadow: 0 18px 38px rgba(34, 20, 12, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .missa-meta-chip {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 9999px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: #475569;
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
@@ -44,7 +70,7 @@
     @else
         <div class="space-y-4">
             @foreach ($missas as $missa)
-                <article class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                <article class="missa-list-card rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
                     <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                         <div>
                             <div class="flex flex-wrap items-center gap-2">
@@ -58,10 +84,12 @@
                                 {{ optional($missa->data_missa)->format('d/m/Y') }} &bull; {{ substr((string) $missa->hora_inicio, 0, 5) }} - {{ substr((string) $missa->hora_fim, 0, 5) }}
                             </p>
 
-                            <div class="mt-3 flex flex-wrap gap-3 text-sm text-gray-600">
-                                <span>Tempo: {{ $missa->tempoLiturgico?->nome ?: 'Ainda n&atilde;o definido' }}</span>
-                                <span>Celebrante: {{ $missa->celebrante?->nome ?: 'Ainda n&atilde;o vinculado' }}</span>
-                                <span>Repert&oacute;rio: {{ $missa->missa_musicas_count }} item(ns)</span>
+                            <div class="mt-3 flex flex-wrap gap-2">
+                                <span class="missa-meta-chip">Tempo: {{ $missa->tempoLiturgico?->nome ?: 'A definir' }}</span>
+                                <span class="missa-meta-chip">Celebrante: {{ $missa->celebrante?->nome ?: 'A definir' }}</span>
+                                <span class="missa-meta-chip">Repertorio: {{ $missa->missa_musicas_count }} item(ns)</span>
+                                <span class="missa-meta-chip {{ $missa->publica_para_fieis ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : '' }}">Fieis: {{ $missa->publica_para_fieis ? 'publicada' : 'oculta' }}</span>
+                                <span class="missa-meta-chip {{ $missa->publica_para_musicos ? 'bg-sky-50 text-sky-700 border-sky-100' : '' }}">Musicos: {{ $missa->publica_para_musicos ? 'publicada' : 'oculta' }}</span>
                             </div>
                         </div>
 
