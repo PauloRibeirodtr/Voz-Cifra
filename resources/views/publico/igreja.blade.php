@@ -367,6 +367,22 @@
             padding: 12px;
         }
 
+        .history-search-field {
+            position: relative;
+        }
+
+        .history-search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            width: 20px;
+            height: 20px;
+            transform: translateY(-50%);
+            color: var(--accent);
+            pointer-events: none;
+            opacity: 0.9;
+        }
+
         .history-form input {
             width: 100%;
             min-height: 52px;
@@ -374,7 +390,7 @@
             border: 1px solid var(--line);
             background: rgba(255, 255, 255, 0.04);
             color: var(--text);
-            padding: 0 16px;
+            padding: 0 16px 0 46px;
             font: inherit;
         }
 
@@ -426,6 +442,21 @@
 
         .history-content--subtle {
             background: rgba(13, 8, 8, 0.22);
+        }
+
+        .history-form-actions {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+        }
+
+        .history-section-title {
+            margin: 2px 0 0;
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
         }
 
         .history-top {
@@ -1112,27 +1143,36 @@
                 </section>
             @endif
 
-            <details class="section history-toggle" id="historico-publico" @if($historicoBusca !== '') open @endif>
-                <summary>Consultar histórico</summary>
+            @php($historicoUltimasMissas = collect($historicoUltimasMissas ?? []))
+            <details class="section history-toggle" id="historico-publico" @if($historicoBusca !== '' || $historicoUltimasMissas->isNotEmpty()) open @endif>
+                <summary>Buscar missas anteriores</summary>
 
                 <div class="history-content history-content--subtle">
                     @php($historicoBaseUrl = ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slug]) : route('igrejas.public.show', ['slug' => $igreja->slug]))
                     <form method="GET" action="{{ $historicoBaseUrl }}" class="history-form" data-history-form data-history-base-url="{{ $historicoBaseUrl }}" data-history-selected="{{ (int) ($celebracaoSelecionadaId ?? 0) }}">
                         <div>
                             <label for="historico">Buscar no historico</label>
-                            <input
-                                id="historico"
-                                name="historico"
-                                type="text"
-                                value="{{ $historicoBusca }}"
-                                placeholder="Buscar por data, dia ou nome da missa"
-                                autocomplete="off"
-                                data-history-input
-                            >
+                            <div class="history-search-field">
+                                <svg class="history-search-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                    <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"></circle>
+                                    <path d="M16.5 16.5 21 21" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"></path>
+                                </svg>
+                                <input
+                                    id="historico"
+                                    name="historico"
+                                    type="text"
+                                    value="{{ $historicoBusca }}"
+                                    placeholder="Data, dia ou nome da missa"
+                                    autocomplete="off"
+                                    data-history-input
+                                >
+                            </div>
                             <p class="history-search-hint">Digite 3 letras ou uma data, como 02/05.</p>
                         </div>
-                        <button type="submit">Buscar</button>
-                        <a href="{{ $historicoBaseUrl }}" data-history-clear>Limpar</a>
+                        <div class="history-form-actions">
+                            <button type="submit">Buscar</button>
+                            <a href="{{ $historicoBaseUrl }}" data-history-clear>Limpar</a>
+                        </div>
                     </form>
 
                     <script type="application/json" data-history-items>@json($historicoSugestoes ?? [], JSON_UNESCAPED_UNICODE)</script>
@@ -1140,11 +1180,12 @@
                     <div class="history-empty" data-history-live-empty hidden>Nenhum resultado encontrado.</div>
 
                     @if ($historicoMissas->isNotEmpty())
+                        <p class="history-section-title">Resultado da busca</p>
                         <div class="history-list history-list--compact" data-history-server-results>
                             @foreach ($historicoMissas as $missaHistorica)
                                 @php($historicoSelecionado = (int) $missaHistorica['id'] === (int) ($celebracaoSelecionadaId ?? 0))
                                 <a
-                                    href="{{ ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slug, 'celebracao' => $missaHistorica['id']]) : route('igrejas.public.show', ['slug' => $igreja->slug, 'celebracao' => $missaHistorica['id']]) }}"
+                                    href="{{ ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slug, 'celebracao' => $missaHistorica['id']]) : route('igrejas.public.show', ['slug' => $igreja->slug, 'celebracao' => $missaHistorica['id']]) }}#celebracao-publica"
                                     class="history-link"
                                     data-history-card
                                     data-history-id="{{ $missaHistorica['id'] }}"
@@ -1163,6 +1204,30 @@
                     @elseif ($historicoBusca !== '')
                         <div class="history-empty">
                             Nenhum resultado encontrado.
+                        </div>
+                    @endif
+
+                    @if ($historicoBusca === '' && $historicoUltimasMissas->isNotEmpty())
+                        <p class="history-section-title">Ultimas 5 missas anteriores</p>
+                        <div class="history-list history-list--compact" data-history-server-results>
+                            @foreach ($historicoUltimasMissas as $missaHistorica)
+                                @php($historicoSelecionado = (int) $missaHistorica['id'] === (int) ($celebracaoSelecionadaId ?? 0))
+                                <a
+                                    href="{{ ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slug, 'celebracao' => $missaHistorica['id']]) : route('igrejas.public.show', ['slug' => $igreja->slug, 'celebracao' => $missaHistorica['id']]) }}#celebracao-publica"
+                                    class="history-link"
+                                    data-history-card
+                                    data-history-id="{{ $missaHistorica['id'] }}"
+                                    data-selected="{{ $historicoSelecionado ? 'true' : 'false' }}"
+                                >
+                                    <div class="history-badges">
+                                        <span class="history-date">{{ $missaHistorica['data'] }}</span>
+                                        <span class="badge history-badge-muted">Anterior</span>
+                                        <span class="badge history-badge-muted" data-history-action>{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Abrir repertorio' : 'Abrir celebracao' }}</span>
+                                    </div>
+                                    <h3 class="card-title">{{ $missaHistorica['titulo'] }}</h3>
+                                    <p class="history-meta">{{ $missaHistorica['dia_semana'] }} • {{ $missaHistorica['horario'] }} @if (!empty($missaHistorica['tempo_liturgico'])) • {{ $missaHistorica['tempo_liturgico'] }} @endif</p>
+                                </a>
+                            @endforeach
                         </div>
                     @endif
                 </div>

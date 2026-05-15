@@ -17,6 +17,10 @@ use Illuminate\View\View;
 
 class IgrejaPublicaController extends Controller
 {
+    private const HISTORICO_BUSCA_LIMITE = 12;
+    private const HISTORICO_SUGESTOES_LIMITE = 40;
+    private const HISTORICO_ULTIMAS_LIMITE = 5;
+
     public function __construct(
         private readonly RenderizadorLetrasHtmlService $renderizadorLetrasHtmlService
     ) {
@@ -49,6 +53,7 @@ class IgrejaPublicaController extends Controller
         $estado = $this->montarEstadoPublico($request, $igreja, $timezone, $audiencia);
         $historicoBusca = trim((string) $request->input('historico', ''));
         $historicoMissas = $this->buscarHistorico($igreja, $timezone, $historicoBusca, $audiencia);
+        $historicoUltimasMissas = $this->buscarUltimasMissasHistorico($igreja, $timezone, $audiencia);
         $historicoSugestoes = $this->buscarHistoricoSugestoes($igreja, $timezone, $audiencia);
 
         return view('publico.igreja', [
@@ -62,6 +67,7 @@ class IgrejaPublicaController extends Controller
             'missasMusicos' => $estado['missasMusicos'],
             'celebracaoSelecionadaId' => $estado['celebracaoSelecionadaId'],
             'historicoMissas' => $historicoMissas,
+            'historicoUltimasMissas' => $historicoUltimasMissas,
             'historicoSugestoes' => $historicoSugestoes,
             'historicoBusca' => $historicoBusca,
             'countdownIso' => $estado['countdownIso'],
@@ -249,7 +255,7 @@ class IgrejaPublicaController extends Controller
         return $primeiraMissa instanceof Missa ? $primeiraMissa : null;
     }
 
-    private function buscarHistorico(Igreja $igreja, string $timezone, string $busca, string $audiencia)
+    private function buscarHistorico(Igreja $igreja, string $timezone, string $busca, string $audiencia): Collection
     {
         if ($busca === '') {
             return collect();
@@ -264,27 +270,26 @@ class IgrejaPublicaController extends Controller
             ->get()
             ->filter(fn (Missa $missa): bool => $missa->dataHoraFim($timezone)->lessThan($agora))
             ->map(fn (Missa $missa) => $this->mapearHistoricoMissa($missa, $timezone))
-            ->filter(function (array $missa) use ($busca): bool {
-                if ($busca === '') {
-                    return true;
-                }
-
-                $buscaNormalizada = Str::lower(Str::ascii($busca));
-                $conteudo = Str::lower(Str::ascii(implode(' ', [
-                    $missa['titulo'],
-                    $missa['data'],
-                    $missa['dia_semana'],
-                    $missa['horario'],
-                    $missa['tempo_liturgico'] ?? '',
-                ])));
-
-                return str_contains($conteudo, $buscaNormalizada);
-            })
-            ->take(12)
+            ->filter(fn (array $missa): bool => $this->historicoCombinaComBusca($missa, $busca))
+            ->take(self::HISTORICO_BUSCA_LIMITE)
             ->values();
     }
 
-    private function buscarHistoricoSugestoes(Igreja $igreja, string $timezone, string $audiencia)
+    private function buscarUltimasMissasHistorico(Igreja $igreja, string $timezone, string $audiencia): Collection
+    {
+        return $this->buscarMissasHistoricasPublicas($igreja, $timezone, $audiencia, self::HISTORICO_ULTIMAS_LIMITE)
+            ->map(fn (Missa $missa) => $this->mapearHistoricoMissa($missa, $timezone))
+            ->values();
+    }
+
+    private function buscarHistoricoSugestoes(Igreja $igreja, string $timezone, string $audiencia): Collection
+    {
+        return $this->buscarMissasHistoricasPublicas($igreja, $timezone, $audiencia, self::HISTORICO_SUGESTOES_LIMITE)
+            ->map(fn (Missa $missa) => $this->mapearHistoricoMissa($missa, $timezone))
+            ->values();
+    }
+
+    private function buscarMissasHistoricasPublicas(Igreja $igreja, string $timezone, string $audiencia, int $limite): Collection
     {
         $agora = CarbonImmutable::now($timezone);
 
@@ -293,11 +298,28 @@ class IgrejaPublicaController extends Controller
             ->whereDate('data_missa', '<=', $agora->toDateString())
             ->orderByDesc('data_missa')
             ->orderByDesc('hora_inicio')
-            ->limit(30)
+            ->limit(max($limite * 3, $limite))
             ->get()
             ->filter(fn (Missa $missa): bool => $missa->dataHoraFim($timezone)->lessThan($agora))
-            ->map(fn (Missa $missa) => $this->mapearHistoricoMissa($missa, $timezone))
+            ->take($limite)
             ->values();
+    }
+
+    private function historicoCombinaComBusca(array $missa, string $busca): bool
+    {
+        $buscaNormalizada = Str::lower(Str::ascii($busca));
+        $digitosBusca = preg_replace('/\D+/', '', $busca) ?? '';
+        $conteudo = Str::lower(Str::ascii(implode(' ', [
+            $missa['titulo'],
+            $missa['data'],
+            $missa['dia_semana'],
+            $missa['horario'],
+            $missa['tempo_liturgico'] ?? '',
+        ])));
+        $dataNumerica = preg_replace('/\D+/', '', (string) ($missa['data'] ?? '')) ?? '';
+
+        return str_contains($conteudo, $buscaNormalizada)
+            || ($digitosBusca !== '' && str_contains($dataNumerica, $digitosBusca));
     }
 
     private function queryMissasPublicas(Igreja $igreja, string $audiencia)
