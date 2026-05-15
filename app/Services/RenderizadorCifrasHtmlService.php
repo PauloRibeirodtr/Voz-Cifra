@@ -7,21 +7,35 @@ class RenderizadorCifrasHtmlService
     public function renderizar(string $texto): string
     {
         $linhas = preg_split('/\r\n|\r|\n/', trim($texto)) ?: [];
+        $proximaLinhaRefrao = false;
+        $blocoAtualRefrao = false;
 
-        return implode('', array_map(function (string $linha): string {
+        return implode('', array_map(function (string $linha) use (&$proximaLinhaRefrao, &$blocoAtualRefrao): string {
             $linha = rtrim($linha);
             $linhaLimpa = trim($linha);
 
             if ($linhaLimpa === '') {
+                $blocoAtualRefrao = false;
                 return '<div class="cifra-espaco"></div>';
             }
 
             if (preg_match('/^\[(.+)\]$/u', $linhaLimpa, $matches) === 1 && !$this->ehAcorde($matches[1])) {
+                $blocoAtualRefrao = false;
+                $proximaLinhaRefrao = $this->ehMarcacaoRefrao((string) $matches[1]);
+
                 return '<div class="' . $this->classeMarcacaoSecao($matches[1]) . '">' . e($matches[1]) . '</div>';
             }
 
             if ($this->ehMarcacaoSecao($linhaLimpa)) {
+                $blocoAtualRefrao = false;
+                $proximaLinhaRefrao = $this->ehMarcacaoRefrao($linhaLimpa);
+
                 return '<div class="' . $this->classeMarcacaoSecao($linhaLimpa) . '">' . e($linhaLimpa) . '</div>';
+            }
+
+            if ($proximaLinhaRefrao) {
+                $blocoAtualRefrao = true;
+                $proximaLinhaRefrao = false;
             }
 
             preg_match_all('/\[([^\[\]\r\n]+)\]/', $linha, $matches, PREG_OFFSET_CAPTURE);
@@ -57,7 +71,7 @@ class RenderizadorCifrasHtmlService
                 $segmentos .= $this->renderizarSegmento($acordesPendentes, $textoDepois !== '' ? $textoDepois : ' ');
             }
 
-            return '<div class="cifra-linha">' . $segmentos . '</div>';
+            return '<div class="cifra-linha' . ($blocoAtualRefrao ? ' cifra-linha--refrao' : '') . '">' . $segmentos . '</div>';
         }, $linhas));
     }
 
@@ -92,9 +106,16 @@ class RenderizadorCifrasHtmlService
 
     private function classeMarcacaoSecao(string $valor): string
     {
-        return str_starts_with($this->normalizarMarcacao($valor), 'refrao')
+        return $this->ehMarcacaoRefrao($valor)
             ? 'cifra-marcacao cifra-marcacao--refrao'
             : 'cifra-marcacao';
+    }
+
+    private function ehMarcacaoRefrao(string $valor): bool
+    {
+        $normalizado = $this->normalizarMarcacao($valor);
+
+        return str_starts_with($normalizado, 'refrao') || str_starts_with($normalizado, 'ref:');
     }
 
     private function normalizarMarcacao(string $valor): string

@@ -77,7 +77,7 @@
                         <div class="flex-1 space-y-4 text-sm text-blue-900">
                             <div>
                                 <h2 class="text-base font-bold">Como preencher a cifra</h2>
-                                <p class="text-blue-800">Cole a cifra com colchetes ou no estilo Cifra Club. A previa abaixo mostra ao vivo como a versao com cifra e a leitura sem cifra vao ficar.</p>
+                                <p class="text-blue-800">Cole a cifra com colchetes ou no estilo Cifra Club. Para marcar o refrão, escreva <strong>Refrão:</strong> em uma linha separada antes do trecho. Não precisa usar aspas.</p>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -93,6 +93,13 @@
                                     <div class="text-xs font-black uppercase tracking-[0.16em] text-red-600">Evite</div>
                                     <p class="mt-2 text-sm text-gray-700">Varios acordes soltos sem alinhamento com a letra.</p>
                                 </div>
+                            </div>
+
+                            <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                                <div class="text-xs font-black uppercase tracking-[0.16em] text-amber-700">Refrão</div>
+                                <pre class="mt-2 whitespace-pre-wrap break-words font-mono text-sm leading-7 text-gray-800">Refrão:
+[G]Santo, Santo, [D/F#]Santo
+[Em7]Senhor Deus do universo</pre>
                             </div>
 
                             <div class="flex flex-wrap gap-2">
@@ -142,7 +149,15 @@ Cantarei quao grande e o meu Deus</pre>
                 <div>
                     <div class="flex items-center justify-between gap-3">
                         <label class="block text-sm font-medium text-gray-700">Letra com cifras</label>
-                        <span class="text-xs text-gray-500">Aceita colchetes ou estilo Cifra Club. O sistema converte automaticamente e voce revisa antes de salvar.</span>
+                        <span class="text-xs text-gray-500">Use Refrão: em linha separada para destacar o refrão na leitura.</span>
+                    </div>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <button type="button" class="rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-black text-amber-800 hover:bg-amber-100" data-inserir-marcacao="Refrão:\n">
+                            Inserir Refrão
+                        </button>
+                        <button type="button" class="rounded-full border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs font-black text-indigo-700 hover:bg-indigo-100" data-inserir-marcacao="[Primeira parte]\n">
+                            Inserir Parte
+                        </button>
                     </div>
                     <textarea id="letra_com_cifras" name="letra_com_cifras" rows="18" required placeholder="[G]Quao grande e o meu Deus
 [D/F#]Cantarei quao grande e o meu Deus
@@ -228,6 +243,7 @@ Cantarei quao grande e o meu Deus</pre>
         const paineisPreview = document.querySelectorAll('[data-preview-panel]');
         const botoesExemplo = document.querySelectorAll('[data-exemplo-toggle]');
         const paineisExemplo = document.querySelectorAll('[data-exemplo-painel]');
+        const botoesMarcacao = document.querySelectorAll('[data-inserir-marcacao]');
 
         if (!textarea || !previewComCifras || !previewSemCifras || !previewPadraoInterno) {
             return;
@@ -427,7 +443,36 @@ Cantarei quao grande e o meu Deus</pre>
 
         const renderizarComCifras = (texto) => {
             const linhas = (texto || '').split('\n');
-            const html = linhas.map(renderizarLinhaComCifras).join('');
+            let proximaLinhaRefrao = false;
+            let blocoAtualRefrao = false;
+            const html = linhas.map((linha) => {
+                const linhaLimpa = linha.trim();
+
+                if (!linhaLimpa) {
+                    blocoAtualRefrao = false;
+                    return renderizarLinhaComCifras(linha);
+                }
+
+                const marcacao = linhaLimpa.match(/^\[(.+)\]$/);
+                const textoMarcacao = marcacao && !ehAcorde(marcacao[1])
+                    ? marcacao[1]
+                    : (ehMarcacaoSecao(linhaLimpa) ? linhaLimpa : null);
+
+                if (textoMarcacao) {
+                    blocoAtualRefrao = false;
+                    proximaLinhaRefrao = normalizarMarcacao(textoMarcacao).startsWith('refrao') || normalizarMarcacao(textoMarcacao).startsWith('ref:');
+                    return renderizarLinhaComCifras(linha);
+                }
+
+                if (proximaLinhaRefrao) {
+                    blocoAtualRefrao = true;
+                    proximaLinhaRefrao = false;
+                }
+
+                const classeRefrao = blocoAtualRefrao ? ' border-l-4 border-amber-300 bg-amber-200/10 pl-3 font-bold text-amber-50' : '';
+
+                return `<div class="${classeRefrao}">${renderizarLinhaComCifras(linha)}</div>`;
+            }).join('');
 
             return html || '<p class="text-sm text-slate-400">A previa com cifra aparecera aqui.</p>';
         };
@@ -435,11 +480,14 @@ Cantarei quao grande e o meu Deus</pre>
         const renderizarSemCifras = (texto) => {
             const linhas = removerCifras(texto).split('\n');
             const blocos = [];
+            let proximoBlocoRefrao = false;
+            let blocoAtualRefrao = false;
 
             linhas.forEach((linha) => {
                 const linhaLimpa = linha.trim();
 
                 if (!linhaLimpa) {
+                    blocoAtualRefrao = false;
                     blocos.push('<div class="h-4"></div>');
                     return;
                 }
@@ -450,6 +498,7 @@ Cantarei quao grande e o meu Deus</pre>
                         ? 'bg-amber-100 text-amber-900 font-black'
                         : 'bg-indigo-100 text-indigo-700';
                     blocos.push(`<div class="my-4 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] ${classe}">${escaparHtml(marcacao[1])}</div>`);
+                    proximoBlocoRefrao = normalizarMarcacao(marcacao[1]).startsWith('refrao') || normalizarMarcacao(marcacao[1]).startsWith('ref:');
                     return;
                 }
 
@@ -458,10 +507,19 @@ Cantarei quao grande e o meu Deus</pre>
                         ? 'bg-amber-100 text-amber-900 font-black'
                         : 'bg-indigo-100 text-indigo-700';
                     blocos.push(`<div class="my-4 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] ${classe}">${escaparHtml(linhaLimpa)}</div>`);
+                    proximoBlocoRefrao = normalizarMarcacao(linhaLimpa).startsWith('refrao') || normalizarMarcacao(linhaLimpa).startsWith('ref:');
                     return;
                 }
 
-                blocos.push(`<p class="mb-3 whitespace-pre-wrap break-words text-[1.02rem] leading-8 text-gray-800">${escaparHtml(linhaLimpa)}</p>`);
+                if (proximoBlocoRefrao) {
+                    blocoAtualRefrao = true;
+                    proximoBlocoRefrao = false;
+                }
+
+                const classeBloco = blocoAtualRefrao
+                    ? 'border-amber-200 bg-amber-50 text-amber-950 font-bold'
+                    : 'border-gray-200 bg-gray-50 text-gray-800';
+                blocos.push(`<div class="mb-3 rounded-xl border px-4 py-3 ${classeBloco}"><p class="whitespace-pre-wrap break-words text-[1.02rem] leading-8">${escaparHtml(linhaLimpa)}</p></div>`);
             });
 
             return blocos.join('') || '<p class="text-sm text-gray-500">A previa sem cifra aparecera aqui.</p>';
@@ -515,6 +573,12 @@ Cantarei quao grande e o meu Deus</pre>
         botoesAcorde.forEach((botao) => {
             botao.addEventListener('click', () => {
                 inserirNoCursor(`[${botao.dataset.acorde}]`);
+            });
+        });
+
+        botoesMarcacao.forEach((botao) => {
+            botao.addEventListener('click', () => {
+                inserirNoCursor(String(botao.dataset.inserirMarcacao || '').replace(/\\n/g, '\n'));
             });
         });
 

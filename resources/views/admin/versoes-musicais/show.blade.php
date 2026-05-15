@@ -12,9 +12,11 @@
         .aba-modo.ativa .aba-modo__status { display: inline-flex; }
         .painel-modo.hidden { display: none; }
         .preview-admin-box { --admin-escala-fonte: 1; }
-        .preview-musico-scroll { --escala-fonte: 1; max-height: 68vh; overflow-y: auto; scroll-behavior: smooth; }
+        .preview-musico-scroll { --escala-fonte: 1; max-height: 82vh; min-height: 58vh; overflow-y: auto; scroll-behavior: smooth; }
         .preview-fiel { --escala-fonte: 1; }
         .cifra-linha { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.15rem; margin-bottom: 0.45rem; }
+        .cifra-linha--refrao { border-left: 3px solid #f59e0b; background: #fffbeb; margin: 0.12rem 0 0.5rem; padding: 0.55rem 0.75rem; border-radius: 0.85rem; }
+        .cifra-linha--refrao .cifra-letra { font-weight: 800; color: #111827; }
         .cifra-segmento { display: inline-flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; min-height: 2.65rem; }
         .cifra-acordes { min-height: 1.1rem; margin-bottom: 0.02rem; color: #f97316; font-weight: 800; font-size: calc(0.95rem * var(--escala-fonte)); line-height: calc(1rem * var(--escala-fonte)); letter-spacing: 0.01em; white-space: pre; }
         .cifra-acorde { display: inline-block; cursor: pointer; padding: 0 0.05rem; border-radius: 0.35rem; transition: background-color 0.15s ease, color 0.15s ease; }
@@ -22,7 +24,11 @@
         .cifra-letra { color: #111827; font-size: calc(1.08rem * var(--escala-fonte)); line-height: calc(1.75rem * var(--escala-fonte)); white-space: pre-wrap; }
         .cifra-marcacao { display: inline-flex; align-items: center; border-radius: 9999px; background: #e5e7eb; color: #374151; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 0.85rem; margin: 1rem 0 0.75rem; }
         .cifra-marcacao--refrao { background: #fef3c7; color: #92400e; font-weight: 950; box-shadow: inset 0 0 0 1px rgba(217, 119, 6, 0.22); }
-        .preview-fiel p { margin-bottom: 0.95rem; color: #1f2937; font-size: calc(1.03rem * var(--escala-fonte)); line-height: calc(1.95rem * var(--escala-fonte)); }
+        .preview-fiel { display: grid; gap: 0.85rem; }
+        .preview-fiel .lyrics-stanza { border: 1px solid #e5e7eb; background: #f9fafb; border-radius: 1rem; padding: 1rem 1.1rem; }
+        .preview-fiel .lyrics-stanza--refrao { border-color: #fcd34d; background: #fffbeb; box-shadow: inset 0 0 0 1px rgba(217, 119, 6, 0.08); }
+        .preview-fiel .lyrics-stanza--refrao p { font-weight: 850; color: #78350f; }
+        .preview-fiel p { margin: 0; color: #1f2937; font-size: calc(1.03rem * var(--escala-fonte)); line-height: calc(1.95rem * var(--escala-fonte)); }
         .preview-fiel .marcacao { display: inline-flex; align-items: center; border-radius: 9999px; background: #eef2ff; color: #4338ca; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 0.85rem; margin: 1.25rem 0 0.8rem; }
         .preview-fiel .marcacao--refrao { background: #fef3c7; color: #92400e; font-weight: 950; box-shadow: inset 0 0 0 1px rgba(217, 119, 6, 0.22); }
         .acorde-mini-card.ativo { border-color: #f97316; background: #fff7ed; color: #9a3412; }
@@ -34,15 +40,15 @@
         .painel-musico-topo { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
         .controle-pill { display: inline-flex; align-items: center; gap: 0.4rem; border-radius: 9999px; border: 1px solid #d1fae5; background: #ffffff; color: #047857; font-size: 0.75rem; font-weight: 700; padding: 0.4rem 0.85rem; }
         .video-musico-compacto { max-width: 420px; width: 100%; margin-left: auto; }
-        .controle-estudo { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; border-radius: 1rem; border: 1px solid #e5e7eb; background: #fff; padding: 1rem; }
+        .controle-estudo { display: flex; flex-wrap: wrap; align-items: center; gap: 0.55rem; border-radius: 1rem; border: 1px solid #e5e7eb; background: rgba(255,255,255,.92); padding: 0.75rem; }
         .bpm-box { display: inline-flex; align-items: center; border: 1px solid #d1d5db; border-radius: 0.85rem; overflow: hidden; background: #fff; }
         .bpm-box button { width: 2.2rem; height: 2.2rem; font-weight: 800; color: #374151; background: #f9fafb; }
         .bpm-box input { width: 4rem; text-align: center; border: 0; outline: none; font-weight: 700; color: #111827; }
         .controle-preview { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; justify-content: space-between; margin-top: 1rem; }
         .controle-preview-grupo { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
-        .botao-pill { display: inline-flex; align-items: center; justify-content: center; min-width: 2.5rem; height: 2.5rem; padding: 0 0.9rem; border-radius: 9999px; border: 1px solid #d1d5db; background: #fff; color: #374151; font-size: 0.9rem; font-weight: 700; transition: all 0.15s ease; }
+        .botao-pill { display: inline-flex; align-items: center; justify-content: center; min-width: 2.35rem; height: 2.35rem; padding: 0 0.8rem; border-radius: 9999px; border: 1px solid #d1d5db; background: #fff; color: #374151; font-size: 0.85rem; font-weight: 700; transition: all 0.15s ease; }
         .botao-pill:hover { border-color: #fdba74; background: #fff7ed; color: #c2410c; }
-        .pill-info { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 2.5rem; padding: 0 0.95rem; border-radius: 9999px; background: #f8fafc; border: 1px solid #e2e8f0; color: #0f172a; font-size: 0.85rem; font-weight: 700; }
+        .pill-info { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 2.35rem; padding: 0 0.85rem; border-radius: 9999px; background: #f8fafc; border: 1px solid #e2e8f0; color: #0f172a; font-size: 0.82rem; font-weight: 700; }
         .musico-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
         .preview-admin-texto { font-size: calc(0.95rem * var(--admin-escala-fonte)); line-height: calc(1.75rem * var(--admin-escala-fonte)); }
         @media (min-width: 1280px) {
@@ -324,14 +330,20 @@
                 ? 'marcacao marcacao--refrao'
                 : 'marcacao';
         };
+        $ehMarcacaoRefrao = function (string $texto) use ($normalizarMarcacao): bool {
+            return str_starts_with($normalizarMarcacao($texto), 'refrao')
+                || str_starts_with($normalizarMarcacao($texto), 'ref:');
+        };
+        $proximoBlocoRefrao = false;
 
         foreach ($linhasSemCifra as $linhaSemCifra) {
             $linhaLimpa = trim($linhaSemCifra);
 
             if ($linhaLimpa === '') {
                 if ($paragrafoAtual !== []) {
-                    $blocosSemCifra[] = ['tipo' => 'paragrafo', 'texto' => implode(' ', $paragrafoAtual)];
+                    $blocosSemCifra[] = ['tipo' => 'paragrafo', 'texto' => implode(' ', $paragrafoAtual), 'refrao' => $proximoBlocoRefrao];
                     $paragrafoAtual = [];
+                    $proximoBlocoRefrao = false;
                 }
 
                 continue;
@@ -344,6 +356,7 @@
                 }
 
                 $blocosSemCifra[] = ['tipo' => 'marcacao', 'texto' => $matches[1]];
+                $proximoBlocoRefrao = $ehMarcacaoRefrao($matches[1]);
                 continue;
             }
 
@@ -354,6 +367,7 @@
                 }
 
                 $blocosSemCifra[] = ['tipo' => 'marcacao', 'texto' => $linhaLimpa];
+                $proximoBlocoRefrao = $ehMarcacaoRefrao($linhaLimpa);
                 continue;
             }
 
@@ -361,7 +375,7 @@
         }
 
         if ($paragrafoAtual !== []) {
-            $blocosSemCifra[] = ['tipo' => 'paragrafo', 'texto' => implode(' ', $paragrafoAtual)];
+            $blocosSemCifra[] = ['tipo' => 'paragrafo', 'texto' => implode(' ', $paragrafoAtual), 'refrao' => $proximoBlocoRefrao];
         }
     @endphp
 
@@ -522,7 +536,9 @@
                             @if ($blocoSemCifra['tipo'] === 'marcacao')
                                 <div class="{{ $classeMarcacaoSemCifra($blocoSemCifra['texto']) }}">{{ $blocoSemCifra['texto'] }}</div>
                             @else
-                                <p>{{ $blocoSemCifra['texto'] }}</p>
+                                <div class="lyrics-stanza {{ !empty($blocoSemCifra['refrao']) ? 'lyrics-stanza--refrao' : '' }}">
+                                    <p>{{ $blocoSemCifra['texto'] }}</p>
+                                </div>
                             @endif
                         @endforeach
                     </div>
@@ -675,12 +691,30 @@
             const renderizarPreviewMusico = () => {
                 if (!previewMusicoRender) return;
                 const linhas = (textoComCifras || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+                let proximaLinhaRefrao = false;
+                let blocoAtualRefrao = false;
                 previewMusicoRender.innerHTML = linhas.map((linha) => {
                     const linhaLimpa = linha.trim();
-                    if (linhaLimpa === '') return '<div class="h-4"></div>';
+                    if (linhaLimpa === '') {
+                        blocoAtualRefrao = false;
+                        return '<div class="h-4"></div>';
+                    }
                     const marcacao = linhaLimpa.match(/^\[(.+)\]$/u);
-                    if (marcacao && !ehAcorde(marcacao[1])) return `<div class="${classeMarcacao(marcacao[1])}">${escaparHtml(marcacao[1])}</div>`;
-                    if (ehMarcacaoSecao(linhaLimpa)) return `<div class="${classeMarcacao(linhaLimpa)}">${escaparHtml(linhaLimpa)}</div>`;
+                    if (marcacao && !ehAcorde(marcacao[1])) {
+                        blocoAtualRefrao = false;
+                        proximaLinhaRefrao = normalizarMarcacao(marcacao[1]).startsWith('refrao') || normalizarMarcacao(marcacao[1]).startsWith('ref:');
+                        return `<div class="${classeMarcacao(marcacao[1])}">${escaparHtml(marcacao[1])}</div>`;
+                    }
+                    if (ehMarcacaoSecao(linhaLimpa)) {
+                        blocoAtualRefrao = false;
+                        proximaLinhaRefrao = normalizarMarcacao(linhaLimpa).startsWith('refrao') || normalizarMarcacao(linhaLimpa).startsWith('ref:');
+                        return `<div class="${classeMarcacao(linhaLimpa)}">${escaparHtml(linhaLimpa)}</div>`;
+                    }
+
+                    if (proximaLinhaRefrao) {
+                        blocoAtualRefrao = true;
+                        proximaLinhaRefrao = false;
+                    }
 
                     const regex = /\[([^\[\]\r\n]+)\]/g;
                     let ultimoIndice = 0;
@@ -704,7 +738,7 @@
                         segmentos += `<span class="cifra-segmento"><span class="cifra-acordes">${acordesPendentes.map((acorde) => `<span class="cifra-acorde" data-acorde-hover="${escaparHtml(acorde)}">${escaparHtml(acorde)}</span>`).join(' ')}</span><span class="cifra-letra">${escaparHtml(textoFinal || ' ')}</span></span>`;
                     }
 
-                    return `<div class="cifra-linha">${segmentos}</div>`;
+                    return `<div class="cifra-linha${blocoAtualRefrao ? ' cifra-linha--refrao' : ''}">${segmentos}</div>`;
                 }).join('');
                 previewMusicoRender.style.setProperty('--escala-fonte', String(fonteAtual / 18));
             };

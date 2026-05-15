@@ -161,21 +161,33 @@
         const renderChordSheetHtml = (text, options = {}) => {
             const attributeName = options.chordAttribute || 'data-acorde-hover';
             const lines = normalizeWhitespace(text).split('\n');
+            let nextLineIsChorus = false;
+            let currentBlockIsChorus = false;
 
             return lines.map((line) => {
                 const trimmed = line.trim();
 
                 if (trimmed === '') {
+                    currentBlockIsChorus = false;
                     return '<div class="h-4"></div>';
                 }
 
                 const labelMatch = trimmed.match(/^\[(.+)\]$/u);
                 if (labelMatch && !isChord(labelMatch[1])) {
+                    currentBlockIsChorus = false;
+                    nextLineIsChorus = sectionLabelClass(labelMatch[1]).includes('--refrao');
                     return `<div class="${sectionLabelClass(labelMatch[1])}">${escapeHtml(labelMatch[1])}</div>`;
                 }
 
                 if (isSectionLabel(trimmed)) {
+                    currentBlockIsChorus = false;
+                    nextLineIsChorus = sectionLabelClass(trimmed).includes('--refrao');
                     return `<div class="${sectionLabelClass(trimmed)}">${escapeHtml(trimmed)}</div>`;
+                }
+
+                if (nextLineIsChorus) {
+                    currentBlockIsChorus = true;
+                    nextLineIsChorus = false;
                 }
 
                 const regex = /\[([^\[\]\r\n]+)\]/g;
@@ -214,7 +226,7 @@
                     segments += `<span class="cifra-segmento"><span class="cifra-acordes">${chordsHtml}</span><span class="cifra-letra">${escapeHtml(textAfter || ' ')}</span></span>`;
                 }
 
-                return `<div class="cifra-linha">${segments}</div>`;
+                return `<div class="cifra-linha${currentBlockIsChorus ? ' cifra-linha--refrao' : ''}">${segments}</div>`;
             }).join('');
         };
 

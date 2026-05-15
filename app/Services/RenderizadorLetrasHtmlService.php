@@ -31,11 +31,26 @@ class RenderizadorLetrasHtmlService
     {
         $linhas = preg_split('/\n/', $this->normalizar($texto)) ?: [];
         $html = [];
+        $paragrafoAtual = [];
+        $paragrafoRefrao = false;
+        $proximoParagrafoRefrao = false;
+
+        $fecharParagrafo = function () use (&$html, &$paragrafoAtual, &$paragrafoRefrao): void {
+            if ($paragrafoAtual === []) {
+                return;
+            }
+
+            $classe = $paragrafoRefrao ? 'lyrics-stanza lyrics-stanza--refrao' : 'lyrics-stanza';
+            $html[] = '<div class="' . $classe . '"><p>' . e(implode(' ', $paragrafoAtual)) . '</p></div>';
+            $paragrafoAtual = [];
+            $paragrafoRefrao = false;
+        };
 
         foreach ($linhas as $linha) {
             $linhaLimpa = trim((string) $linha);
 
             if ($linhaLimpa === '') {
+                $fecharParagrafo();
                 $html[] = '<div class="lyrics-space"></div>';
                 continue;
             }
@@ -43,12 +58,21 @@ class RenderizadorLetrasHtmlService
             $marcacao = $this->extrairMarcacao($linhaLimpa);
 
             if ($marcacao !== null) {
+                $fecharParagrafo();
                 $html[] = '<div class="' . $this->classeMarcacao($marcacao) . '">' . e($marcacao) . '</div>';
+                $proximoParagrafoRefrao = $this->ehMarcacaoRefrao($marcacao);
                 continue;
             }
 
-            $html[] = '<p>' . e($linhaLimpa) . '</p>';
+            if ($paragrafoAtual === []) {
+                $paragrafoRefrao = $proximoParagrafoRefrao;
+                $proximoParagrafoRefrao = false;
+            }
+
+            $paragrafoAtual[] = $linhaLimpa;
         }
+
+        $fecharParagrafo();
 
         return implode('', $html);
     }
@@ -72,11 +96,14 @@ class RenderizadorLetrasHtmlService
 
     private function classeMarcacao(string $valor): string
     {
-        $normalizado = $this->normalizarMarcacao($valor);
-
-        return preg_match('/^(refrao:?|refr\.?|ref:)(?:\s|$)/', $normalizado) === 1
+        return $this->ehMarcacaoRefrao($valor)
             ? 'lyrics-section-label lyrics-section-label--refrao'
             : 'lyrics-section-label';
+    }
+
+    private function ehMarcacaoRefrao(string $valor): bool
+    {
+        return preg_match('/^(refrao:?|refr\.?|ref:)(?:\s|$)/', $this->normalizarMarcacao($valor)) === 1;
     }
 
     private function normalizarMarcacao(string $valor): string

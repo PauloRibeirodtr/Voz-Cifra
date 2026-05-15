@@ -15,7 +15,26 @@
         }
 
         .lyrics p {
-            margin: 0 0 0.55rem;
+            margin: 0;
+        }
+
+        .lyrics-stanza {
+            margin-bottom: 0.75rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            background: #f9fafb;
+            padding: 1rem 1.1rem;
+        }
+
+        .lyrics-stanza--refrao {
+            border-color: #fcd34d;
+            background: #fffbeb;
+            box-shadow: inset 0 0 0 1px rgba(217, 119, 6, 0.08);
+        }
+
+        .lyrics-stanza--refrao p {
+            color: #78350f;
+            font-weight: 850;
         }
 
         .lyrics-space {
@@ -61,7 +80,7 @@
                 Editar
             </a>
             <a href="{{ route('admin.musicas.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-700 font-medium hover:bg-gray-50 sm:col-span-2 xl:col-span-1">
-                Voltar
+                Voltar p/ Lista de Musicas
             </a>
         </div>
     </div>
