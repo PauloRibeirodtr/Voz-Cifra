@@ -16,13 +16,29 @@
 @push('styles')
     <style>
         .library-card {
+            position: relative;
+            overflow: hidden;
             transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+        }
+
+        .library-card::before {
+            content: '';
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 4px;
+            background: #059669;
+            opacity: 0;
+            transition: opacity 0.18s ease;
         }
 
         .library-card:hover {
             border-color: #bbf7d0;
             box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
             transform: translateY(-1px);
+        }
+
+        .library-card:hover::before {
+            opacity: 1;
         }
 
         .library-excerpt {
@@ -34,7 +50,12 @@
 
         .version-strip {
             border: 1px solid #e5e7eb;
-            background: linear-gradient(180deg, #f9fafb, #ffffff);
+            background: #ffffff;
+        }
+
+        .version-strip:hover {
+            border-color: #bbf7d0;
+            background: #f8fffb;
         }
     </style>
 @endpush
@@ -149,7 +170,7 @@
             <article class="library-card rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                        <h2 class="text-xl font-bold text-gray-900">{{ $musica->titulo }}</h2>
+                        <h2 class="text-xl font-black text-gray-900">{{ $musica->titulo }}</h2>
                         <p class="mt-1 text-sm text-gray-500">{{ $musica->artista ?: 'Artista nao informado' }}</p>
                     </div>
                     <div class="flex flex-wrap gap-2 text-xs font-semibold">

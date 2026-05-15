@@ -16,15 +16,29 @@ class RenderizadorLetrasHtmlService
 
     public function removerCifras(string $texto): string
     {
-        $textoSemCifras = preg_replace_callback(
-            '/\[([^\[\]\r\n]+)\]/',
-            fn (array $matches): string => $this->pareceAcorde((string) $matches[1])
-                ? ''
-                : trim((string) $matches[1]),
-            $texto
-        ) ?? $texto;
+        $linhas = preg_split('/\n/', $this->normalizar($texto)) ?: [];
+        $linhasSemCifras = [];
 
-        return $this->normalizar($textoSemCifras);
+        foreach ($linhas as $linha) {
+            $linhaSemCifras = preg_replace_callback(
+                '/\[([^\[\]\r\n]+)\]/',
+                fn (array $matches): string => $this->pareceAcorde((string) $matches[1])
+                    ? ''
+                    : trim((string) $matches[1]),
+                (string) $linha
+            ) ?? (string) $linha;
+
+            $linhaSemCifras = preg_replace('/[ \t]{2,}/', ' ', trim($linhaSemCifras)) ?? trim($linhaSemCifras);
+
+            if ($linhaSemCifras === '' || $this->ehLinhaSomenteAcordes($linhaSemCifras)) {
+                $linhasSemCifras[] = '';
+                continue;
+            }
+
+            $linhasSemCifras[] = $this->extrairMarcacaoComCifras($linhaSemCifras) ?? $linhaSemCifras;
+        }
+
+        return $this->normalizar(implode("\n", $linhasSemCifras));
     }
 
     public function renderizarSemCifras(string $texto): string
@@ -91,7 +105,7 @@ class RenderizadorLetrasHtmlService
         $normalizado = $this->normalizarMarcacao($valor);
 
         return strlen($normalizado) <= 32
-            && preg_match('/^(refrao:?|refr\.?|ref:|entrada|final|ponte|estrofe|verso)(?:\s|$)/', $normalizado) === 1;
+            && preg_match('/^(intro|refrao:?|pre[-\s]?refrao:?|refr\.?|ref:|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(?:\s|$)/', $normalizado) === 1;
     }
 
     private function classeMarcacao(string $valor): string
@@ -120,5 +134,50 @@ class RenderizadorLetrasHtmlService
         }
 
         return preg_match('/^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\+|-|[0-9#b])|\([^\)\]]+\))*(?:\/[A-G](?:#|b)?)?$/u', $valor) === 1;
+    }
+
+    private function ehLinhaSomenteAcordes(string $linha): bool
+    {
+        $texto = trim($linha);
+        $texto = preg_replace('/^\((.*)\)$/u', '$1', $texto) ?? $texto;
+
+        if ($texto === '') {
+            return false;
+        }
+
+        $tokens = array_values(array_filter(preg_split('/\s+/', $texto) ?: [], function (string $token): bool {
+            return !in_array(trim($token), ['(', ')'], true);
+        }));
+
+        if ($tokens === []) {
+            return false;
+        }
+
+        foreach ($tokens as $token) {
+            if (!$this->pareceAcorde(trim((string) $token, " \t,;[]"))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function extrairMarcacaoComCifras(string $linha): ?string
+    {
+        $tokens = array_values(array_filter(preg_split('/\s+/', trim($linha)) ?: []));
+
+        if (count($tokens) < 2) {
+            return null;
+        }
+
+        $primeiroToken = trim((string) $tokens[0], " \t:[]");
+
+        if (!$this->ehMarcacaoSecao($primeiroToken)) {
+            return null;
+        }
+
+        $restante = trim(implode(' ', array_slice($tokens, 1)));
+
+        return $this->ehLinhaSomenteAcordes($restante) ? $primeiroToken : null;
     }
 }

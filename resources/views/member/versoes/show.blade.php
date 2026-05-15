@@ -474,7 +474,7 @@
         .tooltip-acorde.hidden { display:none; }
         .diagrama-acorde svg, .tooltip-acorde svg { width:100%; height:auto; max-width:240px; }
         .study-stage .cifra-linha { margin-bottom:.25rem; gap:.12rem; }
-        .study-stage .cifra-linha--refrao { border-left:3px solid #fbbf24; border-radius:1rem; background:rgba(251,191,36,.1); margin:.18rem 0 .45rem; padding:.55rem .75rem; }
+        .study-stage .cifra-linha--refrao { border-left:4px solid #fbbf24; border-radius:0; background:linear-gradient(90deg, rgba(251,191,36,.12), transparent); margin:.18rem 0 .68rem; padding:.42rem 0 .42rem .75rem; }
         .study-stage .cifra-linha--refrao .cifra-letra { color:#fde68a; font-weight:850; }
         .study-stage .cifra-segmento { min-height:2.2rem; }
         .study-stage .cifra-acordes { color:#fb923c; font-size:calc(.9rem * var(--escala-fonte, 1)); line-height:1; }

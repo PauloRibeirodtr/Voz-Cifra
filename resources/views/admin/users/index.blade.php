@@ -3,6 +3,61 @@
 @section('title', 'Usuários | Voz & Cifra')
 @section('mobile_title', 'Usuários')
 
+@push('styles')
+    <style>
+        .user-metric-link {
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+        }
+
+        .user-metric-link::after {
+            content: '\f054';
+            position: absolute;
+            right: 1.1rem;
+            top: 1.1rem;
+            font-family: "Font Awesome 6 Free";
+            font-size: 0.75rem;
+            font-weight: 900;
+            color: #94a3b8;
+            opacity: 0;
+            transform: translateX(-4px);
+            transition: opacity 0.18s ease, transform 0.18s ease;
+        }
+
+        .user-metric-link:hover {
+            border-color: rgba(22, 101, 52, 0.22);
+            box-shadow: 0 18px 38px rgba(15, 23, 42, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .user-metric-link:hover::after {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .user-row {
+            border-radius: 1.25rem;
+            transition: background-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .user-row:hover {
+            background: #f8fafc;
+            box-shadow: inset 4px 0 0 #16a34a;
+        }
+
+        .user-row-main-link {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .user-row-main-link:hover h3 {
+            color: #166534;
+        }
+    </style>
+@endpush
+
 @section('content')
     @php
         $badgeClasse = static fn (string $cor): string => match ($cor) {
@@ -38,40 +93,40 @@
         @endif
 
         <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-7">
-            <div class="admin-stat-card p-5">
+            <a href="{{ route('admin.usuarios.index') }}" class="admin-stat-card user-metric-link block p-5">
                 <div class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Total</div>
                 <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['total'] ?? 0 }}</div>
-            </div>
+            </a>
 
-            <a href="{{ route('admin.usuarios.index', ['presenca' => 'online']) }}" class="admin-stat-card block p-5">
+            <a href="{{ route('admin.usuarios.index', ['presenca' => 'online']) }}" class="admin-stat-card user-metric-link block p-5">
                 <div class="text-xs font-black uppercase tracking-[0.2em] text-emerald-500">Online agora</div>
                 <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['online'] ?? 0 }}</div>
             </a>
 
-            <div class="admin-stat-card p-5">
+            <a href="{{ route('admin.usuarios.index', ['tipo' => 'admin_master']) }}" class="admin-stat-card user-metric-link block p-5">
                 <div class="text-xs font-black uppercase tracking-[0.2em] text-indigo-500">Admins master</div>
                 <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['admins_master'] ?? 0 }}</div>
-            </div>
+            </a>
 
-            <div class="admin-stat-card p-5">
+            <a href="{{ route('admin.usuarios.index', ['tipo' => 'coordenador']) }}" class="admin-stat-card user-metric-link block p-5">
                 <div class="text-xs font-black uppercase tracking-[0.2em] text-violet-500">Coordenadores</div>
                 <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['coordenadores'] ?? 0 }}</div>
-            </div>
+            </a>
 
-            <div class="admin-stat-card p-5">
+            <a href="{{ route('admin.usuarios.index', ['tipo' => 'admin_local']) }}" class="admin-stat-card user-metric-link block p-5">
                 <div class="text-xs font-black uppercase tracking-[0.2em] text-emerald-500">Admins locais</div>
                 <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['admins_locais'] ?? 0 }}</div>
-            </div>
+            </a>
 
-            <div class="admin-stat-card p-5">
+            <a href="{{ route('admin.usuarios.index', ['tipo' => 'musico']) }}" class="admin-stat-card user-metric-link block p-5">
                 <div class="text-xs font-black uppercase tracking-[0.2em] text-amber-500">Músicos</div>
                 <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['musicos'] ?? 0 }}</div>
-            </div>
+            </a>
 
-            <div class="admin-stat-card p-5">
+            <a href="{{ route('admin.usuarios.index', ['tipo' => 'sem_vinculo']) }}" class="admin-stat-card user-metric-link block p-5">
                 <div class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Sem vínculo</div>
                 <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['sem_vinculo'] ?? 0 }}</div>
-            </div>
+            </a>
         </section>
 
         <section class="admin-filter-surface p-5">
@@ -144,9 +199,15 @@
                             $presencaOnline = (bool) $usuario->getAttribute('presenca_online');
                         @endphp
 
-                        <article class="px-1 py-5 sm:px-2">
+                        <article class="user-row px-1 py-5 sm:px-2">
                             <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                                <div class="min-w-0 flex flex-1 gap-4">
+                                <a
+                                    href="{{ $usuario->ehAdminMaster() && auth()->id() === $usuario->id
+                                        ? route('admin.profile')
+                                        : route('admin.usuarios.edit', $usuario) }}"
+                                    class="user-row-main-link min-w-0 flex flex-1 gap-4"
+                                    aria-label="Abrir {{ $usuario->nome }}"
+                                >
                                     <div class="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
                                         <img
                                             src="{{ $usuario->fotoPerfilUrl() }}"
@@ -223,7 +284,7 @@
                                             @endforelse
                                         </div>
                                     </div>
-                                </div>
+                                </a>
 
                                 <div class="admin-actions xl:justify-end">
                                     <a

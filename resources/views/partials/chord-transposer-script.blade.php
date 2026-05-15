@@ -50,7 +50,7 @@
 
         const isSectionLabel = (value) => {
             const label = normalizeSectionLabel(value);
-            return label.length <= 32 && /^(refrao:?|refr\.?|ref:|entrada|final|ponte|estrofe|verso)(?:\s|$)/.test(label);
+            return label.length <= 32 && /^(intro|refrao:?|pre[-\s]?refrao:?|refr\.?|ref:|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(?:\s|$)/.test(label);
         };
 
         const sectionLabelClass = (value) => {

@@ -12,24 +12,24 @@
         .aba-modo.ativa .aba-modo__status { display: inline-flex; }
         .painel-modo.hidden { display: none; }
         .preview-admin-box { --admin-escala-fonte: 1; }
-        .preview-musico-scroll { --escala-fonte: 1; max-height: 82vh; min-height: 58vh; overflow-y: auto; scroll-behavior: smooth; }
+        .preview-musico-scroll { --escala-fonte: 1; max-height: 82vh; min-height: 58vh; overflow-y: auto; scroll-behavior: smooth; background: linear-gradient(180deg, #ffffff, #fffdf9); }
         .preview-fiel { --escala-fonte: 1; }
-        .cifra-linha { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.15rem; margin-bottom: 0.45rem; }
-        .cifra-linha--refrao { border-left: 3px solid #f59e0b; background: #fffbeb; margin: 0.12rem 0 0.5rem; padding: 0.55rem 0.75rem; border-radius: 0.85rem; }
+        .cifra-linha { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.18rem; margin-bottom: 0.72rem; }
+        .cifra-linha--refrao { border-left: 4px solid #f59e0b; background: linear-gradient(90deg, rgba(255, 251, 235, 0.9), rgba(255, 251, 235, 0)); margin: 0.18rem 0 0.74rem; padding: 0.42rem 0 0.42rem 0.85rem; border-radius: 0; }
         .cifra-linha--refrao .cifra-letra { font-weight: 800; color: #111827; }
-        .cifra-segmento { display: inline-flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; min-height: 2.65rem; }
+        .cifra-segmento { display: inline-flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; min-height: 2.85rem; }
         .cifra-acordes { min-height: 1.1rem; margin-bottom: 0.02rem; color: #f97316; font-weight: 800; font-size: calc(0.95rem * var(--escala-fonte)); line-height: calc(1rem * var(--escala-fonte)); letter-spacing: 0.01em; white-space: pre; }
         .cifra-acorde { display: inline-block; cursor: pointer; padding: 0 0.05rem; border-radius: 0.35rem; transition: background-color 0.15s ease, color 0.15s ease; }
         .cifra-acorde:hover, .cifra-acorde.ativa { background: rgba(249, 115, 22, 0.14); color: #c2410c; }
-        .cifra-letra { color: #111827; font-size: calc(1.08rem * var(--escala-fonte)); line-height: calc(1.75rem * var(--escala-fonte)); white-space: pre-wrap; }
+        .cifra-letra { color: #111827; font-size: calc(1.12rem * var(--escala-fonte)); line-height: calc(1.9rem * var(--escala-fonte)); white-space: pre-wrap; }
         .cifra-marcacao { display: inline-flex; align-items: center; border-radius: 9999px; background: #e5e7eb; color: #374151; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 0.85rem; margin: 1rem 0 0.75rem; }
         .cifra-marcacao--refrao { background: #fef3c7; color: #92400e; font-weight: 950; box-shadow: inset 0 0 0 1px rgba(217, 119, 6, 0.22); }
-        .preview-fiel { display: grid; gap: 0.85rem; }
-        .preview-fiel .lyrics-stanza { border: 1px solid #e5e7eb; background: #f9fafb; border-radius: 1rem; padding: 1rem 1.1rem; }
-        .preview-fiel .lyrics-stanza--refrao { border-color: #fcd34d; background: #fffbeb; box-shadow: inset 0 0 0 1px rgba(217, 119, 6, 0.08); }
+        .preview-fiel { display: grid; gap: 0.65rem; }
+        .preview-fiel .lyrics-stanza { border-left: 3px solid #e5e7eb; background: #ffffff; border-radius: 0; padding: 0.45rem 0 0.45rem 1rem; }
+        .preview-fiel .lyrics-stanza--refrao { border-color: #f59e0b; background: linear-gradient(90deg, #fffbeb, #ffffff); box-shadow: none; }
         .preview-fiel .lyrics-stanza--refrao p { font-weight: 850; color: #78350f; }
-        .preview-fiel p { margin: 0; color: #1f2937; font-size: calc(1.03rem * var(--escala-fonte)); line-height: calc(1.95rem * var(--escala-fonte)); }
-        .preview-fiel .marcacao { display: inline-flex; align-items: center; border-radius: 9999px; background: #eef2ff; color: #4338ca; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 0.85rem; margin: 1.25rem 0 0.8rem; }
+        .preview-fiel p { margin: 0; color: #111827; font-size: calc(1.08rem * var(--escala-fonte)); line-height: calc(2rem * var(--escala-fonte)); }
+        .preview-fiel .marcacao { display: inline-flex; align-items: center; border-radius: 9999px; background: #eef2ff; color: #4338ca; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 0.85rem; margin: 1.1rem 0 0.35rem; }
         .preview-fiel .marcacao--refrao { background: #fef3c7; color: #92400e; font-weight: 950; box-shadow: inset 0 0 0 1px rgba(217, 119, 6, 0.22); }
         .acorde-mini-card.ativo { border-color: #f97316; background: #fff7ed; color: #9a3412; }
         .diagrama-acorde svg { width: 100%; height: auto; max-width: 240px; }
@@ -323,7 +323,7 @@
             $normalizado = $normalizarMarcacao($texto);
 
             return strlen($normalizado) <= 32
-                && preg_match('/^(refrao|entrada|final|ponte|estrofe|verso)(\b|$)/', $normalizado) === 1;
+                && preg_match('/^(intro|refrao|pre[-\s]?refrao|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(\b|$)/', $normalizado) === 1;
         };
         $classeMarcacaoSemCifra = function (string $texto) use ($normalizarMarcacao): string {
             return str_starts_with($normalizarMarcacao($texto), 'refrao')
@@ -662,7 +662,7 @@
             const ehMarcacaoSecao = (texto) => {
                 const normalizada = normalizarMarcacao(texto);
 
-                return normalizada.length <= 32 && /^(refrao|entrada|final|ponte|estrofe|verso)(\b|$)/.test(normalizada);
+                return normalizada.length <= 32 && /^(intro|refrao|pre[-\s]?refrao|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(\b|$)/.test(normalizada);
             };
             const classeMarcacao = (texto) => normalizarMarcacao(texto).startsWith('refrao')
                 ? 'cifra-marcacao cifra-marcacao--refrao'

@@ -397,7 +397,7 @@ class IgrejaPublicaController extends Controller
         $normalizado = Str::of($valor)->ascii()->lower()->trim()->toString();
 
         return strlen($normalizado) <= 32
-            && preg_match('/^(refrao|entrada|final|ponte|estrofe|verso)(\b|$)/', $normalizado) === 1;
+            && preg_match('/^(intro|refrao|pre[-\s]?refrao|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(\b|$)/', $normalizado) === 1;
     }
 
     private function classeMarcacaoSecaoPublica(string $valor): string

@@ -402,7 +402,7 @@ Cantarei quao grande e o meu Deus</pre>
 
         const ehMarcacaoSecao = (texto) => {
             const normalizada = normalizarMarcacao(texto);
-            return normalizada.length <= 32 && /^(refrao:?|refr\.?|ref:|entrada|final|ponte|estrofe|verso)(?:\s|$)/.test(normalizada);
+            return normalizada.length <= 32 && /^(intro|refrao:?|pre[-\s]?refrao:?|refr\.?|ref:|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(?:\s|$)/.test(normalizada);
         };
 
         const classeMarcacao = (texto, base = 'bg-slate-700/80 text-slate-100') => {

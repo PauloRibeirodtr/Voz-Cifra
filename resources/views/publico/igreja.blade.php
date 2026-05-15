@@ -567,16 +567,15 @@
         }
 
         .lyrics-stanza {
-            margin-bottom: 0.7rem;
-            border: 1px solid rgba(227, 190, 132, 0.16);
-            border-radius: 14px;
-            background: rgba(255, 255, 255, 0.045);
-            padding: 12px 14px;
+            margin-bottom: 0.62rem;
+            border-left: 3px solid rgba(227, 190, 132, 0.22);
+            background: rgba(255, 255, 255, 0.035);
+            padding: 8px 0 8px 14px;
         }
 
         .lyrics-stanza--refrao {
-            border-color: rgba(255, 217, 157, 0.36);
-            background: rgba(255, 217, 157, 0.12);
+            border-color: rgba(255, 217, 157, 0.72);
+            background: linear-gradient(90deg, rgba(255, 217, 157, 0.12), transparent);
         }
 
         .lyrics-stanza--refrao p {
@@ -648,11 +647,10 @@
         }
 
         body[data-public-mode='musicos'] .lyrics .cifra-linha--refrao {
-            border-left: 3px solid #ffd99d;
-            border-radius: 12px;
-            background: rgba(255, 217, 157, 0.1);
-            margin: 0.14rem 0 0.42rem;
-            padding: 0.48rem 0.65rem;
+            border-left: 4px solid #ffd99d;
+            background: linear-gradient(90deg, rgba(255, 217, 157, 0.11), transparent);
+            margin: 0.14rem 0 0.58rem;
+            padding: 0.42rem 0 0.42rem 0.65rem;
         }
 
         body[data-public-mode='musicos'] .lyrics .cifra-linha--refrao .cifra-letra {

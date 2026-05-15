@@ -101,7 +101,7 @@ class RenderizadorCifrasHtmlService
         $normalizado = $this->normalizarMarcacao($valor);
 
         return strlen($normalizado) <= 32
-            && preg_match('/^(refrao|entrada|final|ponte|estrofe|verso)(\b|$)/', $normalizado) === 1;
+            && preg_match('/^(intro|refrao|pre[-\s]?refrao|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(\b|$)/', $normalizado) === 1;
     }
 
     private function classeMarcacaoSecao(string $valor): string

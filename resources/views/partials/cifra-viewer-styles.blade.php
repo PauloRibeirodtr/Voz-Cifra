@@ -1,6 +1,6 @@
 <style>
-    .cifra-linha { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.15rem; margin-bottom: 0.45rem; }
-    .cifra-linha--refrao { border-left: 3px solid #fbbf24; border-radius: 1rem; background: rgba(251, 191, 36, 0.1); margin: 0.15rem 0 0.55rem; padding: 0.55rem 0.75rem; }
+    .cifra-linha { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.16rem; margin-bottom: 0.68rem; }
+    .cifra-linha--refrao { border-left: 4px solid #fbbf24; border-radius: 0; background: linear-gradient(90deg, rgba(251, 191, 36, 0.12), transparent); margin: 0.18rem 0 0.72rem; padding: 0.42rem 0 0.42rem 0.75rem; }
     .cifra-linha--refrao .cifra-letra { color: #fde68a; font-weight: 850; }
     .cifra-segmento { display: inline-flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; min-height: 2.65rem; }
     .cifra-acordes { min-height: 1.1rem; margin-bottom: 0.02rem; color: #f97316; font-weight: 800; font-size: 0.95rem; line-height: 1rem; letter-spacing: 0.01em; white-space: pre; }
