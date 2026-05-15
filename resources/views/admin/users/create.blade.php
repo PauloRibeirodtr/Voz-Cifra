@@ -3,6 +3,56 @@
 @section('title', 'Cadastrar Usuário | Voz & Cifra')
 @section('mobile_title', 'Cadastrar usuário')
 
+@push('styles')
+    <style>
+        .user-help-details {
+            border-radius: 1.25rem;
+            border: 1px solid rgba(148, 163, 184, 0.24);
+            background: rgba(255, 255, 255, 0.76);
+            overflow: hidden;
+        }
+
+        .user-help-details summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            min-height: 3.5rem;
+            padding: 0 1rem;
+            cursor: pointer;
+            color: #111827;
+            font-weight: 800;
+            list-style: none;
+        }
+
+        .user-help-details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .user-help-details summary::after {
+            content: "+";
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.75rem;
+            height: 1.75rem;
+            border-radius: 999px;
+            background: #f3f4f6;
+            color: #166534;
+            font-weight: 900;
+        }
+
+        .user-help-details[open] summary::after {
+            content: "-";
+        }
+
+        .user-help-details__body {
+            border-top: 1px solid rgba(148, 163, 184, 0.18);
+            padding: 1rem;
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="admin-page-shell">
         <section class="admin-page-header">
@@ -60,6 +110,13 @@
 
                             <div>
                                 <label class="admin-label">Igreja inicial</label>
+                                <input
+                                    type="search"
+                                    class="admin-input mb-2"
+                                    placeholder="Digite parte do nome da igreja"
+                                    autocomplete="off"
+                                    data-igreja-filtro
+                                >
                                 <select name="igreja_id" class="admin-select" data-igreja-inicial>
                                     <option value="">Selecionar igreja</option>
                                     @foreach ($igrejas as $igreja)
@@ -112,7 +169,7 @@
                         </div>
 
                         <div class="admin-actions">
-                            <button type="submit" class="admin-btn admin-btn-primary">Salvar usuario</button>
+                            <button type="submit" class="admin-btn admin-btn-primary">Cadastrar usuário</button>
                             <a href="{{ route('admin.usuarios.index') }}" class="admin-btn admin-btn-secondary">Cancelar</a>
                         </div>
                     </form>
@@ -120,26 +177,22 @@
             </section>
 
             <aside class="space-y-6">
-                <section class="admin-highlight-surface p-5 sm:p-6 2xl:sticky 2xl:top-6">
-                    <p class="admin-page-kicker">Como funciona</p>
-                    <h2 class="mt-2 text-lg font-bold text-gray-800">Regras deste cadastro</h2>
-
-                    <div class="mt-4 space-y-3 text-sm leading-7 text-gray-600">
-                        <p><strong>Admin master:</strong> ja nasce com acesso global e nao depende de nivel separado.</p>
-                        <p><strong>Coordenador, admin local e musico:</strong> exigem igreja inicial e ja recebem o papel operacional no cadastro.</p>
-                        <p><strong>Padre:</strong> pode existir sem login. Se o e-mail ficar vazio, o sistema cria um e-mail tecnico interno e reaproveita essa mesma conta depois.</p>
-                        <p><strong>Sem duplicacao:</strong> CPF e e-mail sao reutilizados para promover a mesma pessoa.</p>
+                <details class="user-help-details admin-highlight-surface 2xl:sticky 2xl:top-6">
+                    <summary>Como funciona este cadastro</summary>
+                    <div class="user-help-details__body space-y-3 text-sm leading-7 text-gray-600">
+                        <p><strong>Admin master:</strong> acesso global, sem igreja obrigatoria.</p>
+                        <p><strong>Coordenador, admin local e musico:</strong> exigem igreja inicial e ja recebem o papel ao salvar.</p>
+                        <p><strong>Padre:</strong> pode ficar sem e-mail. O sistema cria um e-mail tecnico interno se precisar.</p>
+                        <p><strong>Sem duplicacao:</strong> CPF e e-mail reaproveitam a mesma pessoa.</p>
                     </div>
-                </section>
+                </details>
 
-                <section class="admin-muted-surface p-5 sm:p-6">
-                    <p class="admin-page-kicker">Fluxo recomendado</p>
-                    <h2 class="mt-2 text-lg font-bold text-gray-800">Primeiro a conta, depois a operacao</h2>
-                    <p class="mt-3 text-sm leading-7 text-gray-600">
-                        Uma igreja nao precisa nascer com admin local. O vinculo operacional so entra quando alguem realmente vai operar missa,
-                        repertorio e rotina daquela igreja.
-                    </p>
-                </section>
+                <details class="user-help-details admin-muted-surface">
+                    <summary>Fluxo recomendado</summary>
+                    <div class="user-help-details__body text-sm leading-7 text-gray-600">
+                        Primeiro cadastre a conta. Depois aplique papel por igreja somente quando alguem for operar missa, repertorio ou rotina daquela comunidade.
+                    </div>
+                </details>
             </aside>
         </div>
     </div>
@@ -152,6 +205,7 @@
             const campoTelefone = document.querySelector('[data-telefone-input]');
             const tipoCadastro = document.querySelector('[data-tipo-cadastro]');
             const igrejaInicial = document.querySelector('[data-igreja-inicial]');
+            const igrejaFiltro = document.querySelector('[data-igreja-filtro]');
             const igrejaAjuda = document.querySelector('[data-igreja-ajuda]');
             const tiposComIgrejaObrigatoria = ['coordenador', 'admin_local', 'musico'];
 
@@ -208,6 +262,48 @@
 
             atualizarObrigatoriedadeIgreja();
             tipoCadastro?.addEventListener('change', atualizarObrigatoriedadeIgreja);
+
+            if (igrejaInicial && igrejaFiltro) {
+                const opcoesIgreja = Array.from(igrejaInicial.options).map((option) => ({
+                    value: option.value,
+                    text: option.textContent || '',
+                    selected: option.selected,
+                }));
+
+                const normalizar = (valor) => valor
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .toLowerCase()
+                    .trim();
+
+                const renderizarOpcoesIgreja = () => {
+                    const termo = normalizar(igrejaFiltro.value);
+                    const valorAtual = igrejaInicial.value;
+                    const opcoesFiltradas = opcoesIgreja.filter((option, index) => {
+                        return index === 0 || termo === '' || normalizar(option.text).includes(termo);
+                    });
+
+                    igrejaInicial.replaceChildren();
+
+                    opcoesFiltradas.forEach((optionData, index) => {
+                        const option = new Option(
+                            index === 0 && termo !== '' ? `Selecionar igreja (${Math.max(opcoesFiltradas.length - 1, 0)} encontrada(s))` : optionData.text,
+                            optionData.value,
+                            false,
+                            optionData.value === valorAtual
+                        );
+                        igrejaInicial.appendChild(option);
+                    });
+
+                    if (opcoesFiltradas.length === 1 && termo !== '') {
+                        const option = new Option('Nenhuma igreja encontrada', '', false, false);
+                        option.disabled = true;
+                        igrejaInicial.appendChild(option);
+                    }
+                };
+
+                igrejaFiltro.addEventListener('input', renderizarOpcoesIgreja);
+            }
         });
     </script>
     @include('partials.password-strength-script')

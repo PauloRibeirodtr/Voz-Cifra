@@ -1,7 +1,7 @@
 @extends('admin.layouts.admin')
 
 @section('title', 'Cadastrar musica | Voz & Cifra')
-@section('mobile_title', 'Nova musica')
+@section('mobile_title', 'Cadastrar musica')
 
 @section('content')
     <form action="{{ route('admin.musicas.store') }}" method="POST" class="space-y-6">
@@ -13,7 +13,7 @@
                 Cancelar
             </a>
             <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-5 py-3 font-semibold text-white hover:bg-green-800">
-                Salvar musica
+                Cadastrar musica
             </button>
         </div>
     </form>

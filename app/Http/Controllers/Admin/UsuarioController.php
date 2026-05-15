@@ -459,10 +459,10 @@ class UsuarioController extends Controller
         }
 
         if (!($igreja instanceof Igreja)) {
-            return 'Conta criada com sucesso. Para liberar papeis operacionais, abra o usuario na lista e vincule uma igreja.';
+            return 'Conta cadastrada com sucesso. Para liberar papeis operacionais, abra o usuario na lista e vincule uma igreja.';
         }
 
-        return 'Conta criada e vinculada com sucesso.';
+        return 'Conta cadastrada e vinculada com sucesso.';
     }
 
     private function normalizarBusca(string $busca): string

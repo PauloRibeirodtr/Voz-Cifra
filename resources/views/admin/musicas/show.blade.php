@@ -74,7 +74,7 @@
 
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:flex xl:flex-wrap xl:justify-end">
             <a href="{{ route('admin.versoes-musicais.create', $musica) }}" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800">
-                Nova versao musical
+                Cadastrar versao musical
             </a>
             <a href="{{ route('admin.musicas.edit', $musica) }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-700 font-medium hover:bg-gray-50">
                 Editar

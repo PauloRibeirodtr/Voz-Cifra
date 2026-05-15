@@ -36,6 +36,7 @@
 
             const label = grupo.querySelector('[data-password-strength-label]');
             const barra = grupo.querySelector('[data-password-strength-bar]');
+            const regrasOk = grupo.querySelector('[data-password-rules-ok]');
             const itemConfirmacao = grupo.querySelector('[data-password-match]');
             const textoConfirmacao = grupo.querySelector('[data-password-match-text]');
             const iconeConfirmacao = grupo.querySelector('[data-password-match-icon]');
@@ -76,6 +77,7 @@
                     item.classList.toggle('font-semibold', valida);
                     item.classList.toggle('text-gray-600', !valida);
                     item.classList.toggle('opacity-75', valida);
+                    item.hidden = preenchida && valida;
 
                     if (icone) {
                         icone.textContent = valida ? '✓' : '•';
@@ -85,6 +87,11 @@
                         icone.classList.toggle('border-gray-300', !valida);
                     }
                 });
+
+                if (regrasOk) {
+                    regrasOk.classList.toggle('hidden', !senhaValida);
+                    regrasOk.classList.toggle('flex', senhaValida);
+                }
 
                 if (itemConfirmacao && campoConfirmacao) {
                     const confirmacaoPreenchida = campoConfirmacao.value.length > 0;
@@ -98,8 +105,8 @@
 
                     if (textoConfirmacao) {
                         textoConfirmacao.textContent = confirmacaoOk
-                            ? 'As senhas conferem'
-                            : 'As senhas precisam conferir';
+                            ? 'Senhas iguais'
+                            : 'As senhas precisam ser iguais';
                     }
 
                     if (iconeConfirmacao) {

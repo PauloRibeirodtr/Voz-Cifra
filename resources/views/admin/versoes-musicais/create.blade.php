@@ -1,12 +1,12 @@
 @extends('admin.layouts.admin')
 
-@section('title', 'Nova versao musical | Voz & Cifra')
-@section('mobile_title', 'Nova versao')
+@section('title', 'Cadastrar versao musical | Voz & Cifra')
+@section('mobile_title', 'Cadastrar versao')
 
 @section('content')
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-gray-800">Nova versao musical</h1>
+            <h1 class="text-2xl font-bold text-gray-800">Cadastrar versao musical</h1>
             <p class="text-sm text-gray-500">Cadastre a versao com cifras da musica <strong>{{ $musica->titulo }}</strong>.</p>
         </div>
 
@@ -34,7 +34,7 @@
                 Cancelar
             </a>
             <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-5 py-3 font-semibold text-white hover:bg-green-800">
-                Salvar versao musical
+                Cadastrar versao musical
             </button>
         </div>
     </form>

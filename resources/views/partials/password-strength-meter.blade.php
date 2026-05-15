@@ -8,6 +8,11 @@
         <div class="h-full w-0 rounded-full bg-red-500 transition-all duration-200" data-password-strength-bar></div>
     </div>
 
+    <div class="mt-4 hidden items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-xs font-bold text-green-700" data-password-rules-ok>
+        <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-green-600 text-white">✓</span>
+        <span>Requisitos atendidos</span>
+    </div>
+
     <ul class="mt-4 space-y-2 text-xs text-gray-600">
         <li class="flex items-center gap-2" data-password-rule="length"><span class="inline-flex h-4 w-4 items-center justify-center rounded-full border border-gray-300 text-[10px]" data-password-rule-icon>•</span><span>Pelo menos 8 caracteres</span></li>
         <li class="flex items-center gap-2" data-password-rule="lower"><span class="inline-flex h-4 w-4 items-center justify-center rounded-full border border-gray-300 text-[10px]" data-password-rule-icon>•</span><span>Ao menos 1 letra minuscula</span></li>

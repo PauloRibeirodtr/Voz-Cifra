@@ -53,7 +53,7 @@
             </form>
 
             <a href="{{ route('admin.musicas.create') }}" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-medium text-white hover:bg-green-800">
-                Nova musica
+                Cadastrar música
             </a>
         </div>
     </div>

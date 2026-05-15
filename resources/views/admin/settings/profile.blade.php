@@ -148,6 +148,13 @@
 
                         <div>
                             <label class="admin-label">Igreja</label>
+                            <input
+                                type="search"
+                                class="{{ $classeInput }} mb-2"
+                                placeholder="Digite parte do nome da igreja"
+                                autocomplete="off"
+                                data-profile-igreja-filter
+                            >
                             <select name="igreja_id" class="admin-select" data-profile-igreja-select required>
                                 <option value="">Selecione a igreja</option>
                                 @foreach ($igrejas as $igreja)
@@ -269,6 +276,7 @@
             const campoTelefone = document.querySelector('[data-telefone-input]');
             const imagemPerfil = document.getElementById('admin-profile-preview');
             const selectIgrejaPerfil = document.querySelector('[data-profile-igreja-select]');
+            const filtroIgrejaPerfil = document.querySelector('[data-profile-igreja-filter]');
             const checkboxesPapeis = Array.from(document.querySelectorAll('[data-profile-papel-checkbox]'));
             const hintPapeis = document.querySelector('[data-profile-papeis-hint]');
             const papeisPorIgreja = @json($papeisPorIgreja);
@@ -296,6 +304,41 @@
                     }
 
                     campoTelefone.value = valor;
+                });
+            }
+
+            if (selectIgrejaPerfil && filtroIgrejaPerfil) {
+                const opcoesIgreja = Array.from(selectIgrejaPerfil.options).map((option) => ({
+                    value: option.value,
+                    text: option.textContent || '',
+                }));
+
+                const normalizar = (valor) => valor
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .toLowerCase()
+                    .trim();
+
+                filtroIgrejaPerfil.addEventListener('input', () => {
+                    const termo = normalizar(filtroIgrejaPerfil.value);
+                    const valorAtual = selectIgrejaPerfil.value;
+                    const filtradas = opcoesIgreja.filter((option, index) => index === 0 || termo === '' || normalizar(option.text).includes(termo));
+
+                    selectIgrejaPerfil.replaceChildren();
+                    filtradas.forEach((optionData, index) => {
+                        selectIgrejaPerfil.appendChild(new Option(
+                            index === 0 && termo !== '' ? `Selecione a igreja (${Math.max(filtradas.length - 1, 0)} encontrada(s))` : optionData.text,
+                            optionData.value,
+                            false,
+                            optionData.value === valorAtual
+                        ));
+                    });
+
+                    if (filtradas.length === 1 && termo !== '') {
+                        const option = new Option('Nenhuma igreja encontrada', '', false, false);
+                        option.disabled = true;
+                        selectIgrejaPerfil.appendChild(option);
+                    }
                 });
             }
 
