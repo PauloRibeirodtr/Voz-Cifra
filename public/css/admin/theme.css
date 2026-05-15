@@ -305,6 +305,14 @@ body:not(.theme-dark) .hover\:bg-gray-100:hover {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1rem;
+    grid-auto-rows: minmax(0, auto);
+    align-items: start;
+}
+
+.admin-form-grid > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
 .admin-label {
