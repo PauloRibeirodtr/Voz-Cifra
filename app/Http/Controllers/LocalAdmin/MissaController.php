@@ -264,14 +264,15 @@ class MissaController extends Controller
         ]);
     }
 
-    public function toggle(Missa $missa): RedirectResponse
+    public function toggle(Request $request, Missa $missa): RedirectResponse
     {
         $this->garantirMissaDaIgreja($missa);
         $igreja = $this->obterIgreja();
         $usuario = $this->obterUsuario();
         $novoStatus = !$missa->ativo;
+        $dadosReativacao = $novoStatus ? $this->validarDadosReativacao($request, $missa) : [];
 
-        DB::transaction(function () use ($missa, $novoStatus): void {
+        DB::transaction(function () use ($missa, $novoStatus, $dadosReativacao): void {
             if ($novoStatus) {
                 Missa::query()
                     ->where('igreja_id', $missa->igreja_id)
@@ -279,7 +280,7 @@ class MissaController extends Controller
                     ->update(['ativo' => false]);
             }
 
-            $missa->update(['ativo' => $novoStatus]);
+            $missa->update(array_merge(['ativo' => $novoStatus], $dadosReativacao));
         });
 
         $this->auditoriaOperacionalService->registrar(
@@ -291,14 +292,17 @@ class MissaController extends Controller
                 'origem_id' => $missa->id,
                 'titulo' => $missa->titulo,
                 'ativo' => $novoStatus,
+                'data_missa' => $dadosReativacao['data_missa'] ?? optional($missa->data_missa)->toDateString(),
+                'hora_inicio' => $dadosReativacao['hora_inicio'] ?? $missa->hora_inicio,
+                'hora_fim' => $dadosReativacao['hora_fim'] ?? $missa->hora_fim,
                 'resumo' => $novoStatus
-                    ? 'Missa reativada e definida novamente no fluxo operacional da igreja.'
+                    ? 'Missa reativada com nova data e horario no fluxo operacional da igreja.'
                     : 'Missa inativada para preservar o histórico sem excluir o repertório.',
             ]
         );
 
         return back()->with('success', $novoStatus
-            ? 'Missa reativada com sucesso.'
+            ? 'Missa reativada com sucesso para ' . CarbonImmutable::parse($dadosReativacao['data_missa'])->format('d/m/Y') . ' as ' . $dadosReativacao['hora_inicio'] . '.'
             : 'Missa inativada com sucesso.');
     }
 
@@ -722,6 +726,46 @@ class MissaController extends Controller
         )) {
             throw \Illuminate\Validation\ValidationException::withMessages([
                 'padre_id' => 'Este celebrante ja esta vinculado a outra missa no mesmo horario.',
+            ]);
+        }
+
+        return $dados;
+    }
+
+    private function validarDadosReativacao(Request $request, Missa $missa): array
+    {
+        $hoje = CarbonImmutable::now('America/Cuiaba')->startOfDay();
+        $dataMaxima = $hoje->addMonth()->toDateString();
+
+        $dados = $request->validate([
+            'data_missa' => ['required', 'date', 'after_or_equal:' . $hoje->toDateString(), 'before_or_equal:' . $dataMaxima],
+            'hora_inicio' => ['required', 'date_format:H:i'],
+            'hora_fim' => ['required', 'date_format:H:i'],
+        ], [
+            'data_missa.required' => 'Informe a nova data para reativar a missa.',
+            'data_missa.after_or_equal' => 'Para reativar, escolha hoje ou uma data futura.',
+            'data_missa.before_or_equal' => 'A nova data nao pode ser posterior a 1 mes a frente.',
+            'hora_inicio.required' => 'Informe o novo horario de inicio.',
+            'hora_fim.required' => 'Informe o novo horario de termino.',
+            'hora_inicio.date_format' => 'Informe o horario de inicio no formato HH:MM.',
+            'hora_fim.date_format' => 'Informe o horario de termino no formato HH:MM.',
+        ]);
+
+        if ($dados['hora_inicio'] === $dados['hora_fim']) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'hora_fim' => 'O horario de termino deve ser diferente do horario de inicio.',
+            ]);
+        }
+
+        if ($this->celebranteTemConflitoHorario(
+            celebranteId: $missa->celebrante_usuario_id ? (int) $missa->celebrante_usuario_id : null,
+            dataMissa: (string) $dados['data_missa'],
+            horaInicio: (string) $dados['hora_inicio'],
+            horaFim: (string) $dados['hora_fim'],
+            ignorarMissaId: $missa->id
+        )) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'hora_inicio' => 'O celebrante desta missa ja esta vinculado a outra missa no mesmo horario.',
             ]);
         }
 
