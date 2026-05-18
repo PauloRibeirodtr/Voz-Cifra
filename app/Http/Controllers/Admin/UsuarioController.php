@@ -46,12 +46,12 @@ class UsuarioController extends Controller
             ->when($deveFiltrarBusca, function ($query) use ($busca): void {
                 foreach (preg_split('/\s+/', $busca, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $termo) {
                     $query->where(function ($subQuery) use ($termo): void {
-                        $ilike = '%' . $termo . '%';
+                        $like = '%' . $termo . '%';
                         $cpfNumerico = preg_replace('/\D+/', '', $termo) ?? '';
 
                         $subQuery
-                            ->whereRaw('LOWER(nome) LIKE ?', [$ilike])
-                            ->orWhereRaw('LOWER(email) LIKE ?', [$ilike]);
+                            ->whereRaw('LOWER(nome) LIKE ?', [$like])
+                            ->orWhereRaw('LOWER(email) LIKE ?', [$like]);
 
                         if ($cpfNumerico !== '') {
                             $subQuery->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), '/', ''), ' ', '') LIKE ?", ['%' . $cpfNumerico . '%']);
@@ -59,9 +59,9 @@ class UsuarioController extends Controller
 
                         $subQuery->orWhereHas('vinculosIgreja.igreja', function ($igrejaQuery) use ($ilike): void {
                             $igrejaQuery
-                                ->whereRaw('LOWER(nome) LIKE ?', [$ilike])
-                                ->orWhereRaw('LOWER(cidade) LIKE ?', [$ilike])
-                                ->orWhereRaw('LOWER(estado) LIKE ?', [$ilike]);
+                                ->whereRaw('LOWER(nome) LIKE ?', [$like])
+                                ->orWhereRaw('LOWER(cidade) LIKE ?', [$like])
+                                ->orWhereRaw('LOWER(estado) LIKE ?', [$like]);
                         });
                     });
                 }
