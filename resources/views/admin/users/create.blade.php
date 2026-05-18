@@ -50,10 +50,99 @@
             border-top: 1px solid rgba(148, 163, 184, 0.18);
             padding: 1rem;
         }
+
+        .church-combobox {
+            position: relative;
+        }
+
+        .church-combobox__results {
+            position: absolute;
+            z-index: 30;
+            right: 0;
+            left: 0;
+            top: calc(100% + 0.35rem);
+            max-height: 17rem;
+            overflow-y: auto;
+            border: 1px solid rgba(115, 85, 52, 0.18);
+            border-radius: 1rem;
+            background: #fffdf9;
+            box-shadow: 0 18px 42px rgba(61, 39, 18, 0.16);
+            padding: 0.4rem;
+        }
+
+        .church-combobox__results[hidden] {
+            display: none;
+        }
+
+        .church-combobox__option,
+        .church-combobox__empty {
+            display: flex;
+            width: 100%;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            border: 0;
+            border-radius: 0.8rem;
+            background: transparent;
+            padding: 0.82rem 0.9rem;
+            color: #2f2419;
+            font: inherit;
+            font-size: 0.94rem;
+            text-align: left;
+        }
+
+        .church-combobox__option {
+            cursor: pointer;
+        }
+
+        .church-combobox__option:hover,
+        .church-combobox__option:focus {
+            background: #f5efe6;
+            outline: none;
+        }
+
+        .church-combobox__option span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .church-combobox__option small,
+        .church-combobox__empty {
+            color: #7a6755;
+            font-weight: 700;
+        }
+
+        body.theme-dark .church-combobox__results {
+            background: var(--admin-surface);
+            border-color: var(--admin-border-strong);
+        }
+
+        body.theme-dark .church-combobox__option,
+        body.theme-dark .church-combobox__empty {
+            color: var(--admin-text);
+        }
+
+        body.theme-dark .church-combobox__option:hover,
+        body.theme-dark .church-combobox__option:focus {
+            background: var(--admin-surface-muted);
+        }
+
+        body.theme-dark .church-combobox__option small,
+        body.theme-dark .church-combobox__empty {
+            color: var(--admin-text-soft);
+        }
     </style>
 @endpush
 
 @section('content')
+    @php
+        $igrejaSelecionadaId = (string) old('igreja_id', request('igreja_id'));
+        $igrejaSelecionadaNome = $igrejaSelecionadaId !== ''
+            ? optional($igrejas->firstWhere('id', (int) $igrejaSelecionadaId))->nome
+            : '';
+    @endphp
+
     <div class="admin-page-shell">
         <section class="admin-page-header">
             <div class="admin-page-intro">
@@ -110,21 +199,23 @@
 
                             <div>
                                 <label class="admin-label">Igreja inicial</label>
-                                <input
-                                    type="search"
-                                    class="admin-input mb-2"
-                                    placeholder="Digite parte do nome da igreja"
-                                    autocomplete="off"
-                                    data-igreja-filtro
-                                >
-                                <select name="igreja_id" class="admin-select" data-igreja-inicial>
-                                    <option value="">Selecionar igreja</option>
-                                    @foreach ($igrejas as $igreja)
-                                        <option value="{{ $igreja->id }}" @selected((string) old('igreja_id', request('igreja_id')) === (string) $igreja->id)>{{ $igreja->nome }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="church-combobox" data-igreja-combobox>
+                                    <input type="hidden" name="igreja_id" value="{{ $igrejaSelecionadaId }}" data-igreja-inicial>
+                                    <input
+                                        type="search"
+                                        class="admin-input"
+                                        value="{{ $igrejaSelecionadaNome }}"
+                                        placeholder="Digite e escolha a igreja"
+                                        autocomplete="off"
+                                        role="combobox"
+                                        aria-autocomplete="list"
+                                        aria-expanded="false"
+                                        data-igreja-filtro
+                                    >
+                                    <div class="church-combobox__results" data-igreja-resultados hidden></div>
+                                </div>
                                 <p class="mt-2 text-xs text-gray-500" data-igreja-ajuda>
-                                    Obrigatoria para musico, admin local e coordenador. Admin master nao depende de igreja.
+                                    Digite pelo menos 2 letras e escolha uma sugestao.
                                 </p>
                             </div>
 
@@ -206,8 +297,11 @@
             const tipoCadastro = document.querySelector('[data-tipo-cadastro]');
             const igrejaInicial = document.querySelector('[data-igreja-inicial]');
             const igrejaFiltro = document.querySelector('[data-igreja-filtro]');
+            const igrejaResultados = document.querySelector('[data-igreja-resultados]');
             const igrejaAjuda = document.querySelector('[data-igreja-ajuda]');
             const tiposComIgrejaObrigatoria = ['coordenador', 'admin_local', 'musico'];
+            const igrejas = @json($igrejas->map(fn ($igreja) => ['id' => $igreja->id, 'nome' => $igreja->nome])->values(), JSON_UNESCAPED_UNICODE);
+            let validarIgrejaSelecionada = () => true;
 
             const aplicarMascaraCpf = (valor) => {
                 valor = valor.replace(/\D/g, '').slice(0, 11);
@@ -251,58 +345,132 @@
                 }
 
                 const exigeIgreja = tiposComIgrejaObrigatoria.includes(tipoCadastro.value);
-                igrejaInicial.required = exigeIgreja;
 
                 if (igrejaAjuda) {
                     igrejaAjuda.textContent = exigeIgreja
-                        ? 'Obrigatoria para este tipo de cadastro.'
+                        ? 'Obrigatoria para este tipo de cadastro. Digite e escolha uma sugestao.'
                         : 'Opcional para admin master e padre.';
                 }
+
+                validarIgrejaSelecionada();
             };
 
             atualizarObrigatoriedadeIgreja();
             tipoCadastro?.addEventListener('change', atualizarObrigatoriedadeIgreja);
 
-            if (igrejaInicial && igrejaFiltro) {
-                const opcoesIgreja = Array.from(igrejaInicial.options).map((option) => ({
-                    value: option.value,
-                    text: option.textContent || '',
-                    selected: option.selected,
-                }));
-
+            if (igrejaInicial && igrejaFiltro && igrejaResultados) {
                 const normalizar = (valor) => valor
                     .normalize('NFD')
                     .replace(/[\u0300-\u036f]/g, '')
                     .toLowerCase()
                     .trim();
 
-                const renderizarOpcoesIgreja = () => {
-                    const termo = normalizar(igrejaFiltro.value);
-                    const valorAtual = igrejaInicial.value;
-                    const opcoesFiltradas = opcoesIgreja.filter((option, index) => {
-                        return index === 0 || termo === '' || normalizar(option.text).includes(termo);
-                    });
-
-                    igrejaInicial.replaceChildren();
-
-                    opcoesFiltradas.forEach((optionData, index) => {
-                        const option = new Option(
-                            index === 0 && termo !== '' ? `Selecionar igreja (${Math.max(opcoesFiltradas.length - 1, 0)} encontrada(s))` : optionData.text,
-                            optionData.value,
-                            false,
-                            optionData.value === valorAtual
-                        );
-                        igrejaInicial.appendChild(option);
-                    });
-
-                    if (opcoesFiltradas.length === 1 && termo !== '') {
-                        const option = new Option('Nenhuma igreja encontrada', '', false, false);
-                        option.disabled = true;
-                        igrejaInicial.appendChild(option);
-                    }
+                const fecharSugestoes = () => {
+                    igrejaResultados.hidden = true;
+                    igrejaFiltro.setAttribute('aria-expanded', 'false');
                 };
 
-                igrejaFiltro.addEventListener('input', renderizarOpcoesIgreja);
+                const abrirSugestoes = () => {
+                    igrejaResultados.hidden = false;
+                    igrejaFiltro.setAttribute('aria-expanded', 'true');
+                };
+
+                const selecionarIgreja = (igreja) => {
+                    igrejaInicial.value = String(igreja.id);
+                    igrejaFiltro.value = igreja.nome;
+                    igrejaFiltro.setCustomValidity('');
+                    fecharSugestoes();
+                };
+
+                validarIgrejaSelecionada = () => {
+                    const exigeIgreja = tiposComIgrejaObrigatoria.includes(tipoCadastro?.value || '');
+                    const termo = normalizar(igrejaFiltro.value);
+
+                    if (termo === '') {
+                        igrejaInicial.value = '';
+                    }
+
+                    if (!exigeIgreja) {
+                        igrejaFiltro.setCustomValidity('');
+                        return true;
+                    }
+
+                    if (igrejaInicial.value !== '') {
+                        igrejaFiltro.setCustomValidity('');
+                        return true;
+                    }
+
+                    igrejaFiltro.setCustomValidity('Digite e escolha uma igreja da lista.');
+                    return false;
+                };
+
+                const renderizarSugestoes = (limparSelecao = false) => {
+                    const termo = normalizar(igrejaFiltro.value);
+                    if (limparSelecao) {
+                        igrejaInicial.value = '';
+                    }
+                    igrejaResultados.replaceChildren();
+
+                    if (termo.length < 2) {
+                        fecharSugestoes();
+                        validarIgrejaSelecionada();
+                        return;
+                    }
+
+                    const encontradas = igrejas
+                        .filter((igreja) => normalizar(igreja.nome).includes(termo))
+                        .slice(0, 8);
+
+                    if (encontradas.length === 0) {
+                        const vazio = document.createElement('div');
+                        vazio.className = 'church-combobox__empty';
+                        vazio.textContent = 'Nenhuma igreja encontrada.';
+                        igrejaResultados.appendChild(vazio);
+                        abrirSugestoes();
+                        validarIgrejaSelecionada();
+                        return;
+                    }
+
+                    encontradas.forEach((igreja) => {
+                        const botao = document.createElement('button');
+                        const nome = document.createElement('span');
+                        const dica = document.createElement('small');
+                        botao.type = 'button';
+                        botao.className = 'church-combobox__option';
+                        nome.textContent = igreja.nome;
+                        dica.textContent = 'Escolher';
+                        botao.append(nome, dica);
+                        botao.addEventListener('click', () => selecionarIgreja(igreja));
+                        igrejaResultados.appendChild(botao);
+                    });
+
+                    abrirSugestoes();
+                    validarIgrejaSelecionada();
+                };
+
+                igrejaFiltro.addEventListener('input', () => renderizarSugestoes(true));
+                igrejaFiltro.addEventListener('focus', () => renderizarSugestoes(false));
+                igrejaFiltro.addEventListener('blur', () => {
+                    window.setTimeout(() => {
+                        const igrejaExata = igrejas.find((igreja) => normalizar(igreja.nome) === normalizar(igrejaFiltro.value));
+
+                        if (igrejaExata) {
+                            selecionarIgreja(igrejaExata);
+                        } else {
+                            validarIgrejaSelecionada();
+                            fecharSugestoes();
+                        }
+                    }, 160);
+                });
+
+                igrejaFiltro.form?.addEventListener('submit', (event) => {
+                    if (!validarIgrejaSelecionada()) {
+                        event.preventDefault();
+                        igrejaFiltro.reportValidity();
+                    }
+                });
+
+                atualizarObrigatoriedadeIgreja();
             }
         });
     </script>
