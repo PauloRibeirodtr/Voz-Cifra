@@ -57,7 +57,7 @@ class UsuarioController extends Controller
                             $subQuery->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), '/', ''), ' ', '') LIKE ?", ['%' . $cpfNumerico . '%']);
                         }
 
-                        $subQuery->orWhereHas('vinculosIgreja.igreja', function ($igrejaQuery) use ($ilike): void {
+                        $subQuery->orWhereHas('vinculosIgreja.igreja', function ($igrejaQuery) use ($like): void {
                             $igrejaQuery
                                 ->whereRaw('LOWER(nome) LIKE ?', [$like])
                                 ->orWhereRaw('LOWER(cidade) LIKE ?', [$like])
