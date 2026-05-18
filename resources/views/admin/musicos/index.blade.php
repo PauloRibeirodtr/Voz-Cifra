@@ -41,13 +41,13 @@
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4">
                                     <div class="font-semibold text-gray-800">{{ $musico->nome }}</div>
-                                    <div class="text-sm text-gray-500">{{ $musico->cpf }}</div>
+                                    <div class="text-sm text-gray-500">{{ $musico->cpfMascarado() }}</div>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $musico->igreja?->nome ?: 'Sem igreja' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">
                                     <div>{{ $musico->email }}</div>
                                     @if ($musico->telefone)
-                                        <div class="text-xs text-gray-400">{{ $musico->telefone }}</div>
+                                        <div class="text-xs text-gray-400">{{ $musico->telefoneMascarado() }}</div>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4">

@@ -226,7 +226,7 @@
                                 <div>
                                     <h3 class="text-base font-bold text-gray-900">{{ $admin->nome }}</h3>
                                     <p class="mt-1 text-sm text-gray-600">{{ $admin->email }}</p>
-                                    <p class="mt-1 text-xs text-gray-400">{{ $admin->cpf }} @if($admin->telefone) • {{ $admin->telefone }} @endif</p>
+                                    <p class="mt-1 text-xs text-gray-400">{{ $admin->cpfMascarado() }} @if($admin->telefone) • {{ $admin->telefoneMascarado() }} @endif</p>
                                 </div>
                                 <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $admin->primeiro_acesso ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-700' }}">
                                     {{ $admin->primeiro_acesso ? 'Troca pendente no próximo login' : 'Acesso liberado' }}
@@ -281,7 +281,7 @@
                     @php($usuarioVinculado = $vinculo->usuario)
                     @php($papeisAtivos = $vinculo->listarPapeisAtivos())
                     @php($ehAdminLocal = $papeisAtivos->contains(fn ($papel) => $papel->value === 'admin_local'))
-                    @php($termoBusca = mb_strtolower(trim(($usuarioVinculado->nome ?? '') . ' ' . ($usuarioVinculado->cpf ?? '') . ' ' . ($usuarioVinculado->email ?? ''))))
+                    @php($termoBusca = mb_strtolower(trim(($usuarioVinculado->nome ?? '') . ' ' . ($usuarioVinculado->email ?? ''))))
 
                     <article
                         class="rounded-2xl border border-gray-200 bg-gray-50 p-4"
@@ -297,7 +297,7 @@
                                     @endif
                                 </div>
                                 <p class="mt-1 text-sm text-gray-600">{{ $usuarioVinculado->email }}</p>
-                                <p class="mt-1 text-xs text-gray-400">{{ $usuarioVinculado->cpf }} @if($usuarioVinculado->telefone) • {{ $usuarioVinculado->telefone }} @endif</p>
+                                <p class="mt-1 text-xs text-gray-400">{{ $usuarioVinculado->cpfMascarado() }} @if($usuarioVinculado->telefone) • {{ $usuarioVinculado->telefoneMascarado() }} @endif</p>
 
                                 <div class="mt-3 flex flex-wrap gap-2">
                                     @forelse ($papeisAtivos as $papelAtivo)
@@ -490,7 +490,7 @@
                         <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
                             <h3 class="text-base font-bold text-gray-900">{{ $coordenador->nome }}</h3>
                             <p class="mt-1 text-sm text-gray-600">{{ $coordenador->email }}</p>
-                            <p class="mt-1 text-xs text-gray-400">{{ $coordenador->cpf }} @if($coordenador->telefone) • {{ $coordenador->telefone }} @endif</p>
+                            <p class="mt-1 text-xs text-gray-400">{{ $coordenador->cpfMascarado() }} @if($coordenador->telefone) • {{ $coordenador->telefoneMascarado() }} @endif</p>
                         </div>
                     @endforeach
                 </div>

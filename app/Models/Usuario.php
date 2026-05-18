@@ -294,6 +294,20 @@ class Usuario extends Authenticatable
         return substr($digitos, 0, 3) . '.***.***-' . substr($digitos, -2);
     }
 
+    public function telefoneMascarado(): string
+    {
+        $digitos = preg_replace('/\D+/', '', (string) $this->telefone);
+
+        if (strlen($digitos) < 10) {
+            return 'Telefone nao informado';
+        }
+
+        $ddd = substr($digitos, 0, 2);
+        $final = substr($digitos, -4);
+
+        return '(' . $ddd . ') *****-' . $final;
+    }
+
     public function musicasCriadas(): HasMany
     {
         return $this->hasMany(Musica::class, 'criado_por');

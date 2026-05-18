@@ -54,7 +54,7 @@
                                 <td class="px-6 py-4 text-sm text-gray-600">
                                     {{ $padre->igreja?->nome ?: 'Sem vinculo especifico' }}
                                 </td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $padre->cpf }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">{{ $padre->cpfMascarado() }}</td>
                                 <td class="px-6 py-4">
                                     <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $padre->ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                                         {{ $padre->ativo ? 'Ativo' : 'Inativo' }}
@@ -86,7 +86,7 @@
                             <div class="min-w-0">
                                 <h2 class="text-base font-bold text-gray-800">{{ $padre->nome }}</h2>
                                 <p class="mt-1 text-sm text-gray-500">{{ $padre->igreja?->nome ?: 'Sem vinculo especifico' }}</p>
-                                <p class="mt-1 text-xs text-gray-400">CPF: {{ $padre->cpf }}</p>
+                                <p class="mt-1 text-xs text-gray-400">CPF: {{ $padre->cpfMascarado() }}</p>
                             </div>
                             <span class="inline-flex shrink-0 rounded-full px-3 py-1 text-xs font-semibold {{ $padre->ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                                 {{ $padre->ativo ? 'Ativo' : 'Inativo' }}

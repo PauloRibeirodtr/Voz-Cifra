@@ -7,6 +7,8 @@
     $homeUrl = route('root');
     $dashboardRoute = auth()->check() ? auth()->user()?->rotaDestinoAposLogin() : null;
     $dashboardUrl = $dashboardRoute && \Illuminate\Support\Facades\Route::has($dashboardRoute) ? route($dashboardRoute) : null;
+    $illustration = $illustration ?? null;
+    $illustrationAlt = (string) ($illustrationAlt ?? '');
 @endphp
 
 <x-publico.layouts.app :title="$statusCode . ' | Voz & Cifra'" :description="$message">
@@ -58,6 +60,33 @@
                 radial-gradient(circle at 50% 42%, rgba(244, 221, 180, 0.22), transparent 34%),
                 rgba(255, 255, 255, 0.035);
             border: 1px solid rgba(244, 221, 180, 0.14);
+        }
+
+        .error-visual--image {
+            min-height: auto;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.96), transparent 38%),
+                linear-gradient(135deg, #fffaf4 0%, #f8efe4 58%, #efe2d4 100%);
+            box-shadow: inset 0 0 0 1px rgba(111, 71, 38, 0.08);
+        }
+
+        .error-illustration {
+            display: block;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .error-card--illustrated {
+            background:
+                radial-gradient(circle at top right, rgba(210, 170, 102, 0.16), transparent 34%),
+                linear-gradient(135deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03)),
+                var(--panel);
+        }
+
+        .error-card--illustrated .error-title {
+            max-width: 13ch;
         }
 
         .error-logo {
@@ -205,6 +234,12 @@
             color: #f6fff3;
         }
 
+        .error-action--warm {
+            background: #f97316;
+            border-color: rgba(249, 115, 22, 0.35);
+            color: #fff7ed;
+        }
+
         .error-action--secondary {
             background: rgba(255, 255, 255, 0.04);
         }
@@ -235,6 +270,10 @@
             .error-grid {
                 grid-template-columns: minmax(280px, 0.82fr) minmax(0, 1fr);
             }
+
+            .error-card--illustrated .error-grid {
+                grid-template-columns: minmax(320px, 1fr) minmax(0, 0.95fr);
+            }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -252,22 +291,28 @@
     </style>
 
     <main class="container error-page">
-        <section class="error-card" aria-labelledby="error-title">
+        <section class="error-card {{ $illustration ? 'error-card--illustrated' : '' }}" aria-labelledby="error-title">
             <div class="error-grid">
-                <div class="error-visual" aria-hidden="true">
-                    <div class="error-staff">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                        <span></span>
+                @if ($illustration)
+                    <div class="error-visual error-visual--image">
+                        <img src="{{ $illustration }}" alt="{{ $illustrationAlt }}" class="error-illustration">
                     </div>
-                    <span class="error-note error-note--one"></span>
-                    <span class="error-note error-note--two"></span>
-                    <div class="error-logo">
-                        <img src="{{ asset('logo/final.png') }}" alt="">
+                @else
+                    <div class="error-visual" aria-hidden="true">
+                        <div class="error-staff">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <span class="error-note error-note--one"></span>
+                        <span class="error-note error-note--two"></span>
+                        <div class="error-logo">
+                            <img src="{{ asset('logo/final.png') }}" alt="">
+                        </div>
                     </div>
-                </div>
+                @endif
 
                 <div class="error-copy">
                     <p class="error-kicker"><strong>{{ $statusCode }}</strong> {{ $eyebrow }}</p>
@@ -276,7 +321,7 @@
                     <p class="error-hint">{{ $hint }}</p>
 
                     <div class="error-actions">
-                        <a href="{{ $homeUrl }}" class="error-action error-action--primary">Ir para o inicio</a>
+                        <a href="{{ $homeUrl }}" class="error-action {{ $statusCode === '404' ? 'error-action--warm' : 'error-action--primary' }}">Ir para o inicio</a>
                         @if ($dashboardUrl)
                             <a href="{{ $dashboardUrl }}" class="error-action error-action--secondary">Abrir meu painel</a>
                         @endif

@@ -130,7 +130,7 @@
                                 <td class="px-6 py-4 text-sm text-gray-600">
                                     <div>{{ $usuarioIgreja->email }}</div>
                                     @if ($usuarioIgreja->telefone)
-                                        <div class="text-xs text-gray-400">{{ $usuarioIgreja->telefone }}</div>
+                                        <div class="text-xs text-gray-400">{{ $usuarioIgreja->telefoneMascarado() }}</div>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4">

@@ -71,7 +71,7 @@
                             <div class="rounded-2xl bg-gray-50 px-4 py-3">
                                 <div class="text-[11px] font-black uppercase tracking-[0.16em] text-gray-400">Contato</div>
                                 <div class="mt-1 text-sm font-semibold text-gray-700">{{ $adminLocal->email }}</div>
-                                <div class="text-xs text-gray-500">{{ $adminLocal->telefone ?: 'Sem telefone' }}</div>
+                                <div class="text-xs text-gray-500">{{ $adminLocal->telefone ? $adminLocal->telefoneMascarado() : 'Sem telefone' }}</div>
                             </div>
                             <div class="rounded-2xl bg-gray-50 px-4 py-3">
                                 <div class="text-[11px] font-black uppercase tracking-[0.16em] text-gray-400">Igreja</div>
@@ -80,7 +80,7 @@
                             </div>
                             <div class="rounded-2xl bg-gray-50 px-4 py-3">
                                 <div class="text-[11px] font-black uppercase tracking-[0.16em] text-gray-400">Documento</div>
-                                <div class="mt-1 text-sm font-semibold text-gray-700">{{ $adminLocal->cpf }}</div>
+                                <div class="mt-1 text-sm font-semibold text-gray-700">{{ $adminLocal->cpfMascarado() }}</div>
                                 <div class="text-xs text-gray-500">CPF usado apenas para identificacao operacional.</div>
                             </div>
                         </div>

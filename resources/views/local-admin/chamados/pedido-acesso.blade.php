@@ -68,7 +68,7 @@
                             @endphp
                             <label
                                 class="musico-card flex cursor-pointer items-start gap-4 rounded-2xl border px-4 py-4 transition {{ $selecionado ? 'border-green-400 bg-green-50' : 'border-gray-200 bg-white hover:border-green-200 hover:bg-green-50/40' }}"
-                                data-search="{{ mb_strtolower($musico->nome . ' ' . ($musico->email ?? '') . ' ' . ($musico->cpf ?? '')) }}"
+                                data-search="{{ mb_strtolower($musico->nome . ' ' . ($musico->email ?? '')) }}"
                             >
                                 <input type="radio" name="musico_id" value="{{ $musico->id }}" class="mt-1 h-4 w-4 border-gray-300 text-green-700 focus:ring-green-500" @checked($selecionado)>
                                 <div class="min-w-0 flex-1">
@@ -90,7 +90,7 @@
                                     </div>
                                     <div class="mt-2 text-xs text-gray-500">
                                         <div>{{ $musico->email ?: 'Sem email cadastrado' }}</div>
-                                        <div>{{ $musico->cpf ?: 'Sem CPF cadastrado' }}</div>
+                                        <div>{{ $musico->cpfMascarado() }}</div>
                                     </div>
                                 </div>
                             </label>

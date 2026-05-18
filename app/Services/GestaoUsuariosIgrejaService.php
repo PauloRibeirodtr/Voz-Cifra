@@ -583,7 +583,11 @@ class GestaoUsuariosIgrejaService
     {
         $cpfNumerico = preg_replace('/\D+/', '', $cpf) ?? '';
 
-        return 'celebrante.' . $cpfNumerico . '@sem-login.local';
+        $identificador = $cpfNumerico !== ''
+            ? substr(hash('sha256', $cpfNumerico), 0, 16)
+            : bin2hex(random_bytes(8));
+
+        return 'celebrante.' . $identificador . '@sem-login.local';
     }
 
     private function ehEmailTecnicoSemLogin(string $email): bool
