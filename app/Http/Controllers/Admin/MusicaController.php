@@ -22,26 +22,44 @@ class MusicaController extends Controller
     ) {
     }
 
-    public function index(Request $request): View
-    {
-        $consulta = Musica::with(['tempoLiturgico', 'momentoLiturgico', 'criadoPor'])->latest();
+public function index(Request $request): View
+{
+    $consulta = Musica::with([
+        'tempoLiturgico',
+        'momentoLiturgico',
+        'criadoPor'
+    ])->latest();
 
-        if ($request->filled('search')) {
-            $termo = $request->string('search')->toString();
+    if ($request->filled('search')) {
+        $termo = trim($request->string('search')->toString());
 
-            $consulta->where(function ($query) use ($termo) {
-                $query->where('titulo', 'like', "%{$termo}%")
-                    ->orWhere('artista', 'like', "%{$termo}%")
-                    ->orWhere('letra', 'like', "%{$termo}%");
-            });
-        }
-
-        $musicas = $consulta->paginate(12)->withQueryString();
-
-        return view('admin.musicas.index', [
-            'musicas' => $musicas,
-        ]);
+        $consulta->where(function ($query) use ($termo) {
+            $query->where('titulo', 'ilike', "%{$termo}%")
+                ->orWhere('artista', 'ilike', "%{$termo}%")
+                ->orWhere('letra', 'ilike', "%{$termo}%");
+        });
     }
+
+    $sugestoesMusicas = Musica::query()
+        ->select('titulo', 'artista')
+        ->orderBy('titulo')
+        ->limit(200)
+        ->get()
+        ->map(fn (Musica $musica) => [
+            'titulo' => $musica->titulo,
+            'artista' => $musica->artista,
+        ])
+        ->values();
+
+    $musicas = $consulta
+        ->paginate(12)
+        ->withQueryString();
+
+    return view('admin.musicas.index', [
+        'musicas' => $musicas,
+        'sugestoesMusicas' => $sugestoesMusicas,
+    ]);
+}
 
     public function create(): View
     {
