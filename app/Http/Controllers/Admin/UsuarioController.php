@@ -50,8 +50,8 @@ class UsuarioController extends Controller
                         $cpfNumerico = preg_replace('/\D+/', '', $termo) ?? '';
 
                         $subQuery
-                            ->whereRaw('LOWER(nome) LIKE ?', [$like])
-                            ->orWhereRaw('LOWER(email) LIKE ?', [$like]);
+                            ->whereRaw('LOWER(nome) LIKE ?', [$ilike])
+                            ->orWhereRaw('LOWER(email) LIKE ?', [$ilike]);
 
                         if ($cpfNumerico !== '') {
                             $subQuery->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), '/', ''), ' ', '') LIKE ?", ['%' . $cpfNumerico . '%']);
