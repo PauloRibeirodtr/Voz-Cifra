@@ -5,6 +5,10 @@
 
 @php
     $tonsMusicais = config('musical.tons', []);
+    $totalItensRepertorio = $missa->missaMusicas->count();
+    $itensSemVersao = $missa->missaMusicas->filter(fn ($item) => $item->versaoMusical === null)->count();
+    $itensSemMomento = $missa->missaMusicas->filter(fn ($item) => $item->momentoLiturgico === null)->count();
+    $repertorioCompleto = $totalItensRepertorio > 0 && $itensSemVersao === 0 && $itensSemMomento === 0;
 @endphp
 
 @push('styles')
@@ -36,6 +40,86 @@
         .repertorio-item-card:hover {
             border-color: #bbf7d0;
             box-shadow: 0 14px 30px rgba(15, 23, 42, 0.07);
+        }
+
+        .repertorio-status-card {
+            border-radius: 1.25rem;
+            border: 1px solid #e5e7eb;
+            background: linear-gradient(180deg, #ffffff, #f9fafb);
+            padding: 1rem;
+        }
+
+        .repertorio-status-card strong {
+            display: block;
+            margin-top: 0.25rem;
+            color: #111827;
+            font-size: 1.45rem;
+            line-height: 1;
+        }
+
+        .repertorio-status-ok {
+            border-color: #bbf7d0;
+            background: linear-gradient(180deg, #f0fdf4, #ffffff);
+        }
+
+        .repertorio-status-warn {
+            border-color: #fde68a;
+            background: linear-gradient(180deg, #fffbeb, #ffffff);
+        }
+
+        .musica-search-result {
+            width: 100%;
+            border: 0;
+            border-radius: 0.95rem;
+            background: transparent;
+            padding: 0.85rem;
+            text-align: left;
+            transition: background-color 0.16s ease;
+        }
+
+        .musica-search-result:hover,
+        .musica-search-result:focus {
+            background: #fff8ed;
+            outline: none;
+        }
+
+        .musica-search-result__top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .musica-search-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 1.6rem;
+            border-radius: 999px;
+            padding: 0 0.55rem;
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 0.68rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .musica-search-badge--ok {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .musica-search-badge--warn {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .repertorio-alert {
+            border-radius: 1rem;
+            border: 1px solid #fde68a;
+            background: #fffbeb;
+            color: #78350f;
+            padding: 0.9rem 1rem;
         }
     </style>
 @endpush
@@ -125,6 +209,24 @@
         </div>
     </section>
 
+    <section class="mb-6 grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div class="repertorio-status-card {{ $totalItensRepertorio > 0 ? 'repertorio-status-ok' : 'repertorio-status-warn' }}">
+            <span class="text-xs font-black uppercase tracking-wider text-gray-500">Repertorio</span>
+            <strong>{{ $totalItensRepertorio }}</strong>
+            <p class="mt-2 text-sm text-gray-600">{{ $totalItensRepertorio === 1 ? 'musica adicionada' : 'musicas adicionadas' }}</p>
+        </div>
+        <div class="repertorio-status-card {{ $itensSemVersao === 0 ? 'repertorio-status-ok' : 'repertorio-status-warn' }}">
+            <span class="text-xs font-black uppercase tracking-wider text-gray-500">Cifras</span>
+            <strong>{{ $itensSemVersao === 0 ? 'OK' : $itensSemVersao }}</strong>
+            <p class="mt-2 text-sm text-gray-600">{{ $itensSemVersao === 0 ? 'todas com versao' : 'sem versao vinculada' }}</p>
+        </div>
+        <div class="repertorio-status-card {{ $repertorioCompleto ? 'repertorio-status-ok' : 'repertorio-status-warn' }}">
+            <span class="text-xs font-black uppercase tracking-wider text-gray-500">Status</span>
+            <strong>{{ $repertorioCompleto ? 'Completo' : 'Pendente' }}</strong>
+            <p class="mt-2 text-sm text-gray-600">{{ $repertorioCompleto ? 'pronto para revisar' : 'revise momentos e versoes' }}</p>
+        </div>
+    </section>
+
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div class="space-y-6 xl:col-span-2">
             <section id="missa-repertorio" class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
@@ -140,6 +242,18 @@
                         </button>
                     </form>
                 </div>
+
+                @if ($totalItensRepertorio > 0 && !$repertorioCompleto)
+                    <div class="repertorio-alert mb-4 text-sm">
+                        <strong class="block">Antes de concluir, revise as pendencias.</strong>
+                        @if ($itensSemVersao > 0)
+                            <span>{{ $itensSemVersao }} item(ns) ainda nao tem versao/cifra vinculada.</span>
+                        @endif
+                        @if ($itensSemMomento > 0)
+                            <span>{{ $itensSemMomento }} item(ns) ainda nao tem momento liturgico definido.</span>
+                        @endif
+                    </div>
+                @endif
 
                 <form action="{{ route('local-admin.repertorio.store', $missa) }}" method="POST" class="grid grid-cols-1 gap-4 md:grid-cols-2">
                     @csrf
@@ -219,6 +333,11 @@
                                             <span class="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">Ordem {{ $item->ordem }}</span>
                                             @if ($item->momentoLiturgico)
                                                 <span class="inline-flex rounded-full bg-sky-100 px-3 py-1 text-xs font-bold text-sky-700">{{ $item->momentoLiturgico->nome }}</span>
+                                            @else
+                                                <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">Momento pendente</span>
+                                            @endif
+                                            @if (!$item->versaoMusical)
+                                                <span class="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">Sem cifra vinculada</span>
                                             @endif
                                         </div>
                                         <h3 class="mt-3 text-lg font-bold text-gray-900">{{ $item->musica->titulo }}</h3>
@@ -364,6 +483,7 @@
                 'artista' => $musica->artista,
                 'letra' => $musica->letra,
                 'texto_exibicao' => trim($musica->titulo . ($musica->artista ? ' - ' . $musica->artista : '')),
+                'versoes_count' => $musica->versoesMusicais->count(),
                 'versoes' => $musica->versoesMusicais->map(function ($versao) {
                     return [
                         'id' => $versao->id,
@@ -387,6 +507,7 @@
             const campoTomUsado = document.getElementById('tom_usado');
             const tomUsadoHint = document.getElementById('tom_usado_hint');
             const oldVersaoId = @json(old('versao_musical_id'));
+            const formularioAdicionar = musicaId.form;
 
             if (!inputBusca || !resultadoBusca || !musicaId || !musicaSelecionadaTexto || !selectVersao || !campoTomUsado) {
                 return;
@@ -443,7 +564,7 @@
 
                     option.textContent = texto;
 
-                    if (String(versao.id) === String(versaoSelecionada)) {
+                    if (String(versao.id) === String(versaoSelecionada) || (!versaoSelecionada && musicaSelecionada.versoes.length === 1)) {
                         option.selected = true;
                     }
 
@@ -462,7 +583,11 @@
             const selecionarMusica = (musicaSelecionada, versaoSelecionada = null) => {
                 musicaId.value = musicaSelecionada.id;
                 inputBusca.value = musicaSelecionada.texto_exibicao;
-                musicaSelecionadaTexto.textContent = 'Selecionada: ' + musicaSelecionada.texto_exibicao;
+                musicaSelecionadaTexto.textContent = musicaSelecionada.versoes_count > 0
+                    ? 'Selecionada: ' + musicaSelecionada.texto_exibicao
+                    : 'Selecionada sem versao/cifra cadastrada. Voce pode adicionar agora e vincular a cifra depois.';
+                musicaSelecionadaTexto.classList.toggle('text-amber-700', musicaSelecionada.versoes_count === 0);
+                inputBusca.setCustomValidity('');
                 resultadoBusca.classList.add('hidden');
                 resultadoBusca.innerHTML = '';
                 preencherVersoes(musicaSelecionada, versaoSelecionada);
@@ -484,41 +609,73 @@
                     })
                     .slice(0, 8);
 
+                resultadoBusca.replaceChildren();
+
                 if (resultados.length === 0) {
-                    resultadoBusca.innerHTML = '<div class="rounded-xl px-3 py-3 text-sm text-gray-500">Nenhuma música encontrada com esse termo.</div>';
+                    const vazio = document.createElement('div');
+                    vazio.className = 'rounded-xl px-3 py-3 text-sm text-gray-500';
+                    vazio.textContent = 'Nenhuma música encontrada com esse termo.';
+                    resultadoBusca.appendChild(vazio);
                     resultadoBusca.classList.remove('hidden');
                     return;
                 }
 
-                resultadoBusca.innerHTML = resultados.map((musica) => {
+                resultados.forEach((musica) => {
                     const trecho = (musica.letra || '').replace(/\s+/g, ' ').trim().slice(0, 90);
                     const subtitulo = musica.artista ? musica.artista : 'Artista não informado';
-                    const trechoHtml = trecho ? `<p class="mt-1 text-xs text-gray-500">${trecho}...</p>` : '';
+                    const botao = document.createElement('button');
+                    const topo = document.createElement('div');
+                    const texto = document.createElement('div');
+                    const titulo = document.createElement('span');
+                    const badge = document.createElement('span');
+                    const artista = document.createElement('span');
 
-                    return `
-                        <button type="button" class="flex w-full flex-col rounded-xl px-3 py-3 text-left transition hover:bg-[#fff8ed]" data-musica-id="${musica.id}">
-                            <span class="text-sm font-semibold text-gray-900">${musica.titulo}</span>
-                            <span class="mt-1 text-xs text-[#8c6933]">${subtitulo}</span>
-                            ${trechoHtml}
-                        </button>
-                    `;
-                }).join('');
+                    botao.type = 'button';
+                    botao.className = 'musica-search-result';
+                    botao.dataset.musicaId = musica.id;
 
-                resultadoBusca.classList.remove('hidden');
+                    topo.className = 'musica-search-result__top';
+                    texto.className = 'min-w-0';
+                    titulo.className = 'block text-sm font-semibold text-gray-900';
+                    titulo.textContent = musica.titulo || 'Música sem título';
+                    artista.className = 'mt-1 block text-xs text-[#8c6933]';
+                    artista.textContent = subtitulo;
 
-                resultadoBusca.querySelectorAll('[data-musica-id]').forEach((botao) => {
+                    badge.className = musica.versoes_count > 0
+                        ? 'musica-search-badge musica-search-badge--ok'
+                        : 'musica-search-badge musica-search-badge--warn';
+                    badge.textContent = musica.versoes_count > 0
+                        ? `${musica.versoes_count} versão(ões)`
+                        : 'sem cifra';
+
+                    texto.append(titulo, artista);
+                    topo.append(texto, badge);
+                    botao.appendChild(topo);
+
+                    if (trecho) {
+                        const trechoElemento = document.createElement('p');
+                        trechoElemento.className = 'mt-2 text-xs text-gray-500';
+                        trechoElemento.textContent = `${trecho}...`;
+                        botao.appendChild(trechoElemento);
+                    }
+
                     botao.addEventListener('click', () => {
                         const musicaSelecionada = musicas.find((item) => String(item.id) === String(botao.dataset.musicaId));
                         if (musicaSelecionada) {
                             selecionarMusica(musicaSelecionada);
                         }
                     });
+
+                    resultadoBusca.appendChild(botao);
                 });
+
+                resultadoBusca.classList.remove('hidden');
             };
 
             inputBusca.addEventListener('input', (event) => {
                 musicaId.value = '';
                 musicaSelecionadaTexto.textContent = 'Selecione uma música na busca abaixo.';
+                musicaSelecionadaTexto.classList.remove('text-amber-700');
                 selectVersao.innerHTML = '<option value="">Vincular depois</option>';
                 selectVersao.disabled = true;
                 atualizarOrientacaoTom();
@@ -548,6 +705,17 @@
             } else {
                 atualizarOrientacaoTom();
             }
+
+            formularioAdicionar?.addEventListener('submit', (event) => {
+                if (musicaId.value !== '') {
+                    inputBusca.setCustomValidity('');
+                    return;
+                }
+
+                event.preventDefault();
+                inputBusca.setCustomValidity('Digite e escolha uma música da lista.');
+                inputBusca.reportValidity();
+            });
         });
     </script>
 @endpush

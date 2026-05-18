@@ -320,6 +320,18 @@ class MissaController extends Controller
                 ]);
         }
 
+        $itensSemVersao = $missa->missaMusicas()
+            ->whereNull('versao_musical_id')
+            ->count();
+
+        if ($itensSemVersao > 0) {
+            return redirect()
+                ->to(route('local-admin.missas.show', $missa) . '#missa-repertorio')
+                ->withErrors([
+                    'missa' => 'Montagem ainda pendente: vincule uma versao/cifra nos ' . $itensSemVersao . ' item(ns) sem cifra antes de concluir.',
+                ]);
+        }
+
         return redirect()
             ->route('local-admin.missas.index')
             ->with('success', 'Montagem da missa "' . $missa->titulo . '" concluida com ' . $totalItens . ' item(ns) no repertorio.');
