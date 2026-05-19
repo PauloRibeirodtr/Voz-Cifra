@@ -337,6 +337,25 @@ class MissaController extends Controller
             ->with('success', 'Montagem da missa "' . $missa->titulo . '" concluida com ' . $totalItens . ' item(ns) no repertorio.');
     }
 
+    public function corrigirOrdemRepertorio(Missa $missa): RedirectResponse
+    {
+        $this->garantirMissaDaIgreja($missa);
+
+        if ($missa->missaMusicas()->count() === 0) {
+            return redirect()
+                ->to(route('local-admin.missas.show', $missa) . '#missa-repertorio')
+                ->withErrors([
+                    'missa' => 'Adicione musicas ao repertorio antes de corrigir a ordem.',
+                ]);
+        }
+
+        $this->reorganizarRepertorioPorMomento($missa);
+
+        return redirect()
+            ->to(route('local-admin.missas.show', $missa) . '#missa-repertorio')
+            ->with('success', 'Ordem do repertorio corrigida pela sequencia dos momentos liturgicos.');
+    }
+
     public function storeRepertorio(Request $request, Missa $missa): RedirectResponse
     {
         $this->garantirMissaDaIgreja($missa);
@@ -354,6 +373,14 @@ class MissaController extends Controller
         ]);
 
         $musica = Musica::findOrFail($dados['musica_id']);
+
+        if ($missa->missaMusicas()->where('musica_id', $musica->id)->exists()) {
+            return back()
+                ->withErrors([
+                    'musica_id' => 'Esta musica ja esta no repertorio desta missa. Ajuste o item existente ou remova antes de adicionar novamente.',
+                ])
+                ->withInput();
+        }
 
         if (!empty($dados['versao_musical_id'])) {
             $versao = VersaoMusical::findOrFail($dados['versao_musical_id']);

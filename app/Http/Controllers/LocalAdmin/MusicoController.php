@@ -165,6 +165,7 @@ class MusicoController extends Controller
             'email' => ['required', 'email', 'max:255'],
             'telefone' => ['nullable', 'string', 'max:20'],
             'ativo' => ['nullable', 'boolean'],
+            'enviar_convite' => ['nullable', 'boolean'],
         ]);
     }
 

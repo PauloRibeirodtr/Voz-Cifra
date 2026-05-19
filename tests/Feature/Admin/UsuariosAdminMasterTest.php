@@ -158,6 +158,7 @@ class UsuariosAdminMasterTest extends TestCase
                 'password' => '',
                 'password_confirmation' => '',
                 'ativo' => '1',
+                'enviar_convite' => '1',
             ]);
 
         $usuario = Usuario::query()->where('email', 'admin.local@example.com')->first();

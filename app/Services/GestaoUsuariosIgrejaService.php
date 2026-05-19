@@ -117,7 +117,7 @@ class GestaoUsuariosIgrejaService
 
         $this->notificarPapeisConcedidos($usuario, $igreja, $papeisConcedidos, $ator, $origem);
 
-        if ($usuario->primeiro_acesso && filter_var((string) $usuario->email, FILTER_VALIDATE_EMAIL)) {
+        if (($dados['enviar_convite'] ?? true) && $usuario->primeiro_acesso && filter_var((string) $usuario->email, FILTER_VALIDATE_EMAIL)) {
             $this->notificacaoAcessoInicialService->enviarConvite(
                 alvo: $usuario,
                 ator: $ator,
@@ -248,7 +248,7 @@ class GestaoUsuariosIgrejaService
             }
         }
 
-        if ($usuario->primeiro_acesso && $senhaFoiDefinida && filter_var((string) $usuario->email, FILTER_VALIDATE_EMAIL)) {
+        if (($dados['enviar_convite'] ?? true) && $usuario->primeiro_acesso && $senhaFoiDefinida && filter_var((string) $usuario->email, FILTER_VALIDATE_EMAIL)) {
             $this->notificacaoAcessoInicialService->enviarConvite(
                 alvo: $usuario,
                 ator: $ator,

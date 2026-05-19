@@ -58,7 +58,7 @@
 
     <aside class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
         <h2 class="text-lg font-bold text-gray-900">Acesso do músico</h2>
-        <p class="mt-2 text-sm text-gray-500">Ao cadastrar, o sistema envia um link seguro para o musico definir a propria senha. O link expira em 60 minutos.</p>
+        <p class="mt-2 text-sm text-gray-500">O link de primeiro acesso pode ser enviado agora ou depois pelo botao de redefinir senha.</p>
 
         @unless ($musico->exists)
             <div class="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-4 text-sm font-semibold text-emerald-900">
@@ -71,6 +71,14 @@
             <input type="checkbox" name="ativo" value="1" {{ old('ativo', $musico->exists ? (int) $musico->ativo : 1) ? 'checked' : '' }} class="mt-1 rounded border-gray-300 text-green-700 focus:ring-green-500">
             <span>Deixar este músico ativo</span>
         </label>
+
+        @unless ($musico->exists)
+            <label class="mt-5 inline-flex items-start gap-3 text-sm font-medium text-gray-700">
+                <input type="hidden" name="enviar_convite" value="0">
+                <input type="checkbox" name="enviar_convite" value="1" {{ old('enviar_convite', false) ? 'checked' : '' }} class="mt-1 rounded border-gray-300 text-green-700 focus:ring-green-500">
+                <span>Enviar convite de acesso agora</span>
+            </label>
+        @endunless
 
         <div class="mt-6 space-y-3">
             <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-green-700 px-5 py-3 font-semibold text-white hover:bg-green-800">

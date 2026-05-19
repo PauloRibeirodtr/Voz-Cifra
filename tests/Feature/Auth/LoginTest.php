@@ -100,6 +100,7 @@ class LoginTest extends TestCase
                 'password' => '',
                 'password_confirmation' => '',
                 'ativo' => '1',
+                'enviar_convite' => '1',
             ])
             ->assertSessionHasNoErrors();
 

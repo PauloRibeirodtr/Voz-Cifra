@@ -187,6 +187,7 @@ class UsuarioController extends Controller
                 'eh_padre' => $tipoCadastro === 'padre',
                 'perfil_global' => $tipoCadastro === 'admin_master' ? 'admin_master' : 'usuario',
                 'nivel_global' => $tipoCadastro === 'admin_master' ? 6 : 1,
+                'enviar_convite' => (bool) ($dados['enviar_convite'] ?? false),
             ],
             ator: $ator,
             origem: 'admin_usuarios_store'
@@ -385,6 +386,7 @@ class UsuarioController extends Controller
             'email' => ['nullable', 'email', 'max:255'],
             'telefone' => ['nullable', 'string', 'max:20'],
             'ativo' => ['nullable', 'boolean'],
+            'enviar_convite' => ['nullable', 'boolean'],
         ]);
 
         $this->garantirEmailQuandoNecessario(

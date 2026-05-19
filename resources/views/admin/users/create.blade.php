@@ -240,7 +240,7 @@
                             </div>
 
                             <div class="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-4 text-sm font-semibold text-emerald-900">
-                                Ao salvar, o sistema enviara um link seguro para a pessoa definir a propria senha. O link expira em 60 minutos.
+                                O link seguro pode ser enviado agora ou depois pela acao de redefinir senha. Ele expira em 60 minutos.
                             </div>
 
                             <div class="xl:col-span-2">
@@ -256,6 +256,11 @@
                                 <input type="hidden" name="ativo" value="0">
                                 <input type="checkbox" name="ativo" value="1" {{ old('ativo', '1') ? 'checked' : '' }}>
                                 <span>Conta ativa</span>
+                            </label>
+                            <label class="admin-checkbox">
+                                <input type="hidden" name="enviar_convite" value="0">
+                                <input type="checkbox" name="enviar_convite" value="1" {{ old('enviar_convite', false) ? 'checked' : '' }}>
+                                <span>Enviar convite de acesso agora</span>
                             </label>
                         </div>
 

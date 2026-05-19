@@ -9,6 +9,26 @@
     $itensSemVersao = $missa->missaMusicas->filter(fn ($item) => $item->versaoMusical === null)->count();
     $itensSemMomento = $missa->missaMusicas->filter(fn ($item) => $item->momentoLiturgico === null)->count();
     $repertorioCompleto = $totalItensRepertorio > 0 && $itensSemVersao === 0 && $itensSemMomento === 0;
+    $momentosRepertorio = $missa->missaMusicas
+        ->map(fn ($item) => $item->momentoLiturgico?->nome)
+        ->filter()
+        ->map(fn ($nome) => mb_strtolower(\Illuminate\Support\Str::ascii($nome)))
+        ->values();
+    $momentosEssenciais = [
+        'entrada' => 'Entrada',
+        'salmo' => 'Salmo',
+        'aclamacao' => 'Aclamacao',
+        'ofertorio' => 'Ofertorio',
+        'comunhao' => 'Comunhao',
+        'final' => 'Final',
+    ];
+    $momentosEssenciaisDefinidos = collect(array_keys($momentosEssenciais))
+        ->filter(fn ($momentoBase) => $momentosRepertorio->contains(fn ($nome) => str_contains($nome, $momentoBase)))
+        ->count();
+    $musicasDuplicadas = $missa->missaMusicas
+        ->groupBy('musica_id')
+        ->filter(fn ($grupo) => $grupo->count() > 1)
+        ->count();
 @endphp
 
 @push('styles')
@@ -234,6 +254,69 @@
             <span class="text-xs font-black uppercase tracking-wider text-gray-500">Status</span>
             <strong>{{ $repertorioCompleto ? 'Completo' : 'Pendente' }}</strong>
             <p class="mt-2 text-sm text-gray-600">{{ $repertorioCompleto ? 'pronto para revisar' : 'revise momentos e versoes' }}</p>
+        </div>
+    </section>
+
+    <section class="mb-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+                <h2 class="text-lg font-bold text-gray-900">Checklist da montagem</h2>
+                <p class="mt-1 text-sm text-gray-500">Use como conferencia rapida antes de publicar ou apresentar a missa.</p>
+            </div>
+            <form action="{{ route('local-admin.missas.repertorio.corrigir-ordem', $missa) }}" method="POST" class="w-full sm:w-auto">
+                @csrf
+                <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#ead6b3] bg-[#fff8ed] px-4 py-3 text-sm font-semibold text-[#6c4a21] transition hover:bg-[#f8ecd7] sm:w-auto">
+                    <i class="fa-solid fa-arrow-down-wide-short" aria-hidden="true"></i>
+                    Corrigir ordem
+                </button>
+            </form>
+        </div>
+
+        <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div class="rounded-xl border {{ $totalItensRepertorio > 0 ? 'border-emerald-100 bg-emerald-50 text-emerald-800' : 'border-amber-100 bg-amber-50 text-amber-900' }} p-4 text-sm">
+                <strong class="flex items-center gap-2">
+                    <i class="fa-solid {{ $totalItensRepertorio > 0 ? 'fa-check' : 'fa-triangle-exclamation' }}" aria-hidden="true"></i>
+                    Repertorio
+                </strong>
+                <p class="mt-2">{{ $totalItensRepertorio > 0 ? 'Ha musicas adicionadas.' : 'Adicione pelo menos uma musica.' }}</p>
+            </div>
+            <div class="rounded-xl border {{ $itensSemMomento === 0 ? 'border-emerald-100 bg-emerald-50 text-emerald-800' : 'border-amber-100 bg-amber-50 text-amber-900' }} p-4 text-sm">
+                <strong class="flex items-center gap-2">
+                    <i class="fa-solid {{ $itensSemMomento === 0 ? 'fa-check' : 'fa-triangle-exclamation' }}" aria-hidden="true"></i>
+                    Momentos
+                </strong>
+                <p class="mt-2">{{ $itensSemMomento === 0 ? 'Todos os itens tem momento.' : $itensSemMomento . ' item(ns) sem momento.' }}</p>
+            </div>
+            <div class="rounded-xl border {{ $itensSemVersao === 0 ? 'border-emerald-100 bg-emerald-50 text-emerald-800' : 'border-amber-100 bg-amber-50 text-amber-900' }} p-4 text-sm">
+                <strong class="flex items-center gap-2">
+                    <i class="fa-solid {{ $itensSemVersao === 0 ? 'fa-check' : 'fa-triangle-exclamation' }}" aria-hidden="true"></i>
+                    Cifras
+                </strong>
+                <p class="mt-2">{{ $itensSemVersao === 0 ? 'Tudo vinculado para os musicos.' : $itensSemVersao . ' item(ns) sem cifra.' }}</p>
+            </div>
+            <div class="rounded-xl border {{ $musicasDuplicadas === 0 ? 'border-emerald-100 bg-emerald-50 text-emerald-800' : 'border-red-100 bg-red-50 text-red-800' }} p-4 text-sm">
+                <strong class="flex items-center gap-2">
+                    <i class="fa-solid {{ $musicasDuplicadas === 0 ? 'fa-check' : 'fa-triangle-exclamation' }}" aria-hidden="true"></i>
+                    Duplicidade
+                </strong>
+                <p class="mt-2">{{ $musicasDuplicadas === 0 ? 'Sem musicas repetidas.' : $musicasDuplicadas . ' musica(s) repetida(s).' }}</p>
+            </div>
+        </div>
+
+        <div class="mt-4 rounded-xl border border-gray-100 bg-gray-50 p-4">
+            <div class="mb-2 text-xs font-black uppercase tracking-wider text-gray-500">Momentos principais encontrados</div>
+            <div class="flex flex-wrap gap-2">
+                @foreach ($momentosEssenciais as $chaveMomento => $nomeMomento)
+                    @php
+                        $momentoDefinido = $momentosRepertorio->contains(fn ($nome) => str_contains($nome, $chaveMomento));
+                    @endphp
+                    <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold {{ $momentoDefinido ? 'bg-emerald-100 text-emerald-700' : 'bg-white text-gray-500 ring-1 ring-gray-200' }}">
+                        <i class="fa-solid {{ $momentoDefinido ? 'fa-check' : 'fa-minus' }}" aria-hidden="true"></i>
+                        {{ $nomeMomento }}
+                    </span>
+                @endforeach
+            </div>
+            <p class="mt-3 text-xs text-gray-500">{{ $momentosEssenciaisDefinidos }} de {{ count($momentosEssenciais) }} momentos principais ja aparecem no repertorio.</p>
         </div>
     </section>
 

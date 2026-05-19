@@ -182,6 +182,7 @@ Route::middleware(['auth', 'verified_custom', 'role:admin_local', 'primeiro_aces
         Route::delete('/missas/{missa}', [LocalAdminMissaController::class, 'destroy'])->name('missas.destroy');
         Route::post('/missas/{missa}/toggle', [LocalAdminMissaController::class, 'toggle'])->name('missas.toggle');
         Route::post('/missas/{missa}/concluir-montagem', [LocalAdminMissaController::class, 'concluirMontagem'])->name('missas.concluir-montagem');
+        Route::post('/missas/{missa}/corrigir-ordem-repertorio', [LocalAdminMissaController::class, 'corrigirOrdemRepertorio'])->name('missas.repertorio.corrigir-ordem');
         Route::get('/missas/{missa}/pdf', [LocalAdminMissaController::class, 'pdf'])->name('missas.pdf');
 
         Route::post('/missas/{missa}/repertorio', [LocalAdminMissaController::class, 'storeRepertorio'])->name('repertorio.store');
