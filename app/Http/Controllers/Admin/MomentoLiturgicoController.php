@@ -15,18 +15,21 @@ class MomentoLiturgicoController extends Controller
     {
         return view('admin.momentos-liturgicos.index', [
             'momentosLiturgicos' => MomentoLiturgico::orderByRaw('ordem_exibicao asc nulls last')->orderBy('nome')->get(),
+            'routePrefix' => $this->routePrefix(),
         ]);
     }
 
     public function create(): View
     {
-        return view('admin.momentos-liturgicos.create');
+        return view('admin.momentos-liturgicos.create', [
+            'routePrefix' => $this->routePrefix(),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $dados = $request->validate([
-            'nome' => ['required', 'string', 'max:255', Rule::unique('momentos_liturgicos', 'nome')],
+            'nome' => ['required', 'string', 'max:255', Rule::unique('classificacoes_liturgicas', 'nome')->where(fn ($query) => $query->where('tipo', 'momento'))],
             'descricao' => ['nullable', 'string'],
             'ordem_exibicao' => ['nullable', 'integer', 'min:1'],
             'ativo' => ['nullable', 'boolean'],
@@ -40,7 +43,7 @@ class MomentoLiturgicoController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.momentos-liturgicos.index')
+            ->route($this->routeName('momentos-liturgicos.index'))
             ->with('success', 'Momento liturgico cadastrado com sucesso.');
     }
 
@@ -48,13 +51,14 @@ class MomentoLiturgicoController extends Controller
     {
         return view('admin.momentos-liturgicos.edit', [
             'momentoLiturgico' => $momentoLiturgico,
+            'routePrefix' => $this->routePrefix(),
         ]);
     }
 
     public function update(Request $request, MomentoLiturgico $momentoLiturgico): RedirectResponse
     {
         $dados = $request->validate([
-            'nome' => ['required', 'string', 'max:255', Rule::unique('momentos_liturgicos', 'nome')->ignore($momentoLiturgico->id)],
+            'nome' => ['required', 'string', 'max:255', Rule::unique('classificacoes_liturgicas', 'nome')->where(fn ($query) => $query->where('tipo', 'momento'))->ignore($momentoLiturgico->id)],
             'descricao' => ['nullable', 'string'],
             'ordem_exibicao' => ['nullable', 'integer', 'min:1'],
             'ativo' => ['nullable', 'boolean'],
@@ -68,16 +72,26 @@ class MomentoLiturgicoController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.momentos-liturgicos.index')
+            ->route($this->routeName('momentos-liturgicos.index'))
             ->with('success', 'Momento liturgico atualizado com sucesso.');
     }
 
     public function destroy(MomentoLiturgico $momentoLiturgico): RedirectResponse
     {
-        $momentoLiturgico->delete();
+        $momentoLiturgico->update(['ativo' => false]);
 
         return redirect()
-            ->route('admin.momentos-liturgicos.index')
-            ->with('success', 'Momento liturgico excluido com sucesso.');
+            ->route($this->routeName('momentos-liturgicos.index'))
+            ->with('success', 'Momento liturgico inativado com sucesso.');
+    }
+
+    private function routePrefix(): string
+    {
+        return request()->routeIs('coordenador.*') ? 'coordenador' : 'admin';
+    }
+
+    private function routeName(string $name): string
+    {
+        return $this->routePrefix() . '.' . $name;
     }
 }

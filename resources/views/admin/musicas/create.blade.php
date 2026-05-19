@@ -13,7 +13,7 @@
                 Cancelar
             </a>
             <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-5 py-3 font-semibold text-white hover:bg-green-800">
-                Cadastrar musica
+                Salvar musica
             </button>
         </div>
     </form>

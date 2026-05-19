@@ -102,6 +102,12 @@
                 </div>
 
                 <div>
+                    <label class="block text-sm font-medium text-gray-700">Telefone da secretaria</label>
+                    <input type="text" name="telefone_secretaria" value="{{ old('telefone_secretaria', $igreja->telefone_secretaria) }}" placeholder="(65) 99999-9999" data-telefone-input class="{{ $classeInput }}" />
+                    <p class="text-xs text-gray-500 mt-1">Opcional. Use o telefone oficial da secretaria ou atendimento da igreja.</p>
+                </div>
+
+                <div>
                     <label class="block text-sm font-medium text-gray-700">CEP</label>
                     <input
                         type="text"

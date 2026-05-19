@@ -190,6 +190,16 @@
                             <i class="fa-solid fa-sliders w-5 text-center group-hover:scale-110 transition"></i>
                             <span>Cadastrar m&uacute;sicas e cifras</span>
                         </a>
+
+                        <a href="{{ route('coordenador.tempos-liturgicos.index') }}" class="{{ $itemMenuClasse(request()->routeIs('coordenador.tempos-liturgicos.*')) }}">
+                            <i class="fa-solid fa-calendar-days w-5 text-center group-hover:scale-110 transition"></i>
+                            <span>Tempos lit&uacute;rgicos</span>
+                        </a>
+
+                        <a href="{{ route('coordenador.momentos-liturgicos.index') }}" class="{{ $itemMenuClasse(request()->routeIs('coordenador.momentos-liturgicos.*')) }}">
+                            <i class="fa-solid fa-list-ol w-5 text-center group-hover:scale-110 transition"></i>
+                            <span>Momentos lit&uacute;rgicos</span>
+                        </a>
                     @endif
 
                     @if ($temAcessoMusicalSidebar)
@@ -205,6 +215,16 @@
                     @endif
 
                     @if (auth()->user()?->ehAdminMaster())
+                        <a href="{{ route('admin.tempos-liturgicos.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.tempos-liturgicos.*')) }}">
+                            <i class="fa-solid fa-calendar-days w-5 text-center group-hover:scale-110 transition"></i>
+                            <span>Tempos lit&uacute;rgicos</span>
+                        </a>
+
+                        <a href="{{ route('admin.momentos-liturgicos.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.momentos-liturgicos.*')) }}">
+                            <i class="fa-solid fa-list-ol w-5 text-center group-hover:scale-110 transition"></i>
+                            <span>Momentos lit&uacute;rgicos</span>
+                        </a>
+
                         <a href="{{ route('admin.acordes.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.acordes.*')) }}">
                             <i class="fa-solid fa-guitar w-5 text-center group-hover:scale-110 transition"></i>
                             <span>Acordes</span>

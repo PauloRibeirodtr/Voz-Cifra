@@ -32,6 +32,10 @@
                     <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Administrador local</span>
                     <span class="mt-2 block text-base font-bold text-gray-900">{{ $usuario->nome }}</span>
                 </div>
+                <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                    <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Telefone da secretaria</span>
+                    <span class="mt-2 block text-base font-bold text-gray-900">{{ $igreja->telefone_secretaria ?: 'Nao informado' }}</span>
+                </div>
             </div>
 
             <div class="mt-4 rounded-2xl border border-gray-200 bg-gray-50 p-4">

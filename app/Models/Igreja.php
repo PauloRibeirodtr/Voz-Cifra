@@ -21,6 +21,7 @@ class Igreja extends Model
         'slug',
         'slug_publico_musicos',
         'cnpj',
+        'telefone_secretaria',
         'cep',
         'endereco',
         'numero',
@@ -118,7 +119,7 @@ class Igreja extends Model
 
     public function slugPublicoMusicos(): string
     {
-        return (string) $this->slug;
+        return trim((string) $this->slug_publico_musicos) ?: (string) $this->slug;
     }
 
     public function estaOperacional(): bool

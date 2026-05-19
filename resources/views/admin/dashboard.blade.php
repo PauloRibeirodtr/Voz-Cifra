@@ -60,6 +60,18 @@
                         <span class="mt-2 block text-sm text-gray-500">Organizar repertorio, versoes e revisoes.</span>
                     </a>
 
+                    <a href="{{ route('admin.momentos-liturgicos.index') }}" class="admin-quick-link px-4 py-4">
+                        <span class="admin-quick-link-label block text-xs font-black uppercase tracking-[0.18em]">Liturgia</span>
+                        <span class="mt-2 block text-base font-bold">Momentos da missa</span>
+                        <span class="mt-2 block text-sm text-gray-500">Cadastrar entrada, salmo, comunhao e demais momentos.</span>
+                    </a>
+
+                    <a href="{{ route('admin.tempos-liturgicos.index') }}" class="admin-quick-link px-4 py-4">
+                        <span class="admin-quick-link-label block text-xs font-black uppercase tracking-[0.18em]">Calendario</span>
+                        <span class="mt-2 block text-base font-bold">Tempos liturgicos</span>
+                        <span class="mt-2 block text-sm text-gray-500">Manter Advento, Natal, Quaresma, Pascoa e Tempo Comum.</span>
+                    </a>
+
                     <a href="{{ route('admin.settings') }}" class="admin-quick-link px-4 py-4">
                         <span class="admin-quick-link-label block text-xs font-black uppercase tracking-[0.18em]">Configuracoes</span>
                         <span class="mt-2 block text-base font-bold">Conta e sistema</span>

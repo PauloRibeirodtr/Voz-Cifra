@@ -3,10 +3,12 @@
 namespace Tests\Feature\Auth;
 
 use App\Enums\PapelIgreja;
+use App\Mail\ConviteAcessoInicialMail;
 use App\Models\Igreja;
 use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
@@ -35,12 +37,12 @@ class LoginTest extends TestCase
         $this->assertAuthenticatedAs($usuario);
     }
 
-    public function test_usuario_musico_consegue_login_com_cpf_e_senha_provisoria_sem_pontuacao(): void
+    public function test_usuario_musico_consegue_login_com_cpf_e_senha_definida_sem_pontuacao(): void
     {
         $igreja = Igreja::factory()->create();
         $usuario = Usuario::factory()->create([
             'cpf' => '123.456.789-01',
-            'password' => '12345678901',
+            'password' => 'SenhaManual123!',
             'ativo' => true,
             'primeiro_acesso' => true,
         ]);
@@ -49,7 +51,7 @@ class LoginTest extends TestCase
         $this
             ->post(route('login.attempt'), [
                 'email' => '12345678901',
-                'password' => '12345678901',
+                'password' => 'SenhaManual123!',
             ])
             ->assertRedirect(route('member.profile'));
 
@@ -77,7 +79,7 @@ class LoginTest extends TestCase
             ->assertDontSee('>Usu&aacute;rios<', false);
     }
 
-    public function test_cadastro_de_musico_sem_senha_define_cpf_sem_pontuacao_como_senha_provisoria(): void
+    public function test_cadastro_de_musico_sem_senha_gera_convite_para_definir_senha(): void
     {
         Mail::fake();
 
@@ -106,6 +108,8 @@ class LoginTest extends TestCase
         $this->assertSame('musico.novo@example.com', $usuario->email);
         $this->assertTrue($usuario->primeiro_acesso);
         $this->assertTrue($usuario->temPapelNaIgreja(PapelIgreja::MUSICO, $igreja->id));
+        $this->assertFalse(Hash::check('98765432100', (string) $usuario->password));
+        Mail::assertSent(ConviteAcessoInicialMail::class, fn (ConviteAcessoInicialMail $mail) => $mail->alvo->is($usuario));
 
         Auth::logout();
 
@@ -114,9 +118,9 @@ class LoginTest extends TestCase
                 'email' => 'musico.novo@example.com',
                 'password' => '98765432100',
             ])
-            ->assertRedirect(route('member.profile'));
+            ->assertSessionHasErrors(['email' => 'Credenciais invalidas.']);
 
-        $this->assertAuthenticatedAs($usuario);
+        $this->assertGuest();
     }
 
     public function test_usuario_inativo_recebe_mensagem_clara_no_login(): void

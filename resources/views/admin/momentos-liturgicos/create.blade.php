@@ -1,10 +1,11 @@
 @extends('admin.layouts.admin')
 
 @section('title', 'Cadastrar momento liturgico | Voz & Cifra')
-@section('mobile_title', 'Novo momento')
+@section('mobile_title', 'Cadastrar momento')
 
 @section('content')
     @php
+        $routePrefix = $routePrefix ?? 'admin';
         $classeInput = 'mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-100';
     @endphp
 
@@ -14,7 +15,7 @@
             <p class="text-sm text-gray-500">Adicione um novo momento liturgico central para uso no sistema.</p>
         </div>
 
-        <a href="{{ route('admin.momentos-liturgicos.index') }}" class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 font-medium hover:bg-gray-50">
+        <a href="{{ route($routePrefix . '.momentos-liturgicos.index') }}" class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 font-medium hover:bg-gray-50">
             Ver momentos
         </a>
     </div>
@@ -29,7 +30,7 @@
         </div>
     @endif
 
-    <form action="{{ route('admin.momentos-liturgicos.store') }}" method="POST" class="space-y-6">
+    <form action="{{ route($routePrefix . '.momentos-liturgicos.store') }}" method="POST" class="space-y-6">
         @csrf
 
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
@@ -58,7 +59,7 @@
         </div>
 
         <div class="flex justify-end gap-3">
-            <a href="{{ route('admin.momentos-liturgicos.index') }}" class="px-5 py-3 bg-white border border-gray-200 rounded-lg text-gray-700 font-medium hover:bg-gray-50">
+            <a href="{{ route($routePrefix . '.momentos-liturgicos.index') }}" class="px-5 py-3 bg-white border border-gray-200 rounded-lg text-gray-700 font-medium hover:bg-gray-50">
                 Cancelar
             </a>
             <button type="submit" class="px-5 py-3 bg-green-700 text-white rounded-lg font-semibold hover:bg-green-800">

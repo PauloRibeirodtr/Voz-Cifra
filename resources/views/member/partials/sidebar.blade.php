@@ -49,6 +49,16 @@
                 <i class="fa-solid fa-music w-5 text-center text-white transition group-hover:scale-110"></i>
                 <span>Musicas e versoes</span>
             </a>
+
+            <a href="{{ route('coordenador.tempos-liturgicos.index') }}" class="{{ $itemMenuClasse(request()->routeIs('coordenador.tempos-liturgicos.*')) }}">
+                <i class="fa-solid fa-calendar-days w-5 text-center text-white transition group-hover:scale-110"></i>
+                <span>Tempos liturgicos</span>
+            </a>
+
+            <a href="{{ route('coordenador.momentos-liturgicos.index') }}" class="{{ $itemMenuClasse(request()->routeIs('coordenador.momentos-liturgicos.*')) }}">
+                <i class="fa-solid fa-list-ol w-5 text-center text-white transition group-hover:scale-110"></i>
+                <span>Momentos liturgicos</span>
+            </a>
         @else
             <a href="{{ route('member.repertorio') }}" class="{{ $itemMenuClasse(request()->routeIs('member.repertorio')) }}">
                 <i class="fa-solid fa-list-check w-5 text-center text-white transition group-hover:scale-110"></i>

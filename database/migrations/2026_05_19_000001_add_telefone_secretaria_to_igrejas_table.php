@@ -8,15 +8,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('usuarios', function (Blueprint $table) {
-            $table->string('foto_perfil_path')->nullable()->after('telefone');
+        Schema::table('igrejas', function (Blueprint $table) {
+            $table->string('telefone_secretaria', 20)->nullable()->after('cnpj');
         });
     }
 
     public function down(): void
     {
-        Schema::table('usuarios', function (Blueprint $table) {
-            $table->dropColumn('foto_perfil_path');
+        Schema::table('igrejas', function (Blueprint $table) {
+            $table->dropColumn('telefone_secretaria');
         });
     }
 };

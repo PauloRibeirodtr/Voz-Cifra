@@ -5,6 +5,8 @@
 
 @php
     $sugestoesMusicasBase64 = base64_encode(json_encode($sugestoesMusicas ?? []));
+    $routePrefix = $routePrefix ?? 'admin';
+    $podeInativar = $podeInativar ?? true;
 @endphp
 
 @push('styles')
@@ -43,7 +45,7 @@
         </div>
 
         <div class="flex flex-col gap-3 md:items-end">
-            <form action="{{ route('admin.musicas.index') }}" method="GET" class="flex flex-col gap-2 sm:flex-row">
+            <form action="{{ route($routePrefix . '.musicas.index') }}" method="GET" class="flex flex-col gap-2 sm:flex-row">
                 <div class="relative">
                     <input
                         type="search"
@@ -54,19 +56,22 @@
                         class="min-w-0 rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-100 sm:min-w-[260px]"
                         data-music-search-input
                     >
-
-                    <div
-                        class="absolute z-20 mt-2 hidden w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl"
-                        data-music-suggestions
-                    ></div>
+                    <div class="absolute z-20 mt-2 hidden w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl" data-music-suggestions></div>
                 </div>
-
+                <select name="momento_liturgico_id" class="min-w-0 rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-100 sm:min-w-[220px]">
+                    <option value="">Todos os momentos</option>
+                    @foreach ($momentosLiturgicos as $momentoLiturgico)
+                        <option value="{{ $momentoLiturgico->id }}" @selected((string) $momentoFiltro === (string) $momentoLiturgico->id)>
+                            {{ $momentoLiturgico->nome }}
+                        </option>
+                    @endforeach
+                </select>
                 <button type="submit" class="rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-700 hover:bg-gray-50">
                     Buscar
                 </button>
             </form>
 
-            <a href="{{ route('admin.musicas.create') }}" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-medium text-white hover:bg-green-800">
+            <a href="{{ route($routePrefix . '.musicas.create') }}" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-medium text-white hover:bg-green-800">
                 Cadastrar música
             </a>
         </div>
@@ -78,8 +83,8 @@
             <p class="mt-1 text-xs text-gray-500">Abra uma musica para conferir a letra, cadastrar versoes e revisar cifras.</p>
         </div>
 
-        @if (request('search'))
-            <a href="{{ route('admin.musicas.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+        @if (request('search') || request('momento_liturgico_id'))
+            <a href="{{ route($routePrefix . '.musicas.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
                 Limpar busca
             </a>
         @endif
@@ -104,11 +109,10 @@
                             <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Musica</th>
                             <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Tempo liturgico</th>
                             <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Momento liturgico</th>
-                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Status</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Cifra</th>
                             <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-500">Acoes</th>
                         </tr>
                     </thead>
-
                     <tbody class="divide-y divide-gray-100">
                         @foreach ($musicas as $musica)
                             <tr class="musica-row hover:bg-gray-50">
@@ -116,39 +120,34 @@
                                     <div class="musica-row-title font-semibold">{{ $musica->titulo }}</div>
                                     <div class="text-sm text-gray-500">{{ $musica->artista ?: 'Artista nao informado' }}</div>
                                 </td>
-
                                 <td class="px-6 py-4 text-sm text-gray-600">
                                     {{ $musica->tempoLiturgico?->nome ?: '-' }}
                                 </td>
-
                                 <td class="px-6 py-4 text-sm text-gray-600">
                                     {{ $musica->momentoLiturgico?->nome ?: '-' }}
                                 </td>
-
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold {{ $musica->ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                        {{ $musica->ativo ? 'Ativa' : 'Inativa' }}
+                                    <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold {{ ($musica->versoes_ativas_count ?? 0) > 0 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-800' }}">
+                                        {{ ($musica->versoes_ativas_count ?? 0) > 0 ? 'Com cifra' : 'Sem cifra' }}
                                     </span>
                                 </td>
-
                                 <td class="px-6 py-4 text-right">
                                     <div class="inline-flex items-center gap-2">
-                                        <a href="{{ route('admin.musicas.show', $musica) }}" class="inline-flex px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                            Ver
+                                        <a href="{{ route($routePrefix . '.musicas.show', $musica) }}" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100" title="Ver musica" aria-label="Ver musica {{ $musica->titulo }}">
+                                            <i class="fa-solid fa-eye"></i>
                                         </a>
-
-                                        <a href="{{ route('admin.musicas.edit', $musica) }}" class="inline-flex px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                            Editar
+                                        <a href="{{ route($routePrefix . '.musicas.edit', $musica) }}" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#ead6b3] bg-[#fff8ed] text-[#6c4a21] hover:bg-[#f8ecd7]" title="Editar musica" aria-label="Editar musica {{ $musica->titulo }}">
+                                            <i class="fa-solid fa-pen"></i>
                                         </a>
-
-                                        <form action="{{ route('admin.musicas.destroy', $musica) }}" method="POST" onsubmit="return confirm('Deseja inativar esta musica? Ela sera preservada no banco.');">
-                                            @csrf
-                                            @method('DELETE')
-
-                                            <button type="submit" class="inline-flex px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-sm font-medium text-red-700 hover:bg-red-100">
-                                                Inativar
-                                            </button>
-                                        </form>
+                                        @if ($podeInativar && $musica->ativo)
+                                            <form action="{{ route($routePrefix . '.musicas.destroy', $musica) }}" method="POST" onsubmit="return confirm('Deseja inativar esta musica? Ela sera preservada no banco.');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100" title="Inativar musica" aria-label="Inativar musica {{ $musica->titulo }}">
+                                                    <i class="fa-solid fa-ban"></i>
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -165,9 +164,8 @@
                                 <h2 class="break-words text-base font-bold text-gray-800">{{ $musica->titulo }}</h2>
                                 <p class="mt-1 text-sm text-gray-500">{{ $musica->artista ?: 'Artista nao informado' }}</p>
                             </div>
-
-                            <span class="inline-flex shrink-0 rounded-full px-3 py-1 text-xs font-semibold {{ $musica->ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                {{ $musica->ativo ? 'Ativa' : 'Inativa' }}
+                            <span class="inline-flex shrink-0 rounded-full px-3 py-1 text-xs font-semibold {{ ($musica->versoes_ativas_count ?? 0) > 0 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-800' }}">
+                                {{ ($musica->versoes_ativas_count ?? 0) > 0 ? 'Com cifra' : 'Sem cifra' }}
                             </span>
                         </div>
 
@@ -183,23 +181,18 @@
                             </div>
                         </div>
 
-                        <div class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
-                            <a href="{{ route('admin.musicas.show', $musica) }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
-                                Ver
-                            </a>
-
-                            <a href="{{ route('admin.musicas.edit', $musica) }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
-                                Editar
-                            </a>
-
-                            <form action="{{ route('admin.musicas.destroy', $musica) }}" method="POST" onsubmit="return confirm('Deseja inativar esta musica? Ela sera preservada no banco.');">
-                                @csrf
-                                @method('DELETE')
-
-                                <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 hover:bg-red-100">
-                                    Inativar
-                                </button>
-                            </form>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <a href="{{ route($routePrefix . '.musicas.show', $musica) }}" class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100" title="Ver musica" aria-label="Ver musica {{ $musica->titulo }}"><i class="fa-solid fa-eye"></i></a>
+                            <a href="{{ route($routePrefix . '.musicas.edit', $musica) }}" class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[#ead6b3] bg-[#fff8ed] text-[#6c4a21] hover:bg-[#f8ecd7]" title="Editar musica" aria-label="Editar musica {{ $musica->titulo }}"><i class="fa-solid fa-pen"></i></a>
+                            @if ($podeInativar && $musica->ativo)
+                                <form action="{{ route($routePrefix . '.musicas.destroy', $musica) }}" method="POST" onsubmit="return confirm('Deseja inativar esta musica? Ela sera preservada no banco.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100" title="Inativar musica" aria-label="Inativar musica {{ $musica->titulo }}">
+                                        <i class="fa-solid fa-ban"></i>
+                                    </button>
+                                </form>
+                            @endif
                         </div>
                     </article>
                 @endforeach
@@ -243,9 +236,7 @@
                 }
 
                 const resultados = sugestoes
-                    .filter((musica) =>
-                        normalizar(`${musica.titulo} ${musica.artista || ''}`).includes(termo)
-                    )
+                    .filter((musica) => normalizar(`${musica.titulo} ${musica.artista || ''}`).includes(termo))
                     .slice(0, 6);
 
                 if (resultados.length === 0) {

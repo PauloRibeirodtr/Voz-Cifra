@@ -5,8 +5,13 @@
     $message = (string) ($message ?? 'Nao conseguimos abrir esta pagina agora.');
     $hint = (string) ($hint ?? 'Volte para um ponto seguro e tente novamente.');
     $homeUrl = route('root');
-    $dashboardRoute = auth()->check() ? auth()->user()?->rotaDestinoAposLogin() : null;
+    $usuarioAutenticado = auth()->user();
+    $dashboardRoute = $usuarioAutenticado && method_exists($usuarioAutenticado, 'rotaDestinoAposLogin')
+        ? $usuarioAutenticado->rotaDestinoAposLogin()
+        : null;
     $dashboardUrl = $dashboardRoute && \Illuminate\Support\Facades\Route::has($dashboardRoute) ? route($dashboardRoute) : null;
+    $safeUrl = $dashboardUrl ?: $homeUrl;
+    $safeLabel = $dashboardUrl ? 'Abrir meu painel' : 'Ir para a pagina publica';
     $illustration = $illustration ?? null;
     $illustrationAlt = (string) ($illustrationAlt ?? '');
 @endphp
@@ -321,13 +326,7 @@
                     <p class="error-hint">{{ $hint }}</p>
 
                     <div class="error-actions">
-                        <a href="{{ $homeUrl }}" class="error-action {{ $statusCode === '404' ? 'error-action--warm' : 'error-action--primary' }}">Ir para o inicio</a>
-                        @if ($dashboardUrl)
-                            <a href="{{ $dashboardUrl }}" class="error-action error-action--secondary">Abrir meu painel</a>
-                        @endif
-                        <button type="button" class="error-action error-action--secondary" onclick="window.history.length > 1 ? window.history.back() : window.location.assign('{{ $homeUrl }}')">
-                            Voltar
-                        </button>
+                        <a href="{{ $safeUrl }}" class="error-action {{ $statusCode === '404' ? 'error-action--warm' : 'error-action--primary' }}">{{ $safeLabel }}</a>
                     </div>
                 </div>
             </div>

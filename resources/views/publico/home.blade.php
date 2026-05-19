@@ -100,6 +100,9 @@
                                     <span class="church-tile__city">{{ $igreja['localidade'] !== '' ? $igreja['localidade'] : 'Localidade em configuração' }}</span>
                                     <span class="church-tile__name">{{ $igreja['nome'] }}</span>
                                     <span class="church-tile__address">{{ $igreja['endereco'] !== '' ? $igreja['endereco'] : 'Endereço não informado' }}</span>
+                                    @if (filled($igreja['telefone_secretaria']))
+                                        <span class="church-tile__address">{{ $igreja['telefone_secretaria'] }}</span>
+                                    @endif
                                     <span class="church-tile__status {{ $temMissaPublicada ? 'church-tile__status--active' : 'church-tile__status--empty' }}">
                                         <span aria-hidden="true">{{ $temMissaPublicada ? '●' : '●' }}</span>
                                         {{ $temMissaPublicada ? 'Missa publicada' : 'Sem missa hoje' }}
@@ -111,6 +114,7 @@
                                                 · {{ $igreja['proxima_horario'] }}
                                             @endif
                                         </span>
+                                        <span class="church-tile__next">Abrir próxima missa</span>
                                     @endif
                                 </span>
                             </a>
@@ -118,6 +122,7 @@
                     </div>
 
                     <p class="church-finder__empty" data-church-empty hidden>Nenhuma igreja encontrada para essa busca.</p>
+                    <button type="button" class="church-load-more" data-church-load-more hidden>Mostrar mais</button>
                 </div>
             </div>
         </section>
@@ -432,6 +437,23 @@
                 padding: 1rem;
             }
 
+            .church-load-more {
+                justify-self: center;
+                min-height: 3rem;
+                border: 1px solid rgba(210, 170, 102, 0.32);
+                border-radius: 999px;
+                background: rgba(201, 161, 95, 0.16);
+                color: var(--gold-soft);
+                cursor: pointer;
+                font: inherit;
+                font-weight: 900;
+                padding: 0 1.35rem;
+            }
+
+            .church-load-more[hidden] {
+                display: none;
+            }
+
             @media (min-width: 768px) {
                 .church-finder__bar {
                     grid-template-columns: minmax(18rem, 0.8fr) auto minmax(0, 1.2fr);
@@ -469,7 +491,9 @@
                 const cards = Array.from(document.querySelectorAll('[data-church-card]'));
                 const empty = document.querySelector('[data-church-empty]');
                 const cityButtons = Array.from(document.querySelectorAll('[data-city-filter]'));
+                const loadMoreButton = document.querySelector('[data-church-load-more]');
                 let activeCity = '';
+                let visibleLimit = 10;
 
                 const normalize = (value) => value
                     .toString()
@@ -496,21 +520,26 @@
                 const applyFilter = () => {
                     const term = normalize(input ? input.value : '');
                     const effectiveTerm = term.length >= 3 ? term : '';
-                    let visibleCount = 0;
-
-                    cards.forEach((card) => {
+                    const matchedCards = cards.filter((card) => {
                         const matchesText = effectiveTerm === '' || card.dataset.search.includes(effectiveTerm);
                         const matchesCity = activeCity === '' || card.dataset.city === activeCity;
-                        const visible = matchesText && matchesCity;
+
+                        return matchesText && matchesCity;
+                    });
+
+                    cards.forEach((card) => {
+                        const matchedIndex = matchedCards.indexOf(card);
+                        const visible = matchedIndex !== -1 && matchedIndex < visibleLimit;
 
                         card.hidden = !visible;
-                        if (visible) {
-                            visibleCount++;
-                        }
                     });
 
                     if (empty) {
-                        empty.hidden = visibleCount > 0;
+                        empty.hidden = matchedCards.length > 0;
+                    }
+
+                    if (loadMoreButton) {
+                        loadMoreButton.hidden = matchedCards.length <= visibleLimit;
                     }
                 };
 
@@ -568,6 +597,7 @@
 
                 if (input) {
                     input.addEventListener('input', () => {
+                        visibleLimit = 10;
                         applyFilter();
                         renderSuggestions();
                     });
@@ -588,13 +618,21 @@
                     openCard(firstVisible);
                 });
 
+                loadMoreButton?.addEventListener('click', () => {
+                    visibleLimit += 10;
+                    applyFilter();
+                });
+
                 cityButtons.forEach((button) => {
                     button.addEventListener('click', () => {
                         activeCity = normalize(button.dataset.cityFilter || '');
+                        visibleLimit = 10;
                         cityButtons.forEach((item) => item.classList.toggle('is-active', item === button));
                         applyFilter();
                     });
                 });
+
+                applyFilter();
 
                 document.addEventListener('click', (event) => {
                     if (!event.target.closest('[data-church-search], [data-church-suggestions]')) {

@@ -213,23 +213,17 @@ Esta secao documenta o modelo relacional real do Voz & Cifra com base nas migrat
 - Chaves estrangeiras: `usuario_igreja_id` referencia `usuario_igreja.id`; `concedido_por` e `revogado_por` referenciam `usuarios.id`.
 - Observacoes: um mesmo vinculo pode acumular `admin_local`, `coordenador` e `musico`.
 
-#### `tempos_liturgicos`
+#### `classificacoes_liturgicas`
 
-- Finalidade: cadastra tempos liturgicos usados em musicas e missas.
-- Campos principais: `nome`, `descricao`, `ativo`.
-- Observacoes: `nome` e unico.
-
-#### `momentos_liturgicos`
-
-- Finalidade: cadastra momentos da celebracao, como entrada, salmo, comunhao e final.
-- Campos principais: `nome`, `descricao`, `ordem_exibicao`, `ativo`.
-- Observacoes: `nome` e unico.
+- Finalidade: cadastra tempos liturgicos e momentos da celebracao usados em musicas, missas e repertorios.
+- Campos principais: `tipo`, `nome`, `descricao`, `ordem_exibicao`, `ativo`.
+- Observacoes: `tipo` aceita `tempo` ou `momento`; a unicidade e por `tipo` + `nome`.
 
 #### `musicas`
 
 - Finalidade: armazena a musica base, com letra limpa e classificacao liturgica.
 - Campos principais: `titulo`, `artista`, `letra`, `momento_liturgico_id`, `tempo_liturgico_id`, `criado_por`, `ativo`.
-- Chaves estrangeiras: `momento_liturgico_id` referencia `momentos_liturgicos.id`; `tempo_liturgico_id` referencia `tempos_liturgicos.id`; `criado_por` referencia `usuarios.id`.
+- Chaves estrangeiras: `momento_liturgico_id` e `tempo_liturgico_id` referenciam `classificacoes_liturgicas.id`; `criado_por` referencia `usuarios.id`.
 - Observacoes: uma musica pode ter varias versoes musicais e aparecer em varias missas.
 
 #### `acordes`
@@ -249,14 +243,14 @@ Esta secao documenta o modelo relacional real do Voz & Cifra com base nas migrat
 
 - Finalidade: armazena celebracoes/missas cadastradas por igreja.
 - Campos principais: `igreja_id`, `celebrante_usuario_id`, `tempo_liturgico_id`, `titulo`, `data_missa`, `hora_inicio`, `hora_fim`, `observacoes`, `publica_para_fieis`, `publica_para_musicos`, `ativo`.
-- Chaves estrangeiras: `igreja_id` referencia `igrejas.id`; `celebrante_usuario_id` referencia `usuarios.id`; `tempo_liturgico_id` referencia `tempos_liturgicos.id`.
+- Chaves estrangeiras: `igreja_id` referencia `igrejas.id`; `celebrante_usuario_id` referencia `usuarios.id`; `tempo_liturgico_id` referencia `classificacoes_liturgicas.id`.
 - Observacoes: possui indices para consultas publicas de fieis e musicos.
 
 #### `missa_musicas`
 
 - Finalidade: tabela associativa que monta o repertorio de uma missa.
 - Campos principais: `missa_id`, `musica_id`, `versao_musical_id`, `tom_usado`, `momento_liturgico_id`, `ordem`.
-- Chaves estrangeiras: `missa_id` referencia `missas.id`; `musica_id` referencia `musicas.id`; `versao_musical_id` referencia `versoes_musicais.id`; `momento_liturgico_id` referencia `momentos_liturgicos.id`.
+- Chaves estrangeiras: `missa_id` referencia `missas.id`; `musica_id` referencia `musicas.id`; `versao_musical_id` referencia `versoes_musicais.id`; `momento_liturgico_id` referencia `classificacoes_liturgicas.id`.
 - Observacoes: a combinacao `missa_id` + `ordem` e unica.
 
 #### `colecoes_estudo`
@@ -314,10 +308,9 @@ Esta secao documenta o modelo relacional real do Voz & Cifra com base nas migrat
 | `usuario_igreja_papeis` | e concedido/revogado por | `usuarios` | N:1 | - | Guarda quem concedeu ou revogou o papel |
 | `igrejas` | possui varias | `missas` | 1:N | - | Cada igreja possui suas missas |
 | `usuarios` | pode celebrar varias | `missas` | 1:N | - | Relacao opcional pelo campo `celebrante_usuario_id` |
-| `tempos_liturgicos` | classifica varias | `missas` | 1:N | - | Tempo liturgico da celebracao |
-| `tempos_liturgicos` | classifica varias | `musicas` | 1:N | - | Tempo liturgico sugerido para a musica |
-| `momentos_liturgicos` | classifica varias | `musicas` | 1:N | - | Momento sugerido da musica |
-| `momentos_liturgicos` | classifica varios itens | `missa_musicas` | 1:N | - | Momento usado no repertorio da missa |
+| `classificacoes_liturgicas` | classifica varias | `missas` | 1:N | - | Registros do tipo `tempo` definem o tempo liturgico da celebracao |
+| `classificacoes_liturgicas` | classifica varias | `musicas` | 1:N | - | Registros do tipo `tempo` e `momento` sugerem classificacoes da musica |
+| `classificacoes_liturgicas` | classifica varios itens | `missa_musicas` | 1:N | - | Registros do tipo `momento` definem o momento usado no repertorio |
 | `usuarios` | cria varias | `musicas` | 1:N | - | Campo `criado_por` |
 | `usuarios` | cria varias | `versoes_musicais` | 1:N | - | Campo `criado_por` |
 | `musicas` | possui varias | `versoes_musicais` | 1:N | - | Uma musica pode ter varias cifras/versoes |
@@ -341,7 +334,7 @@ Esta secao documenta o modelo relacional real do Voz & Cifra com base nas migrat
 Para construir o DER, considerar:
 
 - Entidades principais: `usuarios`, `igrejas`, `musicas`, `versoes_musicais`, `missas`, `colecoes_estudo`, `chamados`.
-- Entidades de apoio: `tempos_liturgicos`, `momentos_liturgicos`, `acordes`.
+- Entidades de apoio: `classificacoes_liturgicas`, `acordes`.
 - Entidades associativas: `usuario_igreja`, `usuario_igreja_papeis`, `missa_musicas`, `colecao_estudo_itens`.
 - Entidades de controle e historico: `auditoria_eventos`, `historico_envios_email`, `chamado_mensagens`.
 - Tabelas tecnicas do Laravel podem ficar fora do DER principal.
@@ -421,9 +414,9 @@ O `admin_master` e criado pelo `AdminMasterSeeder`.
 
 Padrao atual:
 
-- email: `admin@ministeriomusical.com`
-- senha: definida por `ADMIN_MASTER_PASSWORD` ou `admin123456`
-- CPF padrao fake: `00000000000`
+- email: definido por `ADMIN_MASTER_EMAIL` ou `pythonocr7@gmail.com`
+- senha: definida por `ADMIN_MASTER_PASSWORD`; se ausente, o seeder gera uma credencial interna aleatoria e envia convite de primeiro acesso
+- CPF padrao: `06070933150`
 
 ## Testes
 

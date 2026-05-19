@@ -55,7 +55,8 @@ class RenderizadorLetrasHtmlService
             }
 
             $classe = $paragrafoRefrao ? 'lyrics-stanza lyrics-stanza--refrao' : 'lyrics-stanza';
-            $html[] = '<div class="' . $classe . '"><p>' . e(implode(' ', $paragrafoAtual)) . '</p></div>';
+            $linhas = array_map(fn (string $linha): string => e($linha), $paragrafoAtual);
+            $html[] = '<div class="' . $classe . '"><p>' . implode('<br>', $linhas) . '</p></div>';
             $paragrafoAtual = [];
             $paragrafoRefrao = false;
         };

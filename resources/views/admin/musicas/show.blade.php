@@ -19,22 +19,20 @@
         }
 
         .lyrics-stanza {
-            margin-bottom: 0.75rem;
-            border: 1px solid #e5e7eb;
-            border-radius: 1rem;
-            background: #f9fafb;
-            padding: 1rem 1.1rem;
+            margin-bottom: 0.7rem;
+            border-left: 3px solid #e5e7eb;
+            background: #ffffff;
+            padding: 0.45rem 0 0.45rem 1rem;
         }
 
         .lyrics-stanza--refrao {
-            border-color: #fcd34d;
-            background: #fffbeb;
-            box-shadow: inset 0 0 0 1px rgba(217, 119, 6, 0.08);
+            border-left-color: #f59e0b;
+            background: linear-gradient(90deg, #fffbeb, #ffffff);
         }
 
         .lyrics-stanza--refrao p {
             color: #78350f;
-            font-weight: 850;
+            font-weight: 750;
         }
 
         .lyrics-space {
@@ -45,12 +43,12 @@
             display: inline-flex;
             align-items: center;
             margin: 0.85rem 0 0.5rem;
-            padding: 0.38rem 0.78rem;
+            padding: 0.32rem 0.72rem;
             border-radius: 999px;
-            border: 1px solid #dbeafe;
-            background: #eff6ff;
-            color: #1d4ed8;
-            font-size: 0.76rem;
+            border: 1px solid #e5e7eb;
+            background: #f8fafc;
+            color: #475569;
+            font-size: 0.72rem;
             font-weight: 900;
             letter-spacing: 0.08em;
             text-transform: uppercase;
@@ -74,10 +72,10 @@
 
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:flex xl:flex-wrap xl:justify-end">
             <a href="{{ route('admin.versoes-musicais.create', $musica) }}" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800">
-                Cadastrar versao musical
+                Cadastrar cifra
             </a>
-            <a href="{{ route('admin.musicas.edit', $musica) }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-700 font-medium hover:bg-gray-50">
-                Editar
+            <a href="{{ route('admin.musicas.edit', $musica) }}" class="inline-flex items-center justify-center rounded-xl border border-[#ead6b3] bg-[#fff8ed] px-4 py-3 text-[#6c4a21] font-medium hover:bg-[#f8ecd7]">
+                <i class="fa-solid fa-pen mr-2"></i> Editar
             </a>
             <a href="{{ route('admin.musicas.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-700 font-medium hover:bg-gray-50 sm:col-span-2 xl:col-span-1">
                 Voltar p/ Lista de Musicas
@@ -94,7 +92,7 @@
                 </div>
 
                 <a href="{{ route('admin.versoes-musicais.create', $musica) }}" class="inline-flex items-center justify-center rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800">
-                    Cadastrar versao musical
+                    Cadastrar cifra
                 </a>
             </div>
         </div>
@@ -147,7 +145,7 @@
             </div>
 
             <a href="{{ route('admin.versoes-musicais.create', $musica) }}" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800">
-                Cadastrar versao
+                Cadastrar cifra
             </a>
         </div>
 
@@ -183,12 +181,21 @@
                                 </td>
                                 <td class="px-4 py-3">
                                     <div class="flex items-center justify-end gap-2">
-                                        <a href="{{ route('admin.versoes-musicais.show', [$musica, $versaoMusical]) }}" class="px-3 py-2 text-xs font-semibold rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50">
-                                            Ver
+                                        <a href="{{ route('admin.versoes-musicais.show', [$musica, $versaoMusical]) }}" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100" title="Ver versao" aria-label="Ver versao {{ $versaoMusical->titulo ?: 'principal' }}">
+                                            <i class="fa-solid fa-eye"></i>
                                         </a>
-                                        <a href="{{ route('admin.versoes-musicais.edit', [$musica, $versaoMusical]) }}" class="px-3 py-2 text-xs font-semibold rounded-lg bg-green-50 text-green-700 hover:bg-green-100 border border-green-100">
-                                            Editar
+                                        <a href="{{ route('admin.versoes-musicais.edit', [$musica, $versaoMusical]) }}" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#ead6b3] bg-[#fff8ed] text-[#6c4a21] hover:bg-[#f8ecd7]" title="Editar versao" aria-label="Editar versao {{ $versaoMusical->titulo ?: 'principal' }}">
+                                            <i class="fa-solid fa-pen"></i>
                                         </a>
+                                        @if ($versaoMusical->ativo)
+                                            <form action="{{ route('admin.versoes-musicais.destroy', [$musica, $versaoMusical]) }}" method="POST" onsubmit="return confirm('Deseja inativar esta versao musical? Ela sera preservada no banco.');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100" title="Inativar versao" aria-label="Inativar versao {{ $versaoMusical->titulo ?: 'principal' }}">
+                                                    <i class="fa-solid fa-ban"></i>
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -220,13 +227,22 @@
                             </div>
                         </div>
 
-                        <div class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                            <a href="{{ route('admin.versoes-musicais.show', [$musica, $versaoMusical]) }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
-                                Ver
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <a href="{{ route('admin.versoes-musicais.show', [$musica, $versaoMusical]) }}" class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100" title="Ver versao" aria-label="Ver versao {{ $versaoMusical->titulo ?: 'principal' }}">
+                                <i class="fa-solid fa-eye"></i>
                             </a>
-                            <a href="{{ route('admin.versoes-musicais.edit', [$musica, $versaoMusical]) }}" class="inline-flex items-center justify-center rounded-xl border border-green-100 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700 hover:bg-green-100">
-                                Editar
+                            <a href="{{ route('admin.versoes-musicais.edit', [$musica, $versaoMusical]) }}" class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[#ead6b3] bg-[#fff8ed] text-[#6c4a21] hover:bg-[#f8ecd7]" title="Editar versao" aria-label="Editar versao {{ $versaoMusical->titulo ?: 'principal' }}">
+                                <i class="fa-solid fa-pen"></i>
                             </a>
+                            @if ($versaoMusical->ativo)
+                                <form action="{{ route('admin.versoes-musicais.destroy', [$musica, $versaoMusical]) }}" method="POST" onsubmit="return confirm('Deseja inativar esta versao musical? Ela sera preservada no banco.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100" title="Inativar versao" aria-label="Inativar versao {{ $versaoMusical->titulo ?: 'principal' }}">
+                                        <i class="fa-solid fa-ban"></i>
+                                    </button>
+                                </form>
+                            @endif
                         </div>
                     </article>
                 @endforeach

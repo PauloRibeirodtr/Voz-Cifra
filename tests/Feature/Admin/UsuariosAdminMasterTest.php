@@ -167,7 +167,7 @@ class UsuariosAdminMasterTest extends TestCase
         $this->assertSame('usuario', $usuario->perfil_global);
         $this->assertTrue($usuario->ativo);
         $this->assertTrue($usuario->temPapelNaIgreja(PapelIgreja::ADMIN_LOCAL, $igreja->id));
-        $this->assertTrue(Hash::check('12345678901', (string) $usuario->password));
+        $this->assertFalse(Hash::check('12345678901', (string) $usuario->password));
         Mail::assertSent(ConviteAcessoInicialMail::class, fn (ConviteAcessoInicialMail $mail) => $mail->alvo->is($usuario));
         $this->assertDatabaseHas('historico_envios_email', [
             'usuario_id' => $usuario->id,
@@ -466,7 +466,7 @@ class UsuariosAdminMasterTest extends TestCase
         $this->assertTrue($adminMaster->temPapelNaIgreja(PapelIgreja::COORDENADOR, $igreja->id));
     }
 
-    public function test_admin_master_seeder_usa_senha_padrao_e_primeiro_acesso_ativo(): void
+    public function test_admin_master_seeder_gera_credencial_interna_e_mantem_primeiro_acesso_ativo(): void
     {
         $this->seed(AdminMasterSeeder::class);
 
@@ -476,6 +476,6 @@ class UsuariosAdminMasterTest extends TestCase
 
         $this->assertNotNull($adminMaster);
         $this->assertTrue((bool) $adminMaster->primeiro_acesso);
-        $this->assertTrue(Hash::check('admin123456', (string) $adminMaster->password));
+        $this->assertNotEmpty($adminMaster->password);
     }
 }

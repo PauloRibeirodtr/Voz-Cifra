@@ -14,13 +14,18 @@ return new class extends Migration
             $table->foreignId('usuario_igreja_id')->constrained('usuario_igreja')->cascadeOnDelete();
             $table->string('papel', 40);
             $table->boolean('ativo')->default(true);
+            $table->string('origem', 80)->nullable();
             $table->foreignId('concedido_por')->nullable()->constrained('usuarios')->nullOnDelete();
+            $table->foreignId('revogado_por')->nullable()->constrained('usuarios')->nullOnDelete();
             $table->timestampTz('concedido_em')->default(DB::raw('CURRENT_TIMESTAMP'));
+            $table->timestampTz('revogado_em')->nullable();
             $table->timestampsTz();
 
             $table->unique(['usuario_igreja_id', 'papel'], 'usuario_igreja_papeis_vinculo_papel_unique');
             $table->index(['papel', 'ativo'], 'usuario_igreja_papeis_papel_ativo_index');
+            $table->index(['papel', 'ativo', 'revogado_em'], 'usuario_igreja_papeis_papel_ativo_revogado_index');
             $table->index(['usuario_igreja_id', 'ativo'], 'usuario_igreja_papeis_vinculo_ativo_index');
+            $table->index('revogado_por', 'usuario_igreja_papeis_revogado_por_index');
         });
 
         if (DB::getDriverName() !== 'sqlite') {

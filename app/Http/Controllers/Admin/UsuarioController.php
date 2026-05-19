@@ -102,6 +102,23 @@ class UsuarioController extends Controller
                 : null);
         });
 
+        $sugestoesUsuarios = Usuario::query()
+            ->with('vinculosIgreja.igreja')
+            ->orderBy('nome')
+            ->get()
+            ->map(fn (Usuario $usuario) => [
+                'nome' => $usuario->nome,
+                'email' => $usuario->email,
+                'cpf' => $usuario->cpfMascarado(),
+                'igrejas' => $usuario->vinculosIgreja
+                    ->map(fn ($vinculo) => $vinculo->igreja?->nome)
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->all(),
+            ])
+            ->values();
+
         return view('admin.users.index', [
             'usuarios' => $usuarios,
             'filtros' => [
@@ -124,6 +141,7 @@ class UsuarioController extends Controller
                     ->whereDoesntHave('vinculosIgrejaAtivos')
                     ->count(),
             ],
+            'sugestoesUsuarios' => $sugestoesUsuarios,
         ]);
     }
 

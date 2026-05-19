@@ -443,7 +443,9 @@
                         </span>
                     </div>
 
-                    <pre class="whitespace-pre-wrap break-words rounded-xl bg-gray-900 text-green-200 p-5 text-sm leading-7">{{ $versaoMusical->letra_com_cifras }}</pre>
+                    <div class="preview-musico-scroll rounded-xl border border-slate-800 bg-slate-900 p-6" id="preview_admin_container">
+                        <div id="preview_admin_render" class="space-y-2"></div>
+                    </div>
                 </div>
 
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
@@ -601,7 +603,10 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <h2 class="text-lg font-bold text-gray-800 mb-4">Acoes</h2>
                 <div class="space-y-3">
-                    <a href="{{ route('admin.versoes-musicais.edit', [$musica, $versaoMusical]) }}" class="block w-full text-center px-4 py-3 bg-green-700 text-white rounded-lg font-semibold hover:bg-green-800">Editar versao</a>
+                    <a href="{{ route('admin.versoes-musicais.edit', [$musica, $versaoMusical]) }}" class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800">
+                        <i class="fa-solid fa-pen"></i>
+                        Editar versao
+                    </a>
                     <form action="{{ route('admin.versoes-musicais.destroy', [$musica, $versaoMusical]) }}" method="POST" onsubmit="return confirm('Deseja inativar esta versao musical? Ela sera preservada no banco.');">
                         @csrf
                         @method('DELETE')
@@ -623,8 +628,10 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const helper = window.VozECifraChord;
             const abas = document.querySelectorAll('.aba-modo');
             const paineis = document.querySelectorAll('.painel-modo');
+            const previewAdminRender = document.getElementById('preview_admin_render');
             const previewMusicoRender = document.getElementById('preview_musico_render');
             const containerMusico = document.getElementById('preview_musico_container');
             const textoComCifras = @json($versaoMusical->letra_com_cifras);
@@ -688,12 +695,11 @@
 
             abas.forEach((aba) => aba.addEventListener('click', () => ativarModo(aba.dataset.modo)));
 
-            const renderizarPreviewMusico = () => {
-                if (!previewMusicoRender) return;
+            const montarHtmlCifra = () => {
                 const linhas = (textoComCifras || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
                 let proximaLinhaRefrao = false;
                 let blocoAtualRefrao = false;
-                previewMusicoRender.innerHTML = linhas.map((linha) => {
+                return linhas.map((linha) => {
                     const linhaLimpa = linha.trim();
                     if (linhaLimpa === '') {
                         blocoAtualRefrao = false;
@@ -740,7 +746,20 @@
 
                     return `<div class="cifra-linha${blocoAtualRefrao ? ' cifra-linha--refrao' : ''}">${segmentos}</div>`;
                 }).join('');
-                previewMusicoRender.style.setProperty('--escala-fonte', String(fonteAtual / 18));
+            };
+
+            const renderizarPreviewMusico = () => {
+                const html = montarHtmlCifra();
+
+                if (previewMusicoRender) {
+                    previewMusicoRender.innerHTML = html;
+                    previewMusicoRender.style.setProperty('--escala-fonte', String(fonteAtual / 18));
+                }
+
+                if (previewAdminRender) {
+                    previewAdminRender.innerHTML = html;
+                    previewAdminRender.style.setProperty('--escala-fonte', String(fonteAtual / 18));
+                }
             };
 
             const renderizarDiagrama = (shape) => {

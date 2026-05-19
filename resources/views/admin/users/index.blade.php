@@ -68,6 +68,11 @@
             'cinza' => 'bg-slate-100 text-slate-700',
             default => 'bg-slate-100 text-slate-700',
         };
+        $buscaAtual = $filtros['q'] ?? '';
+        $tipoAtual = $filtros['tipo'] ?? '';
+        $presencaAtual = $filtros['presenca'] ?? '';
+        $statusAtual = $filtros['status'] ?? '';
+        $sugestoesUsuariosBase64 = base64_encode(json_encode($sugestoesUsuarios ?? []));
     @endphp
 
     <div class="admin-page-shell">
@@ -129,11 +134,12 @@
             </a>
         </section>
 
-        <section class="admin-filter-surface p-5">
+        <section class="admin-section-card p-5">
             <form method="GET" action="{{ route('admin.usuarios.index') }}" class="admin-form-grid xl:grid-cols-5">
-                <div class="xl:col-span-2">
-                    <label class="admin-label">Busca</label>
-                    <input type="text" name="q" value="{{ $filtros['q'] ?? '' }}" class="admin-input" placeholder="Nome, e-mail, CPF, igreja ou cidade" minlength="3">
+                <div class="relative xl:col-span-2">
+                    <label for="q" class="block text-xs font-black uppercase tracking-[0.18em] text-gray-400">Pesquisar usuario</label>
+                    <input id="q" type="search" name="q" value="{{ $buscaAtual }}" class="mt-2 block w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-gray-800 shadow-sm outline-none transition focus:border-[#6c4a21] focus:ring-4 focus:ring-[#6c4a21]/10" placeholder="Nome, e-mail, CPF, igreja ou cidade" autocomplete="off" minlength="3" data-user-search-input>
+                    <div class="absolute z-20 mt-2 hidden w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl" data-user-suggestions></div>
                     <p class="mt-2 text-xs text-gray-500">
                         Digite ao menos 3 caracteres. A busca ignora maiúsculas/minúsculas e aceita partes do texto.
                     </p>
@@ -177,8 +183,10 @@
                 </div>
 
                 <div class="xl:col-span-5 admin-actions">
-                    <button type="submit" class="admin-btn admin-btn-warm">Filtrar</button>
-                    <a href="{{ route('admin.usuarios.index') }}" class="admin-btn admin-btn-secondary">Limpar</a>
+                    <button type="submit" class="admin-btn admin-btn-warm">Buscar</button>
+                    @if ($buscaAtual !== '' || $tipoAtual !== '' || $presencaAtual !== '' || $statusAtual !== '')
+                        <a href="{{ route('admin.usuarios.index') }}" class="admin-btn admin-btn-secondary">Limpar</a>
+                    @endif
                 </div>
             </form>
         </section>
@@ -334,3 +342,87 @@
         </section>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const campoBusca = document.querySelector('[data-user-search-input]');
+            const sugestoesContainer = document.querySelector('[data-user-suggestions]');
+            const sugestoes = JSON.parse(atob(@json($sugestoesUsuariosBase64)));
+
+            if (!campoBusca || !sugestoesContainer) {
+                return;
+            }
+
+            const normalizar = (valor) => (valor || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase();
+
+            const esconderSugestoes = () => {
+                sugestoesContainer.classList.add('hidden');
+                sugestoesContainer.innerHTML = '';
+            };
+
+            campoBusca.addEventListener('input', () => {
+                const termo = normalizar(campoBusca.value.trim());
+
+                if (termo.length < 3) {
+                    esconderSugestoes();
+                    return;
+                }
+
+                const resultados = sugestoes
+                    .filter((usuario) => normalizar(`${usuario.nome} ${usuario.email} ${usuario.cpf} ${(usuario.igrejas || []).join(' ')}`).includes(termo))
+                    .slice(0, 6);
+
+                if (resultados.length === 0) {
+                    esconderSugestoes();
+                    return;
+                }
+
+                sugestoesContainer.innerHTML = '';
+
+                resultados.forEach((usuario) => {
+                    const botao = document.createElement('button');
+                    const nome = document.createElement('span');
+                    const detalhes = document.createElement('span');
+                    const igrejas = (usuario.igrejas || []).slice(0, 2).join(', ');
+
+                    botao.type = 'button';
+                    botao.className = 'block w-full px-4 py-3 text-left hover:bg-[#f8f1e7]';
+                    botao.setAttribute('data-suggestion-value', usuario.nome);
+
+                    nome.className = 'block text-sm font-semibold text-gray-900';
+                    nome.textContent = usuario.nome;
+
+                    detalhes.className = 'block text-xs text-gray-500';
+                    detalhes.textContent = [usuario.email, igrejas].filter(Boolean).join(' | ');
+
+                    botao.append(nome, detalhes);
+                    sugestoesContainer.appendChild(botao);
+                });
+
+                sugestoesContainer.classList.remove('hidden');
+            });
+
+            sugestoesContainer.addEventListener('click', (evento) => {
+                const botao = evento.target.closest('[data-suggestion-value]');
+
+                if (!botao) {
+                    return;
+                }
+
+                campoBusca.value = botao.getAttribute('data-suggestion-value');
+                esconderSugestoes();
+                campoBusca.form?.submit();
+            });
+
+            document.addEventListener('click', (evento) => {
+                if (!sugestoesContainer.contains(evento.target) && evento.target !== campoBusca) {
+                    esconderSugestoes();
+                }
+            });
+        });
+    </script>
+@endpush

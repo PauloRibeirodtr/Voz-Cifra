@@ -144,6 +144,9 @@
 
                         <p class="mt-2 text-sm text-gray-600">{{ $igreja->cidade }} - {{ $igreja->estado }}</p>
                         <p class="mt-1 text-xs text-gray-500">{{ $igreja->endereco ?: 'Endereco nao informado' }}</p>
+                        @if (filled($igreja->telefone_secretaria))
+                            <p class="mt-1 text-xs font-semibold text-gray-600">Secretaria: {{ $igreja->telefone_secretaria }}</p>
+                        @endif
 
                         <div class="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
                             <span class="rounded-full bg-slate-100 px-3 py-1 text-slate-700">{{ $adminsLocais->count() }} {{ $adminsLocais->count() === 1 ? 'admin' : 'admins' }}</span>

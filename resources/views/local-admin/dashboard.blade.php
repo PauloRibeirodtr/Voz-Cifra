@@ -123,8 +123,8 @@
     <section class="mt-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
         <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 class="text-lg font-bold text-gray-900">Próximas missas da igreja</h2>
-                <p class="mt-1 text-sm text-gray-500">Acompanhe a agenda mais recente e entre direto para montar o repertório.</p>
+                <h2 class="text-lg font-bold text-gray-900">Missas mais recentes da igreja</h2>
+                <p class="mt-1 text-sm text-gray-500">Acompanhe as ultimas celebracoes cadastradas e entre direto para montar o repertorio.</p>
             </div>
             <a href="{{ route('local-admin.missas.index') }}" class="text-sm font-semibold text-green-700 hover:underline">Ver todas</a>
         </div>

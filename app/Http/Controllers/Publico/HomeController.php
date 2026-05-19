@@ -48,7 +48,7 @@ class HomeController extends Controller
         $igrejas = Igreja::query()
             ->where('ativo', true)
             ->orderBy('nome')
-            ->get(['id', 'nome', 'slug', 'cidade', 'estado', 'bairro', 'endereco', 'numero', 'imagem_path']);
+            ->get(['id', 'nome', 'slug', 'cidade', 'estado', 'bairro', 'endereco', 'numero', 'telefone_secretaria', 'imagem_path']);
 
         $temposLiturgicos = TempoLiturgico::query()
             ->where('ativo', true)
@@ -110,6 +110,7 @@ class HomeController extends Controller
                     'estado' => $igreja->estado,
                     'bairro' => $igreja->bairro,
                     'endereco' => trim(($igreja->endereco ?? '') . ($igreja->numero ? ', ' . $igreja->numero : ''), ' ,'),
+                    'telefone_secretaria' => $igreja->telefone_secretaria,
                     'proxima_missa' => $proximaMissa['titulo'] ?? 'Sem missa publicada no momento',
                     'proxima_data' => $proximaMissa['data_formatada'] ?? 'Aguardando nova celebracao',
                     'proxima_horario' => $proximaMissa['horario_curto'] ?? null,

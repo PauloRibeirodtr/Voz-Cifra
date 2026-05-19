@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('cpf', 14)->unique();
             $table->string('email')->unique();
             $table->string('telefone', 20)->nullable();
+            $table->string('foto_perfil_path')->nullable();
             $table->string('password');
             $table->string('perfil_global', 20)->default('usuario');
             $table->smallInteger('nivel_global')->default(1);

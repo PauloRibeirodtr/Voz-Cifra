@@ -39,6 +39,7 @@ class GestaoUsuariosIgrejaService
             email: (string) ($dados['email'] ?? ''),
             usuarioBase: $usuarioBase
         );
+        $this->garantirAdminMasterNaoGeridoPorFluxoOperacional($usuario, $ator);
 
         $papeisConcedidos = collect();
         $deveLiberarPrimeiroAcesso = !$usuario
@@ -320,6 +321,7 @@ class GestaoUsuariosIgrejaService
                 'usuario' => 'Nenhum usuario existente foi encontrado com os dados informados.',
             ]);
         }
+        $this->garantirAdminMasterNaoGeridoPorFluxoOperacional($usuario, $ator);
 
         return $this->atribuirPapeisAoUsuarioExistente(
             usuario: $usuario,
@@ -549,6 +551,17 @@ class GestaoUsuariosIgrejaService
         }
 
         return $usuarioPorCpf ?: $usuarioPorEmail;
+    }
+
+    private function garantirAdminMasterNaoGeridoPorFluxoOperacional(?Usuario $usuario, ?Usuario $ator): void
+    {
+        if (!$usuario?->ehAdminMaster() || $ator?->ehAdminMaster()) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'usuario' => 'Contas admin master nao podem ser geridas pelos fluxos operacionais da igreja.',
+        ]);
     }
 
     private function buscarUsuarioPorCpf(?string $cpf, ?int $ignorarUsuarioId = null): ?Usuario

@@ -13,8 +13,8 @@ return new class extends Migration
             $table->string('titulo');
             $table->string('artista')->nullable();
             $table->text('letra');
-            $table->foreignId('momento_liturgico_id')->nullable()->constrained('momentos_liturgicos')->nullOnDelete();
-            $table->foreignId('tempo_liturgico_id')->nullable()->constrained('tempos_liturgicos')->nullOnDelete();
+            $table->foreignId('momento_liturgico_id')->nullable()->constrained('classificacoes_liturgicas')->nullOnDelete();
+            $table->foreignId('tempo_liturgico_id')->nullable()->constrained('classificacoes_liturgicas')->nullOnDelete();
             $table->foreignId('criado_por')->constrained('usuarios')->restrictOnDelete();
             $table->boolean('ativo')->default(true);
             $table->timestamps();

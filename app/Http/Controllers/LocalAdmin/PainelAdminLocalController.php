@@ -38,8 +38,8 @@ class PainelAdminLocalController extends Controller
 
         $proximasMissas = Missa::with('tempoLiturgico')
             ->where('igreja_id', $igreja->id)
-            ->orderBy('data_missa')
-            ->orderBy('hora_inicio')
+            ->orderByDesc('data_missa')
+            ->orderByDesc('hora_inicio')
             ->take(5)
             ->get();
 

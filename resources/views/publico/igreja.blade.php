@@ -1089,14 +1089,14 @@
                         </div>
                     @else
                         <div class="empty-state">
-                            <h3 class="empty-title">Ainda não há repertórios publicados.</h3>
-                            <p class="empty-copy">Volte mais tarde para consultar as cifras disponíveis.</p>
+                            <h3 class="empty-title">Ainda não há missas publicadas para ensaio.</h3>
+                            <p class="empty-copy">Este link é somente leitura e será atualizado quando a equipe publicar um repertório.</p>
                         </div>
                     @endif
                 </section>
             @endif
 
-            @php($celebracaoFoiEscolhida = request()->filled('celebracao'))
+            @php($celebracaoFoiEscolhida = (bool) $missaPublica)
 
             @if ($missaPublica && $celebracaoFoiEscolhida)
                 @php($itensPublicos = collect($missaPublica->itens_publicos ?? []))
@@ -1110,7 +1110,7 @@
                                 {{ $missaPublica->data_missa->format('d/m/Y') }} • {{ substr((string) $missaPublica->hora_inicio, 0, 5) }}
                             </p>
                         </div>
-                        <span class="badge">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Repertório' : 'Abrir celebração' }}</span>
+                        <span class="badge">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Abrir repertório' : 'Abrir celebração' }}</span>
                     </div>
 
                     @if ($itensPublicos->isNotEmpty())
@@ -1145,7 +1145,7 @@
 
             @php($historicoUltimasMissas = collect($historicoUltimasMissas ?? []))
             <details class="section history-toggle" id="historico-publico" @if($historicoBusca !== '' || $historicoUltimasMissas->isNotEmpty()) open @endif>
-                <summary>Buscar missas anteriores</summary>
+                <summary>Consultar histórico</summary>
 
                 <div class="history-content history-content--subtle">
                     @php($historicoBaseUrl = ($modoPublico ?? 'fieis') === 'musicos' ? route('igrejas.public.musicos.show', ['slug' => $igreja->slug]) : route('igrejas.public.show', ['slug' => $igreja->slug]))

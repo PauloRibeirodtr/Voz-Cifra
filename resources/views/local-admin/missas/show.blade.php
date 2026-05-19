@@ -276,12 +276,13 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Momento lit&uacute;rgico</label>
-                        <select name="momento_liturgico_id" class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-[#8c6933] focus:ring-2 focus:ring-[#ead6b3]">
+                        <select name="momento_liturgico_id" id="momento_liturgico_id" class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-[#8c6933] focus:ring-2 focus:ring-[#ead6b3]">
                             <option value="">Definir depois</option>
                             @foreach ($momentosLiturgicos as $momentoLiturgico)
-                                <option value="{{ $momentoLiturgico->id }}">{{ $momentoLiturgico->nome }}</option>
+                                <option value="{{ $momentoLiturgico->id }}" @selected(old('momento_liturgico_id') == $momentoLiturgico->id)>{{ $momentoLiturgico->nome }}</option>
                             @endforeach
                         </select>
+                        <p id="momento_liturgico_hint" class="mt-1 text-xs text-gray-500">Ao escolher a musica, o sistema tenta sugerir o momento cadastrado nela. Voce pode trocar se precisar.</p>
                     </div>
 
                     <div>
@@ -483,6 +484,8 @@
                 'artista' => $musica->artista,
                 'letra' => $musica->letra,
                 'texto_exibicao' => trim($musica->titulo . ($musica->artista ? ' - ' . $musica->artista : '')),
+                'momento_liturgico_id' => $musica->momento_liturgico_id,
+                'momento_liturgico_nome' => $musica->momentoLiturgico?->nome,
                 'versoes_count' => $musica->versoesMusicais->count(),
                 'versoes' => $musica->versoesMusicais->map(function ($versao) {
                     return [
@@ -504,12 +507,16 @@
             const musicaId = document.getElementById('musica_id');
             const musicaSelecionadaTexto = document.getElementById('musica_selecionada_texto');
             const selectVersao = document.getElementById('versao_musical_id');
+            const selectMomento = document.getElementById('momento_liturgico_id');
+            const momentoHint = document.getElementById('momento_liturgico_hint');
             const campoTomUsado = document.getElementById('tom_usado');
             const tomUsadoHint = document.getElementById('tom_usado_hint');
             const oldVersaoId = @json(old('versao_musical_id'));
+            const oldMomentoId = @json(old('momento_liturgico_id'));
             const formularioAdicionar = musicaId.form;
+            let momentoAlteradoManualmente = Boolean(oldMomentoId);
 
-            if (!inputBusca || !resultadoBusca || !musicaId || !musicaSelecionadaTexto || !selectVersao || !campoTomUsado) {
+            if (!inputBusca || !resultadoBusca || !musicaId || !musicaSelecionadaTexto || !selectVersao || !selectMomento || !campoTomUsado) {
                 return;
             }
 
@@ -580,6 +587,23 @@
                 atualizarOrientacaoTom(versaoAtual || null);
             };
 
+            const sugerirMomento = (musicaSelecionada) => {
+                if (!musicaSelecionada || momentoAlteradoManualmente) {
+                    return;
+                }
+
+                const momentoId = musicaSelecionada.momento_liturgico_id ? String(musicaSelecionada.momento_liturgico_id) : '';
+                selectMomento.value = momentoId;
+
+                if (momentoHint) {
+                    momentoHint.textContent = momentoId
+                        ? 'Momento sugerido pela musica: ' + (musicaSelecionada.momento_liturgico_nome || 'momento cadastrado') + '. Voce pode trocar se precisar.'
+                        : 'Esta musica ainda nao tem momento cadastrado. Escolha manualmente ou deixe para definir depois.';
+                    momentoHint.classList.toggle('text-emerald-700', Boolean(momentoId));
+                    momentoHint.classList.toggle('font-semibold', Boolean(momentoId));
+                }
+            };
+
             const selecionarMusica = (musicaSelecionada, versaoSelecionada = null) => {
                 musicaId.value = musicaSelecionada.id;
                 inputBusca.value = musicaSelecionada.texto_exibicao;
@@ -590,6 +614,7 @@
                 inputBusca.setCustomValidity('');
                 resultadoBusca.classList.add('hidden');
                 resultadoBusca.innerHTML = '';
+                sugerirMomento(musicaSelecionada);
                 preencherVersoes(musicaSelecionada, versaoSelecionada);
             };
 
@@ -678,8 +703,24 @@
                 musicaSelecionadaTexto.classList.remove('text-amber-700');
                 selectVersao.innerHTML = '<option value="">Vincular depois</option>';
                 selectVersao.disabled = true;
+                if (!momentoAlteradoManualmente) {
+                    selectMomento.value = '';
+                    if (momentoHint) {
+                        momentoHint.textContent = 'Ao escolher a musica, o sistema tenta sugerir o momento cadastrado nela. Voce pode trocar se precisar.';
+                        momentoHint.classList.remove('text-emerald-700', 'font-semibold');
+                    }
+                }
                 atualizarOrientacaoTom();
                 renderizarResultados(event.target.value);
+            });
+
+            selectMomento.addEventListener('change', () => {
+                momentoAlteradoManualmente = true;
+                if (momentoHint) {
+                    momentoHint.textContent = 'Momento ajustado manualmente para esta missa.';
+                    momentoHint.classList.remove('text-emerald-700');
+                    momentoHint.classList.add('font-semibold');
+                }
             });
 
             selectVersao.addEventListener('change', () => {

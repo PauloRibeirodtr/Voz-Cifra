@@ -11,7 +11,9 @@ use App\Services\NotificacaoSistemaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class MusicaController extends Controller
@@ -22,44 +24,49 @@ class MusicaController extends Controller
     ) {
     }
 
-public function index(Request $request): View
-{
-    $consulta = Musica::with([
-        'tempoLiturgico',
-        'momentoLiturgico',
-        'criadoPor'
-    ])->latest();
+    public function index(Request $request): View
+    {
+        $momentoFiltro = $request->integer('momento_liturgico_id') ?: null;
+        $consulta = Musica::with(['tempoLiturgico', 'momentoLiturgico', 'criadoPor'])
+            ->withCount([
+                'versoesMusicais as versoes_ativas_count' => fn ($query) => $query->where('ativo', true),
+            ])
+            ->when($momentoFiltro, fn ($query) => $query->where('momento_liturgico_id', $momentoFiltro))
+            ->latest();
 
-    if ($request->filled('search')) {
-        $termo = trim($request->string('search')->toString());
+        if ($request->filled('search')) {
+            $termo = trim($request->string('search')->toString());
+            $operadorBusca = DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
 
-        $consulta->where(function ($query) use ($termo) {
-            $query->where('titulo', 'ilike', "%{$termo}%")
-                ->orWhere('artista', 'ilike', "%{$termo}%")
-                ->orWhere('letra', 'ilike', "%{$termo}%");
-        });
+            $consulta->where(function ($query) use ($termo, $operadorBusca) {
+                $query->where('titulo', $operadorBusca, "%{$termo}%")
+                    ->orWhere('artista', $operadorBusca, "%{$termo}%")
+                    ->orWhere('letra', $operadorBusca, "%{$termo}%");
+            });
+        }
+
+        $sugestoesMusicas = Musica::query()
+            ->select('titulo', 'artista')
+            ->orderBy('titulo')
+            ->limit(200)
+            ->get()
+            ->map(fn (Musica $musica) => [
+                'titulo' => $musica->titulo,
+                'artista' => $musica->artista,
+            ])
+            ->values();
+
+        $musicas = $consulta->paginate(12)->withQueryString();
+
+        return view('admin.musicas.index', [
+            'musicas' => $musicas,
+            'sugestoesMusicas' => $sugestoesMusicas,
+            'momentosLiturgicos' => MomentoLiturgico::where('ativo', true)->orderByRaw('ordem_exibicao asc nulls last')->orderBy('nome')->get(),
+            'momentoFiltro' => $momentoFiltro,
+            'routePrefix' => request()->routeIs('coordenador.*') ? 'coordenador' : 'admin',
+            'podeInativar' => $this->podeInativarRegistros(),
+        ]);
     }
-
-    $sugestoesMusicas = Musica::query()
-        ->select('titulo', 'artista')
-        ->orderBy('titulo')
-        ->limit(200)
-        ->get()
-        ->map(fn (Musica $musica) => [
-            'titulo' => $musica->titulo,
-            'artista' => $musica->artista,
-        ])
-        ->values();
-
-    $musicas = $consulta
-        ->paginate(12)
-        ->withQueryString();
-
-    return view('admin.musicas.index', [
-        'musicas' => $musicas,
-        'sugestoesMusicas' => $sugestoesMusicas,
-    ]);
-}
 
     public function create(): View
     {
@@ -120,8 +127,8 @@ public function index(Request $request): View
         );
 
         return redirect()
-            ->route($this->routeName('versoes-musicais.create'), $musica)
-            ->with('success', 'Musica cadastrada com sucesso. Agora cadastre a versao musical com cifras, tom e bpm.');
+            ->route($this->routeName('musicas.show'), $musica)
+            ->with('success', 'Musica cadastrada com sucesso. Quando quiser, use o botao Cadastrar cifra para incluir tom, bpm e letra com cifras.');
     }
 
     public function show(Musica $musica): View
@@ -251,8 +258,8 @@ public function index(Request $request): View
                 'titulo' => ['required', 'string', 'max:255'],
                 'artista' => ['nullable', 'string', 'max:255'],
                 'letra' => ['required', 'string'],
-                'tempo_liturgico_id' => ['nullable', 'exists:tempos_liturgicos,id'],
-                'momento_liturgico_id' => ['nullable', 'exists:momentos_liturgicos,id'],
+                'tempo_liturgico_id' => ['nullable', Rule::exists('classificacoes_liturgicas', 'id')->where(fn ($query) => $query->where('tipo', 'tempo'))],
+                'momento_liturgico_id' => ['nullable', Rule::exists('classificacoes_liturgicas', 'id')->where(fn ($query) => $query->where('tipo', 'momento'))],
                 'ativo' => ['nullable', 'boolean'],
                 'confirmar_duplicidade' => ['nullable', 'boolean'],
             ],

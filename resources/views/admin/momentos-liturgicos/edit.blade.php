@@ -5,6 +5,7 @@
 
 @section('content')
     @php
+        $routePrefix = $routePrefix ?? 'admin';
         $classeInput = 'mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-100';
     @endphp
 
@@ -14,7 +15,7 @@
             <p class="text-sm text-gray-500">Atualize os dados do momento liturgico selecionado.</p>
         </div>
 
-        <a href="{{ route('admin.momentos-liturgicos.index') }}" class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 font-medium hover:bg-gray-50">
+        <a href="{{ route($routePrefix . '.momentos-liturgicos.index') }}" class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 font-medium hover:bg-gray-50">
             Voltar
         </a>
     </div>
@@ -29,7 +30,7 @@
         </div>
     @endif
 
-    <form action="{{ route('admin.momentos-liturgicos.update', $momentoLiturgico) }}" method="POST" class="space-y-6">
+    <form action="{{ route($routePrefix . '.momentos-liturgicos.update', $momentoLiturgico) }}" method="POST" class="space-y-6">
         @csrf
         @method('PUT')
 
@@ -59,7 +60,7 @@
         </div>
 
         <div class="flex justify-end gap-3">
-            <a href="{{ route('admin.momentos-liturgicos.index') }}" class="px-5 py-3 bg-white border border-gray-200 rounded-lg text-gray-700 font-medium hover:bg-gray-50">
+            <a href="{{ route($routePrefix . '.momentos-liturgicos.index') }}" class="px-5 py-3 bg-white border border-gray-200 rounded-lg text-gray-700 font-medium hover:bg-gray-50">
                 Cancelar
             </a>
             <button type="submit" class="px-5 py-3 bg-green-700 text-white rounded-lg font-semibold hover:bg-green-800">

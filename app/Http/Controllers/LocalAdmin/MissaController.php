@@ -347,11 +347,13 @@ class MissaController extends Controller
             'musica_id' => ['required', 'exists:musicas,id'],
             'versao_musical_id' => ['nullable', 'exists:versoes_musicais,id'],
             'tom_usado' => ['nullable', Rule::in(config('musical.tons', []))],
-            'momento_liturgico_id' => ['nullable', 'exists:momentos_liturgicos,id'],
+            'momento_liturgico_id' => ['nullable', Rule::exists('classificacoes_liturgicas', 'id')->where(fn ($query) => $query->where('tipo', 'momento'))],
         ], [
             'musica_id.required' => 'Selecione uma musica para adicionar ao repertorio.',
             'tom_usado.in' => 'Escolha um tom padronizado da lista para usar nesta missa.',
         ]);
+
+        $musica = Musica::findOrFail($dados['musica_id']);
 
         if (!empty($dados['versao_musical_id'])) {
             $versao = VersaoMusical::findOrFail($dados['versao_musical_id']);
@@ -369,7 +371,7 @@ class MissaController extends Controller
             'musica_id' => $dados['musica_id'],
             'versao_musical_id' => $dados['versao_musical_id'] ?? null,
             'tom_usado' => $this->normalizarTomInformado($dados['tom_usado'] ?? null),
-            'momento_liturgico_id' => $dados['momento_liturgico_id'] ?? null,
+            'momento_liturgico_id' => $dados['momento_liturgico_id'] ?? $musica->momento_liturgico_id,
             'ordem' => $proximaOrdem,
         ]);
 
@@ -406,7 +408,7 @@ class MissaController extends Controller
         $dados = $request->validate([
             'versao_musical_id' => ['nullable', 'exists:versoes_musicais,id'],
             'tom_usado' => ['nullable', Rule::in(config('musical.tons', []))],
-            'momento_liturgico_id' => ['nullable', 'exists:momentos_liturgicos,id'],
+            'momento_liturgico_id' => ['nullable', Rule::exists('classificacoes_liturgicas', 'id')->where(fn ($query) => $query->where('tipo', 'momento'))],
         ], [
             'tom_usado.in' => 'Escolha um tom padronizado da lista para usar nesta missa.',
         ]);
@@ -681,7 +683,7 @@ class MissaController extends Controller
 
         $validator = Validator::make($request->all(), [
             'titulo' => ['required', 'string', 'max:255'],
-            'tempo_liturgico_id' => ['nullable', 'exists:tempos_liturgicos,id'],
+            'tempo_liturgico_id' => ['nullable', Rule::exists('classificacoes_liturgicas', 'id')->where(fn ($query) => $query->where('tipo', 'tempo'))],
             'padre_id' => ['nullable', 'exists:usuarios,id'],
             'data_missa' => ['required', 'date', 'after_or_equal:' . $dataMinima, 'before_or_equal:' . $dataMaxima],
             'hora_inicio' => ['required', 'date_format:H:i'],

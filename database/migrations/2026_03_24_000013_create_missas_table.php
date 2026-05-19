@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('igreja_id')->constrained('igrejas')->cascadeOnDelete();
             $table->foreignId('celebrante_usuario_id')->nullable()->constrained('usuarios')->nullOnDelete();
-            $table->foreignId('tempo_liturgico_id')->nullable()->constrained('tempos_liturgicos')->nullOnDelete();
+            $table->foreignId('tempo_liturgico_id')->nullable()->constrained('classificacoes_liturgicas')->nullOnDelete();
             $table->string('titulo');
             $table->date('data_missa');
             $table->time('hora_inicio');
@@ -26,6 +26,14 @@ return new class extends Migration
             $table->index('ativo');
             $table->index(['igreja_id', 'data_missa']);
             $table->index(['celebrante_usuario_id', 'data_missa']);
+            $table->index(
+                ['igreja_id', 'publica_para_fieis', 'ativo', 'data_missa'],
+                'missas_publica_para_fieis_lookup_index'
+            );
+            $table->index(
+                ['igreja_id', 'publica_para_musicos', 'ativo', 'data_missa'],
+                'missas_publica_para_musicos_lookup_index'
+            );
         });
     }
 

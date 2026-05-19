@@ -4,6 +4,8 @@
 @section('mobile_title', 'Tempos')
 
 @section('content')
+    @php($routePrefix = $routePrefix ?? 'admin')
+
     <div class="admin-page-shell">
         <section class="admin-page-header">
             <div class="admin-page-intro">
@@ -13,7 +15,7 @@
             </div>
 
             <div class="admin-page-actions">
-                <a href="{{ route('admin.tempos-liturgicos.create') }}" class="admin-btn admin-btn-primary">Novo tempo</a>
+                <a href="{{ route($routePrefix . '.tempos-liturgicos.create') }}" class="admin-btn admin-btn-primary">Cadastrar tempo liturgico</a>
             </div>
         </section>
 
@@ -55,12 +57,14 @@
                                     </td>
                                     <td>
                                         <div class="admin-actions justify-end">
-                                            <a href="{{ route('admin.tempos-liturgicos.edit', $tempoLiturgico) }}" class="admin-btn admin-btn-secondary">Editar</a>
-                                            <form action="{{ route('admin.tempos-liturgicos.destroy', $tempoLiturgico) }}" method="POST" onsubmit="return confirm('Deseja excluir este tempo liturgico?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="admin-btn admin-btn-danger">Excluir</button>
-                                            </form>
+                                            <a href="{{ route($routePrefix . '.tempos-liturgicos.edit', $tempoLiturgico) }}" class="admin-btn admin-btn-secondary">Editar</a>
+                                            @if ($tempoLiturgico->ativo)
+                                                <form action="{{ route($routePrefix . '.tempos-liturgicos.destroy', $tempoLiturgico) }}" method="POST" onsubmit="return confirm('Deseja inativar este tempo liturgico? Ele sera preservado no sistema.');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="admin-btn admin-btn-danger">Inativar</button>
+                                                </form>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -82,12 +86,14 @@
                                 </span>
                             </div>
                             <div class="admin-actions mt-4">
-                                <a href="{{ route('admin.tempos-liturgicos.edit', $tempoLiturgico) }}" class="admin-btn admin-btn-secondary">Editar</a>
-                                <form action="{{ route('admin.tempos-liturgicos.destroy', $tempoLiturgico) }}" method="POST" onsubmit="return confirm('Deseja excluir este tempo liturgico?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="admin-btn admin-btn-danger">Excluir</button>
-                                </form>
+                                <a href="{{ route($routePrefix . '.tempos-liturgicos.edit', $tempoLiturgico) }}" class="admin-btn admin-btn-secondary">Editar</a>
+                                @if ($tempoLiturgico->ativo)
+                                    <form action="{{ route($routePrefix . '.tempos-liturgicos.destroy', $tempoLiturgico) }}" method="POST" onsubmit="return confirm('Deseja inativar este tempo liturgico? Ele sera preservado no sistema.');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="admin-btn admin-btn-danger">Inativar</button>
+                                    </form>
+                                @endif
                             </div>
                         </article>
                     @endforeach

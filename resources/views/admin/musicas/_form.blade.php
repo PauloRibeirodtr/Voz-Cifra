@@ -2,20 +2,29 @@
     $classeInput = 'mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-100';
     $musicaAtual = $musica ?? null;
     $tituloPagina = $modo === 'create' ? 'Cadastrar musica' : 'Editar musica';
+    $textoBotaoSalvar = $modo === 'create' ? 'Salvar musica' : 'Atualizar musica';
+    $rotaCancelar = $modo === 'create'
+        ? route('admin.musicas.index')
+        : route('admin.musicas.show', $musicaAtual);
     $descricaoPagina = $modo === 'create'
         ? 'Cadastre aqui apenas a musica base. A cifra entra depois, na versao musical.'
         : 'Atualize apenas a musica base. A cifra continua sendo tratada nas versoes musicais.';
 @endphp
 
-<div class="mb-6 flex items-center justify-between">
+<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div>
         <h1 class="text-2xl font-bold text-gray-800">{{ $tituloPagina }}</h1>
         <p class="text-sm text-gray-500">{{ $descricaoPagina }}</p>
     </div>
 
-    <a href="{{ route('admin.musicas.index') }}" class="rounded-lg border border-gray-200 bg-white px-4 py-2 font-medium text-gray-700 hover:bg-gray-50">
-        Ver musicas
-    </a>
+    <div class="flex flex-col-reverse gap-2 sm:flex-row">
+        <a href="{{ $rotaCancelar }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 font-semibold text-gray-700 hover:bg-gray-50">
+            Cancelar
+        </a>
+        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800">
+            {{ $textoBotaoSalvar }}
+        </button>
+    </div>
 </div>
 
 @if ($errors->any())

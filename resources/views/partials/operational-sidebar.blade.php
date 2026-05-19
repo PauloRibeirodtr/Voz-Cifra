@@ -156,6 +156,16 @@
                     <i class="fa-solid fa-sliders w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
                     <span>Cadastrar cifras</span>
                 </a>
+
+                <a href="{{ route('coordenador.tempos-liturgicos.index') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('coordenador.tempos-liturgicos.*')) }}">
+                    <i class="fa-solid fa-calendar-days w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
+                    <span>Tempos lit&uacute;rgicos</span>
+                </a>
+
+                <a href="{{ route('coordenador.momentos-liturgicos.index') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('coordenador.momentos-liturgicos.*')) }}">
+                    <i class="fa-solid fa-list-ol w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
+                    <span>Momentos lit&uacute;rgicos</span>
+                </a>
             @endif
 
             @if ($temAcessoMusicalSidebar)

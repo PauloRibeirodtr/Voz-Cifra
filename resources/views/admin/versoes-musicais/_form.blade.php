@@ -3,6 +3,22 @@
     $letraInicial = old('letra_com_cifras', $versaoMusical->letra_com_cifras ?? $musica->letra ?? '');
 @endphp
 
+@push('styles')
+    <style>
+        .editor-cifra-preview .cifra-linha { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.18rem; margin-bottom: 0.72rem; }
+        .editor-cifra-preview .cifra-linha--refrao { border-left: 4px solid #f59e0b; background: linear-gradient(90deg, rgba(255, 251, 235, 0.12), rgba(255, 251, 235, 0)); margin: 0.18rem 0 0.74rem; padding: 0.42rem 0 0.42rem 0.85rem; }
+        .editor-cifra-preview .cifra-segmento { display: inline-flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; min-height: 2.85rem; }
+        .editor-cifra-preview .cifra-acordes { min-height: 1.1rem; margin-bottom: 0.02rem; color: #fb923c; font-weight: 900; font-size: 0.95rem; line-height: 1rem; white-space: pre; }
+        .editor-cifra-preview .cifra-letra { color: #f8fafc; font-size: 1.06rem; line-height: 1.9rem; white-space: pre-wrap; }
+        .editor-cifra-preview .cifra-marcacao { display: inline-flex; align-items: center; border-radius: 9999px; background: #334155; color: #f8fafc; font-size: 0.78rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 0.85rem; margin: 1rem 0 0.75rem; }
+        .editor-cifra-preview .cifra-marcacao--refrao { background: #fef3c7; color: #92400e; }
+        @media (max-width: 767px) {
+            .editor-cifra-preview .cifra-linha { display: block; margin-bottom: 0.8rem; }
+            .editor-cifra-preview .cifra-segmento { display: inline-flex; min-height: 2.25rem; max-width: 100%; }
+        }
+    </style>
+@endpush
+
 @if (session('info'))
     <div class="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 text-sm rounded">
         {{ session('info') }}
@@ -15,8 +31,8 @@
     </div>
 @endif
 
-<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-    <div class="xl:col-span-2 space-y-6">
+<div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(28rem,0.9fr)] gap-6">
+    <div class="space-y-6">
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <div class="grid grid-cols-1 gap-4">
                 <div>
@@ -55,29 +71,29 @@
                     <p class="text-xs text-gray-500 mt-1">Voce pode informar apenas o ID do video ou colar o link inteiro do YouTube.</p>
                 </div>
 
-                <details class="rounded-2xl border border-blue-100 bg-blue-50 p-5">
-                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-blue-900 [&::-webkit-details-marker]:hidden">
+                <details class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-gray-900 [&::-webkit-details-marker]:hidden">
                         <span class="inline-flex items-center gap-3">
-                            <span class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-white">
+                            <span class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-700">
                                 <i class="fa-solid fa-circle-info"></i>
                             </span>
                             <span>
                                 <span class="block text-base font-bold">Como preencher</span>
-                                <span class="block text-sm text-blue-800">Exemplos de cifra e conversao automatica.</span>
+                                <span class="block text-sm text-gray-500">Exemplos de cifra, partes da musica e conversao automatica.</span>
                             </span>
                         </span>
-                        <i class="fa-solid fa-chevron-down text-sm"></i>
+                        <span class="flex h-7 w-7 items-center justify-center rounded-full bg-gray-50 text-sm font-black text-green-700">+</span>
                     </summary>
 
                     <div class="mt-5 flex items-start gap-3">
-                        <div class="mt-1 hidden h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-white sm:flex">
+                        <div class="mt-1 hidden h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-700 sm:flex">
                             <i class="fa-solid fa-circle-info"></i>
                         </div>
 
-                        <div class="flex-1 space-y-4 text-sm text-blue-900">
+                        <div class="flex-1 space-y-4 text-sm text-gray-700">
                             <div>
                                 <h2 class="text-base font-bold">Como preencher a cifra</h2>
-                                <p class="text-blue-800">Cole a cifra com colchetes ou no estilo Cifra Club. Para marcar o refrão, escreva <strong>Refrão:</strong> em uma linha separada antes do trecho. Não precisa usar aspas.</p>
+                                <p class="text-gray-600">Cole a cifra com colchetes ou no estilo Cifra Club. Para marcar partes, use uma linha separada como <strong>[Intro]</strong>, <strong>[Primeira Parte]</strong> ou <strong>Refrão:</strong>.</p>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -97,7 +113,13 @@
 
                             <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
                                 <div class="text-xs font-black uppercase tracking-[0.16em] text-amber-700">Refrão</div>
-                                <pre class="mt-2 whitespace-pre-wrap break-words font-mono text-sm leading-7 text-gray-800">Refrão:
+                                <pre class="mt-2 whitespace-pre-wrap break-words font-mono text-sm leading-7 text-gray-800">[Intro]
+G  D/F#  Em7  C9
+
+[Primeira Parte]
+[G]Quao grande e o meu Deus
+
+Refrão:
 [G]Santo, Santo, [D/F#]Santo
 [Em7]Senhor Deus do universo</pre>
                             </div>
@@ -158,6 +180,9 @@ Cantarei quao grande e o meu Deus</pre>
                         <button type="button" class="rounded-full border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs font-black text-indigo-700 hover:bg-indigo-100" data-inserir-marcacao="[Primeira parte]\n">
                             Inserir Parte
                         </button>
+                        <button type="button" class="rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-xs font-black text-sky-700 hover:bg-sky-100" data-organizar-cifra-visual>
+                            Organizar cifra
+                        </button>
                     </div>
                     <textarea id="letra_com_cifras" name="letra_com_cifras" rows="18" required placeholder="[G]Quao grande e o meu Deus
 [D/F#]Cantarei quao grande e o meu Deus
@@ -173,6 +198,9 @@ Cantarei quao grande e o meu Deus</pre>
             </div>
         </div>
 
+    </div>
+
+    <div class="space-y-6">
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <h2 class="text-lg font-bold text-gray-800 mb-4">Pre-visualizacao</h2>
             <div class="mb-4 flex flex-wrap gap-2">
@@ -187,18 +215,16 @@ Cantarei quao grande e o meu Deus</pre>
             <div class="space-y-4">
                 <div data-preview-panel="com-cifras">
                     <h3 class="text-sm font-semibold text-gray-700 mb-2">Visao com cifra</h3>
-                    <div id="preview_com_cifras" class="min-h-[320px] rounded-xl bg-slate-900 p-5 text-green-100 border border-slate-800 overflow-auto"></div>
+                    <div id="preview_com_cifras" class="editor-cifra-preview min-h-[520px] max-h-[72vh] rounded-xl bg-slate-900 p-5 text-green-100 border border-slate-800 overflow-auto"></div>
                 </div>
 
                 <div class="hidden" data-preview-panel="sem-cifras">
                     <h3 class="text-sm font-semibold text-gray-700 mb-2">Visao sem cifra</h3>
-                    <div id="preview_sem_cifras" class="min-h-[320px] rounded-xl bg-gray-50 p-5 text-gray-800 border border-gray-200"></div>
+                    <div id="preview_sem_cifras" class="min-h-[520px] max-h-[72vh] rounded-xl bg-gray-50 p-5 text-gray-800 border border-gray-200 overflow-auto"></div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="space-y-6">
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-6">
             <h2 class="text-lg font-bold text-gray-800 mb-2">Biblioteca de acordes</h2>
             <p class="text-sm text-gray-500 mb-4">Clique em um acorde para inserir no cursor do editor.</p>
@@ -244,6 +270,7 @@ Cantarei quao grande e o meu Deus</pre>
         const botoesExemplo = document.querySelectorAll('[data-exemplo-toggle]');
         const paineisExemplo = document.querySelectorAll('[data-exemplo-painel]');
         const botoesMarcacao = document.querySelectorAll('[data-inserir-marcacao]');
+        const botaoOrganizarCifra = document.querySelector('[data-organizar-cifra-visual]');
 
         if (!textarea || !previewComCifras || !previewSemCifras || !previewPadraoInterno) {
             return;
@@ -379,6 +406,93 @@ Cantarei quao grande e o meu Deus</pre>
             return [...new Set(acordes)];
         };
 
+        const colocarTextoEmLinha = (linha, posicao, texto) => {
+            const caracteres = linha.split('');
+            let inicio = Math.max(0, posicao);
+
+            while (inicio > 0 && caracteres.slice(inicio, inicio + texto.length).some((caractere) => caractere && caractere !== ' ')) {
+                inicio++;
+            }
+
+            for (let i = 0; i < texto.length; i++) {
+                caracteres[inicio + i] = texto[i];
+            }
+
+            return caracteres.join('');
+        };
+
+        const converterLinhaParaEdicaoVisual = (linha) => {
+            if (!linha.includes('[')) {
+                return linha;
+            }
+
+            const linhaLimpa = linha.trim();
+            const marcacao = linhaLimpa.match(/^\[(.+)\]$/);
+
+            if (marcacao && !ehAcorde(marcacao[1])) {
+                return linha;
+            }
+
+            let textoLetra = '';
+            let linhaAcordes = '';
+            let acordesPendentes = [];
+            let posicaoAtual = 0;
+            const matches = Array.from(linha.matchAll(/\[([^\[\]\r\n]+)\]/g));
+
+            matches.forEach((match) => {
+                const textoAntes = linha.slice(posicaoAtual, match.index);
+
+                if (textoAntes !== '') {
+                    if (acordesPendentes.length > 0) {
+                        linhaAcordes = colocarTextoEmLinha(linhaAcordes.padEnd(textoLetra.length, ' '), textoLetra.length, acordesPendentes.join(' '));
+                        acordesPendentes = [];
+                    }
+
+                    textoLetra += textoAntes;
+                }
+
+                const conteudo = String(match[1] || '').trim();
+
+                if (ehAcorde(conteudo)) {
+                    acordesPendentes.push(conteudo);
+                } else {
+                    if (acordesPendentes.length > 0) {
+                        linhaAcordes = colocarTextoEmLinha(linhaAcordes.padEnd(textoLetra.length, ' '), textoLetra.length, acordesPendentes.join(' '));
+                        acordesPendentes = [];
+                    }
+
+                    textoLetra += match[0];
+                }
+
+                posicaoAtual = (match.index || 0) + match[0].length;
+            });
+
+            const textoFinal = linha.slice(posicaoAtual);
+
+            if (acordesPendentes.length > 0) {
+                linhaAcordes = colocarTextoEmLinha(linhaAcordes.padEnd(textoLetra.length, ' '), textoLetra.length, acordesPendentes.join(' '));
+            }
+
+            textoLetra += textoFinal;
+
+            if (linhaAcordes.trim() === '') {
+                return textoLetra;
+            }
+
+            return `${linhaAcordes.replace(/\s+$/g, '')}\n${textoLetra.replace(/\s+$/g, '')}`;
+        };
+
+        const converterTextoParaEdicaoVisual = (texto) => {
+            return (texto || '')
+                .replace(/\r\n/g, '\n')
+                .replace(/\r/g, '\n')
+                .split('\n')
+                .map(converterLinhaParaEdicaoVisual)
+                .join('\n')
+                .replace(/\n{4,}/g, '\n\n\n')
+                .trim();
+        };
+
         const removerCifras = (texto) => {
             return texto.replace(/\[([^\[\]\r\n]+)\]/g, (trechoCompleto, interno) => {
                 return ehAcorde(interno) ? '' : trechoCompleto;
@@ -421,24 +535,59 @@ Cantarei quao grande e o meu Deus</pre>
 
             const marcacao = linhaLimpa.match(/^\[(.+)\]$/);
             if (marcacao && !ehAcorde(marcacao[1])) {
-                return `<div class="my-2 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] ${classeMarcacao(marcacao[1])}">${escaparHtml(marcacao[1])}</div>`;
+                return `<div class="cifra-marcacao ${normalizarMarcacao(marcacao[1]).startsWith('refrao') ? 'cifra-marcacao--refrao' : ''}">${escaparHtml(marcacao[1])}</div>`;
             }
 
             if (ehMarcacaoSecao(linhaLimpa)) {
-                return `<div class="my-2 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] ${classeMarcacao(linhaLimpa)}">${escaparHtml(linhaLimpa)}</div>`;
+                return `<div class="cifra-marcacao ${normalizarMarcacao(linhaLimpa).startsWith('refrao') ? 'cifra-marcacao--refrao' : ''}">${escaparHtml(linhaLimpa)}</div>`;
             }
 
-            const html = linha.replace(/\[([^\[\]\r\n]+)\]/g, (trechoCompleto, interno) => {
-                const acorde = String(interno || '').trim();
+            const segmentos = [];
+            let acordesPendentes = [];
+            let posicaoAtual = 0;
+            const matches = Array.from(linha.matchAll(/\[([^\[\]\r\n]+)\]/g));
 
-                if (!ehAcorde(acorde)) {
-                    return `<span class="text-slate-300">${escaparHtml(trechoCompleto)}</span>`;
+            matches.forEach((match) => {
+                const textoAntes = linha.slice(posicaoAtual, match.index);
+
+                if (textoAntes !== '') {
+                    segmentos.push({
+                        acordes: acordesPendentes,
+                        texto: textoAntes,
+                    });
+                    acordesPendentes = [];
                 }
 
-                return `<span class="mx-[0.08rem] inline-flex rounded-md bg-slate-800 px-1.5 py-0.5 align-middle text-[0.95rem] font-extrabold leading-none text-orange-300">${escaparHtml(acorde)}</span>`;
+                const conteudo = String(match[1] || '').trim();
+
+                if (ehAcorde(conteudo)) {
+                    acordesPendentes.push(conteudo);
+                } else {
+                    segmentos.push({
+                        acordes: [],
+                        texto: match[0],
+                    });
+                }
+
+                posicaoAtual = (match.index || 0) + match[0].length;
             });
 
-            return `<div class="mb-3 whitespace-pre-wrap break-words text-[1.02rem] leading-8 text-slate-100">${html}</div>`;
+            const textoFinal = linha.slice(posicaoAtual);
+
+            if (textoFinal !== '' || acordesPendentes.length > 0) {
+                segmentos.push({
+                    acordes: acordesPendentes,
+                    texto: textoFinal || ' ',
+                });
+            }
+
+            const html = segmentos.map((segmento) => {
+                const acordes = segmento.acordes.map((acorde) => `<span>${escaparHtml(acorde)}</span>`).join(' ');
+
+                return `<span class="cifra-segmento"><span class="cifra-acordes">${acordes}</span><span class="cifra-letra">${escaparHtml(segmento.texto)}</span></span>`;
+            }).join('');
+
+            return `<div class="cifra-linha">${html}</div>`;
         };
 
         const renderizarComCifras = (texto) => {
@@ -469,7 +618,7 @@ Cantarei quao grande e o meu Deus</pre>
                     proximaLinhaRefrao = false;
                 }
 
-                const classeRefrao = blocoAtualRefrao ? ' border-l-4 border-amber-300 bg-amber-200/10 pl-3 font-bold text-amber-50' : '';
+                const classeRefrao = blocoAtualRefrao ? ' cifra-linha--refrao' : '';
 
                 return `<div class="${classeRefrao}">${renderizarLinhaComCifras(linha)}</div>`;
             }).join('');
@@ -582,6 +731,12 @@ Cantarei quao grande e o meu Deus</pre>
             });
         });
 
+        botaoOrganizarCifra?.addEventListener('click', () => {
+            textarea.value = converterTextoParaEdicaoVisual(textarea.value || '');
+            textarea.focus();
+            atualizarPreview();
+        });
+
         const ativarPreview = (modo) => {
             botoesPreview.forEach((botao) => {
                 const ativo = botao.dataset.previewToggle === modo;
@@ -622,6 +777,7 @@ Cantarei quao grande e o meu Deus</pre>
             botao.addEventListener('click', () => ativarExemplo(botao.dataset.exemploToggle));
         });
 
+        textarea.value = converterTextoParaEdicaoVisual(textarea.value || '');
         ativarPreview('com-cifras');
         ativarExemplo('colchetes');
         atualizarPreview();

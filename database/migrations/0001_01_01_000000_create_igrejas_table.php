@@ -12,7 +12,8 @@ return new class extends Migration
             $table->id();
             $table->string('nome');
             $table->string('slug')->unique();
-            $table->string('cnpj', 18)->unique();
+            $table->string('slug_publico_musicos')->nullable()->unique();
+            $table->string('cnpj', 18);
             $table->string('cep', 9)->nullable();
             $table->string('endereco')->nullable();
             $table->string('numero', 20)->nullable();
@@ -20,12 +21,14 @@ return new class extends Migration
             $table->string('cidade');
             $table->string('estado', 2);
             $table->string('imagem_path')->nullable();
+            $table->string('status_operacional', 40)->default('aguardando_admin_local');
             $table->boolean('ativo')->default(true);
             $table->timestamps();
 
             $table->index(['cidade', 'estado']);
             $table->index('ativo');
             $table->index('slug');
+            $table->index('status_operacional');
         });
     }
 

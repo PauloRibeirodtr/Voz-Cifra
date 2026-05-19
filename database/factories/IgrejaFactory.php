@@ -21,6 +21,7 @@ class IgrejaFactory extends Factory
             'nome' => $nome,
             'slug' => Str::slug($nome . '-' . fake()->unique()->numerify('###')),
             'cnpj' => fake()->unique()->numerify('##.###.###/####-##'),
+            'telefone_secretaria' => fake()->optional()->phoneNumber(),
             'cep' => fake()->numerify('#####-###'),
             'endereco' => fake()->streetAddress(),
             'cidade' => fake()->city(),

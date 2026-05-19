@@ -15,18 +15,21 @@ class TempoLiturgicoController extends Controller
     {
         return view('admin.tempos-liturgicos.index', [
             'temposLiturgicos' => TempoLiturgico::orderBy('nome')->get(),
+            'routePrefix' => $this->routePrefix(),
         ]);
     }
 
     public function create(): View
     {
-        return view('admin.tempos-liturgicos.create');
+        return view('admin.tempos-liturgicos.create', [
+            'routePrefix' => $this->routePrefix(),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $dados = $request->validate([
-            'nome' => ['required', 'string', 'max:255', Rule::unique('tempos_liturgicos', 'nome')],
+            'nome' => ['required', 'string', 'max:255', Rule::unique('classificacoes_liturgicas', 'nome')->where(fn ($query) => $query->where('tipo', 'tempo'))],
             'descricao' => ['nullable', 'string'],
             'ativo' => ['nullable', 'boolean'],
         ]);
@@ -38,7 +41,7 @@ class TempoLiturgicoController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.tempos-liturgicos.index')
+            ->route($this->routeName('tempos-liturgicos.index'))
             ->with('success', 'Tempo liturgico cadastrado com sucesso.');
     }
 
@@ -46,13 +49,14 @@ class TempoLiturgicoController extends Controller
     {
         return view('admin.tempos-liturgicos.edit', [
             'tempoLiturgico' => $tempoLiturgico,
+            'routePrefix' => $this->routePrefix(),
         ]);
     }
 
     public function update(Request $request, TempoLiturgico $tempoLiturgico): RedirectResponse
     {
         $dados = $request->validate([
-            'nome' => ['required', 'string', 'max:255', Rule::unique('tempos_liturgicos', 'nome')->ignore($tempoLiturgico->id)],
+            'nome' => ['required', 'string', 'max:255', Rule::unique('classificacoes_liturgicas', 'nome')->where(fn ($query) => $query->where('tipo', 'tempo'))->ignore($tempoLiturgico->id)],
             'descricao' => ['nullable', 'string'],
             'ativo' => ['nullable', 'boolean'],
         ]);
@@ -64,16 +68,26 @@ class TempoLiturgicoController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.tempos-liturgicos.index')
+            ->route($this->routeName('tempos-liturgicos.index'))
             ->with('success', 'Tempo liturgico atualizado com sucesso.');
     }
 
     public function destroy(TempoLiturgico $tempoLiturgico): RedirectResponse
     {
-        $tempoLiturgico->delete();
+        $tempoLiturgico->update(['ativo' => false]);
 
         return redirect()
-            ->route('admin.tempos-liturgicos.index')
-            ->with('success', 'Tempo liturgico excluido com sucesso.');
+            ->route($this->routeName('tempos-liturgicos.index'))
+            ->with('success', 'Tempo liturgico inativado com sucesso.');
+    }
+
+    private function routePrefix(): string
+    {
+        return request()->routeIs('coordenador.*') ? 'coordenador' : 'admin';
+    }
+
+    private function routeName(string $name): string
+    {
+        return $this->routePrefix() . '.' . $name;
     }
 }

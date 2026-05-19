@@ -3,18 +3,18 @@
 namespace Database\Seeders;
 
 use App\Models\Usuario;
+use App\Services\NotificacaoAcessoInicialService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AdminMasterSeeder extends Seeder
 {
-    private const DEFAULT_ADMIN_MASTER_PASSWORD = 'admin123456';
-
     public function run(): void
     {
         $cpf = preg_replace('/\D+/', '', (string) env('ADMIN_MASTER_CPF', '06070933150')) ?: '06070933150';
         $email = trim((string) env('ADMIN_MASTER_EMAIL', 'pythonocr7@gmail.com'));
-        $senhaInformada = trim((string) env('ADMIN_MASTER_PASSWORD', self::DEFAULT_ADMIN_MASTER_PASSWORD));
+        $senhaInformada = trim((string) env('ADMIN_MASTER_PASSWORD', ''));
         $primeiroAcesso = filter_var(env('ADMIN_MASTER_PRIMEIRO_ACESSO', true), FILTER_VALIDATE_BOOL);
 
         $usuarioExistente = Usuario::query()
@@ -41,7 +41,7 @@ class AdminMasterSeeder extends Seeder
             'cpf' => $cpf,
             'email' => $email,
             'telefone' => env('ADMIN_MASTER_TELEFONE'),
-            'password' => Hash::make($senhaInformada !== '' ? $senhaInformada : self::DEFAULT_ADMIN_MASTER_PASSWORD),
+            'password' => Hash::make($senhaInformada !== '' ? $senhaInformada : Str::password(32)),
             'perfil_global' => 'admin_master',
             'nivel_global' => 6,
             'eh_padre' => false,
@@ -53,6 +53,16 @@ class AdminMasterSeeder extends Seeder
             'updated_at' => now(),
         ];
 
-        Usuario::query()->create($dados);
+        $usuario = Usuario::query()->create($dados);
+
+        if ($primeiroAcesso && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            app(NotificacaoAcessoInicialService::class)->enviarConvite(
+                alvo: $usuario,
+                contexto: [
+                    'origem' => 'admin_master_seeder',
+                    'origem_id' => $usuario->id,
+                ]
+            );
+        }
     }
 }

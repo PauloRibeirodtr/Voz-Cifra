@@ -105,10 +105,10 @@ Route::middleware(['auth', 'verified_custom', 'super.admin', 'primeiro_acesso'])
         Route::get('/acordes', [AcordeController::class, 'index'])->name('acordes.index');
         Route::get('/acordes/criar', [AcordeController::class, 'create'])->name('acordes.create');
         Route::post('/acordes', [AcordeController::class, 'store'])->name('acordes.store');
-        Route::get('/acordes/{id}', [AcordeController::class, 'show'])->name('acordes.show');
-        Route::get('/acordes/{id}/editar', [AcordeController::class, 'edit'])->name('acordes.edit');
-        Route::put('/acordes/{id}', [AcordeController::class, 'update'])->name('acordes.update');
-        Route::delete('/acordes/{id}', [AcordeController::class, 'destroy'])->name('acordes.destroy');
+        Route::get('/acordes/{id}', [AcordeController::class, 'show'])->whereNumber('id')->name('acordes.show');
+        Route::get('/acordes/{id}/editar', [AcordeController::class, 'edit'])->whereNumber('id')->name('acordes.edit');
+        Route::put('/acordes/{id}', [AcordeController::class, 'update'])->whereNumber('id')->name('acordes.update');
+        Route::delete('/acordes/{id}', [AcordeController::class, 'destroy'])->whereNumber('id')->name('acordes.destroy');
 
         Route::get('/tempos-liturgicos', [TempoLiturgicoController::class, 'index'])->name('tempos-liturgicos.index');
         Route::get('/tempos-liturgicos/criar', [TempoLiturgicoController::class, 'create'])->name('tempos-liturgicos.create');
@@ -218,6 +218,20 @@ Route::middleware(['auth', 'verified_custom', 'role:coordenador', 'primeiro_aces
         Route::get('/musicas/{musica}', [MusicaController::class, 'show'])->name('musicas.show');
         Route::get('/musicas/{musica}/editar', [MusicaController::class, 'edit'])->name('musicas.edit');
         Route::put('/musicas/{musica}', [MusicaController::class, 'update'])->name('musicas.update');
+
+        Route::get('/tempos-liturgicos', [TempoLiturgicoController::class, 'index'])->name('tempos-liturgicos.index');
+        Route::get('/tempos-liturgicos/criar', [TempoLiturgicoController::class, 'create'])->name('tempos-liturgicos.create');
+        Route::post('/tempos-liturgicos', [TempoLiturgicoController::class, 'store'])->name('tempos-liturgicos.store');
+        Route::get('/tempos-liturgicos/{tempoLiturgico}/editar', [TempoLiturgicoController::class, 'edit'])->name('tempos-liturgicos.edit');
+        Route::put('/tempos-liturgicos/{tempoLiturgico}', [TempoLiturgicoController::class, 'update'])->name('tempos-liturgicos.update');
+        Route::delete('/tempos-liturgicos/{tempoLiturgico}', [TempoLiturgicoController::class, 'destroy'])->name('tempos-liturgicos.destroy');
+
+        Route::get('/momentos-liturgicos', [MomentoLiturgicoController::class, 'index'])->name('momentos-liturgicos.index');
+        Route::get('/momentos-liturgicos/criar', [MomentoLiturgicoController::class, 'create'])->name('momentos-liturgicos.create');
+        Route::post('/momentos-liturgicos', [MomentoLiturgicoController::class, 'store'])->name('momentos-liturgicos.store');
+        Route::get('/momentos-liturgicos/{momentoLiturgico}/editar', [MomentoLiturgicoController::class, 'edit'])->name('momentos-liturgicos.edit');
+        Route::put('/momentos-liturgicos/{momentoLiturgico}', [MomentoLiturgicoController::class, 'update'])->name('momentos-liturgicos.update');
+        Route::delete('/momentos-liturgicos/{momentoLiturgico}', [MomentoLiturgicoController::class, 'destroy'])->name('momentos-liturgicos.destroy');
 
         Route::get('/musicas/{musica}/versoes/criar', [VersaoMusicalController::class, 'create'])->name('versoes-musicais.create');
         Route::post('/musicas/{musica}/versoes', [VersaoMusicalController::class, 'store'])->name('versoes-musicais.store');
