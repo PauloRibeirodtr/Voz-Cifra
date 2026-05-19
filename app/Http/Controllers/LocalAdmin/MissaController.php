@@ -364,17 +364,24 @@ class MissaController extends Controller
             }
         }
 
+        $versaoMusicalId = $dados['versao_musical_id']
+            ?? $musica->versoesMusicais()
+                ->where('ativo', true)
+                ->orderBy('id')
+                ->value('id');
         $proximaOrdem = (int) ($missa->missaMusicas()->max('ordem') ?? 0) + 1;
 
         $itemRepertorio = MissaMusica::create([
             'missa_id' => $missa->id,
             'musica_id' => $dados['musica_id'],
-            'versao_musical_id' => $dados['versao_musical_id'] ?? null,
+            'versao_musical_id' => $versaoMusicalId,
             'tom_usado' => $this->normalizarTomInformado($dados['tom_usado'] ?? null),
             'momento_liturgico_id' => $dados['momento_liturgico_id'] ?? $musica->momento_liturgico_id,
             'ordem' => $proximaOrdem,
         ]);
 
+        $this->reorganizarRepertorioPorMomento($missa);
+        $itemRepertorio->refresh();
         $itemRepertorio->loadMissing(['musica', 'versaoMusical', 'momentoLiturgico']);
         $this->auditoriaOperacionalService->registrar(
             evento: 'repertorio_item_adicionado',
@@ -428,6 +435,8 @@ class MissaController extends Controller
             'momento_liturgico_id' => $dados['momento_liturgico_id'] ?? null,
         ]);
 
+        $this->reorganizarRepertorioPorMomento($missa);
+        $missaMusica->refresh();
         $missaMusica->loadMissing(['musica', 'versaoMusical', 'momentoLiturgico']);
         $this->auditoriaOperacionalService->registrar(
             evento: 'repertorio_item_atualizado',
@@ -894,6 +903,37 @@ class MissaController extends Controller
         $tom = trim((string) $tom);
 
         return $tom !== '' ? $tom : null;
+    }
+
+    private function reorganizarRepertorioPorMomento(Missa $missa): void
+    {
+        $itens = $missa->missaMusicas()
+            ->with('momentoLiturgico')
+            ->orderBy('ordem')
+            ->get();
+
+        if ($itens->isEmpty()) {
+            return;
+        }
+
+        $itensOrdenados = $itens
+            ->sortBy([
+                fn (MissaMusica $primeiro, MissaMusica $segundo): int => ($primeiro->momentoLiturgico?->ordem_exibicao ?? PHP_INT_MAX)
+                    <=> ($segundo->momentoLiturgico?->ordem_exibicao ?? PHP_INT_MAX),
+                fn (MissaMusica $primeiro, MissaMusica $segundo): int => $primeiro->ordem <=> $segundo->ordem,
+                fn (MissaMusica $primeiro, MissaMusica $segundo): int => $primeiro->id <=> $segundo->id,
+            ])
+            ->values();
+
+        DB::transaction(function () use ($itensOrdenados): void {
+            $itensOrdenados->each(function (MissaMusica $item, int $indice): void {
+                $item->update(['ordem' => -($indice + 1)]);
+            });
+
+            $itensOrdenados->each(function (MissaMusica $item, int $indice): void {
+                $item->update(['ordem' => $indice + 1]);
+            });
+        });
     }
 
     private function montarFolhaItemRepertorio(Missa $missa, MissaMusica $missaMusica): array

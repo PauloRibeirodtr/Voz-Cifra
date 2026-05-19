@@ -121,6 +121,16 @@
             color: #78350f;
             padding: 0.9rem 1rem;
         }
+
+        .repertorio-action {
+            display: inline-flex;
+            width: 2.75rem;
+            height: 2.75rem;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.85rem;
+            transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+        }
     </style>
 @endpush
 
@@ -342,9 +352,9 @@
                                             @endif
                                         </div>
                                         <h3 class="mt-3 text-lg font-bold text-gray-900">{{ $item->musica->titulo }}</h3>
-                                        <p class="mt-1 text-sm text-gray-500">{{ $item->musica->artista ?: 'Artista n&atilde;o informado' }}</p>
+                                        <p class="mt-1 text-sm text-gray-500">{{ $item->musica->artista ?: 'Artista nao informado' }}</p>
                                         <p class="mt-2 text-sm text-gray-600">
-                                            Vers&atilde;o: {{ $item->versaoMusical?->titulo ?: 'Ainda n&atilde;o vinculada' }}
+                                            Vers&atilde;o: {{ $item->versaoMusical?->titulo ?: 'Ainda nao vinculada' }}
                                             @if ($item->tom_exibicao)
                                                 &bull; Tom da missa {{ $item->tom_exibicao }}
                                             @endif
@@ -357,27 +367,29 @@
                                         </p>
                                     </div>
 
-                                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:w-[360px]">
+                                    <div class="flex flex-wrap items-center gap-2 lg:justify-end">
                                         <form action="{{ route('local-admin.repertorio.up', [$missa, $item]) }}" method="POST">
                                             @csrf
-                                            <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-100">
-                                                Subir
+                                            <button type="submit" class="repertorio-action border border-gray-200 bg-white text-gray-700 hover:bg-gray-100" title="Subir musica" aria-label="Subir musica">
+                                                <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
                                             </button>
                                         </form>
                                         <form action="{{ route('local-admin.repertorio.down', [$missa, $item]) }}" method="POST">
                                             @csrf
-                                            <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-100">
-                                                Descer
+                                            <button type="submit" class="repertorio-action border border-gray-200 bg-white text-gray-700 hover:bg-gray-100" title="Descer musica" aria-label="Descer musica">
+                                                <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
                                             </button>
                                         </form>
-                                        <a href="{{ route('local-admin.repertorio.cifra', [$missa, $item]) }}" class="inline-flex items-center justify-center rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-800 transition hover:bg-sky-100">
-                                            Visualizar cifra
-                                        </a>
+                                        @if ($item->versaoMusical)
+                                            <a href="{{ route('local-admin.repertorio.cifra', [$missa, $item]) }}" class="repertorio-action border border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100" title="Visualizar cifra" aria-label="Visualizar cifra">
+                                                <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                                            </a>
+                                        @endif
                                         <form action="{{ route('local-admin.repertorio.destroy', [$missa, $item]) }}" method="POST" onsubmit="return confirm('Deseja remover esta m&uacute;sica do repert&oacute;rio da missa?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-100">
-                                                Remover item
+                                            <button type="submit" class="repertorio-action border border-red-200 bg-red-50 text-red-700 hover:bg-red-100" title="Remover item" aria-label="Remover item">
+                                                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
                                             </button>
                                         </form>
                                     </div>
@@ -520,6 +532,12 @@
                 return;
             }
 
+            const normalizarBusca = (valor) => String(valor || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .trim();
+
             const atualizarOrientacaoTom = (versaoSelecionadaAtual = null) => {
                 const primeiraOpcaoTom = campoTomUsado.querySelector('option[value=""]');
 
@@ -557,7 +575,7 @@
                     return;
                 }
 
-                musicaSelecionada.versoes.forEach((versao) => {
+                musicaSelecionada.versoes.forEach((versao, indice) => {
                     const option = document.createElement('option');
                     option.value = versao.id;
 
@@ -571,7 +589,7 @@
 
                     option.textContent = texto;
 
-                    if (String(versao.id) === String(versaoSelecionada) || (!versaoSelecionada && musicaSelecionada.versoes.length === 1)) {
+                    if (String(versao.id) === String(versaoSelecionada) || (!versaoSelecionada && indice === 0)) {
                         option.selected = true;
                     }
 
@@ -619,7 +637,7 @@
             };
 
             const renderizarResultados = (termo) => {
-                const busca = termo.trim().toLowerCase();
+                const busca = normalizarBusca(termo);
 
                 if (busca.length < 2) {
                     resultadoBusca.classList.add('hidden');
@@ -629,10 +647,10 @@
 
                 const resultados = musicas
                     .filter((musica) => {
-                        const textoBusca = [musica.titulo || '', musica.artista || '', musica.letra || ''].join(' ').toLowerCase();
+                        const textoBusca = normalizarBusca([musica.titulo || '', musica.artista || '', musica.letra || ''].join(' '));
                         return textoBusca.includes(busca);
                     })
-                    .slice(0, 8);
+                    .slice(0, 12);
 
                 resultadoBusca.replaceChildren();
 
