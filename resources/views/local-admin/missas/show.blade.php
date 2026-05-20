@@ -215,6 +215,24 @@
         </div>
     @endif
 
+    <details class="mb-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+        <summary class="flex cursor-pointer list-none flex-col gap-3 text-gray-900 sm:flex-row sm:items-center sm:justify-between [&::-webkit-details-marker]:hidden">
+            <span>
+                <span class="block text-lg font-bold">Confer&ecirc;ncia e pend&ecirc;ncias</span>
+                <span class="mt-1 block text-sm text-gray-500">Abra somente quando quiser revisar status, ordem, cifras e duplicidades.</span>
+            </span>
+            <span class="flex flex-wrap gap-2 text-xs font-bold">
+                <span class="rounded-full {{ $repertorioCompleto ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800' }} px-3 py-1">
+                    {{ $repertorioCompleto ? 'Tudo certo' : 'Pendente' }}
+                </span>
+                <span class="rounded-full bg-gray-100 px-3 py-1 text-gray-700">{{ $totalItensRepertorio }} m&uacute;sica(s)</span>
+                @if ($itensSemVersao > 0)
+                    <span class="rounded-full bg-amber-100 px-3 py-1 text-amber-800">{{ $itensSemVersao }} sem cifra</span>
+                @endif
+            </span>
+        </summary>
+
+        <div class="mt-5">
     <section class="mb-6 grid grid-cols-1 gap-3 lg:grid-cols-3">
         <div class="missa-step">
             <div class="flex items-center gap-3">
@@ -262,12 +280,14 @@
             <p class="mt-2 text-sm text-gray-600">{{ $repertorioCompleto ? 'pronto para revisar' : 'revise momentos e versoes' }}</p>
         </div>
     </section>
+        </div>
+    </details>
 
-    <section class="mb-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+    <details class="mb-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+        <summary class="flex cursor-pointer list-none flex-col gap-3 text-gray-900 lg:flex-row lg:items-center lg:justify-between [&::-webkit-details-marker]:hidden">
             <div>
                 <h2 class="text-lg font-bold text-gray-900">Checklist da montagem</h2>
-                <p class="mt-1 text-sm text-gray-500">Use como conferencia rapida antes de publicar ou apresentar a missa.</p>
+                <p class="mt-1 text-sm text-gray-500">Confer&ecirc;ncia r&aacute;pida, ordem e pend&ecirc;ncias. Abra quando precisar.</p>
             </div>
             <form action="{{ route('local-admin.missas.repertorio.corrigir-ordem', $missa) }}" method="POST" class="w-full sm:w-auto">
                 @csrf
@@ -276,7 +296,7 @@
                     Corrigir ordem
                 </button>
             </form>
-        </div>
+        </summary>
 
         <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
             <div class="rounded-xl border {{ $totalItensRepertorio > 0 ? 'border-emerald-100 bg-emerald-50 text-emerald-800' : 'border-amber-100 bg-amber-50 text-amber-900' }} p-4 text-sm">
@@ -324,7 +344,7 @@
             </div>
             <p class="mt-3 text-xs text-gray-500">{{ $momentosEssenciaisDefinidos }} de {{ count($momentosEssenciais) }} momentos principais ja aparecem no repertorio.</p>
         </div>
-    </section>
+    </details>
 
     <section class="mb-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
         <div class="mb-4">
@@ -472,7 +492,7 @@
                 @else
                     <div class="space-y-4">
                         @foreach ($missa->missaMusicas as $item)
-                            <article class="repertorio-item-card rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                            <article id="repertorio-item-{{ $item->id }}" class="repertorio-item-card scroll-mt-24 rounded-2xl border border-gray-200 bg-gray-50 p-4">
                                 <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                                     <div class="min-w-0">
                                         <div class="flex flex-wrap items-center gap-2">
@@ -530,7 +550,13 @@
                                     </div>
                                 </div>
 
-                                <form action="{{ route('local-admin.repertorio.update', [$missa, $item]) }}" method="POST" class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+                                <details class="mt-4 rounded-xl border border-gray-200 bg-white p-3" @if (!$item->versaoMusical) open @endif>
+                                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-gray-700 [&::-webkit-details-marker]:hidden">
+                                        <span>Ajustar momento, cifra e tom</span>
+                                        <span class="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-600">Abrir</span>
+                                    </summary>
+
+                                <form action="{{ route('local-admin.repertorio.update', [$missa, $item]) }}" method="POST" class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
                                     @csrf
                                     @method('PUT')
 
@@ -580,6 +606,7 @@
                                         </button>
                                     </div>
                                 </form>
+                                </details>
                             </article>
                         @endforeach
                     </div>

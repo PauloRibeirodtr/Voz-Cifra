@@ -21,6 +21,18 @@
         border-color: rgba(180, 126, 51, 0.35);
         box-shadow: 0 18px 42px rgba(48, 30, 18, 0.16);
     }
+    .chord-action {
+        display: inline-flex;
+        width: 2.75rem;
+        height: 2.75rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.85rem;
+        transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+    }
+    .chord-action:hover {
+        transform: translateY(-2px);
+    }
 </style>
 @endpush
 
@@ -77,13 +89,19 @@
                             <span class="text-xs font-black uppercase tracking-[0.14em] text-gray-400">Casa {{ $acorde->base_fret }}&deg;</span>
                         </div>
 
-                        <div class="admin-actions mt-4">
-                            <a href="{{ route('admin.acordes.show', $acorde->id) }}" class="admin-btn border border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100">Ver</a>
-                            <a href="{{ route('admin.acordes.edit', $acorde->id) }}" class="admin-btn border border-[#ead6b3] bg-[#fff8ed] text-[#6c4a21] hover:bg-[#f8ecd7]">Editar</a>
+                        <div class="mt-4 flex flex-wrap items-center gap-2">
+                            <a href="{{ route('admin.acordes.show', $acorde->id) }}" class="chord-action border border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100" title="Visualizar acorde" aria-label="Visualizar acorde {{ $acorde->nome }}">
+                                <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                            </a>
+                            <a href="{{ route('admin.acordes.edit', $acorde->id) }}" class="chord-action border border-[#ead6b3] bg-[#fff8ed] text-[#6c4a21] hover:bg-[#f8ecd7]" title="Editar acorde" aria-label="Editar acorde {{ $acorde->nome }}">
+                                <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                            </a>
                             <form action="{{ route('admin.acordes.destroy', $acorde->id) }}" method="POST" onsubmit="return confirm('Deseja inativar o acorde {{ $acorde->nome }}? Ele sera preservado no banco.');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="admin-btn admin-btn-danger">Inativar</button>
+                                <button type="submit" class="chord-action border border-red-200 bg-red-50 text-red-700 hover:bg-red-100" title="Inativar acorde" aria-label="Inativar acorde {{ $acorde->nome }}">
+                                    <i class="fa-solid fa-ban" aria-hidden="true"></i>
+                                </button>
                             </form>
                         </div>
                     </div>

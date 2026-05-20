@@ -145,7 +145,7 @@ class MissaController extends Controller
         );
 
         return redirect()
-            ->to(route('local-admin.missas.show', $missa) . '#missa-repertorio')
+            ->to(route('local-admin.missas.show', $missa) . '#repertorio-item-' . $itemRepertorio->id)
             ->with('success', !empty($dados['reaproveitar_repertorio']) && !empty($dados['missa_origem_id'])
                 ? 'Missa cadastrada com sucesso. O repertório anterior foi copiado como ponto de partida.'
                 : 'Missa cadastrada com sucesso. Agora adicione as músicas ao repertório.');
@@ -482,7 +482,9 @@ class MissaController extends Controller
             ]
         );
 
-        return back()->with('success', 'Item do repertorio atualizado com sucesso.');
+        return redirect()
+            ->to(route('local-admin.missas.show', $missa) . '#repertorio-item-' . $missaMusica->id)
+            ->with('success', 'Item do repertorio atualizado com sucesso.');
     }
 
     public function subirRepertorio(Missa $missa, MissaMusica $missaMusica): RedirectResponse
@@ -496,7 +498,8 @@ class MissaController extends Controller
             ->first();
 
         if (!$itemAnterior) {
-            return back();
+            return redirect()
+                ->to(route('local-admin.missas.show', $missa) . '#repertorio-item-' . $missaMusica->id);
         }
 
         DB::transaction(function () use ($missaMusica, $itemAnterior): void {
@@ -510,7 +513,9 @@ class MissaController extends Controller
             $missaMusica->update(['ordem' => $ordemDestino]);
         });
 
-        return back()->with('success', 'Item movido para cima.');
+        return redirect()
+            ->to(route('local-admin.missas.show', $missa) . '#repertorio-item-' . $missaMusica->id)
+            ->with('success', 'Item movido para cima.');
     }
 
     public function descerRepertorio(Missa $missa, MissaMusica $missaMusica): RedirectResponse
@@ -524,7 +529,8 @@ class MissaController extends Controller
             ->first();
 
         if (!$itemSeguinte) {
-            return back();
+            return redirect()
+                ->to(route('local-admin.missas.show', $missa) . '#repertorio-item-' . $missaMusica->id);
         }
 
         DB::transaction(function () use ($missaMusica, $itemSeguinte): void {
@@ -538,7 +544,9 @@ class MissaController extends Controller
             $missaMusica->update(['ordem' => $ordemDestino]);
         });
 
-        return back()->with('success', 'Item movido para baixo.');
+        return redirect()
+            ->to(route('local-admin.missas.show', $missa) . '#repertorio-item-' . $missaMusica->id)
+            ->with('success', 'Item movido para baixo.');
     }
 
     public function destroyRepertorio(Missa $missa, MissaMusica $missaMusica): RedirectResponse

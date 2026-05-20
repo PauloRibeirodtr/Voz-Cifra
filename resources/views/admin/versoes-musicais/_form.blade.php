@@ -16,6 +16,10 @@
             .editor-cifra-preview .cifra-linha { display: block; margin-bottom: 0.8rem; }
             .editor-cifra-preview .cifra-segmento { display: inline-flex; min-height: 2.25rem; max-width: 100%; }
         }
+
+        @media (min-width: 1280px) {
+            .preview-cifra-sticky { position: sticky; top: 1rem; }
+        }
     </style>
 @endpush
 
@@ -35,7 +39,7 @@
     <div class="space-y-6">
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <div class="grid grid-cols-1 gap-4">
-                <div>
+                <div class="order-6 rounded-xl border border-gray-100 bg-gray-50 p-4">
                     <label class="block text-sm font-medium text-gray-700">Musica base</label>
                     <input type="text" value="{{ $musica->titulo }}" disabled class="{{ $classeInput }} bg-gray-50 text-gray-500 cursor-not-allowed" />
                 </div>
@@ -71,7 +75,7 @@
                     <p class="text-xs text-gray-500 mt-1">Voce pode informar apenas o ID do video ou colar o link inteiro do YouTube.</p>
                 </div>
 
-                <details class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                <details class="order-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
                     <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-gray-900 [&::-webkit-details-marker]:hidden">
                         <span class="inline-flex items-center gap-3">
                             <span class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-700">
@@ -168,7 +172,7 @@ Cantarei quao grande e o meu Deus</pre>
                     </div>
                 </details>
 
-                <div>
+                <div class="order-4">
                     <div class="flex items-center justify-between gap-3">
                         <label class="block text-sm font-medium text-gray-700">Letra com cifras</label>
                         <span class="text-xs text-gray-500">Use Refrão: em linha separada para destacar o refrão na leitura.</span>
@@ -190,7 +194,7 @@ Cantarei quao grande e o meu Deus</pre>
 [C9]Quao grande e o meu Deus" class="{{ $classeInput }} font-mono text-sm">{{ $letraInicial }}</textarea>
                 </div>
 
-                <div class="flex items-center gap-3 pt-2">
+                <div class="order-7 flex items-center gap-3 pt-2">
                     <input type="hidden" name="ativo" value="0" />
                     <input id="ativo" type="checkbox" name="ativo" value="1" {{ old('ativo', $versaoMusical->ativo ?? true) ? 'checked' : '' }} class="rounded border-gray-300 text-green-700 focus:ring-green-500" />
                     <label for="ativo" class="text-sm font-medium text-gray-700">Versao ativa</label>
@@ -201,8 +205,8 @@ Cantarei quao grande e o meu Deus</pre>
     </div>
 
     <div class="space-y-6">
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <h2 class="text-lg font-bold text-gray-800 mb-4">Pre-visualizacao</h2>
+        <div class="preview-cifra-sticky bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">Pr&eacute;via da cifra</h2>
             <div class="mb-4 flex flex-wrap gap-2">
                 <button type="button" class="rounded-full bg-green-700 px-4 py-2 text-sm font-semibold text-white ring-2 ring-green-200" data-preview-toggle="com-cifras" aria-pressed="true">
                     Previa musico
