@@ -320,6 +320,52 @@
         </div>
     </section>
 
+    <section class="mb-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+        <div class="mb-4">
+            <h2 class="text-lg font-bold text-gray-900">Montar por momentos</h2>
+            <p class="mt-1 text-sm text-gray-500">Clique em um momento para escolher a musica certa sem precisar procurar na tabela inteira.</p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            @foreach ($momentosLiturgicos as $momentoLiturgico)
+                @php
+                    $itensDoMomento = $missa->missaMusicas->filter(fn ($item) => (int) $item->momento_liturgico_id === (int) $momentoLiturgico->id);
+                    $primeiroItemDoMomento = $itensDoMomento->first();
+                @endphp
+                <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <h3 class="truncate text-sm font-black text-gray-900">{{ $momentoLiturgico->nome }}</h3>
+                            <p class="mt-1 text-xs text-gray-500">
+                                @if ($primeiroItemDoMomento)
+                                    {{ $primeiroItemDoMomento->musica?->titulo }}
+                                    @if ($itensDoMomento->count() > 1)
+                                        + {{ $itensDoMomento->count() - 1 }} item(ns)
+                                    @endif
+                                @else
+                                    Nenhuma musica definida.
+                                @endif
+                            </p>
+                        </div>
+                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold {{ $itensDoMomento->isNotEmpty() ? 'bg-emerald-100 text-emerald-700' : 'bg-white text-gray-500 ring-1 ring-gray-200' }}">
+                            {{ $itensDoMomento->isNotEmpty() ? 'OK' : 'Pendente' }}
+                        </span>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#ead6b3] bg-white px-4 py-2 text-sm font-semibold text-[#6c4a21] transition hover:bg-[#fff8ed]"
+                        data-escolher-momento="{{ $momentoLiturgico->id }}"
+                        data-momento-nome="{{ $momentoLiturgico->nome }}"
+                    >
+                        <i class="fa-solid fa-music" aria-hidden="true"></i>
+                        Escolher musica
+                    </button>
+                </div>
+            @endforeach
+        </div>
+    </section>
+
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div class="space-y-6 xl:col-span-2">
             <section id="missa-repertorio" class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
@@ -610,6 +656,7 @@
             const oldMomentoId = @json(old('momento_liturgico_id'));
             const formularioAdicionar = musicaId.form;
             let momentoAlteradoManualmente = Boolean(oldMomentoId);
+            let momentoGuiaId = oldMomentoId ? String(oldMomentoId) : '';
 
             if (!inputBusca || !resultadoBusca || !musicaId || !musicaSelecionadaTexto || !selectVersao || !selectMomento || !campoTomUsado) {
                 return;
@@ -733,6 +780,16 @@
                         const textoBusca = normalizarBusca([musica.titulo || '', musica.artista || '', musica.letra || ''].join(' '));
                         return textoBusca.includes(busca);
                     })
+                    .sort((primeira, segunda) => {
+                        if (!momentoGuiaId) {
+                            return 0;
+                        }
+
+                        const primeiraCombina = String(primeira.momento_liturgico_id || '') === String(momentoGuiaId);
+                        const segundaCombina = String(segunda.momento_liturgico_id || '') === String(momentoGuiaId);
+
+                        return Number(segundaCombina) - Number(primeiraCombina);
+                    })
                     .slice(0, 12);
 
                 resultadoBusca.replaceChildren();
@@ -817,6 +874,7 @@
 
             selectMomento.addEventListener('change', () => {
                 momentoAlteradoManualmente = true;
+                momentoGuiaId = String(selectMomento.value || '');
                 if (momentoHint) {
                     momentoHint.textContent = 'Momento ajustado manualmente para esta missa.';
                     momentoHint.classList.remove('text-emerald-700');
@@ -833,6 +891,29 @@
 
                 const versaoAtual = musicaSelecionada.versoes.find((versao) => String(versao.id) === String(selectVersao.value)) || null;
                 atualizarOrientacaoTom(versaoAtual);
+            });
+
+            document.querySelectorAll('[data-escolher-momento]').forEach((botao) => {
+                botao.addEventListener('click', () => {
+                    const momentoId = String(botao.dataset.escolherMomento || '');
+                    const momentoNome = String(botao.dataset.momentoNome || 'momento escolhido');
+
+                    selectMomento.value = momentoId;
+                    momentoAlteradoManualmente = true;
+                    momentoGuiaId = momentoId;
+
+                    if (momentoHint) {
+                        momentoHint.textContent = 'Montando o momento: ' + momentoNome + '. A busca vai priorizar musicas desse momento.';
+                        momentoHint.classList.add('text-emerald-700', 'font-semibold');
+                    }
+
+                    inputBusca.focus();
+                    inputBusca.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                    if (inputBusca.value.trim().length >= 2) {
+                        renderizarResultados(inputBusca.value);
+                    }
+                });
             });
 
             document.addEventListener('click', (event) => {

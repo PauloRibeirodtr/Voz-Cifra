@@ -225,29 +225,6 @@ Cantarei quao grande e o meu Deus</pre>
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-6">
-            <h2 class="text-lg font-bold text-gray-800 mb-2">Biblioteca de acordes</h2>
-            <p class="text-sm text-gray-500 mb-4">Clique em um acorde para inserir no cursor do editor.</p>
-
-            <div class="flex flex-wrap gap-2 max-h-[420px] overflow-y-auto pr-1">
-                @forelse ($acordes as $acorde)
-                    <button
-                        type="button"
-                        class="botao-acorde px-3 py-2 rounded-lg bg-green-50 text-green-700 text-sm font-semibold border border-green-200 hover:bg-green-100"
-                        data-acorde="{{ $acorde->nome }}"
-                    >
-                        {{ $acorde->nome }}
-                    </button>
-                @empty
-                    <p class="text-sm text-gray-500">Nenhum acorde ativo cadastrado.</p>
-                @endforelse
-            </div>
-
-            <div class="mt-5 pt-5 border-t border-gray-100 text-sm text-gray-500 space-y-2">
-                <p><strong class="text-gray-700">Dica:</strong> insira os acordes apenas onde a troca acontece.</p>
-                <p><strong class="text-gray-700">Exemplo:</strong> <code>[C]Santo, Santo, [G]Santo</code></p>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -324,12 +301,12 @@ Cantarei quao grande e o meu Deus</pre>
                 const inicio = palavras[i].index ?? 0;
                 const fim = inicio + palavra.length;
 
-                if (offset <= inicio) {
+                if (offset < inicio) {
                     return inicio;
                 }
 
-                if (offset > inicio && offset < fim) {
-                    return inicio;
+                if (offset <= fim) {
+                    return offset;
                 }
             }
 
@@ -360,7 +337,7 @@ Cantarei quao grande e o meu Deus</pre>
                 .replace(/\r\n/g, '\n')
                 .replace(/\r/g, '\n')
                 .replace(/\n{3,}/g, '\n\n')
-                .trim();
+                .replace(/^\n+|\n+$/g, '');
             const linhas = texto.split('\n');
             const resultado = [];
             let houveConversao = false;
@@ -386,7 +363,7 @@ Cantarei quao grande e o meu Deus</pre>
             }
 
             return {
-                textoNormalizado: resultado.join('\n').replace(/\n{3,}/g, '\n\n').trim(),
+                textoNormalizado: resultado.join('\n').replace(/\n{3,}/g, '\n\n').replace(/^\n+|\n+$/g, ''),
                 houveConversao,
             };
         };
@@ -490,7 +467,7 @@ Cantarei quao grande e o meu Deus</pre>
                 .map(converterLinhaParaEdicaoVisual)
                 .join('\n')
                 .replace(/\n{4,}/g, '\n\n\n')
-                .trim();
+                .replace(/^\n+|\n+$/g, '');
         };
 
         const removerCifras = (texto) => {
@@ -784,6 +761,3 @@ Cantarei quao grande e o meu Deus</pre>
     })();
 </script>
 @endpush
-
-
-

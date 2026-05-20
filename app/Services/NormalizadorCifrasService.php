@@ -120,15 +120,15 @@ class NormalizadorCifrasService
 
         $ultimaPalavra = $palavras[array_key_last($palavras)] ?? null;
 
-        foreach ($palavras as $indice => [$palavra, $inicio]) {
+        foreach ($palavras as [$palavra, $inicio]) {
             $fim = $inicio + strlen($palavra);
 
-            if ($offset <= $inicio) {
+            if ($offset < $inicio) {
                 return $inicio;
             }
 
-            if ($offset > $inicio && $offset < $fim) {
-                return $inicio;
+            if ($offset <= $fim) {
+                return $offset;
             }
         }
 
@@ -185,8 +185,6 @@ class NormalizadorCifrasService
 
     private function normalizarQuebrasDeLinha(string $texto): string
     {
-        return str_replace(["\r\n", "\r"], "\n", trim($texto));
+        return rtrim(str_replace(["\r\n", "\r"], "\n", $texto));
     }
 }
-
-
