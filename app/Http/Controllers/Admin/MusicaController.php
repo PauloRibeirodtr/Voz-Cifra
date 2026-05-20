@@ -27,11 +27,26 @@ class MusicaController extends Controller
     public function index(Request $request): View
     {
         $momentoFiltro = $request->integer('momento_liturgico_id') ?: null;
+        $cifraFiltro = in_array($request->string('cifra')->toString(), ['com', 'sem'], true)
+            ? $request->string('cifra')->toString()
+            : null;
+        $pendenciaFiltro = $request->string('pendencia')->toString() === 'sem_momento'
+            ? 'sem_momento'
+            : null;
+        $statusFiltro = in_array($request->string('status')->toString(), ['ativas', 'inativas', 'todas'], true)
+            ? $request->string('status')->toString()
+            : 'ativas';
+
         $consulta = Musica::with(['tempoLiturgico', 'momentoLiturgico', 'criadoPor'])
             ->withCount([
                 'versoesMusicais as versoes_ativas_count' => fn ($query) => $query->where('ativo', true),
             ])
+            ->when($statusFiltro === 'ativas', fn ($query) => $query->where('ativo', true))
+            ->when($statusFiltro === 'inativas', fn ($query) => $query->where('ativo', false))
             ->when($momentoFiltro, fn ($query) => $query->where('momento_liturgico_id', $momentoFiltro))
+            ->when($cifraFiltro === 'com', fn ($query) => $query->whereHas('versoesMusicais', fn ($versao) => $versao->where('ativo', true)))
+            ->when($cifraFiltro === 'sem', fn ($query) => $query->whereDoesntHave('versoesMusicais', fn ($versao) => $versao->where('ativo', true)))
+            ->when($pendenciaFiltro === 'sem_momento', fn ($query) => $query->whereNull('momento_liturgico_id'))
             ->latest();
 
         if ($request->filled('search')) {
@@ -47,6 +62,7 @@ class MusicaController extends Controller
 
         $sugestoesMusicas = Musica::query()
             ->select('titulo', 'artista')
+            ->where('ativo', true)
             ->orderBy('titulo')
             ->limit(200)
             ->get()
@@ -63,6 +79,9 @@ class MusicaController extends Controller
             'sugestoesMusicas' => $sugestoesMusicas,
             'momentosLiturgicos' => MomentoLiturgico::where('ativo', true)->orderByRaw('ordem_exibicao asc nulls last')->orderBy('nome')->get(),
             'momentoFiltro' => $momentoFiltro,
+            'cifraFiltro' => $cifraFiltro,
+            'pendenciaFiltro' => $pendenciaFiltro,
+            'statusFiltro' => $statusFiltro,
             'routePrefix' => request()->routeIs('coordenador.*') ? 'coordenador' : 'admin',
             'podeInativar' => $this->podeInativarRegistros(),
         ]);

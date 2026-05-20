@@ -5,6 +5,7 @@ namespace Tests\Feature\Admin;
 use App\Models\Igreja;
 use App\Models\Musica;
 use App\Models\Usuario;
+use App\Models\VersaoMusical;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -132,5 +133,73 @@ class DuplicidadeInativacaoTest extends TestCase
             'id' => $musica->id,
             'ativo' => false,
         ]);
+    }
+
+    public function test_admin_filtra_catalogo_por_cifras_momentos_e_status(): void
+    {
+        $adminMaster = Usuario::factory()->adminMaster()->create([
+            'primeiro_acesso' => false,
+        ]);
+
+        $semCifra = Musica::query()->create([
+            'titulo' => 'Canto Sem Cifra',
+            'artista' => 'Equipe',
+            'letra' => 'Letra simples',
+            'criado_por' => $adminMaster->id,
+            'ativo' => true,
+        ]);
+        $comCifra = Musica::query()->create([
+            'titulo' => 'Canto Com Cifra',
+            'artista' => 'Equipe',
+            'letra' => 'Letra simples',
+            'criado_por' => $adminMaster->id,
+            'ativo' => true,
+        ]);
+        $inativa = Musica::query()->create([
+            'titulo' => 'Canto Inativo',
+            'artista' => 'Equipe',
+            'letra' => 'Letra simples',
+            'criado_por' => $adminMaster->id,
+            'ativo' => false,
+        ]);
+
+        VersaoMusical::query()->create([
+            'musica_id' => $comCifra->id,
+            'titulo' => 'Cifra principal',
+            'tom_musical' => 'C',
+            'bpm' => 72,
+            'letra_com_cifras' => '[C]Letra',
+            'criado_por' => $adminMaster->id,
+            'ativo' => true,
+        ]);
+
+        $this
+            ->actingAs($adminMaster)
+            ->get(route('admin.musicas.index', ['cifra' => 'sem']))
+            ->assertOk()
+            ->assertSee($semCifra->titulo)
+            ->assertDontSee($comCifra->titulo)
+            ->assertDontSee($inativa->titulo);
+
+        $this
+            ->actingAs($adminMaster)
+            ->get(route('admin.musicas.index', ['cifra' => 'com']))
+            ->assertOk()
+            ->assertSee($comCifra->titulo)
+            ->assertDontSee($semCifra->titulo);
+
+        $this
+            ->actingAs($adminMaster)
+            ->get(route('admin.musicas.index', ['pendencia' => 'sem_momento']))
+            ->assertOk()
+            ->assertSee($semCifra->titulo)
+            ->assertSee($comCifra->titulo);
+
+        $this
+            ->actingAs($adminMaster)
+            ->get(route('admin.musicas.index', ['status' => 'inativas']))
+            ->assertOk()
+            ->assertSee($inativa->titulo)
+            ->assertDontSee($semCifra->titulo);
     }
 }

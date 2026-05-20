@@ -7,6 +7,23 @@
     $sugestoesMusicasBase64 = base64_encode(json_encode($sugestoesMusicas ?? []));
     $routePrefix = $routePrefix ?? 'admin';
     $podeInativar = $podeInativar ?? true;
+    $statusFiltro = $statusFiltro ?? 'ativas';
+    $cifraFiltro = $cifraFiltro ?? null;
+    $pendenciaFiltro = $pendenciaFiltro ?? null;
+    $temFiltrosAtivos = request()->filled('search')
+        || request()->filled('momento_liturgico_id')
+        || filled($cifraFiltro)
+        || filled($pendenciaFiltro)
+        || $statusFiltro !== 'ativas';
+    $queryBaseFiltros = array_filter([
+        'search' => request('search'),
+        'momento_liturgico_id' => request('momento_liturgico_id'),
+        'status' => $statusFiltro !== 'ativas' ? $statusFiltro : null,
+    ], fn ($value) => filled($value));
+    $urlFiltroCatalogo = fn (array $extra = []) => route(
+        $routePrefix . '.musicas.index',
+        array_filter(array_merge($queryBaseFiltros, $extra), fn ($value) => filled($value))
+    );
 @endphp
 
 @push('styles')
@@ -34,6 +51,33 @@
             box-shadow: 0 18px 34px rgba(15, 23, 42, 0.08);
             transform: translateY(-1px);
         }
+
+        .musica-filter-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            border-radius: 999px;
+            border: 1px solid #e5e7eb;
+            background: #ffffff;
+            padding: 0.55rem 0.85rem;
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: #374151;
+            transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+        }
+
+        .musica-filter-chip:hover {
+            border-color: #bbf7d0;
+            background: #f0fdf4;
+            color: #166534;
+        }
+
+        .musica-filter-chip--active {
+            border-color: #15803d;
+            background: #15803d;
+            color: #ffffff;
+        }
     </style>
 @endpush
 
@@ -46,6 +90,8 @@
 
         <div class="flex flex-col gap-3 md:items-end">
             <form action="{{ route($routePrefix . '.musicas.index') }}" method="GET" class="flex flex-col gap-2 sm:flex-row">
+                <input type="hidden" name="cifra" value="{{ $cifraFiltro }}">
+                <input type="hidden" name="pendencia" value="{{ $pendenciaFiltro }}">
                 <div class="relative">
                     <input
                         type="search"
@@ -66,10 +112,34 @@
                         </option>
                     @endforeach
                 </select>
+                <select name="status" class="min-w-0 rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-100 sm:min-w-[150px]">
+                    <option value="ativas" @selected($statusFiltro === 'ativas')>Ativas</option>
+                    <option value="inativas" @selected($statusFiltro === 'inativas')>Inativas</option>
+                    <option value="todas" @selected($statusFiltro === 'todas')>Todas</option>
+                </select>
                 <button type="submit" class="rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-700 hover:bg-gray-50">
                     Buscar
                 </button>
             </form>
+
+            <div class="flex max-w-full flex-wrap justify-start gap-2 md:justify-end">
+                <a href="{{ $urlFiltroCatalogo(['cifra' => null, 'pendencia' => null]) }}" class="musica-filter-chip {{ !$cifraFiltro && !$pendenciaFiltro ? 'musica-filter-chip--active' : '' }}">
+                    <i class="fa-solid fa-list" aria-hidden="true"></i>
+                    Todas
+                </a>
+                <a href="{{ $urlFiltroCatalogo(['cifra' => 'sem', 'pendencia' => null]) }}" class="musica-filter-chip {{ $cifraFiltro === 'sem' ? 'musica-filter-chip--active' : '' }}">
+                    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                    Sem cifra
+                </a>
+                <a href="{{ $urlFiltroCatalogo(['cifra' => 'com', 'pendencia' => null]) }}" class="musica-filter-chip {{ $cifraFiltro === 'com' ? 'musica-filter-chip--active' : '' }}">
+                    <i class="fa-solid fa-guitar" aria-hidden="true"></i>
+                    Com cifra
+                </a>
+                <a href="{{ $urlFiltroCatalogo(['cifra' => null, 'pendencia' => 'sem_momento']) }}" class="musica-filter-chip {{ $pendenciaFiltro === 'sem_momento' ? 'musica-filter-chip--active' : '' }}">
+                    <i class="fa-solid fa-calendar-xmark" aria-hidden="true"></i>
+                    Sem momento
+                </a>
+            </div>
 
             <a href="{{ route($routePrefix . '.musicas.create') }}" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-medium text-white hover:bg-green-800">
                 Cadastrar música
@@ -83,7 +153,7 @@
             <p class="mt-1 text-xs text-gray-500">Abra uma musica para conferir a letra, cadastrar versoes e revisar cifras.</p>
         </div>
 
-        @if (request('search') || request('momento_liturgico_id'))
+        @if ($temFiltrosAtivos)
             <a href="{{ route($routePrefix . '.musicas.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
                 Limpar busca
             </a>

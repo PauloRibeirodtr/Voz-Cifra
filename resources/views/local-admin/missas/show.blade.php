@@ -178,6 +178,12 @@
             <a href="{{ route('local-admin.missas.apresentacao', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 font-semibold text-sky-800 transition hover:bg-sky-100">
                 Visualiza&ccedil;&atilde;o da missa
             </a>
+            <a href="{{ $igreja->link_publico }}" target="_blank" class="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 font-semibold text-emerald-800 transition hover:bg-emerald-100">
+                Ver como fiel
+            </a>
+            <a href="{{ $igreja->link_publico_musicos }}" target="_blank" class="inline-flex items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 font-semibold text-indigo-800 transition hover:bg-indigo-100">
+                Ver como m&uacute;sico
+            </a>
             <a href="{{ route('local-admin.missas.pdf', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 font-semibold text-amber-800 transition hover:bg-amber-100">
                 Baixar PDF completo
             </a>
@@ -377,7 +383,7 @@
                     <form action="{{ route('local-admin.missas.concluir-montagem', $missa) }}" method="POST" class="w-full sm:w-auto">
                         @csrf
                         <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 sm:w-auto">
-                            Concluir montagem
+                            Finalizar repert&oacute;rio
                         </button>
                     </form>
                 </div>
@@ -414,25 +420,25 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Momento lit&uacute;rgico</label>
+                        <label class="block text-sm font-medium text-gray-700">Momento da missa</label>
                         <select name="momento_liturgico_id" id="momento_liturgico_id" class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-[#8c6933] focus:ring-2 focus:ring-[#ead6b3]">
                             <option value="">Definir depois</option>
                             @foreach ($momentosLiturgicos as $momentoLiturgico)
                                 <option value="{{ $momentoLiturgico->id }}" @selected(old('momento_liturgico_id') == $momentoLiturgico->id)>{{ $momentoLiturgico->nome }}</option>
                             @endforeach
                         </select>
-                        <p id="momento_liturgico_hint" class="mt-1 text-xs text-gray-500">Ao escolher a musica, o sistema tenta sugerir o momento cadastrado nela. Voce pode trocar se precisar.</p>
+                        <p id="momento_liturgico_hint" class="mt-1 text-xs text-gray-500">Ao escolher a m&uacute;sica, o sistema tenta preencher este campo. Voc&ecirc; pode trocar se precisar.</p>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Vers&atilde;o musical</label>
+                        <label class="block text-sm font-medium text-gray-700">Cifra / vers&atilde;o</label>
                         <select name="versao_musical_id" id="versao_musical_id" class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-[#8c6933] focus:ring-2 focus:ring-[#ead6b3]" disabled>
-                            <option value="">Vincular depois</option>
+                            <option value="">Escolher depois</option>
                         </select>
                     </div>
 
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700">Tom usado na missa</label>
+                        <label class="block text-sm font-medium text-gray-700">Tom para tocar</label>
                         <select name="tom_usado" id="tom_usado" class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-[#8c6933] focus:ring-2 focus:ring-[#ead6b3]">
                             <option value="">Usar o tom original da vers&atilde;o</option>
                             @foreach ($tonsMusicais as $tomMusical)
@@ -444,7 +450,7 @@
 
                     <div class="md:col-span-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-[#6c4a21] px-5 py-3 font-semibold text-white transition hover:bg-[#5b3d1a]">
-                            Salvar e adicionar ao repert&oacute;rio
+                            Adicionar m&uacute;sica
                         </button>
                         <a href="#missa-resumo" class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 font-semibold text-gray-700 transition hover:bg-gray-50">
                             Revisar dados da missa
@@ -529,7 +535,7 @@
                                     @method('PUT')
 
                                     <div>
-                                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400">Momento lit&uacute;rgico</label>
+                                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400">Momento da missa</label>
                                         <select name="momento_liturgico_id" class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-[#8c6933] focus:ring-2 focus:ring-[#ead6b3]">
                                             <option value="">Definir depois</option>
                                             @foreach ($momentosLiturgicos as $momentoLiturgico)
@@ -541,9 +547,9 @@
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400">Vers&atilde;o musical</label>
+                                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400">Cifra / vers&atilde;o</label>
                                         <select name="versao_musical_id" class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-[#8c6933] focus:ring-2 focus:ring-[#ead6b3]">
-                                            <option value="">N&atilde;o vincular agora</option>
+                                            <option value="">Escolher depois</option>
                                             @foreach ($item->musica->versoesMusicais as $versaoMusical)
                                                 <option value="{{ $versaoMusical->id }}" @selected((string) $item->versao_musical_id === (string) $versaoMusical->id)>
                                                     {{ $versaoMusical->titulo ?: 'Vers&atilde;o principal' }}
@@ -559,7 +565,7 @@
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400">Tom usado na missa</label>
+                                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400">Tom para tocar</label>
                                         <select name="tom_usado" class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-[#8c6933] focus:ring-2 focus:ring-[#ead6b3]">
                                             <option value="">Usar o tom original da vers&atilde;o</option>
                                             @foreach ($tonsMusicais as $tomMusical)
@@ -570,7 +576,7 @@
 
                                     <div class="md:col-span-3">
                                         <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-[#2a1b1b] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1f1414]">
-                                            Salvar item
+                                            Salvar ajustes
                                         </button>
                                     </div>
                                 </form>
@@ -697,7 +703,7 @@
             };
 
             const preencherVersoes = (musicaSelecionada, versaoSelecionada = null) => {
-                selectVersao.innerHTML = '<option value="">Vincular depois</option>';
+                selectVersao.innerHTML = '<option value="">Escolher depois</option>';
 
                 if (!musicaSelecionada || !Array.isArray(musicaSelecionada.versoes) || musicaSelecionada.versoes.length === 0) {
                     selectVersao.disabled = true;
@@ -859,7 +865,7 @@
                 musicaId.value = '';
                 musicaSelecionadaTexto.textContent = 'Selecione uma música na busca abaixo.';
                 musicaSelecionadaTexto.classList.remove('text-amber-700');
-                selectVersao.innerHTML = '<option value="">Vincular depois</option>';
+                selectVersao.innerHTML = '<option value="">Escolher depois</option>';
                 selectVersao.disabled = true;
                 if (!momentoAlteradoManualmente) {
                     selectMomento.value = '';
