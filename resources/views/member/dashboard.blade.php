@@ -88,6 +88,14 @@
                         </div>
                         <p class="mt-2 text-sm text-gray-600">Crie musicas, organize versoes e mantenha o acervo preparado para as igrejas.</p>
                     </a>
+
+                    <a href="#admin-local-form" class="rounded-2xl border border-gray-200 bg-gray-50 p-5 transition hover:border-emerald-200 hover:bg-emerald-50" data-guide-target="atalho-admin-local">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-base font-bold text-gray-900">Admin local</h3>
+                            <i class="fa-solid fa-user-shield text-emerald-700"></i>
+                        </div>
+                        <p class="mt-2 text-sm text-gray-600">Atribua uma pessoa para administrar a rotina desta igreja.</p>
+                    </a>
                 @else
                     <a href="{{ route('member.repertorio') }}" class="rounded-2xl border border-gray-200 bg-gray-50 p-5 transition hover:border-emerald-200 hover:bg-emerald-50">
                         <div class="flex items-center justify-between">
@@ -135,6 +143,57 @@
         </section>
 
         <aside class="space-y-6">
+            @if ($isCoordenadorArea)
+                <section id="admin-local-form" class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm" data-guide-target="admin-local-form">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-900">Cadastrar admin local</h2>
+                            <p class="mt-2 text-sm text-gray-500">
+                                O cadastro vale somente para {{ $igreja?->nome ?: 'a igreja ativa' }}.
+                            </p>
+                        </div>
+                        <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </span>
+                    </div>
+
+                    <form action="{{ route('coordenador.igreja.admins-locais.store') }}" method="POST" class="mt-5 space-y-4">
+                        @csrf
+
+                        <div data-guide-target="admin-local-nome">
+                            <label class="block text-sm font-semibold text-gray-700">Nome completo</label>
+                            <input type="text" name="nome" value="{{ old('nome') }}" required maxlength="255" autocomplete="name" class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 shadow-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100">
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div data-guide-target="admin-local-cpf">
+                                <label class="block text-sm font-semibold text-gray-700">CPF</label>
+                                <input type="text" name="cpf" value="{{ old('cpf') }}" required maxlength="14" inputmode="numeric" autocomplete="off" data-cpf-input class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 shadow-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100" placeholder="000.000.000-00">
+                            </div>
+
+                            <div data-guide-target="admin-local-telefone">
+                                <label class="block text-sm font-semibold text-gray-700">Telefone</label>
+                                <input type="text" name="telefone" value="{{ old('telefone') }}" maxlength="20" inputmode="tel" autocomplete="tel" data-telefone-input class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 shadow-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100" placeholder="(65) 99999-9999">
+                            </div>
+                        </div>
+
+                        <div data-guide-target="admin-local-email">
+                            <label class="block text-sm font-semibold text-gray-700">E-mail</label>
+                            <input type="email" name="email" value="{{ old('email') }}" required maxlength="255" autocomplete="email" class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 shadow-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100" placeholder="admin.local@igreja.com">
+                        </div>
+
+                        <div class="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900">
+                            A pessoa recebera o papel de admin local apenas nesta igreja. O convite de acesso pode ser reenviado depois.
+                        </div>
+
+                        <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 font-semibold text-white transition hover:bg-emerald-800" data-guide-target="admin-local-salvar">
+                            <i class="fa-solid fa-user-plus"></i>
+                            <span>Cadastrar admin local</span>
+                        </button>
+                    </form>
+                </section>
+            @endif
+
             <section class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
                 <h2 class="text-lg font-bold text-gray-900">{{ $isCoordenadorArea ? 'Resumo da operacao' : 'Resumo da proxima missa' }}</h2>
 
@@ -177,3 +236,46 @@
         </aside>
     </div>
 @endsection
+
+@push('scripts')
+    @if ($isCoordenadorArea)
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const aplicarMascaraCpf = (valor) => valor
+                    .replace(/\D/g, '')
+                    .slice(0, 11)
+                    .replace(/(\d{3})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+
+                const aplicarMascaraTelefone = (valor) => {
+                    valor = valor.replace(/\D/g, '').slice(0, 11);
+
+                    if (valor.length <= 10) {
+                        return valor
+                            .replace(/^(\d{2})(\d)/, '($1) $2')
+                            .replace(/(\d{4})(\d)/, '$1-$2');
+                    }
+
+                    return valor
+                        .replace(/^(\d{2})(\d)/, '($1) $2')
+                        .replace(/(\d{5})(\d)/, '$1-$2');
+                };
+
+                document.querySelectorAll('[data-cpf-input]').forEach((campo) => {
+                    campo.value = aplicarMascaraCpf(campo.value);
+                    campo.addEventListener('input', () => {
+                        campo.value = aplicarMascaraCpf(campo.value);
+                    });
+                });
+
+                document.querySelectorAll('[data-telefone-input]').forEach((campo) => {
+                    campo.value = aplicarMascaraTelefone(campo.value);
+                    campo.addEventListener('input', () => {
+                        campo.value = aplicarMascaraTelefone(campo.value);
+                    });
+                });
+            });
+        </script>
+    @endif
+@endpush

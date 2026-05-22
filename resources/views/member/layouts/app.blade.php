@@ -66,7 +66,8 @@
                                                 src="{{ auth()->user()->fotoPerfilUrl() }}"
                                                 alt="Foto de {{ auth()->user()->nome }}"
                                                 class="admin-avatar-image"
-                                                onerror="this.onerror=null;this.src='{{ asset('logo/final.png') }}';"
+                                                data-fallback-logo="{{ asset('logo/final.png') }}"
+                                                onerror="this.onerror=null;this.src=this.dataset.fallbackLogo;"
                                             >
                                         @else
                                             {{ strtoupper(substr(auth()->user()->nome, 0, 1)) }}

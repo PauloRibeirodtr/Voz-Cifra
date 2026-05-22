@@ -90,4 +90,23 @@ class AjudaGuiadaTest extends TestCase
             ->assertSee('data-guide-target="musico-nome"', false)
             ->assertSee('Admin local cadastra apenas musicos da igreja ativa');
     }
+
+    public function test_coordenador_recebe_acao_e_guia_para_cadastrar_admin_local(): void
+    {
+        /** @var Igreja $igreja */
+        $igreja = Igreja::factory()->create();
+        /** @var Usuario $coordenador */
+        $coordenador = Usuario::factory()->create();
+        $coordenador->adicionarPapel(PapelIgreja::COORDENADOR, $igreja);
+
+        $this
+            ->actingAs($coordenador)
+            ->withSession(['igreja_ativa_id' => $igreja->id])
+            ->get(route('coordenador.dashboard'))
+            ->assertOk()
+            ->assertSee('Cadastrar admin local')
+            ->assertSee('data-guide-id="cadastro-admin-local-coordenador"', false)
+            ->assertSee('data-guide-target="admin-local-form"', false)
+            ->assertSee(route('coordenador.igreja.admins-locais.store'), false);
+    }
 }

@@ -76,6 +76,19 @@
                 ['alvo' => '[data-guide-target="musico-salvar"]', 'titulo' => 'Salve o cadastro', 'texto' => 'Depois de salvar, o musico fica disponivel para repertorios e rotinas da igreja.'],
             ],
         ]);
+        $adicionarAcaoAjuda('Coordenador', 'Cadastrar admin local', ($urlAjuda('coordenador.dashboard') ?? '') . '#admin-local-form', 'fa-user-shield', ['usuario', 'gestao', 'igreja'], [
+            'id' => 'cadastro-admin-local-coordenador',
+            'rota' => 'coordenador.dashboard',
+            'passos' => [
+                ['alvo' => '[data-guide-target="atalho-admin-local"]', 'titulo' => 'Acesse pelo painel', 'texto' => 'O coordenador pode atribuir admin local apenas para a igreja ativa.'],
+                ['alvo' => '[data-guide-target="admin-local-form"]', 'titulo' => 'Confira a igreja ativa', 'texto' => 'Este formulario nao deixa escolher outra igreja. Assim evita cadastrar admin local no lugar errado.'],
+                ['alvo' => '[data-guide-target="admin-local-nome"]', 'foco' => '[name="nome"]', 'titulo' => 'Digite o nome completo', 'texto' => 'Use o nome real da pessoa que vai cuidar da administracao local.'],
+                ['alvo' => '[data-guide-target="admin-local-cpf"]', 'foco' => '[name="cpf"]', 'titulo' => 'Informe o CPF', 'texto' => 'O CPF evita duplicar conta e ajuda o sistema a reaproveitar usuario existente.'],
+                ['alvo' => '[data-guide-target="admin-local-email"]', 'foco' => '[name="email"]', 'titulo' => 'Informe o e-mail', 'texto' => 'Esse e-mail sera usado para convite, login e recuperacao de senha.'],
+                ['alvo' => '[data-guide-target="admin-local-telefone"]', 'foco' => '[name="telefone"]', 'titulo' => 'Adicione o telefone', 'texto' => 'Opcional, mas ajuda no suporte quando houver dificuldade de acesso.'],
+                ['alvo' => '[data-guide-target="admin-local-salvar"]', 'titulo' => 'Conclua com seguranca', 'texto' => 'Ao salvar, a pessoa recebe papel de admin local somente nesta igreja.'],
+            ],
+        ]);
         $adicionarAcaoAjuda('Coordenador', 'Cadastrar musica ou cifra', $urlAjuda('coordenador.musicas.create') ?? '', 'fa-music', ['biblioteca', 'versao']);
         $adicionarAcaoAjuda('Coordenador', 'Organizar momentos liturgicos', $urlAjuda('coordenador.momentos-liturgicos.index') ?? '', 'fa-list-ol', ['entrada', 'comunhao', 'final']);
         $adicionarAcaoAjuda('Coordenador', 'Ver chamados abertos', ($urlAjuda('coordenador.chamados.index') ?? '') . '?visao=atendimento', 'fa-headset', ['suporte', 'atendimento']);
