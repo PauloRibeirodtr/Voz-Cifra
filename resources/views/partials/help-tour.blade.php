@@ -8,7 +8,7 @@
     $urlAjuda = static fn (string $routeName): ?string => Route::has($routeName) ? route($routeName) : null;
 
     $acoesAjuda = [];
-    $adicionarAcaoAjuda = static function (string $perfil, string $titulo, string $url, string $icone, array $termos = [], ?array $guia = null) use (&$acoesAjuda): void {
+    $adicionarAcaoAjuda = static function (string $perfil, string $titulo, string $url, string $icone, array $termos = [], ?array $guia = null, string $descricao = '') use (&$acoesAjuda): void {
         if ($url === '') {
             return;
         }
@@ -16,14 +16,16 @@
         $acoesAjuda[] = [
             'perfil' => $perfil,
             'titulo' => $titulo,
+            'descricao' => $descricao,
             'url' => $url,
             'icone' => $icone,
-            'busca' => mb_strtolower($perfil . ' ' . $titulo . ' ' . implode(' ', $termos)),
+            'busca' => mb_strtolower($perfil . ' ' . $titulo . ' ' . $descricao . ' ' . implode(' ', $termos)),
             'guia' => $guia,
         ];
     };
 
     if ($usuarioAjuda && $usuarioAjuda->ehAdminMaster()) {
+        $adicionarAcaoAjuda('Admin master', 'Painel central', $urlAjuda('admin.dashboard') ?? '', 'fa-house', ['inicio', 'indicadores'], null, 'Veja indicadores gerais e atalhos principais do sistema.');
         $adicionarAcaoAjuda('Admin master', 'Cadastrar usuario', $urlAjuda('admin.usuarios.create') ?? '', 'fa-user-plus', ['pessoa', 'admin', 'musico', 'coordenador'], [
             'id' => 'cadastro-usuario',
             'rota' => 'admin.usuarios.create',
@@ -37,14 +39,25 @@
                 ['alvo' => '[data-guide-target="usuario-acesso"]', 'foco' => '[name="enviar_convite"]', 'titulo' => 'Defina o acesso inicial', 'texto' => 'Deixe ativo para liberar a conta. Marque convite se quiser enviar o link de primeiro acesso agora.'],
                 ['alvo' => '[data-guide-target="usuario-salvar"]', 'titulo' => 'Conclua o cadastro', 'texto' => 'Revise os dados e salve. Depois voce pode ajustar papeis, ativar ou reenviar convite.'],
             ],
-        ]);
-        $adicionarAcaoAjuda('Admin master', 'Gerenciar usuarios', $urlAjuda('admin.usuarios.index') ?? '', 'fa-users-gear', ['perfis', 'papeis', 'acesso']);
-        $adicionarAcaoAjuda('Admin master', 'Cadastrar igreja', $urlAjuda('admin.igrejas.create') ?? '', 'fa-church', ['paroquia', 'comunidade']);
-        $adicionarAcaoAjuda('Admin master', 'Ver chamados abertos', ($urlAjuda('admin.chamados.index') ?? '') . '?visao=atendimento', 'fa-headset', ['suporte', 'atendimento']);
-        $adicionarAcaoAjuda('Admin master', 'Ver chamados encerrados', ($urlAjuda('admin.chamados.index') ?? '') . '?visao=encerrados', 'fa-box-archive', ['resolvidos', 'fechados']);
+        ], 'Crie contas e atribua o primeiro perfil conforme a permissao correta.');
+        $adicionarAcaoAjuda('Admin master', 'Gerenciar usuarios', $urlAjuda('admin.usuarios.index') ?? '', 'fa-users-gear', ['perfis', 'papeis', 'acesso'], null, 'Pesquise pessoas, edite dados, ative contas e reenvie convites.');
+        $adicionarAcaoAjuda('Admin master', 'Ver hierarquia de usuarios', $urlAjuda('admin.usuarios.hierarquia') ?? '', 'fa-sitemap', ['hierarquia', 'vinculos', 'perfis'], null, 'Confira como os usuarios estao distribuidos por perfil e igreja.');
+        $adicionarAcaoAjuda('Admin master', 'Cadastrar igreja', $urlAjuda('admin.igrejas.create') ?? '', 'fa-church', ['paroquia', 'comunidade'], null, 'Crie uma igreja ou comunidade e depois vincule equipe local.');
+        $adicionarAcaoAjuda('Admin master', 'Gerenciar igrejas', $urlAjuda('admin.igrejas.index') ?? '', 'fa-building-columns', ['dados', 'links', 'paroquia'], null, 'Edite dados, links publicos, coordenadores e admins locais das igrejas.');
+        $adicionarAcaoAjuda('Admin master', 'Administrar admins locais', $urlAjuda('admin.admins-locais.index') ?? '', 'fa-user-shield', ['admin local', 'senha', 'acesso'], null, 'Acompanhe admins locais e envie novo link de senha quando precisar.');
+        $adicionarAcaoAjuda('Admin master', 'Cadastrar musica ou cifra', $urlAjuda('admin.musicas.create') ?? '', 'fa-music', ['musica', 'cifra', 'versao'], null, 'Inclua musicas e crie versoes de cifras para uso nas missas.');
+        $adicionarAcaoAjuda('Admin master', 'Consultar musicas', $urlAjuda('admin.musicas.index') ?? '', 'fa-magnifying-glass', ['biblioteca', 'cifra', 'tom'], null, 'Pesquise, revise e edite a biblioteca musical global.');
+        $adicionarAcaoAjuda('Admin master', 'Ver acordes', $urlAjuda('admin.acordes.index') ?? '', 'fa-guitar', ['acordes', 'cifras', 'violao'], null, 'Consulte e mantenha o dicionario de acordes usado nas cifras.');
+        $adicionarAcaoAjuda('Admin master', 'Tempos liturgicos', $urlAjuda('admin.tempos-liturgicos.index') ?? '', 'fa-calendar-days', ['liturgia', 'tempo'], null, 'Organize tempos como Advento, Quaresma, Pascoa e Tempo Comum.');
+        $adicionarAcaoAjuda('Admin master', 'Momentos liturgicos', $urlAjuda('admin.momentos-liturgicos.index') ?? '', 'fa-list-ol', ['entrada', 'comunhao', 'ofertorio'], null, 'Organize os momentos da celebracao para montar repertorios com ordem.');
+        $adicionarAcaoAjuda('Admin master', 'Auditoria', $urlAjuda('admin.auditoria.index') ?? '', 'fa-shield-halved', ['logs', 'seguranca', 'historico'], null, 'Veja registros importantes de alteracoes, acessos e acoes administrativas.');
+        $adicionarAcaoAjuda('Admin master', 'Configuracoes do sistema', $urlAjuda('admin.settings') ?? '', 'fa-gear', ['configuracoes', 'sistema'], null, 'Ajuste preferencias e parametros administrativos do sistema.');
+        $adicionarAcaoAjuda('Admin master', 'Ver chamados abertos', ($urlAjuda('admin.chamados.index') ?? '') . '?visao=atendimento', 'fa-headset', ['suporte', 'atendimento'], null, 'Atenda solicitacoes que ainda precisam de resposta da equipe.');
+        $adicionarAcaoAjuda('Admin master', 'Ver chamados encerrados', ($urlAjuda('admin.chamados.index') ?? '') . '?visao=encerrados', 'fa-box-archive', ['resolvidos', 'fechados'], null, 'Consulte historico de chamados resolvidos ou fechados.');
     }
 
     if ($usuarioAjuda && $usuarioAjuda->temPapelNaIgreja(PapelIgreja::ADMIN_LOCAL, $igrejaAtivaIdAjuda)) {
+        $adicionarAcaoAjuda('Admin local', 'Resumo da igreja', $urlAjuda('local-admin.dashboard') ?? '', 'fa-church', ['painel', 'igreja'], null, 'Veja a situacao da igreja ativa e caminhos rapidos da rotina local.');
         $adicionarAcaoAjuda('Admin local', 'Cadastrar musico', $urlAjuda('local-admin.musicos.create') ?? '', 'fa-user-plus', ['usuario', 'equipe', 'perfil'], [
             'id' => 'cadastro-musico-local',
             'rota' => 'local-admin.musicos.create',
@@ -56,14 +69,15 @@
                 ['alvo' => '[data-guide-target="musico-acesso"]', 'foco' => '[name="enviar_convite"]', 'titulo' => 'Escolha o convite', 'texto' => 'Mantenha ativo e envie o convite se o musico ja deve acessar agora.'],
                 ['alvo' => '[data-guide-target="musico-salvar"]', 'titulo' => 'Salve o musico', 'texto' => 'Depois de salvar, ele aparece na equipe musical da igreja.'],
             ],
-        ]);
-        $adicionarAcaoAjuda('Admin local', 'Gerenciar equipe musical', $urlAjuda('local-admin.musicos.index') ?? '', 'fa-users', ['musicos', 'coordenadores']);
-        $adicionarAcaoAjuda('Admin local', 'Montar uma missa', $urlAjuda('local-admin.missas.create') ?? '', 'fa-calendar-plus', ['celebracao', 'repertorio']);
-        $adicionarAcaoAjuda('Admin local', 'Ver missas cadastradas', $urlAjuda('local-admin.missas.index') ?? '', 'fa-calendar-check', ['repertorio', 'publicar']);
-        $adicionarAcaoAjuda('Admin local', 'Atualizar dados e links da igreja', $urlAjuda('local-admin.church') ?? '', 'fa-link', ['qr', 'publico']);
+        ], 'Adicione musicos apenas na igreja ativa do admin local.');
+        $adicionarAcaoAjuda('Admin local', 'Gerenciar equipe musical', $urlAjuda('local-admin.musicos.index') ?? '', 'fa-users', ['musicos', 'coordenadores'], null, 'Veja musicos da igreja, edite dados e envie acesso quando necessario.');
+        $adicionarAcaoAjuda('Admin local', 'Montar uma missa', $urlAjuda('local-admin.missas.create') ?? '', 'fa-calendar-plus', ['celebracao', 'repertorio'], null, 'Crie a celebracao e depois monte o repertorio com as musicas corretas.');
+        $adicionarAcaoAjuda('Admin local', 'Ver missas cadastradas', $urlAjuda('local-admin.missas.index') ?? '', 'fa-calendar-check', ['repertorio', 'publicar'], null, 'Acompanhe missas, edite repertorios e publique quando estiver pronto.');
+        $adicionarAcaoAjuda('Admin local', 'Atualizar dados e links da igreja', $urlAjuda('local-admin.church') ?? '', 'fa-link', ['qr', 'publico'], null, 'Atualize informacoes publicas, links e dados exibidos para a comunidade.');
     }
 
     if ($usuarioAjuda && $usuarioAjuda->temPapelNaIgreja(PapelIgreja::COORDENADOR, $igrejaAtivaIdAjuda)) {
+        $adicionarAcaoAjuda('Coordenador', 'Painel da coordenacao', $urlAjuda('coordenador.dashboard') ?? '', 'fa-diagram-project', ['painel', 'coordenacao'], null, 'Veja atalhos da coordenacao musical e admin local da igreja ativa.');
         $adicionarAcaoAjuda('Coordenador', 'Cadastrar musico', $urlAjuda('coordenador.musicos.create') ?? '', 'fa-user-plus', ['usuario', 'equipe'], [
             'id' => 'cadastro-musico-coordenador',
             'rota' => 'coordenador.musicos.create',
@@ -75,7 +89,7 @@
                 ['alvo' => '[data-guide-target="musico-acesso"]', 'foco' => '[name="enviar_convite"]', 'titulo' => 'Defina o acesso', 'texto' => 'Ativo libera o usuario. Convite envia o link de primeiro acesso com seguranca.'],
                 ['alvo' => '[data-guide-target="musico-salvar"]', 'titulo' => 'Salve o cadastro', 'texto' => 'Depois de salvar, o musico fica disponivel para repertorios e rotinas da igreja.'],
             ],
-        ]);
+        ], 'Adicione musicos da igreja ativa e envie convite de acesso.');
         $adicionarAcaoAjuda('Coordenador', 'Cadastrar admin local', ($urlAjuda('coordenador.dashboard') ?? '') . '#admin-local-form', 'fa-user-shield', ['usuario', 'gestao', 'igreja'], [
             'id' => 'cadastro-admin-local-coordenador',
             'rota' => 'coordenador.dashboard',
@@ -88,19 +102,23 @@
                 ['alvo' => '[data-guide-target="admin-local-telefone"]', 'foco' => '[name="telefone"]', 'titulo' => 'Adicione o telefone', 'texto' => 'Opcional, mas ajuda no suporte quando houver dificuldade de acesso.'],
                 ['alvo' => '[data-guide-target="admin-local-salvar"]', 'titulo' => 'Conclua com seguranca', 'texto' => 'Ao salvar, a pessoa recebe papel de admin local somente nesta igreja.'],
             ],
-        ]);
-        $adicionarAcaoAjuda('Coordenador', 'Cadastrar musica ou cifra', $urlAjuda('coordenador.musicas.create') ?? '', 'fa-music', ['biblioteca', 'versao']);
-        $adicionarAcaoAjuda('Coordenador', 'Organizar momentos liturgicos', $urlAjuda('coordenador.momentos-liturgicos.index') ?? '', 'fa-list-ol', ['entrada', 'comunhao', 'final']);
-        $adicionarAcaoAjuda('Coordenador', 'Ver chamados abertos', ($urlAjuda('coordenador.chamados.index') ?? '') . '?visao=atendimento', 'fa-headset', ['suporte', 'atendimento']);
-        $adicionarAcaoAjuda('Coordenador', 'Ver chamados encerrados', ($urlAjuda('coordenador.chamados.index') ?? '') . '?visao=encerrados', 'fa-box-archive', ['resolvidos', 'fechados']);
+        ], 'Atribua uma pessoa como admin local somente na igreja ativa.');
+        $adicionarAcaoAjuda('Coordenador', 'Gerenciar equipe musical', $urlAjuda('coordenador.musicos.index') ?? '', 'fa-users', ['musicos', 'equipe'], null, 'Acompanhe musicos, vincule pessoas existentes e gerencie acessos.');
+        $adicionarAcaoAjuda('Coordenador', 'Cadastrar musica ou cifra', $urlAjuda('coordenador.musicas.create') ?? '', 'fa-music', ['biblioteca', 'versao'], null, 'Inclua novas musicas e cifras para a biblioteca da igreja.');
+        $adicionarAcaoAjuda('Coordenador', 'Consultar biblioteca', $urlAjuda('coordenador.musicas.index') ?? '', 'fa-magnifying-glass', ['musicas', 'cifras', 'tom'], null, 'Pesquise e edite musicas, cifras e versoes cadastradas.');
+        $adicionarAcaoAjuda('Coordenador', 'Organizar tempos liturgicos', $urlAjuda('coordenador.tempos-liturgicos.index') ?? '', 'fa-calendar-days', ['liturgia', 'tempo'], null, 'Mantenha tempos liturgicos organizados para classificar repertorios.');
+        $adicionarAcaoAjuda('Coordenador', 'Organizar momentos liturgicos', $urlAjuda('coordenador.momentos-liturgicos.index') ?? '', 'fa-list-ol', ['entrada', 'comunhao', 'final'], null, 'Defina momentos da missa para orientar a montagem do repertorio.');
+        $adicionarAcaoAjuda('Coordenador', 'Ver chamados abertos', ($urlAjuda('coordenador.chamados.index') ?? '') . '?visao=atendimento', 'fa-headset', ['suporte', 'atendimento'], null, 'Atenda pedidos ligados a musicos e rotina da coordenacao.');
+        $adicionarAcaoAjuda('Coordenador', 'Ver chamados encerrados', ($urlAjuda('coordenador.chamados.index') ?? '') . '?visao=encerrados', 'fa-box-archive', ['resolvidos', 'fechados'], null, 'Consulte chamados ja resolvidos para historico e acompanhamento.');
     }
 
     if ($usuarioAjuda && $usuarioAjuda->temPapelNaIgreja(PapelIgreja::MUSICO, $igrejaAtivaIdAjuda)) {
-        $adicionarAcaoAjuda('Musico', 'Ver repertorio', $urlAjuda('member.repertorio') ?? '', 'fa-list-check', ['missa', 'ensaio']);
-        $adicionarAcaoAjuda('Musico', 'Consultar musicas', $urlAjuda('member.musicas.index') ?? '', 'fa-magnifying-glass', ['cifra', 'tom']);
-        $adicionarAcaoAjuda('Musico', 'Meus estudos', $urlAjuda('member.colecoes.index') ?? '', 'fa-book-open-reader', ['colecao', 'favoritos']);
-        $adicionarAcaoAjuda('Musico', 'Abrir chamado de suporte', $urlAjuda('member.chamados.create') ?? '', 'fa-circle-plus', ['problema', 'ajuda']);
-        $adicionarAcaoAjuda('Musico', 'Acompanhar meus chamados', $urlAjuda('member.chamados.index') ?? '', 'fa-message', ['suporte', 'resposta']);
+        $adicionarAcaoAjuda('Musico', 'Painel do musico', $urlAjuda('member.dashboard') ?? '', 'fa-house', ['painel', 'inicio'], null, 'Veja proximas tarefas, repertorio e atalhos do seu perfil.');
+        $adicionarAcaoAjuda('Musico', 'Ver repertorio', $urlAjuda('member.repertorio') ?? '', 'fa-list-check', ['missa', 'ensaio'], null, 'Acompanhe as musicas preparadas para a missa ou celebracao.');
+        $adicionarAcaoAjuda('Musico', 'Consultar musicas', $urlAjuda('member.musicas.index') ?? '', 'fa-magnifying-glass', ['cifra', 'tom'], null, 'Pesquise cifras e versoes disponiveis na biblioteca.');
+        $adicionarAcaoAjuda('Musico', 'Meus estudos', $urlAjuda('member.colecoes.index') ?? '', 'fa-book-open-reader', ['colecao', 'favoritos'], null, 'Organize musicas para estudo pessoal e preparacao.');
+        $adicionarAcaoAjuda('Musico', 'Abrir chamado de suporte', $urlAjuda('member.chamados.create') ?? '', 'fa-circle-plus', ['problema', 'ajuda'], null, 'Peca ajuda quando tiver dificuldade de acesso, repertorio ou uso do sistema.');
+        $adicionarAcaoAjuda('Musico', 'Acompanhar meus chamados', $urlAjuda('member.chamados.index') ?? '', 'fa-message', ['suporte', 'resposta'], null, 'Veja respostas da equipe e historico dos seus pedidos.');
     }
 @endphp
 
@@ -191,6 +209,9 @@
                     <span class="min-w-0">
                         <span class="block text-xs font-black uppercase tracking-[0.14em] text-[#8a5a1f]">{{ $acaoAjuda['perfil'] }}</span>
                         <span class="mt-1 block text-sm font-black">{{ $acaoAjuda['titulo'] }}</span>
+                        @if ($acaoAjuda['descricao'] !== '')
+                            <span class="mt-1 block text-xs leading-5 text-[#6d5242]">{{ $acaoAjuda['descricao'] }}</span>
+                        @endif
                     </span>
                 </a>
             @endforeach
