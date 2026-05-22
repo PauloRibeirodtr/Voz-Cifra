@@ -2,13 +2,13 @@
     use App\Enums\PapelIgreja;
 
     $usuarioSidebar = auth()->user();
-    $igrejaAtivaSidebar = $usuarioSidebar?->igrejaAtiva();
-    $igrejaAtivaIdSidebar = $igrejaAtivaSidebar?->id;
+    $igrejaAtivaSidebar = $usuarioSidebar ? $usuarioSidebar->igrejaAtiva() : null;
+    $igrejaAtivaIdSidebar = $igrejaAtivaSidebar ? $igrejaAtivaSidebar->id : null;
 
-    $temAdminMasterSidebar = (bool) ($usuarioSidebar?->ehAdminMaster());
-    $temAdminLocalSidebar = (bool) ($usuarioSidebar?->temPapelNaIgreja(PapelIgreja::ADMIN_LOCAL, $igrejaAtivaIdSidebar));
-    $temCoordenadorSidebar = (bool) ($usuarioSidebar?->temPapelNaIgreja(PapelIgreja::COORDENADOR, $igrejaAtivaIdSidebar));
-    $temMusicoSidebar = (bool) ($usuarioSidebar?->temPapelNaIgreja(PapelIgreja::MUSICO, $igrejaAtivaIdSidebar));
+    $temAdminMasterSidebar = (bool) ($usuarioSidebar && $usuarioSidebar->ehAdminMaster());
+    $temAdminLocalSidebar = (bool) ($usuarioSidebar && $usuarioSidebar->temPapelNaIgreja(PapelIgreja::ADMIN_LOCAL, $igrejaAtivaIdSidebar));
+    $temCoordenadorSidebar = (bool) ($usuarioSidebar && $usuarioSidebar->temPapelNaIgreja(PapelIgreja::COORDENADOR, $igrejaAtivaIdSidebar));
+    $temMusicoSidebar = (bool) ($usuarioSidebar && $usuarioSidebar->temPapelNaIgreja(PapelIgreja::MUSICO, $igrejaAtivaIdSidebar));
     $temAcessoMusicalSidebar = $temMusicoSidebar || $temCoordenadorSidebar || $temAdminLocalSidebar;
     $temPapelOperacionalSidebar = $temAdminLocalSidebar || $temCoordenadorSidebar || $temMusicoSidebar;
 
@@ -21,7 +21,7 @@
         ? 'local-admin.profile'
         : ($isCoordenadorAreaSidebar ? 'coordenador.profile' : 'member.profile');
 
-    $papeisAtivosSidebar = $usuarioSidebar?->listarPapeisNaIgreja($igrejaAtivaIdSidebar) ?? collect();
+    $papeisAtivosSidebar = $usuarioSidebar ? $usuarioSidebar->listarPapeisNaIgreja($igrejaAtivaIdSidebar) : collect();
 
     $linkPainelSidebar = $temAdminMasterSidebar
         ? route('admin.dashboard')
@@ -202,7 +202,7 @@
 
         <div class="{{ $secaoLabelClasseSidebar }}">Conta</div>
 
-        @if (auth()->user()?->ehMembro())
+        @if (auth()->user() && auth()->user()->ehMembro())
             <a href="{{ route('member.chamados.index') }}" class="{{ $itemMenuClasseSidebar(request()->routeIs('member.chamados.*')) }}">
                 <i class="fa-solid fa-message w-5 text-center text-[#d6ad6c] transition group-hover:scale-110"></i>
                 <span>Suporte</span>
