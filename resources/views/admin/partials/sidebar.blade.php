@@ -7,15 +7,15 @@
         use App\Enums\PapelIgreja;
 
         $usuarioSidebar = auth()->user();
-        $igrejaAtivaSidebar = $usuarioSidebar?->igrejaAtiva();
-        $igrejaAtivaIdSidebar = $igrejaAtivaSidebar?->id;
-        $temAdminMasterSidebar = (bool) ($usuarioSidebar?->ehAdminMaster());
-        $temAdminLocalSidebar = (bool) ($usuarioSidebar?->temPapelNaIgreja(PapelIgreja::ADMIN_LOCAL, $igrejaAtivaIdSidebar));
-        $temCoordenadorSidebar = (bool) ($usuarioSidebar?->temPapelNaIgreja(PapelIgreja::COORDENADOR, $igrejaAtivaIdSidebar));
-        $temMusicoSidebar = (bool) ($usuarioSidebar?->temPapelNaIgreja(PapelIgreja::MUSICO, $igrejaAtivaIdSidebar));
+        $igrejaAtivaSidebar = $usuarioSidebar ? $usuarioSidebar->igrejaAtiva() : null;
+        $igrejaAtivaIdSidebar = $igrejaAtivaSidebar ? $igrejaAtivaSidebar->id : null;
+        $temAdminMasterSidebar = (bool) ($usuarioSidebar && $usuarioSidebar->ehAdminMaster());
+        $temAdminLocalSidebar = (bool) ($usuarioSidebar && $usuarioSidebar->temPapelNaIgreja(PapelIgreja::ADMIN_LOCAL, $igrejaAtivaIdSidebar));
+        $temCoordenadorSidebar = (bool) ($usuarioSidebar && $usuarioSidebar->temPapelNaIgreja(PapelIgreja::COORDENADOR, $igrejaAtivaIdSidebar));
+        $temMusicoSidebar = (bool) ($usuarioSidebar && $usuarioSidebar->temPapelNaIgreja(PapelIgreja::MUSICO, $igrejaAtivaIdSidebar));
         $temAcessoMusicalSidebar = $temMusicoSidebar || $temCoordenadorSidebar || $temAdminLocalSidebar;
         $temPapelOperacionalSidebar = $temAdminLocalSidebar || $temCoordenadorSidebar || $temMusicoSidebar;
-        $papeisAtivosSidebar = $usuarioSidebar?->listarPapeisNaIgreja($igrejaAtivaIdSidebar) ?? collect();
+        $papeisAtivosSidebar = $usuarioSidebar ? $usuarioSidebar->listarPapeisNaIgreja($igrejaAtivaIdSidebar) : collect();
         $linkPessoasSidebar = $temAdminLocalSidebar
             ? route('local-admin.musicos.index')
             : ($temCoordenadorSidebar ? route('coordenador.musicos.index') : null);
@@ -182,7 +182,7 @@
                     @endif
                 @endif
 
-                @if ($temCoordenadorSidebar || $temAcessoMusicalSidebar || auth()->user()?->ehAdminMaster())
+                @if ($temCoordenadorSidebar || $temAcessoMusicalSidebar || (auth()->user() && auth()->user()->ehAdminMaster()))
                     <div class="admin-sidebar-section-label pt-3 pb-1 pl-4 text-[11px] font-black uppercase tracking-widest opacity-80">M&uacute;sicas e acordes</div>
 
                     @if ($temCoordenadorSidebar)
@@ -214,7 +214,7 @@
                         </a>
                     @endif
 
-                    @if (auth()->user()?->ehAdminMaster())
+                    @if (auth()->user() && auth()->user()->ehAdminMaster())
                         <a href="{{ route('admin.tempos-liturgicos.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.tempos-liturgicos.*')) }}">
                             <i class="fa-solid fa-calendar-days w-5 text-center group-hover:scale-110 transition"></i>
                             <span>Tempos lit&uacute;rgicos</span>
@@ -232,23 +232,27 @@
                     @endif
                 @endif
 
-                @if ($temAdminMasterSidebar)
+                @if ($temAdminMasterSidebar || $temCoordenadorSidebar)
                     <div class="admin-sidebar-section-label pt-3 pb-1 pl-4 text-[11px] font-black uppercase tracking-widest opacity-80">Sistema</div>
 
-                    <a href="{{ route('admin.auditoria.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.auditoria.*')) }}">
-                        <i class="fa-solid fa-shield-halved w-5 text-center group-hover:scale-110 transition"></i>
-                        <span>Auditoria</span>
-                    </a>
+                    @if ($temAdminMasterSidebar)
+                        <a href="{{ route('admin.auditoria.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.auditoria.*')) }}">
+                            <i class="fa-solid fa-shield-halved w-5 text-center group-hover:scale-110 transition"></i>
+                            <span>Auditoria</span>
+                        </a>
+                    @endif
 
-                    <a href="{{ route('admin.chamados.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.chamados.*')) }}">
+                    <a href="{{ route($temAdminMasterSidebar ? 'admin.chamados.index' : 'coordenador.chamados.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.chamados.*', 'coordenador.chamados.*')) }}">
                         <i class="fa-solid fa-headset w-5 text-center group-hover:scale-110 transition"></i>
                         <span>Chamados</span>
                     </a>
 
-                    <a href="{{ route('admin.settings') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.settings', 'admin.profile', 'admin.profile.update')) }}">
-                        <i class="fa-solid fa-gear w-5 text-center group-hover:scale-110 transition"></i>
-                        <span>Configura&ccedil;&otilde;es</span>
-                    </a>
+                    @if ($temAdminMasterSidebar)
+                        <a href="{{ route('admin.settings') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.settings', 'admin.profile', 'admin.profile.update')) }}">
+                            <i class="fa-solid fa-gear w-5 text-center group-hover:scale-110 transition"></i>
+                            <span>Configura&ccedil;&otilde;es</span>
+                        </a>
+                    @endif
                 @endif
             </nav>
 

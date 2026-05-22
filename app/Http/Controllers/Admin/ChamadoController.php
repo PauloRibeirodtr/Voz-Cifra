@@ -19,7 +19,7 @@ class ChamadoController extends Controller
 
     public function index(Request $request): View
     {
-        $this->autorizarAdminMaster();
+        $this->autorizarGestaoChamados();
 
         $status = trim((string) $request->string('status'));
         $prioridade = trim((string) $request->string('prioridade'));
@@ -53,12 +53,13 @@ class ChamadoController extends Controller
             'prioridadeOptions' => $this->supportService->prioridadeOptions(),
             'categoriaOptions' => $this->supportService->categoriaOptions(),
             'supportService' => $this->supportService,
+            'routePrefix' => $this->routePrefix(),
         ]);
     }
 
     public function show(Chamado $chamado): View
     {
-        $this->autorizarAdminMaster();
+        $this->autorizarGestaoChamados();
 
         $chamado->load([
             'auditoriaEvento',
@@ -72,12 +73,13 @@ class ChamadoController extends Controller
             'statusOptions' => $this->supportService->statusOptions(),
             'supportService' => $this->supportService,
             'musicoAlvoPedidoAcesso' => $this->resolverMusicoAlvo($chamado),
+            'routePrefix' => $this->routePrefix(),
         ]);
     }
 
     public function updateStatus(Request $request, Chamado $chamado): RedirectResponse
     {
-        $this->autorizarAdminMaster();
+        $this->autorizarGestaoChamados();
 
         $dados = $request->validate([
             'status' => ['required', 'in:aberto,em_andamento,aguardando_usuario,resolvido,fechado'],
@@ -95,7 +97,7 @@ class ChamadoController extends Controller
 
         if (in_array($dados['status'], ['resolvido', 'fechado'], true)) {
             return redirect()
-                ->route('admin.chamados.index')
+                ->route($this->routePrefix() . '.chamados.index')
                 ->with('success', 'Chamado encerrado com sucesso.');
         }
 
@@ -104,7 +106,7 @@ class ChamadoController extends Controller
 
     public function storeMessage(Request $request, Chamado $chamado): RedirectResponse
     {
-        $this->autorizarAdminMaster();
+        $this->autorizarGestaoChamados();
 
         $dados = $request->validate([
             'mensagem' => ['required', 'string', 'max:5000'],
@@ -125,7 +127,7 @@ class ChamadoController extends Controller
 
     public function assumir(Chamado $chamado): RedirectResponse
     {
-        $this->autorizarAdminMaster();
+        $this->autorizarGestaoChamados();
 
         /** @var \App\Models\Usuario|null $usuario */
         $usuario = Auth::user();
@@ -136,7 +138,7 @@ class ChamadoController extends Controller
 
     public function aprovarPedidoAcesso(Chamado $chamado): RedirectResponse
     {
-        $this->autorizarAdminMaster();
+        $this->autorizarGestaoChamados();
 
         /** @var \App\Models\Usuario|null $usuario */
         $usuario = Auth::user();
@@ -153,7 +155,7 @@ class ChamadoController extends Controller
 
     public function pedirMaisDados(Request $request, Chamado $chamado): RedirectResponse
     {
-        $this->autorizarAdminMaster();
+        $this->autorizarGestaoChamados();
 
         $dados = $request->validate([
             'mensagem' => ['required', 'string', 'max:2000'],
@@ -166,12 +168,17 @@ class ChamadoController extends Controller
         return back()->with('success', 'Chamado movido para aguardando usuario.');
     }
 
-    private function autorizarAdminMaster(): void
+    private function autorizarGestaoChamados(): void
     {
         /** @var \App\Models\Usuario|null $usuario */
         $usuario = Auth::user();
 
-        abort_unless($usuario && $usuario->ehAdminMaster(), 403);
+        abort_unless($usuario && ($usuario->ehAdminMaster() || $usuario->ehCoordenador()), 403);
+    }
+
+    private function routePrefix(): string
+    {
+        return request()->routeIs('coordenador.*') ? 'coordenador' : 'admin';
     }
 
     private function resolverMusicoAlvo(Chamado $chamado): ?\App\Models\Usuario

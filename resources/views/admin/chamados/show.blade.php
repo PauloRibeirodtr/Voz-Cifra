@@ -6,9 +6,10 @@
 
 @section('content')
     @php($chamadoEncerrado = in_array($chamado->status, ['resolvido', 'fechado'], true))
+    @php($routePrefix = $routePrefix ?? 'admin')
 
     <div class="mb-6">
-        <a href="{{ route('admin.chamados.index') }}" class="text-sm font-semibold text-green-700 hover:text-green-800">&larr; Voltar para chamados</a>
+        <a href="{{ route($routePrefix . '.chamados.index') }}" class="text-sm font-semibold text-green-700 hover:text-green-800">&larr; Voltar para chamados</a>
     </div>
 
     @if (session('success'))
@@ -122,7 +123,7 @@
                 <section class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
                     <h2 class="text-lg font-black text-gray-800">Acoes do atendimento</h2>
                     <div class="mt-4 space-y-3">
-                        <form action="{{ route('admin.chamados.assumir', $chamado) }}" method="POST">
+                        <form action="{{ route($routePrefix . '.chamados.assumir', $chamado) }}" method="POST">
                             @csrf
                             <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50">
                                 <i class="fa-solid fa-play"></i>
@@ -131,7 +132,7 @@
                         </form>
 
                         @if ($supportService->podeAprovarPedidoAcesso($chamado))
-                            <form action="{{ route('admin.chamados.aprovar-pedido-acesso', $chamado) }}" method="POST" onsubmit="return confirm('Deseja aprovar este pedido e liberar o acesso do musico?');">
+                            <form action="{{ route($routePrefix . '.chamados.aprovar-pedido-acesso', $chamado) }}" method="POST" onsubmit="return confirm('Deseja aprovar este pedido e liberar o acesso do musico?');">
                                 @csrf
                                 <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-700 px-4 py-3 text-sm font-semibold text-white hover:bg-sky-800">
                                     <i class="fa-solid fa-user-check"></i>
@@ -140,7 +141,7 @@
                             </form>
                         @endif
 
-                        <form action="{{ route('admin.chamados.pedir-mais-dados', $chamado) }}" method="POST" class="space-y-3">
+                        <form action="{{ route($routePrefix . '.chamados.pedir-mais-dados', $chamado) }}" method="POST" class="space-y-3">
                             @csrf
                             <textarea name="mensagem" rows="4" class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-800" placeholder="Escreva o que ainda falta para o usuario responder">{{ old('mensagem') }}</textarea>
                             <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800 hover:bg-amber-100">
@@ -153,7 +154,7 @@
 
                 <section class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
                     <h2 class="text-lg font-black text-gray-800">Finalizar ou pausar</h2>
-                    <form action="{{ route('admin.chamados.status.update', $chamado) }}" method="POST" class="mt-4 space-y-4">
+                    <form action="{{ route($routePrefix . '.chamados.status.update', $chamado) }}" method="POST" class="mt-4 space-y-4">
                         @csrf
 
                         <select name="status" class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800">
@@ -173,7 +174,7 @@
 
                 <section class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
                     <h2 class="text-lg font-black text-gray-800">Responder atendimento</h2>
-                    <form action="{{ route('admin.chamados.mensagens.store', $chamado) }}" method="POST" class="mt-4 space-y-4">
+                    <form action="{{ route($routePrefix . '.chamados.mensagens.store', $chamado) }}" method="POST" class="mt-4 space-y-4">
                         @csrf
 
                         <textarea name="mensagem" rows="6" required class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800" placeholder="Escreva a resposta para o atendimento">{{ old('mensagem') }}</textarea>

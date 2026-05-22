@@ -68,10 +68,15 @@ class NormalizadorCifrasService
                 continue;
             }
 
+            if ($this->ehLinhaSomenteAcordes($linhaAtual)) {
+                $linhasNormalizadas[] = $this->converterLinhaSomenteAcordesParaCifras($linhaAtual);
+                continue;
+            }
+
             $linhasNormalizadas[] = $linhaAtual;
         }
 
-        return trim(implode("\n", $linhasNormalizadas));
+        return rtrim(implode("\n", $linhasNormalizadas));
     }
 
     private function identificarAcordesInvalidos(array $acordesEncontrados, array $acordesValidos): array
@@ -106,6 +111,17 @@ class NormalizadorCifrasService
         }
 
         return $resultado;
+    }
+
+    private function converterLinhaSomenteAcordesParaCifras(string $linhaAcordes): string
+    {
+        return (string) preg_replace_callback(
+            '/\S+/',
+            fn (array $matches): string => $this->ehAcorde($matches[0])
+                ? '[' . $matches[0] . ']'
+                : $matches[0],
+            $linhaAcordes
+        );
     }
 
     private function localizarPosicaoSeguraNaLetra(string $linhaLetra, int $offset): int

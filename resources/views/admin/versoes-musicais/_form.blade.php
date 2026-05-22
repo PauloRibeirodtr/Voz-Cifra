@@ -335,6 +335,12 @@ Cantarei quao grande e o meu Deus</pre>
             return resultado;
         };
 
+        const converterLinhaSomenteAcordesParaCifras = (linhaAcordes) => {
+            return linhaAcordes.replace(/\S+/g, (token) => {
+                return ehAcorde(token) ? `[${token}]` : token;
+            });
+        };
+
         const normalizarFormato = (textoBruto) => {
             const texto = (textoBruto || '')
                 .replace(/\\n/g, '\n')
@@ -360,6 +366,12 @@ Cantarei quao grande e o meu Deus</pre>
                     resultado.push(combinarLinhaDeAcordesComLetra(linhaAtual, proximaLinha.replace(/\s+$/g, '')));
                     houveConversao = true;
                     i++;
+                    continue;
+                }
+
+                if (ehLinhaSomenteAcordes(linhaAtual)) {
+                    resultado.push(converterLinhaSomenteAcordesParaCifras(linhaAtual));
+                    houveConversao = true;
                     continue;
                 }
 

@@ -20,4 +20,21 @@ class NormalizadorCifrasServiceTest extends TestCase
 
         $this->assertSame("1. Ben[Dm]dize, o minh'[G7]alma, ao Senhor!", $resultado);
     }
+
+    public function test_linha_de_preparacao_sem_letra_tambem_vira_cifra(): void
+    {
+        $servico = new NormalizadorCifrasService();
+
+        $texto = implode("\n", [
+            '        A7',
+            '',
+            '      Dm           G7',
+            "1. Bendize, o minh'alma, ao Senhor!",
+        ]);
+
+        $resultado = $servico->normalizarFormato($texto);
+
+        $this->assertSame("        [A7]\n\n1. Ben[Dm]dize, o minh'[G7]alma, ao Senhor!", $resultado);
+        $this->assertSame(['A7', 'Dm', 'G7'], $servico->extrairAcordes($resultado));
+    }
 }

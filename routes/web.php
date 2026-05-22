@@ -234,6 +234,14 @@ Route::middleware(['auth', 'verified_custom', 'role:coordenador', 'primeiro_aces
         Route::put('/momentos-liturgicos/{momentoLiturgico}', [MomentoLiturgicoController::class, 'update'])->name('momentos-liturgicos.update');
         Route::delete('/momentos-liturgicos/{momentoLiturgico}', [MomentoLiturgicoController::class, 'destroy'])->name('momentos-liturgicos.destroy');
 
+        Route::get('/chamados', [AdminChamadoController::class, 'index'])->name('chamados.index');
+        Route::get('/chamados/{chamado}', [AdminChamadoController::class, 'show'])->name('chamados.show');
+        Route::post('/chamados/{chamado}/status', [AdminChamadoController::class, 'updateStatus'])->name('chamados.status.update');
+        Route::post('/chamados/{chamado}/mensagens', [AdminChamadoController::class, 'storeMessage'])->name('chamados.mensagens.store');
+        Route::post('/chamados/{chamado}/assumir', [AdminChamadoController::class, 'assumir'])->name('chamados.assumir');
+        Route::post('/chamados/{chamado}/aprovar-pedido-acesso', [AdminChamadoController::class, 'aprovarPedidoAcesso'])->name('chamados.aprovar-pedido-acesso');
+        Route::post('/chamados/{chamado}/pedir-mais-dados', [AdminChamadoController::class, 'pedirMaisDados'])->name('chamados.pedir-mais-dados');
+
         Route::get('/musicas/{musica}/versoes/criar', [VersaoMusicalController::class, 'create'])->name('versoes-musicais.create');
         Route::post('/musicas/{musica}/versoes', [VersaoMusicalController::class, 'store'])->name('versoes-musicais.store');
         Route::get('/musicas/{musica}/versoes/{versaoMusical}', [VersaoMusicalController::class, 'show'])->name('versoes-musicais.show');

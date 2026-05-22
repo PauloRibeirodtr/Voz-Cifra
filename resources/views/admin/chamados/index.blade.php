@@ -5,6 +5,8 @@
 @section('desktop_subtitle', 'Suporte central e fila operacional do admin master')
 
 @section('content')
+    @php($routePrefix = $routePrefix ?? 'admin')
+
     <div class="mb-6 sm:mb-8">
         <h1 class="text-2xl sm:text-3xl font-black text-gray-800">Chamados de suporte</h1>
         <p class="mt-2 text-sm text-gray-500">Acompanhe protocolos, priorize atendimentos e centralize as respostas da equipe.</p>
@@ -62,7 +64,7 @@
 
             <div class="lg:col-span-5 flex flex-wrap gap-3">
                 <button type="submit" class="rounded-xl bg-green-700 px-5 py-3 text-sm font-semibold text-white hover:bg-green-800">Filtrar</button>
-                <a href="{{ route('admin.chamados.index') }}" class="rounded-xl border border-gray-300 px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">Limpar</a>
+                <a href="{{ route($routePrefix . '.chamados.index') }}" class="rounded-xl border border-gray-300 px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">Limpar</a>
             </div>
         </form>
     </div>
@@ -110,7 +112,7 @@
                     </div>
 
                     <div class="xl:w-56 shrink-0">
-                        <a href="{{ route('admin.chamados.show', $chamado) }}" class="inline-flex w-full items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">
+                        <a href="{{ route($routePrefix . '.chamados.show', $chamado) }}" class="inline-flex w-full items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">
                             Abrir atendimento
                         </a>
                     </div>

@@ -76,6 +76,7 @@
         </div>
     </div>
 
+    @include('partials.help-tour')
     <script src="{{ asset('js/admin/layout.js') }}"></script>
     @stack('scripts')
 </body>
