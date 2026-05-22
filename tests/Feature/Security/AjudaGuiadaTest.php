@@ -55,4 +55,20 @@ class AjudaGuiadaTest extends TestCase
             ->assertSee('Cadastrar musica ou cifra')
             ->assertSee('Ver repertorio');
     }
+
+    public function test_admin_master_recebe_guia_visual_para_cadastrar_usuario(): void
+    {
+        /** @var Usuario $adminMaster */
+        $adminMaster = Usuario::factory()->adminMaster()->create();
+
+        $this
+            ->actingAs($adminMaster)
+            ->get(route('admin.usuarios.create'))
+            ->assertOk()
+            ->assertSee('Cadastrar usuario')
+            ->assertSee('data-guide-id="cadastro-usuario"', false)
+            ->assertSee('data-guide-target="usuario-tipo"', false)
+            ->assertSee('Escolha o tipo inicial')
+            ->assertSee('Salve o cadastro');
+    }
 }

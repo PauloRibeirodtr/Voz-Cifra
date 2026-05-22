@@ -8,7 +8,7 @@
     $urlAjuda = static fn (string $routeName): ?string => Route::has($routeName) ? route($routeName) : null;
 
     $acoesAjuda = [];
-    $adicionarAcaoAjuda = static function (string $perfil, string $titulo, string $url, string $icone, array $termos = []) use (&$acoesAjuda): void {
+    $adicionarAcaoAjuda = static function (string $perfil, string $titulo, string $url, string $icone, array $termos = [], ?array $guia = null) use (&$acoesAjuda): void {
         if ($url === '') {
             return;
         }
@@ -19,11 +19,24 @@
             'url' => $url,
             'icone' => $icone,
             'busca' => mb_strtolower($perfil . ' ' . $titulo . ' ' . implode(' ', $termos)),
+            'guia' => $guia,
         ];
     };
 
     if ($usuarioAjuda && $usuarioAjuda->ehAdminMaster()) {
-        $adicionarAcaoAjuda('Admin master', 'Cadastrar usuario', $urlAjuda('admin.usuarios.create') ?? '', 'fa-user-plus', ['pessoa', 'admin', 'musico', 'coordenador']);
+        $adicionarAcaoAjuda('Admin master', 'Cadastrar usuario', $urlAjuda('admin.usuarios.create') ?? '', 'fa-user-plus', ['pessoa', 'admin', 'musico', 'coordenador'], [
+            'id' => 'cadastro-usuario',
+            'rota' => 'admin.usuarios.create',
+            'passos' => [
+                ['alvo' => '[data-guide-target="usuario-tipo"]', 'titulo' => 'Escolha o tipo inicial', 'texto' => 'Defina se a pessoa sera admin master, coordenador, admin local, musico ou padre.'],
+                ['alvo' => '[data-guide-target="usuario-igreja"]', 'titulo' => 'Vincule a igreja quando precisar', 'texto' => 'Coordenador, admin local e musico precisam de uma igreja inicial. Admin master e padre podem ficar sem igreja.'],
+                ['alvo' => '[data-guide-target="usuario-dados"]', 'titulo' => 'Informe o nome', 'texto' => 'Use o nome completo para facilitar busca, suporte e auditoria.'],
+                ['alvo' => '[data-guide-target="usuario-cpf"]', 'titulo' => 'Informe o CPF', 'texto' => 'O CPF evita cadastro duplicado da mesma pessoa.'],
+                ['alvo' => '[data-guide-target="usuario-email"]', 'titulo' => 'Informe o e-mail', 'texto' => 'O e-mail recebe o convite de acesso. Padre sem login pode ficar em branco.'],
+                ['alvo' => '[data-guide-target="usuario-acesso"]', 'titulo' => 'Escolha o acesso', 'texto' => 'Mantenha a conta ativa e marque convite se quiser enviar o link agora.'],
+                ['alvo' => '[data-guide-target="usuario-salvar"]', 'titulo' => 'Salve o cadastro', 'texto' => 'Depois de salvar, voce pode ajustar papeis e reenviar convite quando necessario.'],
+            ],
+        ]);
         $adicionarAcaoAjuda('Admin master', 'Gerenciar usuarios', $urlAjuda('admin.usuarios.index') ?? '', 'fa-users-gear', ['perfis', 'papeis', 'acesso']);
         $adicionarAcaoAjuda('Admin master', 'Cadastrar igreja', $urlAjuda('admin.igrejas.create') ?? '', 'fa-church', ['paroquia', 'comunidade']);
         $adicionarAcaoAjuda('Admin master', 'Ver chamados abertos', ($urlAjuda('admin.chamados.index') ?? '') . '?visao=atendimento', 'fa-headset', ['suporte', 'atendimento']);
@@ -127,7 +140,15 @@
 
         <div class="space-y-2 p-4" data-help-list>
             @foreach ($acoesAjuda as $acaoAjuda)
-                <a href="{{ $acaoAjuda['url'] }}" class="help-action-item flex items-center gap-3 rounded-2xl border border-[#eadfce] bg-white px-4 py-3 text-[#1d1513] transition hover:bg-[#fff7e8]" data-help-item data-help-search-text="{{ $acaoAjuda['busca'] }}">
+                <a
+                    href="{{ $acaoAjuda['url'] }}"
+                    class="help-action-item flex items-center gap-3 rounded-2xl border border-[#eadfce] bg-white px-4 py-3 text-[#1d1513] transition hover:bg-[#fff7e8]"
+                    data-help-item
+                    data-help-search-text="{{ $acaoAjuda['busca'] }}"
+                    @if (!empty($acaoAjuda['guia']))
+                        data-guide-id="{{ $acaoAjuda['guia']['id'] }}"
+                    @endif
+                >
                     <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#7a501f] text-white">
                         <i class="fa-solid {{ $acaoAjuda['icone'] }}"></i>
                     </span>
@@ -144,7 +165,12 @@
         </div>
     </section>
 
+    <div class="hidden fixed z-[75] rounded-2xl border-2 border-[#f59e0b] bg-transparent shadow-[0_0_0_4px_rgba(245,158,11,.18),0_18px_42px_rgba(20,10,8,.28)] transition-all" data-guide-highlight></div>
+    <aside class="hidden fixed z-[76] w-[min(23rem,calc(100vw-2rem))] rounded-2xl border border-[#eadfce] bg-[#fffdf8] p-4 text-[#1d1513] shadow-[0_24px_70px_rgba(20,10,8,.28)]" data-guide-card aria-live="polite"></aside>
+
     <script>
+        window.vozCifraGuias = @json(collect($acoesAjuda)->pluck('guia')->filter()->values(), JSON_UNESCAPED_UNICODE);
+
         document.addEventListener('DOMContentLoaded', () => {
             const painel = document.querySelector('[data-help-panel]');
             const abrir = document.querySelector('[data-help-open]');
@@ -152,6 +178,11 @@
             const busca = document.querySelector('[data-help-search]');
             const itens = Array.from(document.querySelectorAll('[data-help-item]'));
             const vazio = document.querySelector('[data-help-empty]');
+            const guias = window.vozCifraGuias || [];
+            const highlight = document.querySelector('[data-guide-highlight]');
+            const card = document.querySelector('[data-guide-card]');
+            let guiaAtual = null;
+            let passoAtual = 0;
 
             const mostrarPainel = (mostrar) => {
                 painel?.classList.toggle('hidden', !mostrar);
@@ -175,13 +206,153 @@
                 vazio?.classList.toggle('hidden', visiveis > 0);
             };
 
+            const encerrarGuia = () => {
+                guiaAtual = null;
+                passoAtual = 0;
+                highlight?.classList.add('hidden');
+                card?.classList.add('hidden');
+                if (card) {
+                    card.innerHTML = '';
+                }
+            };
+
+            const posicionarCard = (rect) => {
+                if (!card) {
+                    return;
+                }
+
+                const margem = 16;
+                const largura = Math.min(368, window.innerWidth - (margem * 2));
+                let left = rect.right + margem;
+                let top = rect.top;
+
+                if (left + largura > window.innerWidth - margem) {
+                    left = Math.max(margem, rect.left - largura - margem);
+                }
+
+                if (window.innerWidth < 768 || left < margem) {
+                    left = margem;
+                    top = Math.min(rect.bottom + margem, window.innerHeight - 230);
+                }
+
+                card.style.left = `${Math.max(margem, left)}px`;
+                card.style.top = `${Math.max(margem, top)}px`;
+                card.style.width = `${largura}px`;
+            };
+
+            const renderizarGuia = () => {
+                if (!guiaAtual || !card || !highlight) {
+                    return;
+                }
+
+                const passos = guiaAtual.passos || [];
+                const passo = passos[passoAtual];
+
+                if (!passo) {
+                    encerrarGuia();
+                    return;
+                }
+
+                const alvo = document.querySelector(passo.alvo);
+
+                if (!alvo) {
+                    passoAtual += 1;
+                    renderizarGuia();
+                    return;
+                }
+
+                alvo.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+
+                window.setTimeout(() => {
+                    const rect = alvo.getBoundingClientRect();
+                    highlight.classList.remove('hidden');
+                    highlight.style.top = `${Math.max(8, rect.top - 8)}px`;
+                    highlight.style.left = `${Math.max(8, rect.left - 8)}px`;
+                    highlight.style.width = `${Math.min(window.innerWidth - 16, rect.width + 16)}px`;
+                    highlight.style.height = `${Math.min(window.innerHeight - 16, rect.height + 16)}px`;
+
+                    card.classList.remove('hidden');
+                    card.innerHTML = `
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="text-[11px] font-black uppercase tracking-[0.18em] text-[#8a5a1f]">${passoAtual + 1} de ${passos.length}</p>
+                                <h3 class="mt-1 text-lg font-black text-[#1d1513]">${passo.titulo}</h3>
+                            </div>
+                            <button type="button" class="rounded-full border border-[#eadfce] px-3 py-2 text-sm font-bold text-[#5a3a1d]" data-guide-close aria-label="Fechar guia">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        <p class="mt-3 text-sm leading-6 text-[#5f4a3d]">${passo.texto}</p>
+                        <div class="mt-4 flex items-center justify-between gap-2">
+                            <button type="button" class="rounded-xl border border-[#eadfce] px-3 py-2 text-sm font-black text-[#3d2a1e] disabled:opacity-40" data-guide-prev ${passoAtual === 0 ? 'disabled' : ''}>Voltar</button>
+                            <button type="button" class="rounded-xl bg-[#7a501f] px-4 py-2 text-sm font-black text-white" data-guide-next>${passoAtual === passos.length - 1 ? 'Concluir' : 'Proximo'}</button>
+                        </div>
+                    `;
+
+                    posicionarCard(rect);
+                }, 220);
+            };
+
+            const iniciarGuia = (id) => {
+                guiaAtual = guias.find((guia) => guia && guia.id === id) || null;
+                passoAtual = 0;
+                mostrarPainel(false);
+                renderizarGuia();
+            };
+
             abrir?.addEventListener('click', () => mostrarPainel(painel?.classList.contains('hidden')));
             fechar?.addEventListener('click', () => mostrarPainel(false));
             busca?.addEventListener('input', filtrar);
 
+            itens.forEach((item) => {
+                item.addEventListener('click', (event) => {
+                    const guideId = item.dataset.guideId;
+                    if (!guideId) {
+                        return;
+                    }
+
+                    const guia = guias.find((registro) => registro && registro.id === guideId);
+                    const rotaAtual = '{{ Route::currentRouteName() }}';
+
+                    if (guia && guia.rota === rotaAtual) {
+                        event.preventDefault();
+                        iniciarGuia(guideId);
+                    }
+                });
+            });
+
+            document.addEventListener('click', (event) => {
+                if (event.target.closest('[data-guide-close]')) {
+                    encerrarGuia();
+                    return;
+                }
+
+                if (event.target.closest('[data-guide-next]')) {
+                    if (guiaAtual && passoAtual < (guiaAtual.passos || []).length - 1) {
+                        passoAtual += 1;
+                        renderizarGuia();
+                    } else {
+                        encerrarGuia();
+                    }
+                    return;
+                }
+
+                if (event.target.closest('[data-guide-prev]') && passoAtual > 0) {
+                    passoAtual -= 1;
+                    renderizarGuia();
+                }
+            });
+
+            window.addEventListener('resize', () => {
+                if (guiaAtual) {
+                    renderizarGuia();
+                }
+            });
+
             document.addEventListener('keydown', (event) => {
                 if (event.key === 'Escape') {
                     mostrarPainel(false);
+                    encerrarGuia();
                 }
             });
         });

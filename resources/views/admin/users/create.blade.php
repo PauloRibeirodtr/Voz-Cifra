@@ -186,7 +186,7 @@
                         @csrf
 
                         <div class="admin-form-grid xl:grid-cols-2">
-                            <div>
+                            <div data-guide-target="usuario-tipo">
                                 <label class="admin-label">Tipo inicial</label>
                                 <select name="tipo_cadastro" class="admin-select" data-tipo-cadastro>
                                     <option value="admin_master" @selected(old('tipo_cadastro', request('tipo_cadastro')) === 'admin_master')>Admin master</option>
@@ -197,7 +197,7 @@
                                 </select>
                             </div>
 
-                            <div>
+                            <div data-guide-target="usuario-igreja">
                                 <label class="admin-label">Igreja inicial</label>
                                 <div class="church-combobox" data-igreja-combobox>
                                     <input type="hidden" name="igreja_id" value="{{ $igrejaSelecionadaId }}" data-igreja-inicial>
@@ -219,17 +219,17 @@
                                 </p>
                             </div>
 
-                            <div>
+                            <div data-guide-target="usuario-dados">
                                 <label class="admin-label">Nome</label>
                                 <input type="text" name="nome" value="{{ old('nome') }}" required class="admin-input">
                             </div>
 
-                            <div>
+                            <div data-guide-target="usuario-cpf">
                                 <label class="admin-label">CPF</label>
                                 <input type="text" name="cpf" value="{{ old('cpf') }}" required data-cpf-input class="admin-input" placeholder="000.000.000-00">
                             </div>
 
-                            <div>
+                            <div data-guide-target="usuario-email">
                                 <label class="admin-label">E-mail</label>
                                 <input type="email" name="email" value="{{ old('email') }}" class="admin-input" placeholder="Padre sem login pode ficar em branco">
                             </div>
@@ -251,7 +251,7 @@
                             </div>
                         </div>
 
-                        <div class="admin-checkbox-row">
+                        <div class="admin-checkbox-row" data-guide-target="usuario-acesso">
                             <label class="admin-checkbox">
                                 <input type="hidden" name="ativo" value="0">
                                 <input type="checkbox" name="ativo" value="1" {{ old('ativo', '1') ? 'checked' : '' }}>
@@ -264,7 +264,7 @@
                             </label>
                         </div>
 
-                        <div class="admin-actions">
+                        <div class="admin-actions" data-guide-target="usuario-salvar">
                             <button type="submit" class="admin-btn admin-btn-primary">Cadastrar usuário</button>
                             <a href="{{ route('admin.usuarios.index') }}" class="admin-btn admin-btn-secondary">Cancelar</a>
                         </div>
