@@ -148,10 +148,9 @@
             <div class="admin-page-intro">
                 <p class="admin-page-kicker">Cadastro central</p>
                 <h1 class="admin-page-title mt-2 text-2xl font-black sm:text-3xl">Cadastrar usuário</h1>
-                <p class="admin-page-copy mt-3 max-w-3xl text-sm sm:text-base">
-                    Cadastre a conta base primeiro e aplique o primeiro papel por igreja no mesmo fluxo.
-                    Musico, admin local e coordenador precisam de uma igreja inicial.
-                </p>
+                <p class="admin-page-description mt-4 max-w-xl text-sm text-gray-500">
+                    Este é o cadastro central de usuários do sistema. Ele vale para admin master, coordenador, admin local, músico e padre.
+                    O tipo inicial define regras de obrigatoriedade e papeis iniciais, mas depois é possível ajustar tudo individualmente.
             </div>
 
             <div class="admin-page-actions">
@@ -175,9 +174,7 @@
                     <div>
                         <p class="admin-page-kicker">Conta base</p>
                         <h2 class="text-lg font-bold text-gray-800">Dados principais do usuário</h2>
-                        <p class="mt-2 text-sm text-gray-500">
-                            O cadastro central vale para admin master, coordenador, admin local, músico e padre.
-                        </p>
+                        
                     </div>
                 </div>
 
@@ -244,10 +241,7 @@
                             </div>
 
                             <div class="xl:col-span-2">
-                                <div class="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm text-blue-900">
-                                    Quando o tipo inicial for <strong>admin master</strong>, a conta já nasce com acesso global do sistema.
-                                    Não existe mais nível separado nesta etapa. Coordenador continua sendo papel por igreja e pode acumular várias igrejas.
-                                </div>
+                                
                             </div>
                         </div>
 
@@ -272,24 +266,7 @@
                 </div>
             </section>
 
-            <aside class="space-y-6">
-                <details class="user-help-details admin-highlight-surface 2xl:sticky 2xl:top-6">
-                    <summary>Como funciona este cadastro</summary>
-                    <div class="user-help-details__body space-y-3 text-sm leading-7 text-gray-600">
-                        <p><strong>Admin master:</strong> acesso global, sem igreja obrigatoria.</p>
-                        <p><strong>Coordenador, admin local e musico:</strong> exigem igreja inicial e ja recebem o papel ao salvar.</p>
-                        <p><strong>Padre:</strong> pode ficar sem e-mail. O sistema cria um e-mail tecnico interno se precisar.</p>
-                        <p><strong>Sem duplicacao:</strong> CPF e e-mail reaproveitam a mesma pessoa.</p>
-                    </div>
-                </details>
-
-                <details class="user-help-details admin-muted-surface">
-                    <summary>Fluxo recomendado</summary>
-                    <div class="user-help-details__body text-sm leading-7 text-gray-600">
-                        Primeiro cadastre a conta. Depois aplique papel por igreja somente quando alguem for operar missa, repertorio ou rotina daquela comunidade.
-                    </div>
-                </details>
-            </aside>
+            
         </div>
     </div>
 @endsection
