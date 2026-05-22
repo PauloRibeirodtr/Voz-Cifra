@@ -53,4 +53,24 @@ class NormalizadorCifrasServiceTest extends TestCase
         $this->assertSame("Refrão:\n[D] [A] [Am] [D] [C]\nVem Dar-Nos Teu Filho, Senhor,", $resultado);
         $this->assertSame(['D', 'A', 'Am', 'C'], $servico->extrairAcordes($resultado));
     }
+
+    public function test_refrain_pode_repetir_e_ser_digitado_sem_acento_ou_colchetes(): void
+    {
+        $servico = new NormalizadorCifrasService();
+
+        $texto = implode("\n", [
+            'refrao',
+            'D',
+            'Primeira linha',
+            '',
+            '[REFRAO]',
+            '[Dm] [G7]',
+            'Outra linha',
+        ]);
+
+        $resultado = $servico->normalizarFormato($texto);
+
+        $this->assertSame("Refrão:\n[D]\nPrimeira linha\n\nRefrão:\n[Dm] [G7]\nOutra linha", $resultado);
+        $this->assertSame(['D', 'Dm', 'G7'], $servico->extrairAcordes($resultado));
+    }
 }

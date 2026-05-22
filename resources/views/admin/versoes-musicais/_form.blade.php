@@ -42,14 +42,20 @@
                 <div>
                     <div class="flex items-center justify-between gap-3">
                         <label class="block text-sm font-medium text-gray-700">Letra com cifras</label>
-                        <span class="text-xs text-gray-500">Use Refrão: em linha separada para destacar o refrão na leitura.</span>
+                        <span class="text-xs text-gray-500">O refrão pode aparecer varias vezes. Refrao, Refrão e REFRAO viram Refrão: ao salvar.</span>
                     </div>
                     <div class="mt-2 flex flex-wrap gap-2">
                         <button type="button" class="rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-black text-amber-800 hover:bg-amber-100" data-inserir-marcacao="Refrão:\n">
                             Inserir Refrão
                         </button>
+                        <button type="button" class="rounded-full border border-amber-300 bg-white px-4 py-2 text-xs font-black text-amber-900 hover:bg-amber-50" data-marcar-linha="Refrão:">
+                            Marcar linha como Refrão
+                        </button>
                         <button type="button" class="rounded-full border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs font-black text-indigo-700 hover:bg-indigo-100" data-inserir-marcacao="[Primeira parte]\n">
                             Inserir Parte
+                        </button>
+                        <button type="button" class="rounded-full border border-indigo-300 bg-white px-4 py-2 text-xs font-black text-indigo-800 hover:bg-indigo-50" data-marcar-linha="[Primeira parte]">
+                            Marcar linha como Parte
                         </button>
                         <button type="button" class="rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-black text-orange-700 hover:bg-orange-100" data-inserir-marcacao="[D] [C]\n">
                             Inserir Preparação
@@ -169,6 +175,7 @@
         const botoesExemplo = document.querySelectorAll('[data-exemplo-toggle]');
         const paineisExemplo = document.querySelectorAll('[data-exemplo-painel]');
         const botoesMarcacao = document.querySelectorAll('[data-inserir-marcacao]');
+        const botoesMarcarLinha = document.querySelectorAll('[data-marcar-linha]');
         const botaoOrganizarCifra = document.querySelector('[data-organizar-cifra-visual]');
 
         if (!textarea || !previewComCifras || !previewSemCifras || !previewPadraoInterno) {
@@ -203,6 +210,21 @@
 
         const ehLinhaSomenteAcordes = (linha) => {
             const linhaOriginal = linha;
+
+            if (!ehLinhaApenasAcordes(linha)) {
+                return false;
+            }
+
+            const tokens = linha.trim().split(/\s+/).filter(Boolean);
+
+            if (tokens.length === 1 && !/^\s+/.test(linhaOriginal)) {
+                return false;
+            }
+
+            return true;
+        };
+
+        const ehLinhaApenasAcordes = (linha) => {
             const texto = linha.trim();
 
             if (!texto || ehLinhaTablatura(texto)) {
@@ -212,10 +234,6 @@
             const tokens = texto.split(/\s+/).filter(Boolean);
 
             if (!(tokens.length > 0 && tokens.every((token) => normalizarTokenAcorde(token) !== null))) {
-                return false;
-            }
-
-            if (tokens.length === 1 && !/^\s+/.test(linhaOriginal)) {
                 return false;
             }
 
@@ -277,6 +295,23 @@
             .toLowerCase()
             .trim();
 
+        const normalizarMarcacaoLinha = (linha) => {
+            let texto = String(linha || '').trim();
+            const marcacao = texto.match(/^\[(.+)\]$/);
+
+            if (marcacao && !ehAcorde(marcacao[1])) {
+                texto = marcacao[1].trim();
+            }
+
+            const normalizada = normalizarMarcacao(texto);
+
+            if (/^(refrao|refr\.?|ref)(?::|\s|$)/.test(normalizada)) {
+                return 'Refrão:';
+            }
+
+            return null;
+        };
+
         const ehMarcacaoSecao = (texto) => {
             const linhaLimpa = String(texto || '').trim();
             const marcacao = linhaLimpa.match(/^\[(.+)\]$/);
@@ -313,8 +348,15 @@
             for (let i = 0; i < linhas.length; i++) {
                 const linhaAtual = linhas[i].replace(/\s+$/g, '');
                 const proximaLinha = linhas[i + 1];
+                const marcacaoNormalizada = normalizarMarcacaoLinha(linhaAtual);
 
-                if (ehLinhaSomenteAcordes(linhaAtual) && linhaAnteriorEhMarcacao(linhas, i)) {
+                if (marcacaoNormalizada) {
+                    resultado.push(marcacaoNormalizada);
+                    houveConversao = marcacaoNormalizada !== linhaAtual.trim() || houveConversao;
+                    continue;
+                }
+
+                if (ehLinhaApenasAcordes(linhaAtual) && linhaAnteriorEhMarcacao(linhas, i)) {
                     resultado.push(converterLinhaSomenteAcordesParaCifras(linhaAtual));
                     houveConversao = true;
                     continue;
@@ -658,6 +700,22 @@
             atualizarPreview();
         };
 
+        const substituirLinhaAtual = (texto) => {
+            const inicioSelecao = textarea.selectionStart ?? 0;
+            const fimSelecao = textarea.selectionEnd ?? inicioSelecao;
+            const valor = textarea.value;
+            const inicioLinha = valor.lastIndexOf('\n', Math.max(0, inicioSelecao - 1)) + 1;
+            const fimLinhaEncontrado = valor.indexOf('\n', fimSelecao);
+            const fimLinha = fimLinhaEncontrado === -1 ? valor.length : fimLinhaEncontrado;
+            const textoComQuebra = texto.endsWith('\n') ? texto : `${texto}\n`;
+
+            textarea.value = `${valor.slice(0, inicioLinha)}${textoComQuebra}${valor.slice(fimLinha + (fimLinhaEncontrado === -1 ? 0 : 1))}`;
+            textarea.focus();
+            const novaPosicao = inicioLinha + textoComQuebra.length;
+            textarea.setSelectionRange(novaPosicao, novaPosicao);
+            atualizarPreview();
+        };
+
         textarea.addEventListener('input', atualizarPreview);
 
         formulario?.addEventListener('submit', () => {
@@ -674,6 +732,12 @@
         botoesMarcacao.forEach((botao) => {
             botao.addEventListener('click', () => {
                 inserirNoCursor(String(botao.dataset.inserirMarcacao || '').replace(/\\n/g, '\n'));
+            });
+        });
+
+        botoesMarcarLinha.forEach((botao) => {
+            botao.addEventListener('click', () => {
+                substituirLinhaAtual(String(botao.dataset.marcarLinha || ''));
             });
         });
 

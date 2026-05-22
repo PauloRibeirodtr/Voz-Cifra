@@ -55,8 +55,14 @@ class NormalizadorCifrasService
         for ($indice = 0; $indice < count($linhas); $indice++) {
             $linhaAtual = rtrim($linhas[$indice]);
             $proximaLinha = $linhas[$indice + 1] ?? null;
+            $marcacaoNormalizada = $this->normalizarMarcacaoLinha($linhaAtual);
 
-            if ($this->ehLinhaSomenteAcordes($linhaAtual) && $this->linhaAnteriorEhMarcacao($linhas, $indice)) {
+            if ($marcacaoNormalizada !== null) {
+                $linhasNormalizadas[] = $marcacaoNormalizada;
+                continue;
+            }
+
+            if ($this->ehLinhaApenasAcordes($linhaAtual) && $this->linhaAnteriorEhMarcacao($linhas, $indice)) {
                 $linhasNormalizadas[] = $this->converterLinhaSomenteAcordesParaCifras($linhaAtual);
                 continue;
             }
@@ -160,6 +166,22 @@ class NormalizadorCifrasService
     private function ehLinhaSomenteAcordes(string $linha): bool
     {
         $linhaOriginal = $linha;
+
+        if (!$this->ehLinhaApenasAcordes($linha)) {
+            return false;
+        }
+
+        $tokens = preg_split('/\s+/', trim($linha)) ?: [];
+
+        if (count($tokens) === 1 && !preg_match('/^\s+/', $linhaOriginal)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function ehLinhaApenasAcordes(string $linha): bool
+    {
         $linha = trim($linha);
 
         if ($linha === '' || $this->ehLinhaTablatura($linha)) {
@@ -176,10 +198,6 @@ class NormalizadorCifrasService
             if ($this->normalizarTokenAcorde($token) === null) {
                 return false;
             }
-        }
-
-        if (count($tokens) === 1 && !preg_match('/^\s+/', $linhaOriginal)) {
-            return false;
         }
 
         return true;
@@ -208,24 +226,46 @@ class NormalizadorCifrasService
             $linha = trim($matches[1]);
         }
 
-        $normalizada = strtr(mb_strtolower($linha), [
-            'á' => 'a',
-            'à' => 'a',
-            'â' => 'a',
-            'ã' => 'a',
-            'é' => 'e',
-            'ê' => 'e',
-            'í' => 'i',
-            'ó' => 'o',
-            'ô' => 'o',
-            'õ' => 'o',
-            'ú' => 'u',
-            'ü' => 'u',
-            'ç' => 'c',
-        ]);
+        $normalizada = $this->normalizarTextoMarcacao($linha);
 
         return strlen($normalizada) <= 32
             && (bool) preg_match('/^(intro|refrao:?|pre[-\s]?refrao:?|refr\.?|ref:|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(?:\s|$)/', $normalizada);
+    }
+
+    private function normalizarMarcacaoLinha(string $linha): ?string
+    {
+        $linha = trim($linha);
+
+        if ($linha === '') {
+            return null;
+        }
+
+        if (preg_match('/^\[(.+)\]$/', $linha, $matches) && !$this->ehAcorde($matches[1])) {
+            $linha = trim($matches[1]);
+        }
+
+        $normalizada = $this->normalizarTextoMarcacao($linha);
+
+        if (preg_match('/^(refrao|refr\.?|ref)(?::|\s|$)/', $normalizada)) {
+            return 'Refrão:';
+        }
+
+        return null;
+    }
+
+    private function normalizarTextoMarcacao(string $texto): string
+    {
+        $normalizada = mb_strtolower($texto);
+        $transliterada = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $normalizada);
+
+        if (is_string($transliterada)) {
+            $normalizada = $transliterada;
+        }
+
+        $normalizada = str_replace('~', '', $normalizada);
+        $normalizada = (string) preg_replace('/[^a-z0-9:.\-\s]/', '', $normalizada);
+
+        return trim((string) preg_replace('/\s+/', ' ', $normalizada));
     }
 
     private function normalizarTokenAcorde(string $token): ?string
