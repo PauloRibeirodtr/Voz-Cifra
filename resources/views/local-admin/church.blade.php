@@ -51,21 +51,21 @@
             <div class="mt-5 space-y-4">
                 <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
                     <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Link dos fieis</span>
-                    <a href="{{ $igreja->link_publico }}" target="_blank" class="mt-2 block break-all text-sm font-semibold text-green-700 hover:underline">
+                    <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="mt-2 block break-all text-sm font-semibold text-green-700 hover:underline">
                         {{ $igreja->link_publico }}
                     </a>
                 </div>
 
                 <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
                     <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Link dos musicos</span>
-                    <a href="{{ $igreja->link_publico_musicos }}" target="_blank" class="mt-2 block break-all text-sm font-semibold text-green-700 hover:underline">
+                    <a href="{{ $igreja->link_publico_musicos }}" target="_blank" rel="noopener noreferrer" class="mt-2 block break-all text-sm font-semibold text-green-700 hover:underline">
                         {{ $igreja->link_publico_musicos }}
                     </a>
                 </div>
 
                 <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
                     <span class="block text-xs font-black uppercase tracking-wider text-gray-400">QR dos fieis</span>
-                    <a href="{{ $igreja->qr_code_url }}" target="_blank" class="mt-2 inline-flex items-center rounded-xl bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800">
+                    <a href="{{ $igreja->qr_code_url }}" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex items-center rounded-xl bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800">
                         Abrir QR dos fieis
                     </a>
                     <div class="mt-4 rounded-2xl border border-gray-200 bg-white p-3">
@@ -78,7 +78,7 @@
 
                 <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
                     <span class="block text-xs font-black uppercase tracking-wider text-gray-400">QR dos musicos</span>
-                    <a href="{{ $igreja->qr_code_url_musicos }}" target="_blank" class="mt-2 inline-flex items-center rounded-xl bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800">
+                    <a href="{{ $igreja->qr_code_url_musicos }}" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex items-center rounded-xl bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800">
                         Abrir QR dos musicos
                     </a>
                     <div class="mt-4 rounded-2xl border border-gray-200 bg-white p-3">

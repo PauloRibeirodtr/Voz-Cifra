@@ -16,6 +16,40 @@ class MissasRepertorioTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_admin_local_consegue_cadastrar_missa_sem_repertorio_inicial(): void
+    {
+        /** @var Igreja $igreja */
+        $igreja = Igreja::factory()->create(['status_operacional' => 'operacional']);
+        /** @var Usuario $adminLocal */
+        $adminLocal = Usuario::factory()->create();
+        $adminLocal->adicionarPapel(PapelIgreja::ADMIN_LOCAL, $igreja);
+
+        $dataMissa = now('America/Cuiaba')->addDay()->toDateString();
+
+        $this
+            ->actingAs($adminLocal)
+            ->withSession(['igreja_ativa_id' => $igreja->id])
+            ->post(route('local-admin.missas.store'), [
+                'titulo' => 'Missa de Domingo',
+                'data_missa' => $dataMissa,
+                'hora_inicio' => '19:00',
+                'hora_fim' => '20:00',
+                'ativo' => '1',
+                'publica_para_fieis' => '1',
+                'publica_para_musicos' => '1',
+                'reaproveitar_repertorio' => '0',
+            ])
+            ->assertRedirect(route('local-admin.missas.show', Missa::query()->first()) . '#missa-repertorio')
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('missas', [
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa de Domingo',
+        ]);
+
+        $this->assertSame($dataMissa, Missa::query()->where('titulo', 'Missa de Domingo')->firstOrFail()->data_missa->toDateString());
+    }
+
     public function test_adicionar_musica_reorganiza_repertorio_pela_ordem_do_momento(): void
     {
         /** @var Igreja $igreja */

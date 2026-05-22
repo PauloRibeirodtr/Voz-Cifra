@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Link expirado | Voz & Cifra</title>
     <link rel="icon" type="image/png" href="{{ asset('logo/final.png') }}">
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-[#160f0f] text-[#fff8ed]">
     @php

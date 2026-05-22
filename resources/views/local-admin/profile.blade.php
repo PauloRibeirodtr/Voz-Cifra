@@ -122,7 +122,7 @@
                 </div>
                 <div>
                     <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Link publico</span>
-                    <a href="{{ $igreja->link_publico }}" target="_blank" class="break-all text-green-700 hover:underline">{{ $igreja->link_publico }}</a>
+                    <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="break-all text-green-700 hover:underline">{{ $igreja->link_publico }}</a>
                 </div>
             </div>
 

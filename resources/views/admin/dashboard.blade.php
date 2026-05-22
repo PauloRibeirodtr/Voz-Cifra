@@ -22,9 +22,9 @@
         <section class="admin-panel">
             <div class="admin-panel-header">
                 <div>
-                    <p class="admin-page-kicker">Acessos rapidos</p>
-                    <h2 class="mt-2 text-lg font-bold text-gray-800">Atalhos principais do painel</h2>
-                    <p class="mt-2 text-sm text-gray-500">Comece pelas acoes mais comuns da rotina do admin master.</p>
+                    <p class="admin-page-kicker">Comece por aqui</p>
+                    <h2 class="mt-2 text-lg font-bold text-gray-800">Acoes principais do painel</h2>
+                    <p class="mt-2 text-sm text-gray-500">Escolha uma tarefa comum e siga sem precisar procurar no menu lateral.</p>
                 </div>
             </div>
 

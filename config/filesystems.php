@@ -71,7 +71,7 @@ $diskPodeSerUsado = function (string $diskName) use ($disks): bool {
     }
 
     if (($disks[$diskName]['driver'] ?? null) !== 's3') {
-        return true;
+        return $diskName === 'public' || (($disks[$diskName]['visibility'] ?? null) === 'public');
     }
 
     return filled($disks[$diskName]['bucket'] ?? null);

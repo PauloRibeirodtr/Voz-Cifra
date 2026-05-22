@@ -145,7 +145,7 @@ class MissaController extends Controller
         );
 
         return redirect()
-            ->to(route('local-admin.missas.show', $missa) . '#repertorio-item-' . $itemRepertorio->id)
+            ->to(route('local-admin.missas.show', $missa) . '#missa-repertorio')
             ->with('success', !empty($dados['reaproveitar_repertorio']) && !empty($dados['missa_origem_id'])
                 ? 'Missa cadastrada com sucesso. O repertório anterior foi copiado como ponto de partida.'
                 : 'Missa cadastrada com sucesso. Agora adicione as músicas ao repertório.');

@@ -178,10 +178,10 @@
             <a href="{{ route('local-admin.missas.apresentacao', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 font-semibold text-sky-800 transition hover:bg-sky-100">
                 Visualiza&ccedil;&atilde;o da missa
             </a>
-            <a href="{{ $igreja->link_publico }}" target="_blank" class="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 font-semibold text-emerald-800 transition hover:bg-emerald-100">
+            <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 font-semibold text-emerald-800 transition hover:bg-emerald-100">
                 Ver como fiel
             </a>
-            <a href="{{ $igreja->link_publico_musicos }}" target="_blank" class="inline-flex items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 font-semibold text-indigo-800 transition hover:bg-indigo-100">
+            <a href="{{ $igreja->link_publico_musicos }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 font-semibold text-indigo-800 transition hover:bg-indigo-100">
                 Ver como m&uacute;sico
             </a>
             <a href="{{ route('local-admin.missas.pdf', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 font-semibold text-amber-800 transition hover:bg-amber-100">
@@ -632,14 +632,14 @@
                 <div class="mt-4 space-y-4">
                     <div>
                         <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Link dos fi&eacute;is</span>
-                        <a href="{{ $igreja->link_publico }}" target="_blank" class="mt-1 block break-all text-sm font-semibold text-[#8c6933] hover:underline">
+                        <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="mt-1 block break-all text-sm font-semibold text-[#8c6933] hover:underline">
                             {{ $igreja->link_publico }}
                         </a>
                     </div>
 
                     <div>
                         <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Link dos m&uacute;sicos</span>
-                        <a href="{{ $igreja->link_publico_musicos }}" target="_blank" class="mt-1 block break-all text-sm font-semibold text-sky-800 hover:underline">
+                        <a href="{{ $igreja->link_publico_musicos }}" target="_blank" rel="noopener noreferrer" class="mt-1 block break-all text-sm font-semibold text-sky-800 hover:underline">
                             {{ $igreja->link_publico_musicos }}
                         </a>
                     </div>

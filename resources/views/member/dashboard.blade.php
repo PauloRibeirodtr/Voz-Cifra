@@ -64,9 +64,9 @@
         <section class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h2 class="text-lg font-bold text-gray-900">Acesso rapido</h2>
+                    <h2 class="text-lg font-bold text-gray-900">Comece por aqui</h2>
                     <p class="mt-1 text-sm text-gray-500">
-                        {{ $isCoordenadorArea ? 'Entre nas areas de gestao musical da igreja.' : 'Entre nas areas mais usadas do modulo do musico.' }}
+                        {{ $isCoordenadorArea ? 'Escolha uma tarefa de gestao musical sem precisar procurar no menu.' : 'Escolha o que voce quer fazer agora no modulo do musico.' }}
                     </p>
                 </div>
             </div>

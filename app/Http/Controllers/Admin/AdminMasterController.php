@@ -110,7 +110,7 @@ class AdminMasterController extends Controller
         $dados = $request->validate([
             'email' => ['required', 'email', Rule::unique('usuarios', 'email')->ignore($usuario->id)],
             'telefone' => ['nullable', 'string', 'max:20'],
-            'foto_perfil' => ['nullable', 'image', 'max:2048'],
+            'foto_perfil' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'password' => [$primeiroAcesso ? 'required' : 'nullable', 'confirmed', new StrongPassword()],
             'theme_preference' => ['required', Rule::in(['system', 'light', 'dark'])],
         ], [
