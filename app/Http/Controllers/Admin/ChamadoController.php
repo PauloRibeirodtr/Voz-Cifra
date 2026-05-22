@@ -25,15 +25,24 @@ class ChamadoController extends Controller
         $prioridade = trim((string) $request->string('prioridade'));
         $categoria = trim((string) $request->string('categoria'));
         $busca = trim((string) $request->string('q'));
+        $visao = $request->string('visao')->toString() === 'encerrados' ? 'encerrados' : 'atendimento';
 
-        $chamados = $this->supportService
+        $query = $this->supportService
             ->aplicarFiltros(
                 Chamado::query()->with(['responsavel', 'solicitante'])->withCount('mensagens'),
                 $status,
                 $prioridade,
                 $categoria,
                 $busca
-            )
+            );
+
+        if ($status === '') {
+            $visao === 'encerrados'
+                ? $query->whereIn('status', ['resolvido', 'fechado'])
+                : $query->whereIn('status', ['aberto', 'em_andamento', 'aguardando_usuario']);
+        }
+
+        $chamados = $query
             ->orderByRaw("case when status = 'aberto' then 0 when status = 'em_andamento' then 1 when status = 'aguardando_usuario' then 2 when status = 'resolvido' then 3 else 4 end")
             ->orderByDesc('ultima_interacao_em')
             ->orderByDesc('created_at')
@@ -48,6 +57,7 @@ class ChamadoController extends Controller
                 'categoria' => $categoria,
                 'q' => $busca,
             ],
+            'visao' => $visao,
             'metricas' => $this->supportService->metricas(),
             'statusOptions' => $this->supportService->statusOptions(),
             'prioridadeOptions' => $this->supportService->prioridadeOptions(),
@@ -97,7 +107,7 @@ class ChamadoController extends Controller
 
         if (in_array($dados['status'], ['resolvido', 'fechado'], true)) {
             return redirect()
-                ->route($this->routePrefix() . '.chamados.index')
+                ->route($this->routePrefix() . '.chamados.index', ['visao' => 'encerrados'])
                 ->with('success', 'Chamado encerrado com sucesso.');
         }
 

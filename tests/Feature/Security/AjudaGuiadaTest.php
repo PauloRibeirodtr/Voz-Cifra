@@ -12,7 +12,7 @@ class AjudaGuiadaTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_musico_recebe_tutorial_do_musico(): void
+    public function test_musico_recebe_apenas_acoes_do_musico(): void
     {
         /** @var Igreja $igreja */
         $igreja = Igreja::factory()->create();
@@ -25,13 +25,14 @@ class AjudaGuiadaTest extends TestCase
             ->withSession(['igreja_ativa_id' => $igreja->id])
             ->get(route('member.dashboard'))
             ->assertOk()
-            ->assertSee('Ajuda guiada')
+            ->assertSee('O que voce quer fazer?')
             ->assertSee('Musico')
-            ->assertSee('Estudar e tocar')
+            ->assertSee('Ver repertorio')
+            ->assertSee('Abrir chamado de suporte')
             ->assertDontSee('Admin master');
     }
 
-    public function test_tutoriais_aparecem_de_forma_cumulativa_por_perfil(): void
+    public function test_acoes_aparecem_de_forma_cumulativa_por_perfil(): void
     {
         /** @var Igreja $igreja */
         $igreja = Igreja::factory()->create();
@@ -49,8 +50,9 @@ class AjudaGuiadaTest extends TestCase
             ->assertSee('Admin local')
             ->assertSee('Coordenador')
             ->assertSee('Musico')
-            ->assertSee('Cuidar da igreja')
-            ->assertSee('Organizar repertorio')
-            ->assertSee('Estudar e tocar');
+            ->assertSee('Cadastrar musico')
+            ->assertSee('Montar uma missa')
+            ->assertSee('Cadastrar musica ou cifra')
+            ->assertSee('Ver repertorio');
     }
 }

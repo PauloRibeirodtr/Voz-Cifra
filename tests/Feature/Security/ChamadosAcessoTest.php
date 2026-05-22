@@ -102,13 +102,38 @@ class ChamadosAcessoTest extends TestCase
             ->assertSee($chamado->titulo);
     }
 
-    private function criarChamado(Usuario $solicitante, string $titulo): Chamado
+    public function test_fila_de_atendimento_mostra_abertos_e_separa_encerrados(): void
+    {
+        /** @var Usuario $adminMaster */
+        $adminMaster = Usuario::factory()->adminMaster()->create();
+        /** @var Usuario $solicitante */
+        $solicitante = Usuario::factory()->create();
+
+        $chamadoAberto = $this->criarChamado($solicitante, 'Chamado aberto visivel');
+        $chamadoEncerrado = $this->criarChamado($solicitante, 'Chamado encerrado arquivado', 'resolvido');
+
+        $this
+            ->actingAs($adminMaster)
+            ->get(route('admin.chamados.index'))
+            ->assertOk()
+            ->assertSee($chamadoAberto->titulo)
+            ->assertDontSee($chamadoEncerrado->titulo);
+
+        $this
+            ->actingAs($adminMaster)
+            ->get(route('admin.chamados.index', ['visao' => 'encerrados']))
+            ->assertOk()
+            ->assertSee($chamadoEncerrado->titulo)
+            ->assertDontSee($chamadoAberto->titulo);
+    }
+
+    private function criarChamado(Usuario $solicitante, string $titulo, string $status = 'aberto'): Chamado
     {
         return Chamado::query()->create([
             'protocolo' => 'SUP-' . str_pad((string) (Chamado::query()->count() + 1), 6, '0', STR_PAD_LEFT),
             'titulo' => $titulo,
             'descricao' => 'Descricao do chamado com detalhes suficientes.',
-            'status' => 'aberto',
+            'status' => $status,
             'prioridade' => 'media',
             'categoria' => 'outro',
             'canal_origem' => 'teste',

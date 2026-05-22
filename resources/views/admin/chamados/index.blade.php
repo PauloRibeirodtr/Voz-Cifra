@@ -6,6 +6,7 @@
 
 @section('content')
     @php($routePrefix = $routePrefix ?? 'admin')
+    @php($visao = $visao ?? 'atendimento')
 
     <div class="mb-6 sm:mb-8">
         <h1 class="text-2xl sm:text-3xl font-black text-gray-800">Chamados de suporte</h1>
@@ -38,7 +39,19 @@
     </div>
 
     <div class="mb-6 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div class="mb-5 flex flex-wrap gap-2">
+            <a href="{{ route($routePrefix . '.chamados.index', ['visao' => 'atendimento']) }}" class="inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-black transition {{ $visao === 'atendimento' ? 'bg-slate-900 text-white' : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50' }}">
+                <i class="fa-solid fa-inbox"></i>
+                <span>Abertos</span>
+            </a>
+            <a href="{{ route($routePrefix . '.chamados.index', ['visao' => 'encerrados']) }}" class="inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-black transition {{ $visao === 'encerrados' ? 'bg-slate-900 text-white' : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50' }}">
+                <i class="fa-solid fa-box-archive"></i>
+                <span>Encerrados</span>
+            </a>
+        </div>
+
         <form method="GET" class="grid grid-cols-1 gap-4 lg:grid-cols-5">
+            <input type="hidden" name="visao" value="{{ $visao }}">
             <input type="text" name="q" value="{{ $filtros['q'] }}" placeholder="Buscar por protocolo, nome, email ou igreja" class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 lg:col-span-2">
 
             <select name="status" class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800">
@@ -63,8 +76,14 @@
             </select>
 
             <div class="lg:col-span-5 flex flex-wrap gap-3">
-                <button type="submit" class="rounded-xl bg-green-700 px-5 py-3 text-sm font-semibold text-white hover:bg-green-800">Filtrar</button>
-                <a href="{{ route($routePrefix . '.chamados.index') }}" class="rounded-xl border border-gray-300 px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">Limpar</a>
+                <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-green-700 px-5 py-3 text-sm font-semibold text-white hover:bg-green-800">
+                    <i class="fa-solid fa-filter"></i>
+                    <span>Filtrar</span>
+                </button>
+                <a href="{{ route($routePrefix . '.chamados.index', ['visao' => $visao]) }}" class="inline-flex items-center gap-2 rounded-xl border border-gray-300 px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                    <i class="fa-solid fa-eraser"></i>
+                    <span>Limpar</span>
+                </a>
             </div>
         </form>
     </div>
@@ -100,7 +119,7 @@
                             </div>
                             <div class="rounded-2xl bg-gray-50 px-4 py-3">
                                 <div class="text-[11px] font-black uppercase tracking-[0.16em] text-gray-400">Responsavel</div>
-                                <div class="mt-1 text-sm font-semibold text-gray-700">{{ $chamado->responsavel?->nome ?: 'Nao atribuido' }}</div>
+                                <div class="mt-1 text-sm font-semibold text-gray-700">{{ optional($chamado->responsavel)->nome ?: 'Nao atribuido' }}</div>
                                 <div class="text-xs text-gray-500">Ultima interacao: {{ optional($chamado->ultima_interacao_em)->format('d/m/Y H:i') ?: 'Nao registrada' }}</div>
                             </div>
                             <div class="rounded-2xl bg-gray-50 px-4 py-3">
@@ -112,15 +131,16 @@
                     </div>
 
                     <div class="xl:w-56 shrink-0">
-                        <a href="{{ route($routePrefix . '.chamados.show', $chamado) }}" class="inline-flex w-full items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">
-                            Abrir atendimento
+                        <a href="{{ route($routePrefix . '.chamados.show', $chamado) }}" class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800" aria-label="{{ $visao === 'encerrados' ? 'Ver chamado encerrado' : 'Abrir atendimento' }}">
+                            <i class="fa-solid {{ $visao === 'encerrados' ? 'fa-eye' : 'fa-headset' }}"></i>
+                            <span>{{ $visao === 'encerrados' ? 'Ver registro' : 'Atender' }}</span>
                         </a>
                     </div>
                 </div>
             </article>
         @empty
             <div class="rounded-3xl border border-dashed border-gray-300 bg-white px-6 py-12 text-center text-sm text-gray-500 shadow-sm">
-                Nenhum chamado encontrado com os filtros atuais.
+                {{ $visao === 'encerrados' ? 'Nenhum chamado encerrado encontrado.' : 'Nenhum chamado aberto ou em atendimento encontrado.' }}
             </div>
         @endforelse
     </div>
