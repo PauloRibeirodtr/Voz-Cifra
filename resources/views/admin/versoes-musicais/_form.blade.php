@@ -35,11 +35,50 @@
     </div>
 @endif
 
-<div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(28rem,0.9fr)] gap-6">
+<div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(28rem,0.95fr)] gap-6">
     <div class="space-y-6">
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <div class="grid grid-cols-1 gap-4">
-                <div class="order-6 rounded-xl border border-gray-100 bg-gray-50 p-4">
+            <div class="grid grid-cols-1 gap-5">
+                <div>
+                    <div class="flex items-center justify-between gap-3">
+                        <label class="block text-sm font-medium text-gray-700">Letra com cifras</label>
+                        <span class="text-xs text-gray-500">Use Refrão: em linha separada para destacar o refrão na leitura.</span>
+                    </div>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <button type="button" class="rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-black text-amber-800 hover:bg-amber-100" data-inserir-marcacao="Refrão:\n">
+                            Inserir Refrão
+                        </button>
+                        <button type="button" class="rounded-full border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs font-black text-indigo-700 hover:bg-indigo-100" data-inserir-marcacao="[Primeira parte]\n">
+                            Inserir Parte
+                        </button>
+                        <button type="button" class="rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-black text-orange-700 hover:bg-orange-100" data-inserir-marcacao="[D] [C]\n">
+                            Inserir Preparação
+                        </button>
+                        <button type="button" class="rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-xs font-black text-sky-700 hover:bg-sky-100" data-organizar-cifra-visual>
+                            Organizar cifra
+                        </button>
+                    </div>
+                    <textarea id="letra_com_cifras" name="letra_com_cifras" rows="18" required placeholder="[G]Quao grande e o meu Deus
+[D/F#]Cantarei quao grande e o meu Deus
+[Em7]E todos hao de ver
+[C9]Quao grande e o meu Deus" class="{{ $classeInput }} font-mono text-sm">{{ $letraInicial }}</textarea>
+
+                    <div class="mt-3 space-y-3">
+                        <div id="painel_validacao_cifras" class="hidden rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                            <h3 class="font-bold mb-2">Acordes nao encontrados na biblioteca</h3>
+                            <p id="lista_acordes_invalidos"></p>
+                            <p class="mt-2 text-xs">O salvamento continua liberado, mas vale revisar esses acordes.</p>
+                        </div>
+
+                        <div id="painel_conversao_automatica" class="hidden rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+                            O texto colado foi reconhecido e sera salvo no padrao interno com colchetes. Revise a previa antes de salvar.
+                        </div>
+
+                        <pre id="preview_padrao_interno" class="hidden"></pre>
+                    </div>
+                </div>
+
+                <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4">
                     <label class="block text-sm font-medium text-gray-700">Musica base</label>
                     <input type="text" value="{{ $musica->titulo }}" disabled class="{{ $classeInput }} bg-gray-50 text-gray-500 cursor-not-allowed" />
                 </div>
@@ -60,7 +99,6 @@
                                 </option>
                             @endforeach
                         </select>
-                        <p class="mt-1 text-xs text-gray-500">Use um tom padronizado para manter o repertorio consistente entre igrejas e versoes.</p>
                     </div>
 
                     <div>
@@ -72,129 +110,9 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700">YouTube video ID</label>
                     <input type="text" name="youtube_video_id" value="{{ old('youtube_video_id', $versaoMusical->youtube_video_id ?? '') }}" placeholder="Ex.: dQw4w9WgXcQ ou cole a URL" class="{{ $classeInput }}" />
-                    <p class="text-xs text-gray-500 mt-1">Voce pode informar apenas o ID do video ou colar o link inteiro do YouTube.</p>
                 </div>
 
-                <details class="order-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-gray-900 [&::-webkit-details-marker]:hidden">
-                        <span class="inline-flex items-center gap-3">
-                            <span class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-700">
-                                <i class="fa-solid fa-circle-info"></i>
-                            </span>
-                            <span>
-                                <span class="block text-base font-bold">Como preencher</span>
-                                <span class="block text-sm text-gray-500">Exemplos de cifra, partes da musica e conversao automatica.</span>
-                            </span>
-                        </span>
-                        <span class="flex h-7 w-7 items-center justify-center rounded-full bg-gray-50 text-sm font-black text-green-700">+</span>
-                    </summary>
-
-                    <div class="mt-5 flex items-start gap-3">
-                        <div class="mt-1 hidden h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-700 sm:flex">
-                            <i class="fa-solid fa-circle-info"></i>
-                        </div>
-
-                        <div class="flex-1 space-y-4 text-sm text-gray-700">
-                            <div>
-                                <h2 class="text-base font-bold">Como preencher a cifra</h2>
-                                <p class="text-gray-600">Cole a cifra com colchetes ou no estilo Cifra Club. Para marcar partes, use uma linha separada como <strong>[Intro]</strong>, <strong>[Primeira Parte]</strong> ou <strong>Refrão:</strong>.</p>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <div class="rounded-xl border border-blue-200 bg-white px-4 py-3">
-                                    <div class="text-xs font-black uppercase tracking-[0.16em] text-blue-600">Aceito</div>
-                                    <p class="mt-2 text-sm text-gray-700">`[G]Quao grande e o meu Deus`</p>
-                                </div>
-                                <div class="rounded-xl border border-blue-200 bg-white px-4 py-3">
-                                    <div class="text-xs font-black uppercase tracking-[0.16em] text-blue-600">Aceito</div>
-                                    <p class="mt-2 text-sm text-gray-700">Linha de acorde acima da letra, estilo Cifra Club.</p>
-                                </div>
-                                <div class="rounded-xl border border-red-200 bg-white px-4 py-3">
-                                    <div class="text-xs font-black uppercase tracking-[0.16em] text-red-600">Evite</div>
-                                    <p class="mt-2 text-sm text-gray-700">Varios acordes soltos sem alinhamento com a letra.</p>
-                                </div>
-                            </div>
-
-                            <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-                                <div class="text-xs font-black uppercase tracking-[0.16em] text-amber-700">Refrão</div>
-                                <pre class="mt-2 whitespace-pre-wrap break-words font-mono text-sm leading-7 text-gray-800">[Intro]
-G  D/F#  Em7  C9
-
-[Primeira Parte]
-[G]Quao grande e o meu Deus
-
-Refrão:
-[G]Santo, Santo, [D/F#]Santo
-[Em7]Senhor Deus do universo</pre>
-                            </div>
-
-                            <div class="flex flex-wrap gap-2">
-                                <button type="button" class="rounded-full border border-blue-200 bg-white px-4 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100" data-exemplo-toggle="colchetes">
-                                    Ver exemplo com colchetes
-                                </button>
-                                <button type="button" class="rounded-full border border-blue-200 bg-white px-4 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100" data-exemplo-toggle="cifraclub">
-                                    Ver exemplo estilo Cifra Club
-                                </button>
-                                <button type="button" class="rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-100" data-exemplo-toggle="interno">
-                                    Ver texto interno
-                                </button>
-                            </div>
-
-                            <div class="hidden rounded-xl border border-blue-200 bg-white p-4" data-exemplo-painel="colchetes">
-                                <pre class="whitespace-pre-wrap break-words font-mono text-sm leading-7 text-gray-800">[G]Quao grande e o meu Deus
-[D/F#]Cantarei quao grande e o meu Deus
-[Em7]E todos hao de ver
-[C9]Quao grande e o meu Deus</pre>
-                            </div>
-
-                            <div class="hidden rounded-xl border border-blue-200 bg-white p-4" data-exemplo-painel="cifraclub">
-                                <pre class="whitespace-pre-wrap break-words font-mono text-sm leading-7 text-gray-800">   G
-Quao grande e o meu Deus
-      D/F#  Em7
-Cantarei quao grande e o meu Deus</pre>
-                            </div>
-
-                            <div class="hidden rounded-xl border border-gray-200 bg-white p-4" data-exemplo-painel="interno">
-                                <h3 class="text-sm font-bold text-gray-800 mb-2">Formato interno gerado</h3>
-                                <pre id="preview_padrao_interno" class="whitespace-pre-wrap break-words font-mono text-sm leading-7 text-gray-800"></pre>
-                            </div>
-
-                            <div id="painel_validacao_cifras" class="hidden rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-                                <h3 class="font-bold mb-2">Acordes nao encontrados na biblioteca</h3>
-                                <p id="lista_acordes_invalidos"></p>
-                                <p class="mt-2 text-xs">O salvamento continua liberado, mas vale revisar esses acordes.</p>
-                            </div>
-
-                            <div id="painel_conversao_automatica" class="hidden rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">
-                                O texto colado foi reconhecido em outro formato e sera convertido automaticamente para o padrao interno com colchetes. Revise o resultado antes de salvar.
-                            </div>
-                        </div>
-                    </div>
-                </details>
-
-                <div class="order-4">
-                    <div class="flex items-center justify-between gap-3">
-                        <label class="block text-sm font-medium text-gray-700">Letra com cifras</label>
-                        <span class="text-xs text-gray-500">Use Refrão: em linha separada para destacar o refrão na leitura.</span>
-                    </div>
-                    <div class="mt-2 flex flex-wrap gap-2">
-                        <button type="button" class="rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-black text-amber-800 hover:bg-amber-100" data-inserir-marcacao="Refrão:\n">
-                            Inserir Refrão
-                        </button>
-                        <button type="button" class="rounded-full border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs font-black text-indigo-700 hover:bg-indigo-100" data-inserir-marcacao="[Primeira parte]\n">
-                            Inserir Parte
-                        </button>
-                        <button type="button" class="rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-xs font-black text-sky-700 hover:bg-sky-100" data-organizar-cifra-visual>
-                            Organizar cifra
-                        </button>
-                    </div>
-                    <textarea id="letra_com_cifras" name="letra_com_cifras" rows="18" required placeholder="[G]Quao grande e o meu Deus
-[D/F#]Cantarei quao grande e o meu Deus
-[Em7]E todos hao de ver
-[C9]Quao grande e o meu Deus" class="{{ $classeInput }} font-mono text-sm">{{ $letraInicial }}</textarea>
-                </div>
-
-                <div class="order-7 flex items-center gap-3 pt-2">
+                <div class="flex items-center gap-3 pt-2">
                     <input type="hidden" name="ativo" value="0" />
                     <input id="ativo" type="checkbox" name="ativo" value="1" {{ old('ativo', $versaoMusical->ativo ?? true) ? 'checked' : '' }} class="rounded border-gray-300 text-green-700 focus:ring-green-500" />
                     <label for="ativo" class="text-sm font-medium text-gray-700">Versao ativa</label>
@@ -272,6 +190,17 @@ Cantarei quao grande e o meu Deus</pre>
             return /^[EABDGBe]\|/.test(texto) || texto.includes('|---') || texto.includes('Parte ');
         };
 
+        const normalizarTokenAcorde = (token) => {
+            let texto = (token || '').trim();
+            const entreColchetes = texto.match(/^\[([^\[\]\r\n]+)\]$/);
+
+            if (entreColchetes) {
+                texto = entreColchetes[1].trim();
+            }
+
+            return ehAcorde(texto) ? texto : null;
+        };
+
         const ehLinhaSomenteAcordes = (linha) => {
             const linhaOriginal = linha;
             const texto = linha.trim();
@@ -282,7 +211,7 @@ Cantarei quao grande e o meu Deus</pre>
 
             const tokens = texto.split(/\s+/).filter(Boolean);
 
-            if (!(tokens.length > 0 && tokens.every(ehAcorde))) {
+            if (!(tokens.length > 0 && tokens.every((token) => normalizarTokenAcorde(token) !== null))) {
                 return false;
             }
 
@@ -322,10 +251,10 @@ Cantarei quao grande e o meu Deus</pre>
             let resultado = linhaLetra;
 
             tokens.reverse().forEach((token) => {
-                const acorde = token[0];
+                const acorde = normalizarTokenAcorde(token[0]);
                 const posicao = localizarPosicaoSeguraNaLetra(resultado, token.index ?? 0);
 
-                if (!ehAcorde(acorde)) {
+                if (!acorde) {
                     return;
                 }
 
@@ -337,8 +266,37 @@ Cantarei quao grande e o meu Deus</pre>
 
         const converterLinhaSomenteAcordesParaCifras = (linhaAcordes) => {
             return linhaAcordes.replace(/\S+/g, (token) => {
-                return ehAcorde(token) ? `[${token}]` : token;
+                const acorde = normalizarTokenAcorde(token);
+                return acorde ? `[${acorde}]` : token;
             });
+        };
+
+        const normalizarMarcacao = (texto) => String(texto || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .trim();
+
+        const ehMarcacaoSecao = (texto) => {
+            const linhaLimpa = String(texto || '').trim();
+            const marcacao = linhaLimpa.match(/^\[(.+)\]$/);
+            const textoMarcacao = marcacao && !ehAcorde(marcacao[1]) ? marcacao[1] : linhaLimpa;
+            const normalizada = normalizarMarcacao(textoMarcacao);
+            return normalizada.length <= 32 && /^(intro|refrao:?|pre[-\s]?refrao:?|refr\.?|ref:|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(?:\s|$)/.test(normalizada);
+        };
+
+        const linhaAnteriorEhMarcacao = (linhas, indiceAtual) => {
+            for (let indice = indiceAtual - 1; indice >= 0; indice--) {
+                const linha = String(linhas[indice] || '').trim();
+
+                if (linha === '') {
+                    continue;
+                }
+
+                return ehMarcacaoSecao(linha);
+            }
+
+            return false;
         };
 
         const normalizarFormato = (textoBruto) => {
@@ -355,6 +313,12 @@ Cantarei quao grande e o meu Deus</pre>
             for (let i = 0; i < linhas.length; i++) {
                 const linhaAtual = linhas[i].replace(/\s+$/g, '');
                 const proximaLinha = linhas[i + 1];
+
+                if (ehLinhaSomenteAcordes(linhaAtual) && linhaAnteriorEhMarcacao(linhas, i)) {
+                    resultado.push(converterLinhaSomenteAcordesParaCifras(linhaAtual));
+                    houveConversao = true;
+                    continue;
+                }
 
                 if (
                     ehLinhaSomenteAcordes(linhaAtual) &&
@@ -499,17 +463,6 @@ Cantarei quao grande e o meu Deus</pre>
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
-        };
-
-        const normalizarMarcacao = (texto) => String(texto || '')
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .toLowerCase()
-            .trim();
-
-        const ehMarcacaoSecao = (texto) => {
-            const normalizada = normalizarMarcacao(texto);
-            return normalizada.length <= 32 && /^(intro|refrao:?|pre[-\s]?refrao:?|refr\.?|ref:|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(?:\s|$)/.test(normalizada);
         };
 
         const classeMarcacao = (texto, base = 'bg-slate-700/80 text-slate-100') => {

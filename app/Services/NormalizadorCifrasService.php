@@ -56,6 +56,11 @@ class NormalizadorCifrasService
             $linhaAtual = rtrim($linhas[$indice]);
             $proximaLinha = $linhas[$indice + 1] ?? null;
 
+            if ($this->ehLinhaSomenteAcordes($linhaAtual) && $this->linhaAnteriorEhMarcacao($linhas, $indice)) {
+                $linhasNormalizadas[] = $this->converterLinhaSomenteAcordesParaCifras($linhaAtual);
+                continue;
+            }
+
             if (
                 $this->ehLinhaSomenteAcordes($linhaAtual)
                 && $proximaLinha !== null
@@ -101,13 +106,14 @@ class NormalizadorCifrasService
 
         foreach (array_reverse($matches[0]) as $match) {
             [$acorde, $offset] = $match;
+            $acordeNormalizado = $this->normalizarTokenAcorde($acorde);
 
-            if (!$this->ehAcorde($acorde)) {
+            if ($acordeNormalizado === null) {
                 continue;
             }
 
             $posicao = $this->localizarPosicaoSeguraNaLetra($resultado, $offset);
-            $resultado = substr($resultado, 0, $posicao) . '[' . $acorde . ']' . substr($resultado, $posicao);
+            $resultado = substr($resultado, 0, $posicao) . '[' . $acordeNormalizado . ']' . substr($resultado, $posicao);
         }
 
         return $resultado;
@@ -117,8 +123,8 @@ class NormalizadorCifrasService
     {
         return (string) preg_replace_callback(
             '/\S+/',
-            fn (array $matches): string => $this->ehAcorde($matches[0])
-                ? '[' . $matches[0] . ']'
+            fn (array $matches): string => ($acorde = $this->normalizarTokenAcorde($matches[0])) !== null
+                ? '[' . $acorde . ']'
                 : $matches[0],
             $linhaAcordes
         );
@@ -167,7 +173,7 @@ class NormalizadorCifrasService
         }
 
         foreach ($tokens as $token) {
-            if (!$this->ehAcorde($token)) {
+            if ($this->normalizarTokenAcorde($token) === null) {
                 return false;
             }
         }
@@ -177,6 +183,60 @@ class NormalizadorCifrasService
         }
 
         return true;
+    }
+
+    private function linhaAnteriorEhMarcacao(array $linhas, int $indiceAtual): bool
+    {
+        for ($indice = $indiceAtual - 1; $indice >= 0; $indice--) {
+            $linha = trim((string) ($linhas[$indice] ?? ''));
+
+            if ($linha === '') {
+                continue;
+            }
+
+            return $this->ehMarcacaoSecao($linha);
+        }
+
+        return false;
+    }
+
+    private function ehMarcacaoSecao(string $linha): bool
+    {
+        $linha = trim($linha);
+
+        if (preg_match('/^\[(.+)\]$/', $linha, $matches) && !$this->ehAcorde($matches[1])) {
+            $linha = trim($matches[1]);
+        }
+
+        $normalizada = strtr(mb_strtolower($linha), [
+            'á' => 'a',
+            'à' => 'a',
+            'â' => 'a',
+            'ã' => 'a',
+            'é' => 'e',
+            'ê' => 'e',
+            'í' => 'i',
+            'ó' => 'o',
+            'ô' => 'o',
+            'õ' => 'o',
+            'ú' => 'u',
+            'ü' => 'u',
+            'ç' => 'c',
+        ]);
+
+        return strlen($normalizada) <= 32
+            && (bool) preg_match('/^(intro|refrao:?|pre[-\s]?refrao:?|refr\.?|ref:|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(?:\s|$)/', $normalizada);
+    }
+
+    private function normalizarTokenAcorde(string $token): ?string
+    {
+        $token = trim($token);
+
+        if (preg_match('/^\[([^\[\]\r\n]+)\]$/', $token, $matches)) {
+            $token = trim($matches[1]);
+        }
+
+        return $this->ehAcorde($token) ? $token : null;
     }
 
     private function ehLinhaTablatura(string $linha): bool

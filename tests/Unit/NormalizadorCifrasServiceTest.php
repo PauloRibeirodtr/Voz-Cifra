@@ -37,4 +37,20 @@ class NormalizadorCifrasServiceTest extends TestCase
         $this->assertSame("        [A7]\n\n1. Ben[Dm]dize, o minh'[G7]alma, ao Senhor!", $resultado);
         $this->assertSame(['A7', 'Dm', 'G7'], $servico->extrairAcordes($resultado));
     }
+
+    public function test_linha_de_preparacao_com_varios_acordes_apos_marcacao_nao_gruda_na_letra(): void
+    {
+        $servico = new NormalizadorCifrasService();
+
+        $texto = implode("\n", [
+            'Refrão:',
+            'D A Am [D] [C]',
+            'Vem Dar-Nos Teu Filho, Senhor,',
+        ]);
+
+        $resultado = $servico->normalizarFormato($texto);
+
+        $this->assertSame("Refrão:\n[D] [A] [Am] [D] [C]\nVem Dar-Nos Teu Filho, Senhor,", $resultado);
+        $this->assertSame(['D', 'A', 'Am', 'C'], $servico->extrairAcordes($resultado));
+    }
 }
