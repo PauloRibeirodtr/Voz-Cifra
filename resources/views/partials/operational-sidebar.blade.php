@@ -221,7 +221,13 @@
                 <div class="flex items-center gap-3">
                     <div class="flex h-11 w-11 items-center justify-center rounded-full border border-[#8c6933] bg-[#6c4a21] font-bold text-white shadow-sm">
                         @if (filled(auth()->user()->foto_perfil_path))
-                            <img src="{{ auth()->user()->fotoPerfilUrl() }}" alt="Foto de {{ auth()->user()->nome }}" class="h-full w-full rounded-full object-cover" onerror="this.onerror=null;this.src='{{ asset('logo/final.png') }}';">
+                            <img
+                                src="{{ auth()->user()->fotoPerfilUrl() }}"
+                                alt="Foto de {{ auth()->user()->nome }}"
+                                class="h-full w-full rounded-full object-cover"
+                                data-fallback-logo="{{ asset('logo/final.png') }}"
+                                onerror="this.onerror=null;this.src=this.dataset.fallbackLogo;"
+                            >
                         @else
                             {{ strtoupper(substr(auth()->user()->nome, 0, 1)) }}
                         @endif
