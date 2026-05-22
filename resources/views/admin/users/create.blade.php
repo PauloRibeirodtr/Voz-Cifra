@@ -234,7 +234,7 @@
                                 <input type="email" name="email" value="{{ old('email') }}" class="admin-input" placeholder="Padre sem login pode ficar em branco">
                             </div>
 
-                            <div>
+                            <div data-guide-target="usuario-telefone">
                                 <label class="admin-label">Telefone</label>
                                 <input type="text" name="telefone" value="{{ old('telefone') }}" data-telefone-input class="admin-input">
                             </div>

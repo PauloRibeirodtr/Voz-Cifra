@@ -28,13 +28,14 @@
             'id' => 'cadastro-usuario',
             'rota' => 'admin.usuarios.create',
             'passos' => [
-                ['alvo' => '[data-guide-target="usuario-tipo"]', 'titulo' => 'Escolha o tipo inicial', 'texto' => 'Defina se a pessoa sera admin master, coordenador, admin local, musico ou padre.'],
-                ['alvo' => '[data-guide-target="usuario-igreja"]', 'titulo' => 'Vincule a igreja quando precisar', 'texto' => 'Coordenador, admin local e musico precisam de uma igreja inicial. Admin master e padre podem ficar sem igreja.'],
-                ['alvo' => '[data-guide-target="usuario-dados"]', 'titulo' => 'Informe o nome', 'texto' => 'Use o nome completo para facilitar busca, suporte e auditoria.'],
-                ['alvo' => '[data-guide-target="usuario-cpf"]', 'titulo' => 'Informe o CPF', 'texto' => 'O CPF evita cadastro duplicado da mesma pessoa.'],
-                ['alvo' => '[data-guide-target="usuario-email"]', 'titulo' => 'Informe o e-mail', 'texto' => 'O e-mail recebe o convite de acesso. Padre sem login pode ficar em branco.'],
-                ['alvo' => '[data-guide-target="usuario-acesso"]', 'titulo' => 'Escolha o acesso', 'texto' => 'Mantenha a conta ativa e marque convite se quiser enviar o link agora.'],
-                ['alvo' => '[data-guide-target="usuario-salvar"]', 'titulo' => 'Salve o cadastro', 'texto' => 'Depois de salvar, voce pode ajustar papeis e reenviar convite quando necessario.'],
+                ['alvo' => '[data-guide-target="usuario-tipo"]', 'foco' => '[data-tipo-cadastro]', 'titulo' => 'Escolha o perfil permitido', 'texto' => 'Admin master pode criar admin master, coordenador, admin local, musico e padre. Coordenador e admin local usam os fluxos proprios da igreja.'],
+                ['alvo' => '[data-guide-target="usuario-igreja"]', 'foco' => '[data-igreja-filtro]', 'titulo' => 'Escolha a igreja inicial', 'texto' => 'Coordenador, admin local e musico precisam de igreja. Admin master nao precisa. Padre pode ter igreja, mas nao e obrigatorio.'],
+                ['alvo' => '[data-guide-target="usuario-dados"]', 'foco' => '[name="nome"]', 'titulo' => 'Digite o nome completo', 'texto' => 'Use o nome que a equipe reconhece. Isso ajuda na busca, nos chamados e na auditoria.'],
+                ['alvo' => '[data-guide-target="usuario-cpf"]', 'foco' => '[name="cpf"]', 'titulo' => 'Informe o CPF', 'texto' => 'O CPF evita cadastro duplicado. Se a pessoa ja existir, o sistema reaproveita a conta.'],
+                ['alvo' => '[data-guide-target="usuario-email"]', 'foco' => '[name="email"]', 'titulo' => 'Informe o e-mail de acesso', 'texto' => 'Esse e-mail recebe o convite e a redefinicao de senha. Padre sem login pode ficar em branco.'],
+                ['alvo' => '[data-guide-target="usuario-telefone"]', 'foco' => '[name="telefone"]', 'titulo' => 'Adicione o telefone', 'texto' => 'Nao e obrigatorio, mas facilita contato e suporte quando a pessoa tiver dificuldade de acesso.'],
+                ['alvo' => '[data-guide-target="usuario-acesso"]', 'foco' => '[name="enviar_convite"]', 'titulo' => 'Defina o acesso inicial', 'texto' => 'Deixe ativo para liberar a conta. Marque convite se quiser enviar o link de primeiro acesso agora.'],
+                ['alvo' => '[data-guide-target="usuario-salvar"]', 'titulo' => 'Conclua o cadastro', 'texto' => 'Revise os dados e salve. Depois voce pode ajustar papeis, ativar ou reenviar convite.'],
             ],
         ]);
         $adicionarAcaoAjuda('Admin master', 'Gerenciar usuarios', $urlAjuda('admin.usuarios.index') ?? '', 'fa-users-gear', ['perfis', 'papeis', 'acesso']);
@@ -44,7 +45,18 @@
     }
 
     if ($usuarioAjuda && $usuarioAjuda->temPapelNaIgreja(PapelIgreja::ADMIN_LOCAL, $igrejaAtivaIdAjuda)) {
-        $adicionarAcaoAjuda('Admin local', 'Cadastrar musico', $urlAjuda('local-admin.musicos.create') ?? '', 'fa-user-plus', ['usuario', 'equipe', 'perfil']);
+        $adicionarAcaoAjuda('Admin local', 'Cadastrar musico', $urlAjuda('local-admin.musicos.create') ?? '', 'fa-user-plus', ['usuario', 'equipe', 'perfil'], [
+            'id' => 'cadastro-musico-local',
+            'rota' => 'local-admin.musicos.create',
+            'passos' => [
+                ['alvo' => '[data-guide-target="musico-nome"]', 'foco' => '[name="nome"]', 'titulo' => 'Digite o nome do musico', 'texto' => 'Admin local cadastra apenas musicos da igreja ativa. Use o nome completo para achar a pessoa depois.'],
+                ['alvo' => '[data-guide-target="musico-cpf"]', 'foco' => '[name="cpf"]', 'titulo' => 'Informe o CPF', 'texto' => 'O CPF impede duplicidade. Se a pessoa ja existe, ela e vinculada como musico desta igreja.'],
+                ['alvo' => '[data-guide-target="musico-email"]', 'foco' => '[name="email"]', 'titulo' => 'Informe o e-mail', 'texto' => 'O musico usa esse e-mail para acessar o painel, repertorio e cifras.'],
+                ['alvo' => '[data-guide-target="musico-igreja"]', 'titulo' => 'Confira a igreja', 'texto' => 'Neste fluxo a igreja ja vem travada na igreja ativa do admin local.'],
+                ['alvo' => '[data-guide-target="musico-acesso"]', 'foco' => '[name="enviar_convite"]', 'titulo' => 'Escolha o convite', 'texto' => 'Mantenha ativo e envie o convite se o musico ja deve acessar agora.'],
+                ['alvo' => '[data-guide-target="musico-salvar"]', 'titulo' => 'Salve o musico', 'texto' => 'Depois de salvar, ele aparece na equipe musical da igreja.'],
+            ],
+        ]);
         $adicionarAcaoAjuda('Admin local', 'Gerenciar equipe musical', $urlAjuda('local-admin.musicos.index') ?? '', 'fa-users', ['musicos', 'coordenadores']);
         $adicionarAcaoAjuda('Admin local', 'Montar uma missa', $urlAjuda('local-admin.missas.create') ?? '', 'fa-calendar-plus', ['celebracao', 'repertorio']);
         $adicionarAcaoAjuda('Admin local', 'Ver missas cadastradas', $urlAjuda('local-admin.missas.index') ?? '', 'fa-calendar-check', ['repertorio', 'publicar']);
@@ -52,7 +64,18 @@
     }
 
     if ($usuarioAjuda && $usuarioAjuda->temPapelNaIgreja(PapelIgreja::COORDENADOR, $igrejaAtivaIdAjuda)) {
-        $adicionarAcaoAjuda('Coordenador', 'Cadastrar musico', $urlAjuda('coordenador.musicos.create') ?? '', 'fa-user-plus', ['usuario', 'equipe']);
+        $adicionarAcaoAjuda('Coordenador', 'Cadastrar musico', $urlAjuda('coordenador.musicos.create') ?? '', 'fa-user-plus', ['usuario', 'equipe'], [
+            'id' => 'cadastro-musico-coordenador',
+            'rota' => 'coordenador.musicos.create',
+            'passos' => [
+                ['alvo' => '[data-guide-target="musico-nome"]', 'foco' => '[name="nome"]', 'titulo' => 'Digite o nome do musico', 'texto' => 'Coordenador pode cadastrar musicos da igreja ativa e tambem atribuir admin local pelo fluxo da igreja.'],
+                ['alvo' => '[data-guide-target="musico-cpf"]', 'foco' => '[name="cpf"]', 'titulo' => 'Informe o CPF', 'texto' => 'O CPF evita duplicar pessoas e permite reaproveitar um usuario ja existente.'],
+                ['alvo' => '[data-guide-target="musico-email"]', 'foco' => '[name="email"]', 'titulo' => 'Informe o e-mail', 'texto' => 'Esse e-mail sera usado para convite, login e recuperacao de senha.'],
+                ['alvo' => '[data-guide-target="musico-igreja"]', 'titulo' => 'Confira a igreja ativa', 'texto' => 'O cadastro entra na igreja selecionada no topo do painel do coordenador.'],
+                ['alvo' => '[data-guide-target="musico-acesso"]', 'foco' => '[name="enviar_convite"]', 'titulo' => 'Defina o acesso', 'texto' => 'Ativo libera o usuario. Convite envia o link de primeiro acesso com seguranca.'],
+                ['alvo' => '[data-guide-target="musico-salvar"]', 'titulo' => 'Salve o cadastro', 'texto' => 'Depois de salvar, o musico fica disponivel para repertorios e rotinas da igreja.'],
+            ],
+        ]);
         $adicionarAcaoAjuda('Coordenador', 'Cadastrar musica ou cifra', $urlAjuda('coordenador.musicas.create') ?? '', 'fa-music', ['biblioteca', 'versao']);
         $adicionarAcaoAjuda('Coordenador', 'Organizar momentos liturgicos', $urlAjuda('coordenador.momentos-liturgicos.index') ?? '', 'fa-list-ol', ['entrada', 'comunhao', 'final']);
         $adicionarAcaoAjuda('Coordenador', 'Ver chamados abertos', ($urlAjuda('coordenador.chamados.index') ?? '') . '?visao=atendimento', 'fa-headset', ['suporte', 'atendimento']);
@@ -165,7 +188,7 @@
         </div>
     </section>
 
-    <div class="hidden fixed z-[75] rounded-2xl border-2 border-[#f59e0b] bg-transparent shadow-[0_0_0_4px_rgba(245,158,11,.18),0_18px_42px_rgba(20,10,8,.28)] transition-all" data-guide-highlight></div>
+    <div class="hidden fixed z-[75] rounded-2xl border-2 border-[#f59e0b] bg-transparent shadow-[0_0_0_4px_rgba(245,158,11,.18),0_18px_42px_rgba(20,10,8,.28)] transition-all before:absolute before:-right-2 before:-top-2 before:h-5 before:w-5 before:rounded-full before:border-4 before:border-white before:bg-[#f59e0b] before:shadow-lg" data-guide-highlight></div>
     <aside class="hidden fixed z-[76] w-[min(23rem,calc(100vw-2rem))] rounded-2xl border border-[#eadfce] bg-[#fffdf8] p-4 text-[#1d1513] shadow-[0_24px_70px_rgba(20,10,8,.28)]" data-guide-card aria-live="polite"></aside>
 
     <script>
@@ -181,6 +204,8 @@
             const guias = window.vozCifraGuias || [];
             const highlight = document.querySelector('[data-guide-highlight]');
             const card = document.querySelector('[data-guide-card]');
+            const rotaAtual = '{{ Route::currentRouteName() }}';
+            const storageKey = 'vozCifraGuiaPendente';
             let guiaAtual = null;
             let passoAtual = 0;
 
@@ -265,6 +290,12 @@
 
                 window.setTimeout(() => {
                     const rect = alvo.getBoundingClientRect();
+                    const foco = passo.foco ? alvo.querySelector(passo.foco) || document.querySelector(passo.foco) : null;
+
+                    if (foco && typeof foco.focus === 'function') {
+                        foco.focus({ preventScroll: true });
+                    }
+
                     highlight.classList.remove('hidden');
                     highlight.style.top = `${Math.max(8, rect.top - 8)}px`;
                     highlight.style.left = `${Math.max(8, rect.left - 8)}px`;
@@ -312,14 +343,27 @@
                     }
 
                     const guia = guias.find((registro) => registro && registro.id === guideId);
-                    const rotaAtual = '{{ Route::currentRouteName() }}';
 
                     if (guia && guia.rota === rotaAtual) {
                         event.preventDefault();
                         iniciarGuia(guideId);
+                        return;
+                    }
+
+                    if (guia) {
+                        sessionStorage.setItem(storageKey, guideId);
                     }
                 });
             });
+
+            const guiaPendente = sessionStorage.getItem(storageKey);
+            if (guiaPendente) {
+                const guia = guias.find((registro) => registro && registro.id === guiaPendente);
+                if (guia && guia.rota === rotaAtual) {
+                    sessionStorage.removeItem(storageKey);
+                    window.setTimeout(() => iniciarGuia(guiaPendente), 350);
+                }
+            }
 
             document.addEventListener('click', (event) => {
                 if (event.target.closest('[data-guide-close]')) {

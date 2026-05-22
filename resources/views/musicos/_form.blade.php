@@ -15,12 +15,12 @@
         @endif
 
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div class="md:col-span-2">
+            <div class="md:col-span-2" data-guide-target="musico-nome">
                 <label class="block text-sm font-medium text-gray-700">Nome</label>
                 <input type="text" name="nome" value="{{ old('nome', $musico->nome) }}" class="{{ $classeInput }}" placeholder="Nome completo do músico" required>
             </div>
 
-            <div>
+            <div data-guide-target="musico-cpf">
                 <label class="block text-sm font-medium text-gray-700">CPF</label>
                 <input type="text" name="cpf" value="{{ old('cpf', $musico->cpf) }}" class="{{ $classeInput }}" placeholder="000.000.000-00" data-cpf-input required>
             </div>
@@ -30,13 +30,13 @@
                 <input type="text" name="telefone" value="{{ old('telefone', $musico->telefone) }}" class="{{ $classeInput }}" placeholder="(65) 99999-9999" data-telefone-input>
             </div>
 
-            <div class="md:col-span-2">
+            <div class="md:col-span-2" data-guide-target="musico-email">
                 <label class="block text-sm font-medium text-gray-700">E-mail</label>
                 <input type="email" name="email" value="{{ old('email', $musico->email) }}" class="{{ $classeInput }}" placeholder="musico@igreja.com" required>
             </div>
 
             @if (!empty($mostrarCampoIgreja))
-                <div class="md:col-span-2">
+                <div class="md:col-span-2" data-guide-target="musico-igreja">
                     <label class="block text-sm font-medium text-gray-700">Igreja</label>
                     <select name="igreja_id" class="{{ $classeInput }}" required>
                         <option value="">Selecione a igreja</option>
@@ -48,7 +48,7 @@
                     </select>
                 </div>
             @else
-                <div class="md:col-span-2 rounded-2xl border border-gray-100 bg-gray-50 px-4 py-4 text-sm text-gray-600">
+                <div class="md:col-span-2 rounded-2xl border border-gray-100 bg-gray-50 px-4 py-4 text-sm text-gray-600" data-guide-target="musico-igreja">
                     <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Igreja vinculada</span>
                     <span class="mt-2 block text-base font-semibold text-gray-900">{{ $igreja->nome }}</span>
                 </div>
@@ -56,7 +56,7 @@
         </div>
     </section>
 
-    <aside class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+    <aside class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm" data-guide-target="musico-acesso">
         <h2 class="text-lg font-bold text-gray-900">Acesso do músico</h2>
         <p class="mt-2 text-sm text-gray-500">O link de primeiro acesso pode ser enviado agora ou depois pelo botao de redefinir senha.</p>
 
@@ -80,7 +80,7 @@
             </label>
         @endunless
 
-        <div class="mt-6 space-y-3">
+        <div class="mt-6 space-y-3" data-guide-target="musico-salvar">
             <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-green-700 px-5 py-3 font-semibold text-white hover:bg-green-800">
                 {{ $musico->exists ? 'Salvar alterações' : 'Cadastrar músico' }}
             </button>

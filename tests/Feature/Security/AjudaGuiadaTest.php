@@ -68,7 +68,26 @@ class AjudaGuiadaTest extends TestCase
             ->assertSee('Cadastrar usuario')
             ->assertSee('data-guide-id="cadastro-usuario"', false)
             ->assertSee('data-guide-target="usuario-tipo"', false)
-            ->assertSee('Escolha o tipo inicial')
-            ->assertSee('Salve o cadastro');
+            ->assertSee('Escolha o perfil permitido')
+            ->assertSee('data-guide-target="usuario-telefone"', false)
+            ->assertSee('Conclua o cadastro');
+    }
+
+    public function test_admin_local_recebe_guia_de_cadastro_de_musico(): void
+    {
+        /** @var Igreja $igreja */
+        $igreja = Igreja::factory()->create();
+        /** @var Usuario $adminLocal */
+        $adminLocal = Usuario::factory()->create();
+        $adminLocal->adicionarPapel(PapelIgreja::ADMIN_LOCAL, $igreja);
+
+        $this
+            ->actingAs($adminLocal)
+            ->withSession(['igreja_ativa_id' => $igreja->id])
+            ->get(route('local-admin.musicos.create'))
+            ->assertOk()
+            ->assertSee('data-guide-id="cadastro-musico-local"', false)
+            ->assertSee('data-guide-target="musico-nome"', false)
+            ->assertSee('Admin local cadastra apenas musicos da igreja ativa');
     }
 }
