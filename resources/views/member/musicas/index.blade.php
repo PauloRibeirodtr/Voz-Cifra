@@ -5,10 +5,10 @@
 @section('desktop_subtitle', 'Estudo livre de musicas e versoes ativas')
 
 @section('header_actions')
-    <a href="{{ route('member.colecoes.index') }}" class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
+    <a href="{{ route('member.colecoes.index') }}" class="music-btn">
         Playlists salvas
     </a>
-    <a href="{{ route('member.repertorio') }}" class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
+    <a href="{{ route('member.repertorio') }}" class="music-btn">
         Meu repertorio
     </a>
 @endsection
@@ -57,46 +57,6 @@
             border-color: #bbf7d0;
             background: #f8fffb;
         }
-
-        .library-hero {
-            background:
-                radial-gradient(circle at top left, rgba(16, 185, 129, 0.12), transparent 24rem),
-                linear-gradient(135deg, #ffffff 0%, #fffaf2 100%);
-        }
-
-        .library-search-shell {
-            border: 1px solid rgba(148, 163, 184, 0.18);
-            background: rgba(255, 255, 255, 0.76);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
-        }
-
-        .library-tone-chip {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 2.25rem;
-            border-radius: 999px;
-            border: 1px solid #e5e7eb;
-            background: #fff;
-            padding: 0 0.9rem;
-            color: #334155;
-            font-size: 0.78rem;
-            font-weight: 900;
-            transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
-        }
-
-        .library-tone-chip:hover,
-        .library-tone-chip.is-active {
-            border-color: #34d399;
-            background: #ecfdf5;
-            color: #047857;
-        }
-
-        .library-empty {
-            background:
-                radial-gradient(circle at top, rgba(16, 185, 129, 0.08), transparent 18rem),
-                #ffffff;
-        }
     </style>
 @endpush
 
@@ -124,20 +84,20 @@
         </div>
     @endif
 
-    <section class="library-hero rounded-[2rem] border border-gray-100 p-5 shadow-sm sm:p-6">
+    <section class="music-page-hero p-5 sm:p-6">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-                <p class="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-700">Estudo livre</p>
-                <h1 class="mt-2 text-3xl font-black text-gray-950">Biblioteca musical</h1>
-                <p class="mt-2 max-w-2xl text-sm leading-6 text-gray-600">Encontre uma cifra pelo nome, trecho, momento da missa ou tom. Menos tela para preencher, mais rapido para tocar.</p>
+                <p class="music-kicker">Estudo livre</p>
+                <h1 class="music-title mt-2 text-3xl">Biblioteca musical</h1>
+                <p class="music-copy mt-2 max-w-2xl text-sm">Encontre uma cifra pelo nome, trecho, momento da missa ou tom. Menos tela para preencher, mais rapido para tocar.</p>
             </div>
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:flex">
-                <a href="{{ route('member.dashboard') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">Painel</a>
-                <a href="{{ route('member.repertorio') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">Meu repertorio</a>
+                <a href="{{ route('member.dashboard') }}" class="music-btn">Painel</a>
+                <a href="{{ route('member.repertorio') }}" class="music-btn">Meu repertorio</a>
             </div>
         </div>
 
-        <form action="{{ route('member.musicas.index') }}" method="GET" class="library-search-shell mt-6 rounded-3xl p-4">
+        <form action="{{ route('member.musicas.index') }}" method="GET" class="music-surface mt-6 rounded-3xl p-4">
             <div class="flex flex-col gap-3 lg:flex-row lg:items-end">
                 <label class="block flex-1 text-sm font-bold text-gray-800">
                     Buscar musica
@@ -147,7 +107,7 @@
                     Tom
                     <input type="text" name="tom" value="{{ $tomSelecionado }}" class="mt-2 block w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-gray-900 shadow-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100" placeholder="Ex.: G#m">
                 </label>
-                <button type="submit" class="inline-flex min-h-[3.3rem] items-center justify-center rounded-2xl bg-emerald-700 px-6 font-black text-white shadow-sm transition hover:bg-emerald-800">
+                <button type="submit" class="music-btn music-btn-primary min-h-[3.3rem] px-6">
                     Buscar
                 </button>
             </div>
@@ -161,7 +121,7 @@
                             'momento_liturgico_id' => $momentoSelecionado,
                             'tom' => $tomRapido,
                         ], fn ($valor) => filled($valor))) }}"
-                        class="library-tone-chip {{ $tomSelecionado === $tomRapido ? 'is-active' : '' }}"
+                        class="music-chip {{ $tomSelecionado === $tomRapido ? 'is-active' : '' }}"
                     >
                         {{ $tomRapido }}
                     </a>
@@ -195,7 +155,7 @@
             @if ($temFiltrosAtivos)
                 <div class="mt-4 flex flex-col gap-2 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                     <p class="text-sm font-semibold text-emerald-900">Busca filtrada. Ajuste o texto, toque em outro tom ou limpe tudo.</p>
-                    <a href="{{ route('member.musicas.index') }}" class="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-white px-4 py-2 text-sm font-bold text-emerald-800 hover:bg-emerald-100">
+                    <a href="{{ route('member.musicas.index') }}" class="music-btn min-h-10 px-4 py-2">
                         Limpar filtros
                     </a>
                 </div>
@@ -204,20 +164,20 @@
     </section>
 
     @if ($colecoes->isNotEmpty())
-        <section class="mt-6 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+        <section class="music-card mt-6 rounded-3xl p-6">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                     <h2 class="text-xl font-bold text-gray-900">Playlists do musico</h2>
                     <p class="mt-1 text-sm text-gray-500">Acesse rapido suas colecoes para ensaio e estudo.</p>
                 </div>
-                <a href="{{ route('member.colecoes.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                <a href="{{ route('member.colecoes.index') }}" class="music-btn">
                     Ver todas
                 </a>
             </div>
 
             <div class="mt-5 grid grid-cols-1 gap-4 xl:grid-cols-3">
                 @foreach ($colecoes as $colecao)
-                    <a href="{{ route('member.colecoes.show', $colecao) }}" class="rounded-2xl border border-gray-200 bg-gray-50 p-4 transition hover:border-emerald-200 hover:bg-emerald-50">
+                    <a href="{{ route('member.colecoes.show', $colecao) }}" class="music-card music-card-action rounded-2xl p-4">
                         <p class="text-base font-bold text-gray-900">{{ $colecao->nome }}</p>
                         <p class="mt-1 text-sm text-gray-500">{{ $colecao->itens_count }} itens</p>
                         @if ($colecao->itens->isNotEmpty())
@@ -234,7 +194,7 @@
     <div class="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-2">
         @forelse ($musicas as $musica)
             @php($musicaJaAdicionada = $musicasJaAdicionadas->contains($musica->id))
-            <article class="library-card rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+            <article class="library-card music-card rounded-3xl p-6">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                         <h2 class="text-xl font-black text-gray-900">{{ $musica->titulo }}</h2>
@@ -295,11 +255,11 @@
                 </div>
             </article>
         @empty
-            <div class="library-empty xl:col-span-2 rounded-3xl border border-dashed border-gray-300 p-8 text-center shadow-sm">
+            <div class="music-empty xl:col-span-2 rounded-3xl p-8 text-center">
                 <h2 class="text-xl font-black text-gray-900">Nenhuma musica encontrada</h2>
                 <p class="mx-auto mt-2 max-w-xl text-sm leading-6 text-gray-500">Tente buscar por uma palavra menor, limpar o tom ou usar um momento liturgico mais amplo.</p>
                 @if ($temFiltrosAtivos)
-                    <a href="{{ route('member.musicas.index') }}" class="mt-5 inline-flex items-center justify-center rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-black text-white hover:bg-emerald-800">
+                    <a href="{{ route('member.musicas.index') }}" class="music-btn music-btn-primary mt-5 px-5">
                         Limpar busca
                     </a>
                 @endif

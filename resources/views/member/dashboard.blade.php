@@ -11,11 +11,11 @@
 
 @section('header_actions')
     @if ($isCoordenadorArea)
-        <a href="{{ route('coordenador.musicas.index') }}" class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
+        <a href="{{ route('coordenador.musicas.index') }}" class="music-btn">
             Musicas e versoes
         </a>
     @else
-        <a href="{{ route('member.repertorio') }}" class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
+        <a href="{{ route('member.repertorio') }}" class="music-btn">
             Meu repertorio
         </a>
     @endif
@@ -61,7 +61,7 @@
     </section>
 
     <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <section class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+        <section class="music-card rounded-3xl p-6">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h2 class="text-lg font-bold text-gray-900">Comece por aqui</h2>
@@ -73,7 +73,7 @@
 
             <div class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
                 @if ($isCoordenadorArea)
-                    <a href="{{ route('coordenador.musicos.index') }}" class="rounded-2xl border border-gray-200 bg-gray-50 p-5 transition hover:border-emerald-200 hover:bg-emerald-50">
+                    <a href="{{ route('coordenador.musicos.index') }}" class="music-card music-card-action rounded-2xl p-5">
                         <div class="flex items-center justify-between">
                             <h3 class="text-base font-bold text-gray-900">Musicos da igreja</h3>
                             <i class="fa-solid fa-users text-emerald-700"></i>
@@ -81,7 +81,7 @@
                         <p class="mt-2 text-sm text-gray-600">Cadastre, vincule e acompanhe pessoas com papel musical nesta igreja.</p>
                     </a>
 
-                    <a href="{{ route('coordenador.musicas.index') }}" class="rounded-2xl border border-gray-200 bg-gray-50 p-5 transition hover:border-emerald-200 hover:bg-emerald-50">
+                    <a href="{{ route('coordenador.musicas.index') }}" class="music-card music-card-action rounded-2xl p-5">
                         <div class="flex items-center justify-between">
                             <h3 class="text-base font-bold text-gray-900">Biblioteca musical</h3>
                             <i class="fa-solid fa-music text-emerald-700"></i>
@@ -89,7 +89,7 @@
                         <p class="mt-2 text-sm text-gray-600">Crie musicas, organize versoes e mantenha o acervo preparado para as igrejas.</p>
                     </a>
 
-                    <a href="#admin-local-form" class="rounded-2xl border border-gray-200 bg-gray-50 p-5 transition hover:border-emerald-200 hover:bg-emerald-50" data-guide-target="atalho-admin-local">
+                    <a href="#admin-local-form" class="music-card music-card-action rounded-2xl p-5" data-guide-target="atalho-admin-local">
                         <div class="flex items-center justify-between">
                             <h3 class="text-base font-bold text-gray-900">Admin local</h3>
                             <i class="fa-solid fa-user-shield text-emerald-700"></i>
@@ -97,7 +97,7 @@
                         <p class="mt-2 text-sm text-gray-600">Atribua uma pessoa para administrar a rotina desta igreja.</p>
                     </a>
                 @else
-                    <a href="{{ route('member.repertorio') }}" class="rounded-2xl border border-gray-200 bg-gray-50 p-5 transition hover:border-emerald-200 hover:bg-emerald-50">
+                    <a href="{{ route('member.repertorio') }}" class="music-card music-card-action rounded-2xl p-5">
                         <div class="flex items-center justify-between">
                             <h3 class="text-base font-bold text-gray-900">Meu repertorio</h3>
                             <i class="fa-solid fa-list-check text-emerald-700"></i>
@@ -105,7 +105,7 @@
                         <p class="mt-2 text-sm text-gray-600">Veja a missa ativa ou a proxima celebracao preparada para sua igreja.</p>
                     </a>
 
-                    <a href="{{ route('member.musicas.index') }}" class="rounded-2xl border border-gray-200 bg-gray-50 p-5 transition hover:border-emerald-200 hover:bg-emerald-50">
+                    <a href="{{ route('member.musicas.index') }}" class="music-card music-card-action rounded-2xl p-5">
                         <div class="flex items-center justify-between">
                             <h3 class="text-base font-bold text-gray-900">Biblioteca musical</h3>
                             <i class="fa-solid fa-music text-emerald-700"></i>
@@ -113,7 +113,7 @@
                         <p class="mt-2 text-sm text-gray-600">Estude musicas e versoes com leitura fora do contexto de uma missa especifica.</p>
                     </a>
 
-                    <a href="{{ route('member.profile') }}" class="rounded-2xl border border-gray-200 bg-gray-50 p-5 transition hover:border-emerald-200 hover:bg-emerald-50">
+                    <a href="{{ route('member.profile') }}" class="music-card music-card-action rounded-2xl p-5">
                         <div class="flex items-center justify-between">
                             <h3 class="text-base font-bold text-gray-900">Meu perfil</h3>
                             <i class="fa-solid fa-user-pen text-emerald-700"></i>
@@ -121,7 +121,7 @@
                         <p class="mt-2 text-sm text-gray-600">Atualize e-mail, telefone e senha com seguranca.</p>
                     </a>
 
-                    <a href="{{ route('member.settings') }}" class="rounded-2xl border border-gray-200 bg-gray-50 p-5 transition hover:border-emerald-200 hover:bg-emerald-50">
+                    <a href="{{ route('member.settings') }}" class="music-card music-card-action rounded-2xl p-5">
                         <div class="flex items-center justify-between">
                             <h3 class="text-base font-bold text-gray-900">Configuracoes</h3>
                             <i class="fa-solid fa-gear text-emerald-700"></i>
@@ -131,7 +131,7 @@
                 @endif
 
                 @if ($isCoordenadorArea)
-                    <a href="{{ route('coordenador.profile') }}" class="rounded-2xl border border-gray-200 bg-gray-50 p-5 transition hover:border-emerald-200 hover:bg-emerald-50">
+                    <a href="{{ route('coordenador.profile') }}" class="music-card music-card-action rounded-2xl p-5">
                         <div class="flex items-center justify-between">
                             <h3 class="text-base font-bold text-gray-900">Meu perfil</h3>
                             <i class="fa-solid fa-user-pen text-emerald-700"></i>
@@ -144,7 +144,7 @@
 
         <aside class="space-y-6">
             @if ($isCoordenadorArea)
-                <section id="admin-local-form" class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm" data-guide-target="admin-local-form">
+                <section id="admin-local-form" class="music-card rounded-3xl p-6" data-guide-target="admin-local-form">
                     <div class="flex items-start justify-between gap-3">
                         <div>
                             <h2 class="text-lg font-bold text-gray-900">Cadastrar admin local</h2>
@@ -186,7 +186,7 @@
                             A pessoa recebera o papel de admin local apenas nesta igreja. O convite de acesso pode ser reenviado depois.
                         </div>
 
-                        <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 font-semibold text-white transition hover:bg-emerald-800" data-guide-target="admin-local-salvar">
+                        <button type="submit" class="music-btn music-btn-primary w-full gap-2" data-guide-target="admin-local-salvar">
                             <i class="fa-solid fa-user-plus"></i>
                             <span>Cadastrar admin local</span>
                         </button>
@@ -194,7 +194,7 @@
                 </section>
             @endif
 
-            <section class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+            <section class="music-card rounded-3xl p-6">
                 <h2 class="text-lg font-bold text-gray-900">{{ $isCoordenadorArea ? 'Resumo da operacao' : 'Resumo da proxima missa' }}</h2>
 
                 @if ($proximaMissa)
@@ -206,9 +206,9 @@
                         @endif
 
                         @if ($isCoordenadorArea)
-                            <a href="{{ route('coordenador.musicas.index') }}" class="mt-4 inline-flex items-center justify-center rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-800">Abrir biblioteca musical</a>
+                            <a href="{{ route('coordenador.musicas.index') }}" class="music-btn music-btn-primary mt-4">Abrir biblioteca musical</a>
                         @else
-                            <a href="{{ route('member.repertorio') }}" class="mt-4 inline-flex items-center justify-center rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-800">Abrir repertorio</a>
+                            <a href="{{ route('member.repertorio') }}" class="music-btn music-btn-primary mt-4">Abrir repertorio</a>
                         @endif
                     </div>
                 @else
@@ -218,7 +218,7 @@
                 @endif
             </section>
 
-            <section class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+            <section class="music-card rounded-3xl p-6">
                 <h2 class="text-lg font-bold text-gray-900">Conta</h2>
                 <div class="mt-4 space-y-3 text-sm">
                     <a href="{{ route($routePrefix . '.profile') }}" class="flex items-center justify-between rounded-2xl border border-gray-200 bg-white px-4 py-4 font-semibold text-gray-800 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800">

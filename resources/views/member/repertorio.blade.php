@@ -5,7 +5,7 @@
 @section('desktop_subtitle', 'Missa publicada da sua igreja para tocar em sequencia')
 
 @section('header_actions')
-    <a href="{{ route('member.musicas.index') }}" class="inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">
+    <a href="{{ route('member.musicas.index') }}" class="music-btn">
         Consultar musicas
     </a>
 @endsection
