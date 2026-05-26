@@ -5,12 +5,61 @@
     $usuarioAjuda = auth()->user();
     $igrejaAtivaAjuda = $usuarioAjuda ? $usuarioAjuda->igrejaAtiva() : null;
     $igrejaAtivaIdAjuda = $igrejaAtivaAjuda ? $igrejaAtivaAjuda->id : null;
+    $rotaAtualAjuda = Route::currentRouteName();
+    $urlAtualAjuda = url()->current();
     $urlAjuda = static fn (string $routeName): ?string => Route::has($routeName) ? route($routeName) : null;
+    $guiaEditarCifraAjuda = static function (?string $rotaAtual): ?array {
+        if (!in_array($rotaAtual, [
+            'admin.versoes-musicais.create',
+            'admin.versoes-musicais.edit',
+            'coordenador.versoes-musicais.create',
+            'coordenador.versoes-musicais.edit',
+        ], true)) {
+            return null;
+        }
+
+        return [
+            'id' => 'editar-cifra',
+            'rota' => $rotaAtual,
+            'passos' => [
+                ['alvo' => '[data-guide-target="cifra-editor"]', 'foco' => '#letra_com_cifras', 'titulo' => 'Cole ou edite a cifra', 'texto' => 'Cole a cifra inteira aqui. Pode vir com acordes em cima da letra, entre colchetes ou no formato do Cifra Club.'],
+                ['alvo' => '[data-guide-target="cifra-organizar"]', 'titulo' => 'Arrume automaticamente', 'texto' => 'Clique para converter acordes acima da letra, padronizar refroes e preparar o texto para salvar.'],
+                ['alvo' => '[data-guide-target="cifra-preview"]', 'titulo' => 'Confira a previa', 'texto' => 'Acompanhe do lado como o musico vai ler. Se algo ficar fora do lugar, ajuste no editor e confira novamente.'],
+                ['alvo' => '[data-guide-target="cifra-alertas"]', 'titulo' => 'Revise avisos leves', 'texto' => 'Se aparecer aviso, ele nao bloqueia. Use como checklist para refrao vazio, acordes soltos ou letra sem cifra.'],
+                ['alvo' => '[data-guide-target="cifra-tom-bpm"]', 'titulo' => 'Defina tom e BPM', 'texto' => 'Informe o tom original e o BPM quando souber. Isso ajuda o musico no estudo e na missa.'],
+                ['alvo' => '[data-guide-target="cifra-youtube"]', 'titulo' => 'Adicione video se tiver', 'texto' => 'Cole o ID ou link do YouTube para facilitar o estudo da equipe.'],
+            ],
+        ];
+    };
 
     $acoesAjuda = [];
     $adicionarAcaoAjuda = static function (string $perfil, string $titulo, string $url, string $icone, array $termos = [], ?array $guia = null, string $descricao = '') use (&$acoesAjuda): void {
         if ($url === '') {
             return;
+        }
+
+        if ($guia === null) {
+            $guia = [
+                'id' => 'acao-' . substr(sha1($perfil . '|' . $titulo . '|' . $url), 0, 14),
+                'url' => preg_replace('/#.*$/', '', $url),
+                'passos' => [
+                    [
+                        'alvo' => '#mainContent',
+                        'titulo' => $titulo,
+                        'texto' => $descricao !== '' ? $descricao : 'Esta e a area principal desta acao. Comece lendo o titulo e os avisos da tela.',
+                    ],
+                    [
+                        'alvo' => '#mainContent form, #mainContent [data-guide-target], #mainContent table, #mainContent .grid',
+                        'titulo' => 'Preencha ou filtre com calma',
+                        'texto' => 'Use os campos, filtros e listas desta tela. Quando houver busca, digite poucas palavras e confira os resultados antes de salvar.',
+                    ],
+                    [
+                        'alvo' => '#mainContent button[type="submit"], #mainContent a[href], #mainContent button',
+                        'titulo' => 'Conclua a acao',
+                        'texto' => 'Depois de revisar, use o botao principal da tela. Botoes de inativar ou remover exigem mais atencao antes de confirmar.',
+                    ],
+                ],
+            ];
         }
 
         $acoesAjuda[] = [
@@ -46,6 +95,9 @@
         $adicionarAcaoAjuda('Admin master', 'Gerenciar igrejas', $urlAjuda('admin.igrejas.index') ?? '', 'fa-building-columns', ['dados', 'links', 'paroquia'], null, 'Edite dados, links publicos, coordenadores e admins locais das igrejas.');
         $adicionarAcaoAjuda('Admin master', 'Administrar admins locais', $urlAjuda('admin.admins-locais.index') ?? '', 'fa-user-shield', ['admin local', 'senha', 'acesso'], null, 'Acompanhe admins locais e envie novo link de senha quando precisar.');
         $adicionarAcaoAjuda('Admin master', 'Cadastrar musica ou cifra', $urlAjuda('admin.musicas.create') ?? '', 'fa-music', ['musica', 'cifra', 'versao'], null, 'Inclua musicas e crie versoes de cifras para uso nas missas.');
+        if ($guiaEditarCifraAjuda($rotaAtualAjuda)) {
+            $adicionarAcaoAjuda('Admin master', 'Editar cifra passo a passo', $urlAtualAjuda, 'fa-wand-magic-sparkles', ['cifra', 'organizar', 'cifra club', 'refrao'], $guiaEditarCifraAjuda($rotaAtualAjuda), 'Cole, arrume automaticamente, revise a previa e salve com seguranca.');
+        }
         $adicionarAcaoAjuda('Admin master', 'Consultar musicas', $urlAjuda('admin.musicas.index') ?? '', 'fa-magnifying-glass', ['biblioteca', 'cifra', 'tom'], null, 'Pesquise, revise e edite a biblioteca musical global.');
         $adicionarAcaoAjuda('Admin master', 'Ver acordes', $urlAjuda('admin.acordes.index') ?? '', 'fa-guitar', ['acordes', 'cifras', 'violao'], null, 'Consulte e mantenha o dicionario de acordes usado nas cifras.');
         $adicionarAcaoAjuda('Admin master', 'Tempos liturgicos', $urlAjuda('admin.tempos-liturgicos.index') ?? '', 'fa-calendar-days', ['liturgia', 'tempo'], null, 'Organize tempos como Advento, Quaresma, Pascoa e Tempo Comum.');
@@ -105,6 +157,9 @@
         ], 'Atribua uma pessoa como admin local somente na igreja ativa.');
         $adicionarAcaoAjuda('Coordenador', 'Gerenciar equipe musical', $urlAjuda('coordenador.musicos.index') ?? '', 'fa-users', ['musicos', 'equipe'], null, 'Acompanhe musicos, vincule pessoas existentes e gerencie acessos.');
         $adicionarAcaoAjuda('Coordenador', 'Cadastrar musica ou cifra', $urlAjuda('coordenador.musicas.create') ?? '', 'fa-music', ['biblioteca', 'versao'], null, 'Inclua novas musicas e cifras para a biblioteca da igreja.');
+        if ($guiaEditarCifraAjuda($rotaAtualAjuda)) {
+            $adicionarAcaoAjuda('Coordenador', 'Editar cifra passo a passo', $urlAtualAjuda, 'fa-wand-magic-sparkles', ['cifra', 'organizar', 'cifra club', 'refrao'], $guiaEditarCifraAjuda($rotaAtualAjuda), 'Cole, arrume automaticamente, revise a previa e salve com seguranca.');
+        }
         $adicionarAcaoAjuda('Coordenador', 'Consultar biblioteca', $urlAjuda('coordenador.musicas.index') ?? '', 'fa-magnifying-glass', ['musicas', 'cifras', 'tom'], null, 'Pesquise e edite musicas, cifras e versoes cadastradas.');
         $adicionarAcaoAjuda('Coordenador', 'Organizar tempos liturgicos', $urlAjuda('coordenador.tempos-liturgicos.index') ?? '', 'fa-calendar-days', ['liturgia', 'tempo'], null, 'Mantenha tempos liturgicos organizados para classificar repertorios.');
         $adicionarAcaoAjuda('Coordenador', 'Organizar momentos liturgicos', $urlAjuda('coordenador.momentos-liturgicos.index') ?? '', 'fa-list-ol', ['entrada', 'comunhao', 'final'], null, 'Defina momentos da missa para orientar a montagem do repertorio.');
@@ -239,9 +294,30 @@
             const highlight = document.querySelector('[data-guide-highlight]');
             const card = document.querySelector('[data-guide-card]');
             const rotaAtual = '{{ Route::currentRouteName() }}';
+            const urlAtual = window.location.href.split('#')[0];
             const storageKey = 'vozCifraGuiaPendente';
             let guiaAtual = null;
             let passoAtual = 0;
+
+            const normalizarUrl = (url) => {
+                try {
+                    return new URL(url, window.location.origin).href.split('#')[0];
+                } catch (error) {
+                    return String(url || '').split('#')[0];
+                }
+            };
+
+            const guiaEstaNaTela = (guia) => {
+                if (!guia) {
+                    return false;
+                }
+
+                if (guia.url) {
+                    return normalizarUrl(guia.url) === urlAtual;
+                }
+
+                return guia.rota === rotaAtual;
+            };
 
             const mostrarPainel = (mostrar) => {
                 painel?.classList.toggle('hidden', !mostrar);
@@ -378,7 +454,7 @@
 
                     const guia = guias.find((registro) => registro && registro.id === guideId);
 
-                    if (guia && guia.rota === rotaAtual) {
+                    if (guia && guiaEstaNaTela(guia)) {
                         event.preventDefault();
                         iniciarGuia(guideId);
                         return;
@@ -393,7 +469,7 @@
             const guiaPendente = sessionStorage.getItem(storageKey);
             if (guiaPendente) {
                 const guia = guias.find((registro) => registro && registro.id === guiaPendente);
-                if (guia && guia.rota === rotaAtual) {
+                if (guia && guiaEstaNaTela(guia)) {
                     sessionStorage.removeItem(storageKey);
                     window.setTimeout(() => iniciarGuia(guiaPendente), 350);
                 }

@@ -39,10 +39,10 @@
     <div class="space-y-6">
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <div class="grid grid-cols-1 gap-5">
-                <div>
+                <div data-guide-target="cifra-editor">
                     <div class="flex items-center justify-between gap-3">
                         <label class="block text-sm font-medium text-gray-700">Letra com cifras</label>
-                        <span class="text-xs text-gray-500">O refrão pode aparecer varias vezes. Refrao, Refrão e REFRAO viram Refrão: ao salvar.</span>
+                        <span class="text-xs text-gray-500">Cole cifras com acordes em cima da letra ou entre colchetes. O sistema prepara o formato ao salvar.</span>
                     </div>
                     <div class="mt-2 flex flex-wrap gap-2">
                         <button type="button" class="rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-black text-amber-800 hover:bg-amber-100" data-inserir-marcacao="Refrão:\n">
@@ -55,14 +55,20 @@
                             Inserir Parte
                         </button>
                         <button type="button" class="rounded-full border border-indigo-300 bg-white px-4 py-2 text-xs font-black text-indigo-800 hover:bg-indigo-50" data-marcar-linha="[Primeira parte]">
-                            Marcar linha como Parte
+                            Transformar linha em Parte
                         </button>
                         <button type="button" class="rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-black text-orange-700 hover:bg-orange-100" data-inserir-marcacao="[D] [C]\n">
-                            Inserir Preparação
+                            Acordes antes da parte
                         </button>
-                        <button type="button" class="rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-xs font-black text-sky-700 hover:bg-sky-100" data-organizar-cifra-visual>
-                            Organizar cifra
+                        <button type="button" class="rounded-full border border-sky-300 bg-sky-50 px-4 py-2 text-xs font-black text-sky-800 hover:bg-sky-100" data-cifra-club-mode>
+                            Colar formato Cifra Club
                         </button>
+                        <button type="button" class="rounded-full border border-green-700 bg-green-700 px-5 py-2 text-xs font-black text-white shadow-sm hover:bg-green-800" data-organizar-cifra-visual data-guide-target="cifra-organizar">
+                            Arrumar cifra automaticamente
+                        </button>
+                    </div>
+                    <div id="cifra_club_hint" class="mt-3 hidden rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm text-sky-800">
+                        Cole a cifra inteira abaixo. Depois clique em <strong>Arrumar cifra automaticamente</strong> para alinhar acordes, refrões e partes antes de salvar.
                     </div>
                     <textarea id="letra_com_cifras" name="letra_com_cifras" rows="18" required placeholder="[G]Quao grande e o meu Deus
 [D/F#]Cantarei quao grande e o meu Deus
@@ -70,6 +76,21 @@
 [C9]Quao grande e o meu Deus" class="{{ $classeInput }} font-mono text-sm">{{ $letraInicial }}</textarea>
 
                     <div class="mt-3 space-y-3">
+                        <div id="painel_rascunho_cifra" class="hidden rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <span>Existe um rascunho salvo neste navegador para esta cifra.</span>
+                                <button type="button" class="rounded-lg border border-blue-300 bg-white px-3 py-2 text-xs font-black text-blue-800 hover:bg-blue-100" data-descartar-rascunho-cifra>
+                                    Descartar rascunho
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="painel_alertas_cifra" class="hidden rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900" data-guide-target="cifra-alertas">
+                            <h3 class="mb-2 font-black">Antes de salvar, vale revisar</h3>
+                            <ul id="lista_alertas_cifra" class="list-disc space-y-1 pl-5"></ul>
+                            <p class="mt-2 text-xs">Esses avisos nao bloqueiam o salvamento. Eles so ajudam a evitar cifra incompleta ou desalinhada.</p>
+                        </div>
+
                         <div id="painel_validacao_cifras" class="hidden rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
                             <h3 class="font-bold mb-2">Acordes nao encontrados na biblioteca</h3>
                             <p id="lista_acordes_invalidos"></p>
@@ -84,17 +105,17 @@
                     </div>
                 </div>
 
-                <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4" data-guide-target="cifra-musica-base">
                     <label class="block text-sm font-medium text-gray-700">Musica base</label>
                     <input type="text" value="{{ $musica->titulo }}" disabled class="{{ $classeInput }} bg-gray-50 text-gray-500 cursor-not-allowed" />
                 </div>
 
-                <div>
+                <div data-guide-target="cifra-titulo">
                     <label class="block text-sm font-medium text-gray-700">Titulo da versao</label>
                     <input type="text" name="titulo" value="{{ old('titulo', $versaoMusical->titulo ?? '') }}" placeholder="Ex.: Tom original, Versao para assembleia" class="{{ $classeInput }}" />
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" data-guide-target="cifra-tom-bpm">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Tom musical</label>
                         <select name="tom_musical" class="{{ $classeInput }}">
@@ -113,7 +134,7 @@
                     </div>
                 </div>
 
-                <div>
+                <div data-guide-target="cifra-youtube">
                     <label class="block text-sm font-medium text-gray-700">YouTube video ID</label>
                     <input type="text" name="youtube_video_id" value="{{ old('youtube_video_id', $versaoMusical->youtube_video_id ?? '') }}" placeholder="Ex.: dQw4w9WgXcQ ou cole a URL" class="{{ $classeInput }}" />
                 </div>
@@ -129,7 +150,7 @@
     </div>
 
     <div class="space-y-6">
-        <div class="preview-cifra-sticky bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <div class="preview-cifra-sticky bg-white p-6 rounded-2xl shadow-sm border border-gray-100" data-guide-target="cifra-preview">
             <h2 class="text-lg font-bold text-gray-800 mb-4">Pr&eacute;via da cifra</h2>
             <div class="mb-4 flex flex-wrap gap-2">
                 <button type="button" class="rounded-full bg-green-700 px-4 py-2 text-sm font-semibold text-white ring-2 ring-green-200" data-preview-toggle="com-cifras" aria-pressed="true">
@@ -168,6 +189,11 @@
         const painelConversaoAutomatica = document.getElementById('painel_conversao_automatica');
         const painelValidacaoCifras = document.getElementById('painel_validacao_cifras');
         const listaAcordesInvalidos = document.getElementById('lista_acordes_invalidos');
+        const painelAlertasCifra = document.getElementById('painel_alertas_cifra');
+        const listaAlertasCifra = document.getElementById('lista_alertas_cifra');
+        const painelRascunhoCifra = document.getElementById('painel_rascunho_cifra');
+        const botaoDescartarRascunho = document.querySelector('[data-descartar-rascunho-cifra]');
+        const dicaCifraClub = document.getElementById('cifra_club_hint');
         const acordesValidos = @json($acordesValidos ?? []);
         const bibliotecaAcordes = new Set(acordesValidos.map((item) => String(item).toUpperCase()));
         const botoesPreview = document.querySelectorAll('[data-preview-toggle]');
@@ -177,6 +203,9 @@
         const botoesMarcacao = document.querySelectorAll('[data-inserir-marcacao]');
         const botoesMarcarLinha = document.querySelectorAll('[data-marcar-linha]');
         const botaoOrganizarCifra = document.querySelector('[data-organizar-cifra-visual]');
+        const botaoCifraClub = document.querySelector('[data-cifra-club-mode]');
+        const chaveRascunho = `voz-cifra-rascunho-cifra:${window.location.pathname}`;
+        const valorInicialTextarea = textarea?.value || '';
 
         if (!textarea || !previewComCifras || !previewSemCifras || !previewPadraoInterno) {
             return;
@@ -403,6 +432,76 @@
             }
 
             return [...new Set(acordes)];
+        };
+
+        const detectarAlertasCifra = (textoNormalizado) => {
+            const linhas = (textoNormalizado || '').split('\n');
+            const alertas = [];
+            let refraoVazio = false;
+            let muitosAcordesSemLetra = false;
+            let linhasTextoSemCifra = 0;
+
+            linhas.forEach((linha, indice) => {
+                const linhaLimpa = linha.trim();
+
+                if (!linhaLimpa) {
+                    return;
+                }
+
+                const marcacao = linhaLimpa.match(/^\[(.+)\]$/);
+                const textoMarcacao = marcacao && !ehAcorde(marcacao[1]) ? marcacao[1] : linhaLimpa;
+                const normalizada = normalizarMarcacao(textoMarcacao);
+
+                if (/^(refrao:?|refr\.?|ref:)(?:\s|$)/.test(normalizada)) {
+                    let encontrouLetra = false;
+
+                    for (let proxima = indice + 1; proxima < linhas.length; proxima++) {
+                        const proximaLinha = String(linhas[proxima] || '').trim();
+
+                        if (!proximaLinha) {
+                            break;
+                        }
+
+                        if (ehMarcacaoSecao(proximaLinha)) {
+                            break;
+                        }
+
+                        if (removerCifras(proximaLinha).trim() !== '') {
+                            encontrouLetra = true;
+                            break;
+                        }
+                    }
+
+                    if (!encontrouLetra) {
+                        refraoVazio = true;
+                    }
+
+                    return;
+                }
+
+                if (ehLinhaApenasAcordes(linha) && linhaLimpa.split(/\s+/).length >= 4) {
+                    muitosAcordesSemLetra = true;
+                    return;
+                }
+
+                if (!linha.includes('[') && !ehMarcacaoSecao(linhaLimpa) && removerCifras(linhaLimpa).trim().length >= 18) {
+                    linhasTextoSemCifra += 1;
+                }
+            });
+
+            if (refraoVazio) {
+                alertas.push('Existe Refrão sem letra logo abaixo.');
+            }
+
+            if (muitosAcordesSemLetra) {
+                alertas.push('Ha uma linha com muitos acordes seguidos sem letra. Confira se e uma preparacao ou se faltou alinhar com a frase.');
+            }
+
+            if (linhasTextoSemCifra >= 4) {
+                alertas.push('Varias linhas de texto nao possuem cifra. Se isso for proposital, pode salvar normalmente.');
+            }
+
+            return alertas;
         };
 
         const colocarTextoEmLinha = (linha, posicao, texto) => {
@@ -667,6 +766,7 @@
             const resultado = normalizarFormato(valor);
             const acordesEncontrados = extrairAcordes(resultado.textoNormalizado);
             const acordesInvalidos = acordesEncontrados.filter((acorde) => !bibliotecaAcordes.has(acorde.toUpperCase()));
+            const alertas = detectarAlertasCifra(resultado.textoNormalizado);
 
             previewPadraoInterno.textContent = resultado.textoNormalizado;
             previewComCifras.innerHTML = renderizarComCifras(resultado.textoNormalizado);
@@ -684,6 +784,14 @@
             } else {
                 painelValidacaoCifras.classList.add('hidden');
                 listaAcordesInvalidos.textContent = '';
+            }
+
+            if (alertas.length > 0 && painelAlertasCifra && listaAlertasCifra) {
+                painelAlertasCifra.classList.remove('hidden');
+                listaAlertasCifra.innerHTML = alertas.map((alerta) => `<li>${escaparHtml(alerta)}</li>`).join('');
+            } else if (painelAlertasCifra && listaAlertasCifra) {
+                painelAlertasCifra.classList.add('hidden');
+                listaAlertasCifra.innerHTML = '';
             }
         };
 
@@ -716,11 +824,34 @@
             atualizarPreview();
         };
 
-        textarea.addEventListener('input', atualizarPreview);
+        const salvarRascunhoLocal = () => {
+            const valorAtual = textarea.value || '';
+
+            if (valorAtual !== valorInicialTextarea) {
+                localStorage.setItem(chaveRascunho, valorAtual);
+            }
+        };
+
+        const rascunhoSalvo = localStorage.getItem(chaveRascunho);
+        if (rascunhoSalvo && rascunhoSalvo !== valorInicialTextarea) {
+            textarea.value = rascunhoSalvo;
+            painelRascunhoCifra?.classList.remove('hidden');
+        }
+
+        textarea.addEventListener('input', () => {
+            atualizarPreview();
+            salvarRascunhoLocal();
+        });
 
         formulario?.addEventListener('submit', () => {
             const resultado = normalizarFormato(textarea.value || '');
             textarea.value = resultado.textoNormalizado;
+            localStorage.removeItem(chaveRascunho);
+        });
+
+        botaoDescartarRascunho?.addEventListener('click', () => {
+            localStorage.removeItem(chaveRascunho);
+            painelRascunhoCifra?.classList.add('hidden');
         });
 
         botoesAcorde.forEach((botao) => {
@@ -742,9 +873,21 @@
         });
 
         botaoOrganizarCifra?.addEventListener('click', () => {
+            const confirmar = window.confirm('Vou converter acordes acima da letra, padronizar refroes e preparar a cifra para salvar. Deseja continuar?');
+
+            if (!confirmar) {
+                return;
+            }
+
             textarea.value = converterTextoParaEdicaoVisual(textarea.value || '');
             textarea.focus();
             atualizarPreview();
+            salvarRascunhoLocal();
+        });
+
+        botaoCifraClub?.addEventListener('click', () => {
+            dicaCifraClub?.classList.toggle('hidden');
+            textarea.focus();
         });
 
         const ativarPreview = (modo) => {

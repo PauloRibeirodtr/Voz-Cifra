@@ -1288,6 +1288,8 @@
         @include('partials.chord-transposer-script')
     @endif
 
+    @include('partials.public-help-tour')
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const statusSync = document.querySelector('[data-public-status-sync]');
