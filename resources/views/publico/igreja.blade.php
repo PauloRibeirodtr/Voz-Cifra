@@ -470,6 +470,43 @@
             text-transform: uppercase;
         }
 
+        .capo-control {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-top: 14px;
+            padding: 12px;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .capo-control label {
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .capo-control select {
+            min-height: 42px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: rgba(13, 8, 8, 0.94);
+            color: var(--text);
+            font: inherit;
+            font-weight: 800;
+            padding: 0 12px;
+        }
+
+        .capo-control__status {
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 800;
+        }
+
         .history-list--compact {
             gap: 8px;
         }
@@ -1016,6 +1053,18 @@
                             <p class="celebration-meta-text">
                                 {{ $missaPublica->data_missa->format('d/m/Y') }} • {{ substr((string) $missaPublica->hora_inicio, 0, 5) }}
                             </p>
+                            @if (($modoPublico ?? 'fieis') === 'musicos')
+                                <div class="capo-control" data-public-capo-control>
+                                    <label for="public_capo">Capotraste</label>
+                                    <select id="public_capo" data-public-capo>
+                                        <option value="0">Sem capo</option>
+                                        @for ($casaCapotraste = 1; $casaCapotraste <= 11; $casaCapotraste++)
+                                            <option value="{{ $casaCapotraste }}">{{ $casaCapotraste }} casa</option>
+                                        @endfor
+                                    </select>
+                                    <span class="capo-control__status" data-public-capo-summary>Tom real preservado; formas originais.</span>
+                                </div>
+                            @endif
                         </div>
                         <span class="badge">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Abrir repertório' : 'Abrir celebração' }}</span>
                     </div>
@@ -1031,11 +1080,12 @@
                                         @endif
                                         @if (($modoPublico ?? 'fieis') === 'musicos' && !empty($item['tom']))
                                             <span class="badge">Tom {{ $item['tom'] }}</span>
+                                            <span class="badge" data-public-capo-item data-base-tom="{{ $item['tom'] }}" hidden></span>
                                         @endif
                                     </div>
                                     <h3 class="card-title">{{ $item['titulo'] }}</h3>
                                     @if (($modoPublico ?? 'fieis') === 'musicos')
-                                        <div class="lyrics" data-public-musician-lyrics data-lyrics="{{ e($item['letra_publica'] ?? '') }}">{!! $item['letra_publica_html'] ?? nl2br(e($item['letra_publica'] ?? ''), false) !!}</div>
+                                        <div class="lyrics" data-public-musician-lyrics data-base-tom="{{ $item['tom'] ?? '' }}" data-lyrics="{{ e($item['letra_publica'] ?? '') }}">{!! $item['letra_publica_html'] ?? nl2br(e($item['letra_publica'] ?? ''), false) !!}</div>
                                     @else
                                         <div class="lyrics">{!! $item['letra_publica'] !== '' ? ($item['letra_publica_html'] ?? nl2br(e($item['letra_publica']), false)) : 'A letra deste canto ainda não foi preparada para exibição pública.' !!}</div>
                                     @endif
@@ -1324,6 +1374,9 @@
                 const tooltipAcorde = document.querySelector('[data-public-chord-tooltip]');
                 const tooltipNome = document.querySelector('[data-public-chord-tooltip-name]');
                 const tooltipDiagrama = document.querySelector('[data-public-chord-tooltip-diagram]');
+                const controleCapotraste = document.querySelector('[data-public-capo]');
+                const resumoCapotraste = document.querySelector('[data-public-capo-summary]');
+                let capotrasteAtual = 0;
                 const renderizarDiagrama = (shape) => {
                     if (!shape) {
                         return '<div>Sem desenho cadastrado.</div>';
@@ -1416,11 +1469,41 @@
                     tooltipAcorde.style.top = `${Math.max(y - 220, 12)}px`;
                 };
 
-                if (helper) {
+                const renderizarCifrasPublicas = () => {
+                    if (!helper) {
+                        return;
+                    }
+
                     document.querySelectorAll('[data-public-musician-lyrics]').forEach((lyrics) => {
-                        lyrics.innerHTML = helper.renderChordSheetHtml(lyrics.dataset.lyrics || '', { chordAttribute: 'data-acorde-hover' });
+                        const textoComCapo = helper.transposeBracketedText(lyrics.dataset.lyrics || '', -capotrasteAtual);
+                        lyrics.innerHTML = helper.renderChordSheetHtml(textoComCapo, { chordAttribute: 'data-acorde-hover' });
                     });
-                }
+
+                    document.querySelectorAll('[data-public-capo-item]').forEach((badge) => {
+                        const tomBase = badge.dataset.baseTom || '';
+                        if (capotrasteAtual <= 0 || !helper.isChord(tomBase)) {
+                            badge.hidden = true;
+                            badge.textContent = '';
+                            return;
+                        }
+
+                        badge.hidden = false;
+                        badge.textContent = `Capo ${capotrasteAtual} / tocar como ${helper.transposeChord(tomBase, -capotrasteAtual)}`;
+                    });
+
+                    if (resumoCapotraste) {
+                        resumoCapotraste.textContent = capotrasteAtual > 0
+                            ? `Tom real preservado; cifras exibidas ${capotrasteAtual} semitom(ns) abaixo.`
+                            : 'Tom real preservado; formas originais.';
+                    }
+                };
+
+                controleCapotraste?.addEventListener('change', () => {
+                    capotrasteAtual = Math.max(0, Math.min(11, Number(controleCapotraste.value || 0)));
+                    renderizarCifrasPublicas();
+                });
+
+                renderizarCifrasPublicas();
 
                 document.addEventListener('mouseover', (event) => {
                     const acorde = event.target.closest('[data-acorde-hover]');

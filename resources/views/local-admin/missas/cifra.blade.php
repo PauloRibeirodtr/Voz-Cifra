@@ -58,15 +58,28 @@
                             <span id="tom_atual_badge" class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
                                 Tom {{ $tomExibicao ?: 'Nao informado' }}
                             </span>
+                            <span id="capotraste_badge" class="inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700">
+                                Sem capo
+                            </span>
                         </div>
 
-                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
                             <div class="flex items-center gap-2">
                                 <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Tom</span>
                                 <button type="button" data-transpose="-1" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-lg font-bold text-gray-700 hover:bg-gray-100">-</button>
                                 <button type="button" data-transpose-reset class="inline-flex rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">Original</button>
                                 <button type="button" data-transpose="1" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-lg font-bold text-gray-700 hover:bg-gray-100">+</button>
                             </div>
+
+                            <label class="flex items-center gap-2">
+                                <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Capo</span>
+                                <select id="controle_capotraste" class="min-h-10 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 focus:border-amber-400 focus:ring-amber-400">
+                                    <option value="0">Sem capo</option>
+                                    @for ($casaCapotraste = 1; $casaCapotraste <= 11; $casaCapotraste++)
+                                        <option value="{{ $casaCapotraste }}">{{ $casaCapotraste }} casa</option>
+                                    @endfor
+                                </select>
+                            </label>
 
                             <div class="flex items-center gap-2">
                                 <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Fonte</span>
@@ -128,9 +141,12 @@
                 const helper = window.VozECifraChord;
                 const preview = document.getElementById('letra_com_cifras_preview');
                 const tomBadge = document.getElementById('tom_atual_badge');
+                const capoBadge = document.getElementById('capotraste_badge');
+                const controleCapotraste = document.getElementById('controle_capotraste');
                 const textoOriginal = @json($textoCifraExibicao, JSON_UNESCAPED_UNICODE);
                 const tomOriginal = @json($tomExibicao);
                 let transposicaoAtual = 0;
+                let capotrasteAtual = 0;
                 let fonteAtual = 18;
 
                 if (!preview || !helper) {
@@ -147,12 +163,20 @@
                         return;
                     }
 
-                    tomBadge.textContent = 'Tom ' + helper.transposeChord(tomOriginal, transposicaoAtual);
+                    const tomReal = helper.transposeChord(tomOriginal, transposicaoAtual);
+                    const formaTocada = helper.transposeChord(tomOriginal, transposicaoAtual - capotrasteAtual);
+                    tomBadge.textContent = 'Tom ' + tomReal;
+
+                    if (capoBadge) {
+                        capoBadge.textContent = capotrasteAtual > 0
+                            ? 'Capo ' + capotrasteAtual + ' / tocar como ' + formaTocada
+                            : 'Sem capo';
+                    }
                 };
 
                 const renderizar = () => {
                     preview.innerHTML = helper.renderChordSheetHtml(
-                        helper.transposeBracketedText(textoOriginal, transposicaoAtual),
+                        helper.transposeBracketedText(textoOriginal, transposicaoAtual - capotrasteAtual),
                         { chordAttribute: 'data-acorde-hover' }
                     );
                     preview.style.setProperty('--escala-fonte', String(fonteAtual / 18));
@@ -168,6 +192,11 @@
 
                 document.querySelector('[data-transpose-reset]')?.addEventListener('click', () => {
                     transposicaoAtual = 0;
+                    renderizar();
+                });
+
+                controleCapotraste?.addEventListener('change', () => {
+                    capotrasteAtual = Math.max(0, Math.min(11, Number(controleCapotraste.value || 0)));
                     renderizar();
                 });
 

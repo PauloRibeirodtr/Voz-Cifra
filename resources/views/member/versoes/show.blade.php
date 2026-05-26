@@ -39,6 +39,9 @@
             const rotuloBpm = document.getElementById('rotulo_bpm');
             const controleVolumeMetronomo = document.getElementById('volume_metronomo');
             const indicadorFonte = document.getElementById('indicador_fonte_atual');
+            const controleCapotraste = document.getElementById('controle_capotraste');
+            const capoBadge = document.getElementById('capotraste_badge');
+            const capoIndicador = document.getElementById('indicador_capotraste');
             const studyToast = document.getElementById('study_toast');
             const modalPlaylist = document.getElementById('playlist_modal');
             const modalPlaylistBackdrop = document.getElementById('playlist_modal_backdrop');
@@ -49,6 +52,7 @@
             const abrirModalControles = document.getElementById('abrir_modal_controles');
             const fecharModalControles = document.getElementById('fechar_modal_controles');
             let transposicaoAtual = 0;
+            let capotrasteAtual = 0;
             let fonteNivel = 1;
             let rolagemAtiva = false;
             let intervaloRolagem = null;
@@ -220,12 +224,16 @@
 
             const atualizarTomBadge = () => {
                 const valorAtual = !tomBase || !helper.isChord(tomBase) ? 'nao informado' : helper.transposeChord(tomBase, transposicaoAtual);
+                const formaAtual = !tomBase || !helper.isChord(tomBase) ? 'nao informado' : helper.transposeChord(tomBase, transposicaoAtual - capotrasteAtual);
+                const capoTexto = capotrasteAtual > 0 ? `Capo ${capotrasteAtual}` : 'Sem capo';
                 if (tomBadge) tomBadge.textContent = `Tom atual ${valorAtual}`;
                 if (tomIndicador) tomIndicador.textContent = `Tom atual: ${valorAtual}`;
+                if (capoBadge) capoBadge.textContent = `${capoTexto} / tocar como ${formaAtual}`;
+                if (capoIndicador) capoIndicador.textContent = `${capoTexto} / tocar como ${formaAtual}`;
             };
 
             const renderizar = () => {
-                const textoTransposto = helper.transposeBracketedText(textoOriginal, transposicaoAtual);
+                const textoTransposto = helper.transposeBracketedText(textoOriginal, transposicaoAtual - capotrasteAtual);
                 preview.innerHTML = helper.renderChordSheetHtml(textoTransposto, { chordAttribute: 'data-acorde-hover' });
                 const fonte = fonteConfig[fonteNivel] || fonteConfig[1];
                 previewContainer.style.setProperty('--escala-fonte', String(fonte.escala));
@@ -312,6 +320,11 @@
                 transposicaoAtual = 0;
                 renderizar();
                 mostrarToast('Tom original restaurado');
+            });
+            controleCapotraste?.addEventListener('change', () => {
+                capotrasteAtual = Math.max(0, Math.min(11, Number(controleCapotraste.value || 0)));
+                renderizar();
+                mostrarToast(capotrasteAtual > 0 ? `Capotraste na casa ${capotrasteAtual}` : 'Capotraste removido');
             });
             document.querySelectorAll('[data-font]').forEach((botao) => {
                 botao.addEventListener('click', () => {
@@ -566,6 +579,7 @@
                     <span class="study-badge study-badge-blue">BPM {{ $versaoMusical->bpm }}</span>
                 @endif
                 <span id="tom_atual_badge" class="study-badge bg-emerald-400/15 text-emerald-200">Tom atual {{ $tomExibicao ?: 'nao informado' }}</span>
+                <span id="capotraste_badge" class="study-badge bg-orange-400/15 text-orange-100">Sem capo</span>
             </div>
         </section>
 
@@ -677,9 +691,17 @@
                         <h3 class="font-black text-white">Tom e fonte</h3>
                         <div class="mt-4 flex flex-wrap items-center gap-3">
                             <span class="study-badge study-badge-yellow" id="indicador_tom_atual">Tom atual: {{ $tomExibicao ?: 'nao informado' }}</span>
+                            <span class="study-badge bg-orange-400/15 text-orange-100" id="indicador_capotraste">Sem capo</span>
                             <button type="button" data-transpose="-1" class="study-button py-2 text-sm">Tom -</button>
                             <button type="button" data-transpose-reset class="study-button py-2 text-sm">Tom original</button>
                             <button type="button" data-transpose="1" class="study-button py-2 text-sm">Tom +</button>
+                            <label for="controle_capotraste" class="text-sm font-semibold text-slate-300">Capotraste</label>
+                            <select id="controle_capotraste" class="rounded-xl border border-white/10 bg-slate-950 px-3 py-3 text-sm font-bold text-white focus:border-emerald-500 focus:ring-emerald-500">
+                                <option value="0">Sem capo</option>
+                                @for ($casaCapotraste = 1; $casaCapotraste <= 11; $casaCapotraste++)
+                                    <option value="{{ $casaCapotraste }}">{{ $casaCapotraste }} casa</option>
+                                @endfor
+                            </select>
                             <span id="indicador_fonte_atual" class="study-badge study-badge-blue">Fonte: normal</span>
                             <button type="button" data-font="-1" class="study-button py-2 text-sm">A-</button>
                             <button type="button" data-font-reset class="study-button py-2 text-sm">Fonte padrao</button>
