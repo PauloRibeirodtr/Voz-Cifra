@@ -7,7 +7,7 @@
     @php($routePrefix = $routePrefix ?? 'admin')
 
     <div class="admin-page-shell">
-        <section class="admin-page-header">
+        <section class="admin-page-header" data-guide-target="tempos-cabecalho">
             <div class="admin-page-intro">
                 <p class="admin-page-kicker">Catalogo liturgico</p>
                 <h1 class="admin-page-title mt-2 text-2xl font-black sm:text-3xl">Tempos liturgicos</h1>
@@ -15,7 +15,7 @@
             </div>
 
             <div class="admin-page-actions">
-                <a href="{{ route($routePrefix . '.tempos-liturgicos.create') }}" class="admin-btn admin-btn-primary">Cadastrar tempo liturgico</a>
+                <a href="{{ route($routePrefix . '.tempos-liturgicos.create') }}" class="admin-btn admin-btn-primary" data-guide-target="tempos-criar">Cadastrar tempo liturgico</a>
             </div>
         </section>
 
@@ -25,7 +25,7 @@
             </div>
         @endif
 
-        <section class="admin-table-shell">
+        <section class="admin-table-shell" data-guide-target="tempos-lista">
             @if ($temposLiturgicos->isEmpty())
                 <div class="admin-empty-state">
                     Nenhum tempo liturgico cadastrado ate o momento.

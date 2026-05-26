@@ -3,7 +3,7 @@
 @endphp
 
 <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
-    <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm xl:col-span-2">
+    <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm xl:col-span-2" data-guide-target="missa-dados">
         @if ($errors->any())
             <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
                 <ul class="list-disc pl-5">
@@ -16,7 +16,7 @@
 
         <div class="grid grid-cols-1 gap-4">
             @if (!empty($modoCriacao))
-                <div class="rounded-2xl border border-[#ead6b3] bg-[#fff8ed] p-4">
+                <div class="rounded-2xl border border-[#ead6b3] bg-[#fff8ed] p-4" data-guide-target="missa-reaproveitar">
                     <span class="block text-sm font-semibold text-[#5b3d1a]">Deseja reaproveitar o repert&oacute;rio de uma missa anterior?</span>
                     <div class="mt-4 flex flex-wrap gap-4">
                         <label class="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
@@ -45,12 +45,12 @@
                 </div>
             @endif
 
-            <div>
+            <div data-guide-target="missa-titulo">
                 <label class="block text-sm font-medium text-gray-700">T&iacute;tulo da missa</label>
                 <input type="text" name="titulo" value="{{ old('titulo', $missa->titulo) }}" class="{{ $classeInput }}" placeholder="Ex.: Missa dominical da noite" required>
             </div>
 
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2" data-guide-target="missa-data-tempo">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Data</label>
                     <input type="date" name="data_missa" value="{{ old('data_missa', optional($missa->data_missa)->format('Y-m-d')) }}" class="{{ $classeInput }}" required>
@@ -69,7 +69,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2" data-guide-target="missa-horarios">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Hora de in&iacute;cio</label>
                     <input type="time" name="hora_inicio" value="{{ old('hora_inicio', $missa->hora_inicio ? substr((string) $missa->hora_inicio, 0, 5) : '') }}" class="{{ $classeInput }}" required>
@@ -81,7 +81,7 @@
                 </div>
             </div>
 
-            <div>
+            <div data-guide-target="missa-celebrante">
                 <label class="block text-sm font-medium text-gray-700">Celebrante</label>
                 <select name="padre_id" class="{{ $classeInput }}">
                     <option value="">N&atilde;o vincular agora</option>
@@ -94,14 +94,14 @@
                 <p class="mt-1 text-xs text-gray-500">Selecione um celebrante cadastrado. O sistema evita conflito do mesmo padre em duas missas no mesmo hor&aacute;rio.</p>
             </div>
 
-            <div>
+            <div data-guide-target="missa-observacoes">
                 <label class="block text-sm font-medium text-gray-700">Observa&ccedil;&otilde;es</label>
                 <textarea name="observacoes" rows="5" class="{{ $classeInput }}" placeholder="Observa&ccedil;&otilde;es gerais da missa, orienta&ccedil;&otilde;es ou combinados internos.">{{ old('observacoes', $missa->observacoes) }}</textarea>
             </div>
         </div>
     </section>
 
-    <aside class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+    <aside class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm" data-guide-target="missa-publicacao">
         <h2 class="text-lg font-bold text-gray-900">Status da missa</h2>
         <p class="mt-2 text-sm text-gray-500">Se marcar como ativa, esta missa passa a ser a principal da igreja para o fluxo operacional.</p>
 
@@ -123,7 +123,7 @@
             <span>Publicar esta missa para os m&uacute;sicos com cifras e estudo</span>
         </label>
 
-        <div class="mt-6 space-y-3">
+        <div class="mt-6 space-y-3" data-guide-target="missa-salvar">
             <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-[#6c4a21] px-5 py-3 font-semibold text-white transition hover:bg-[#5b3d1a]">
                 {{ $missa->exists ? 'Salvar alterações' : 'Cadastrar missa e abrir repertório' }}
             </button>

@@ -48,6 +48,60 @@
             ['alvo' => '[data-guide-target="igreja-salvar"]', 'titulo' => 'Salvar igreja', 'texto' => 'Revise os dados. Se o sistema avisar sobre igreja parecida, confira antes de confirmar.'],
         ],
     ];
+    $guiaGerenciarUsuariosAjuda = [
+        'id' => 'gerenciar-usuarios',
+        'rota' => 'admin.usuarios.index',
+        'passos' => [
+            ['alvo' => '[data-guide-target="usuarios-resumo"]', 'titulo' => 'Comece pelos indicadores', 'texto' => 'Use estes cards para entender rapidamente quantos usuarios existem por perfil, presenca e vinculo. Eles tambem funcionam como atalhos de filtro.'],
+            ['alvo' => '[data-guide-target="usuarios-busca"]', 'foco' => '[data-user-search-input]', 'titulo' => 'Busque a pessoa certa', 'texto' => 'Digite nome, e-mail, CPF, igreja ou cidade. Com poucas letras o sistema ja ajuda a encontrar sem precisar rolar a lista inteira.'],
+            ['alvo' => '[data-guide-target="usuarios-tipo"]', 'foco' => '[name="tipo"]', 'titulo' => 'Filtre por perfil', 'texto' => 'Use tipo para separar admin master, coordenador, admin local, musico, padre ou usuarios sem vinculo.'],
+            ['alvo' => '[data-guide-target="usuarios-presenca"]', 'foco' => '[name="presenca"]', 'titulo' => 'Confira presenca', 'texto' => 'Quando precisar dar suporte, filtre quem esta online agora ou quem esta offline.'],
+            ['alvo' => '[data-guide-target="usuarios-filtrar"]', 'titulo' => 'Aplique os filtros', 'texto' => 'Depois de escolher os criterios, clique em buscar. Se o resultado ficar estreito demais, limpe os filtros e tente de novo.'],
+            ['alvo' => '[data-guide-target="usuarios-lista"]', 'titulo' => 'Abra ou revise usuarios', 'texto' => 'Na base de usuarios voce abre o cadastro, confere vinculos, status e acoes de acesso de cada pessoa.'],
+            ['alvo' => '[data-guide-target="usuarios-criar"]', 'titulo' => 'Cadastre quando nao existir', 'texto' => 'Se a busca confirmar que a pessoa ainda nao existe, use cadastrar usuario para criar a conta pelo fluxo guiado.'],
+        ],
+    ];
+    $guiaAcordesAjuda = [
+        'id' => 'consultar-acordes',
+        'rota' => 'admin.acordes.index',
+        'passos' => [
+            ['alvo' => '[data-guide-target="acordes-busca"]', 'foco' => '[name="search"]', 'titulo' => 'Procure pelo acorde', 'texto' => 'Digite o nome do acorde ou parte da descricao para encontrar variacoes rapidamente.'],
+            ['alvo' => '[data-guide-target="acordes-acoes"]', 'titulo' => 'Busque ou cadastre', 'texto' => 'Use buscar para filtrar a galeria. Se a posicao ainda nao existir, cadastre um novo desenho de acorde.'],
+            ['alvo' => '[data-guide-target="acordes-galeria"]', 'titulo' => 'Revise a galeria', 'texto' => 'Cada card mostra o desenho, casa base e acoes de visualizar, editar ou inativar o acorde.'],
+        ],
+    ];
+    $guiaTemposLiturgicosAjuda = static fn (string $rota): array => [
+        'id' => 'consultar-tempos-liturgicos-' . str_replace('.', '-', $rota),
+        'rota' => $rota,
+        'passos' => [
+            ['alvo' => '[data-guide-target="tempos-cabecalho"]', 'titulo' => 'Entenda o catalogo', 'texto' => 'Tempos liturgicos organizam periodos como Advento, Quaresma, Pascoa e Tempo Comum para classificar missas e musicas.'],
+            ['alvo' => '[data-guide-target="tempos-lista"]', 'titulo' => 'Confira os tempos cadastrados', 'texto' => 'A lista mostra nome, descricao e status. Edite quando precisar ajustar texto ou inative quando nao quiser mais usar.'],
+            ['alvo' => '[data-guide-target="tempos-criar"]', 'titulo' => 'Cadastre um novo tempo', 'texto' => 'Use este botao apenas quando o tempo ainda nao existir no catalogo.'],
+        ],
+    ];
+    $guiaMomentosLiturgicosAjuda = static fn (string $rota): array => [
+        'id' => 'consultar-momentos-liturgicos-' . str_replace('.', '-', $rota),
+        'rota' => $rota,
+        'passos' => [
+            ['alvo' => '[data-guide-target="momentos-cabecalho"]', 'titulo' => 'Organize a ordem da missa', 'texto' => 'Momentos liturgicos indicam onde cada musica entra: entrada, ofertorio, comunhao, final e outros pontos da celebracao.'],
+            ['alvo' => '[data-guide-target="momentos-lista"]', 'titulo' => 'Revise momentos cadastrados', 'texto' => 'Confira nome, descricao, ordem e status antes de editar ou inativar. A ordem ajuda a montar repertorios mais claros.'],
+            ['alvo' => '[data-guide-target="momentos-criar"]', 'titulo' => 'Cadastre um momento novo', 'texto' => 'Crie outro momento quando sua igreja precisar de uma etapa que ainda nao existe na lista.'],
+        ],
+    ];
+    $guiaCadastrarMissaAjuda = [
+        'id' => 'cadastrar-missa',
+        'rota' => 'local-admin.missas.create',
+        'passos' => [
+            ['alvo' => '[data-guide-target="missa-cabecalho"]', 'titulo' => 'Crie a celebracao', 'texto' => 'Aqui voce cadastra a missa e depois segue para montar o repertorio com as musicas.'],
+            ['alvo' => '[data-guide-target="missa-reaproveitar"]', 'foco' => '[name="reaproveitar_repertorio"]', 'titulo' => 'Reaproveite quando fizer sentido', 'texto' => 'Se houver missa parecida, marque sim e escolha uma missa anterior para preencher dados e repertorio como ponto de partida.'],
+            ['alvo' => '[data-guide-target="missa-titulo"]', 'foco' => '[name="titulo"]', 'titulo' => 'Nomeie a missa', 'texto' => 'Use um titulo que a equipe reconheca facilmente, como missa dominical da noite ou celebracao do padroeiro.'],
+            ['alvo' => '[data-guide-target="missa-data-tempo"]', 'foco' => '[name="data_missa"]', 'titulo' => 'Defina data e tempo', 'texto' => 'Informe a data e, se ja souber, o tempo liturgico. Isso ajuda na busca e na escolha das musicas.'],
+            ['alvo' => '[data-guide-target="missa-horarios"]', 'foco' => '[name="hora_inicio"]', 'titulo' => 'Preencha os horarios', 'texto' => 'Hora de inicio e termino evitam conflito de celebrante e deixam a agenda clara para a equipe.'],
+            ['alvo' => '[data-guide-target="missa-celebrante"]', 'foco' => '[name="padre_id"]', 'titulo' => 'Escolha o celebrante', 'texto' => 'Quando o padre estiver cadastrado, selecione aqui para o sistema validar possiveis conflitos no mesmo horario.'],
+            ['alvo' => '[data-guide-target="missa-publicacao"]', 'titulo' => 'Controle a publicacao', 'texto' => 'Defina se a missa fica ativa e se aparece para fieis e musicos. Isso evita publicar algo antes da hora.'],
+            ['alvo' => '[data-guide-target="missa-salvar"]', 'titulo' => 'Salve e monte o repertorio', 'texto' => 'Depois de revisar, cadastre a missa. Em seguida voce podera adicionar as musicas na ordem correta.'],
+        ],
+    ];
 
     $acoesAjuda = [];
     $adicionarAcaoAjuda = static function (string $perfil, string $titulo, string $url, string $icone, array $termos = [], ?array $guia = null, string $descricao = '') use (&$acoesAjuda): void {
@@ -61,12 +115,12 @@
                 'url' => preg_replace('/#.*$/', '', $url),
                 'passos' => [
                     [
-                        'alvo' => '#mainContent',
+                        'alvo' => '#mainContent [data-guide-target], #mainContent .admin-page-header, #mainContent section:first-of-type, #mainContent',
                         'titulo' => $titulo,
                         'texto' => $descricao !== '' ? $descricao : 'Esta e a area principal desta acao. Comece lendo o titulo e os avisos da tela.',
                     ],
                     [
-                        'alvo' => '#mainContent form, #mainContent [data-guide-target], #mainContent table, #mainContent .grid',
+                        'alvo' => '#mainContent [data-guide-target], #mainContent form, #mainContent table, #mainContent .grid',
                         'titulo' => 'Preencha ou filtre com calma',
                         'texto' => 'Use os campos, filtros e listas desta tela. Quando houver busca, digite poucas palavras e confira os resultados antes de salvar.',
                     ],

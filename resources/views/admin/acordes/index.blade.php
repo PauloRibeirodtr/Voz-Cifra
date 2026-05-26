@@ -38,7 +38,7 @@
 
 @section('content')
     <div class="admin-page-shell">
-        <section class="admin-page-header">
+        <section class="admin-page-header" data-guide-target="acordes-cabecalho">
             <div class="admin-page-intro">
                 <p class="admin-page-kicker">Biblioteca visual</p>
                 <h1 class="admin-page-title mt-2 text-2xl font-black sm:text-3xl">Acordes</h1>
@@ -46,9 +46,9 @@
             </div>
         </section>
 
-        <section class="admin-filter-surface p-5">
+        <section class="admin-filter-surface p-5" data-guide-target="acordes-filtros">
             <form action="{{ route('admin.acordes.index') }}" method="GET" class="admin-form-grid lg:grid-cols-[minmax(0,1fr)_auto]">
-                <div>
+                <div data-guide-target="acordes-busca">
                     <label class="admin-label">Busca</label>
                     <input
                         type="text"
@@ -59,9 +59,9 @@
                     >
                 </div>
 
-                <div class="admin-page-actions lg:self-end">
+                <div class="admin-page-actions lg:self-end" data-guide-target="acordes-acoes">
                     <button type="submit" class="admin-btn admin-btn-warm">Buscar</button>
-                    <a href="{{ route('admin.acordes.create') }}" class="admin-btn admin-btn-primary">Cadastrar acorde</a>
+                    <a href="{{ route('admin.acordes.create') }}" class="admin-btn admin-btn-primary" data-guide-target="acordes-criar">Cadastrar acorde</a>
                 </div>
             </form>
         </section>
@@ -72,7 +72,7 @@
             </div>
         @endif
 
-        <section class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <section class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" data-guide-target="acordes-galeria">
             @forelse($acordes as $acorde)
                 <article class="admin-list-card chord-card overflow-hidden">
                     <div class="border-b border-gray-100 bg-gray-50 px-4 py-4 text-center">

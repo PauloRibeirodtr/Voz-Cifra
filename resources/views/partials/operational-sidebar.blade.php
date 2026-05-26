@@ -29,11 +29,11 @@
 
     $itemMenuClasseSidebar = static function (bool $ativo): string {
         return $ativo
-            ? 'group flex items-center gap-4 rounded-2xl border border-[#8c6933] bg-[#382321] px-4 py-3 font-semibold text-[#fff8ed] shadow-sm transition'
-            : 'group flex items-center gap-4 rounded-2xl border border-transparent px-4 py-3 font-medium text-[#f0e4d4] transition hover:border-white/5 hover:bg-[#2b1a19] hover:text-white';
+            ? 'group flex items-center gap-3 rounded-xl border border-[#8c6933]/70 bg-[#382321] px-3.5 py-2.5 font-semibold text-[#fff8ed] shadow-sm transition'
+            : 'group flex items-center gap-3 rounded-xl border border-transparent px-3.5 py-2.5 font-medium text-[#f0e4d4] transition hover:border-white/5 hover:bg-[#2b1a19] hover:text-white';
     };
 
-    $secaoLabelClasseSidebar = 'pt-3 pb-1 pl-4 text-[11px] font-black uppercase tracking-widest text-[#d6ad6c] opacity-80';
+    $secaoLabelClasseSidebar = 'pt-3 pb-1 pl-3.5 text-[10px] font-black uppercase tracking-[0.2em] text-[#d6ad6c] opacity-80';
 @endphp
 
 <aside
@@ -50,18 +50,18 @@
         </a>
     </div>
 
-    <a href="{{ $linkPainelSidebar }}" class="hidden shrink-0 border-b border-white/10 px-6 py-8 md:flex md:flex-col md:items-center md:justify-center">
-        <img src="{{ asset('logo/final.png') }}" alt="Logo Voz e Cifra" class="mb-4 h-auto w-24 drop-shadow-2xl">
-        <div class="text-center">
-            <h1 class="text-xl font-extrabold tracking-widest text-white">VOZ</h1>
-            <h2 class="text-lg font-bold tracking-wider text-[#ead6b3]">&amp; CIFRA</h2>
-            <p class="mt-2 text-[11px] font-black uppercase tracking-[0.22em] text-[#d6ad6c]">
+    <a href="{{ $linkPainelSidebar }}" class="hidden shrink-0 border-b border-white/10 px-6 py-5 md:flex md:items-center md:gap-4">
+        <img src="{{ asset('logo/final.png') }}" alt="Logo Voz e Cifra" class="h-16 w-16 shrink-0 rounded-2xl object-contain drop-shadow-xl">
+        <div class="min-w-0">
+            <h1 class="text-lg font-black tracking-widest text-white">VOZ</h1>
+            <h2 class="-mt-1 text-base font-bold tracking-wider text-[#ead6b3]">&amp; CIFRA</h2>
+            <p class="mt-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#d6ad6c]">
                 {!! $isLocalAreaSidebar ? '&Aacute;rea da igreja' : ($isCoordenadorAreaSidebar ? '&Aacute;rea da coordena&ccedil;&atilde;o' : '&Aacute;rea musical') !!}
             </p>
         </div>
     </a>
 
-    <nav class="flex-1 space-y-3 overflow-y-auto px-4 py-6">
+    <nav class="flex-1 space-y-2 overflow-y-auto px-3.5 py-4">
         @if ($temAdminMasterSidebar)
             <div class="{{ $secaoLabelClasseSidebar }}">Painel</div>
 
@@ -97,9 +97,9 @@
             <div class="{{ $secaoLabelClasseSidebar }}">Minha igreja</div>
 
             @if ($igrejaAtivaSidebar)
-                <div class="mx-1 rounded-2xl border border-[#8c6933]/25 bg-[#251716] px-4 py-3 text-sm text-[#f6ead4]">
+                <div class="mx-0.5 rounded-xl border border-[#8c6933]/25 bg-[#251716] px-3.5 py-3 text-sm text-[#f6ead4]">
                     <p class="text-[10px] font-black uppercase tracking-[0.18em] text-[#d6ad6c]">Igreja selecionada</p>
-                    <p class="mt-1 font-semibold text-white">{{ $igrejaAtivaSidebar->nome }}</p>
+                    <p class="mt-1 line-clamp-2 font-semibold leading-5 text-white">{{ $igrejaAtivaSidebar->nome }}</p>
                 </div>
             @endif
 
@@ -215,11 +215,11 @@
         </a>
     </nav>
 
-    <div class="shrink-0 border-t border-white/10 bg-black/20 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+    <div class="shrink-0 border-t border-white/10 bg-black/20 p-3 pb-[max(.75rem,env(safe-area-inset-bottom))]">
         @auth
-            <a href="{{ route($perfilRouteSidebar) }}" class="admin-sidebar-profile-link mb-4 block rounded-2xl border border-white/10 bg-white/5 px-3 py-3" aria-label="Abrir meu perfil">
-                <div class="flex items-center gap-3">
-                    <div class="flex h-11 w-11 items-center justify-center rounded-full border border-[#8c6933] bg-[#6c4a21] font-bold text-white shadow-sm">
+            <a href="{{ route($perfilRouteSidebar) }}" class="admin-sidebar-profile-link mb-3 block rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3 transition hover:border-[#8c6933]/50 hover:bg-white/[0.07]" aria-label="Abrir meu perfil">
+                <div class="flex items-start gap-3">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#8c6933] bg-[#6c4a21] font-bold text-white shadow-sm">
                         @if (filled(auth()->user()->foto_perfil_path))
                             <img
                                 src="{{ auth()->user()->fotoPerfilUrl() }}"
@@ -233,18 +233,18 @@
                         @endif
                     </div>
                     <div class="min-w-0 flex-1">
-                        <p class="truncate text-sm font-bold text-white">{{ auth()->user()->nome }}</p>
-                        <p class="truncate text-[10px] text-[#d6ad6c]">{{ auth()->user()->email }}</p>
+                        <p class="truncate text-sm font-black leading-5 text-white">{{ auth()->user()->nome }}</p>
+                        <p class="truncate text-[11px] font-medium text-[#d6ad6c]">{{ auth()->user()->email }}</p>
                         @if ($igrejaAtivaSidebar)
-                            <p class="mt-1 truncate text-[10px] text-white/60">{{ $igrejaAtivaSidebar->nome }}</p>
+                            <p class="mt-1 line-clamp-1 text-[10px] font-semibold text-white/55">{{ $igrejaAtivaSidebar->nome }}</p>
                         @endif
                     </div>
                 </div>
 
                 @if ($papeisAtivosSidebar->isNotEmpty())
-                    <div class="mt-3 flex flex-wrap gap-2">
+                    <div class="mt-2 flex flex-wrap gap-1.5">
                         @foreach ($papeisAtivosSidebar as $papelSidebar)
-                            <span class="inline-flex rounded-full border border-[#8c6933] bg-[#382321] px-2.5 py-1 text-[10px] font-semibold text-[#fff1ea]">
+                            <span class="inline-flex rounded-full border border-[#8c6933]/70 bg-[#382321] px-2.5 py-1 text-[10px] font-bold text-[#fff1ea]">
                                 {{ $papelSidebar->label() }}
                             </span>
                         @endforeach
@@ -255,7 +255,7 @@
 
         <form action="{{ route('logout') }}" method="POST">
             @csrf
-            <button type="submit" class="inline-flex w-full items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-[#fff1ea] transition hover:bg-white/10">
+            <button type="submit" class="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-[#fff1ea] transition hover:bg-white/10">
                 Sair da conta
             </button>
         </form>

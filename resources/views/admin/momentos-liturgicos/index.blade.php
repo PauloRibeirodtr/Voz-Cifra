@@ -6,13 +6,13 @@
 @section('content')
     @php($routePrefix = $routePrefix ?? 'admin')
 
-    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between" data-guide-target="momentos-cabecalho">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Momentos liturgicos</h1>
             <p class="text-sm text-gray-500">Gerencie os momentos liturgicos centrais do sistema.</p>
         </div>
 
-        <a href="{{ route($routePrefix . '.momentos-liturgicos.create') }}" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-medium text-white hover:bg-green-800 sm:w-auto">
+        <a href="{{ route($routePrefix . '.momentos-liturgicos.create') }}" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-medium text-white hover:bg-green-800 sm:w-auto" data-guide-target="momentos-criar">
             Cadastrar momento liturgico
         </a>
     </div>
@@ -23,7 +23,7 @@
         </div>
     @endif
 
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-guide-target="momentos-lista">
         @if ($momentosLiturgicos->isEmpty())
             <div class="p-8 text-center text-gray-500">
                 Nenhum momento liturgico cadastrado ate o momento.

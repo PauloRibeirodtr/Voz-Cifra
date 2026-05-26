@@ -4,14 +4,14 @@
 @section('mobile_title', 'Cadastrar missa')
 
 @section('content')
-    <div class="mb-6">
+    <div class="mb-6" data-guide-target="missa-cabecalho">
         <h1 class="text-2xl font-bold text-gray-900">Cadastrar missa</h1>
         <p class="mt-1 text-sm text-gray-500">Cadastre a celebra&ccedil;&atilde;o da igreja e, em seguida, abra o repert&oacute;rio para adicionar as m&uacute;sicas.</p>
     </div>
 
     @include('local-admin.partials.church-switcher')
 
-    <form action="{{ route('local-admin.missas.store') }}" method="POST">
+    <form action="{{ route('local-admin.missas.store') }}" method="POST" data-guide-target="missa-form">
         @csrf
         @include('local-admin.missas._form', ['modoCriacao' => true])
     </form>

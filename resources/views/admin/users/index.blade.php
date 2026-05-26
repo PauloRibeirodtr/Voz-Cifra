@@ -76,7 +76,7 @@
     @endphp
 
     <div class="admin-page-shell">
-        <section class="admin-page-header">
+        <section class="admin-page-header" data-guide-target="usuarios-cabecalho">
             <div class="admin-page-intro">
                 <p class="admin-page-kicker">Gestão central</p>
                 <h1 class="admin-page-title mt-2 text-2xl font-black sm:text-3xl">Usuários</h1>
@@ -86,7 +86,7 @@
                 </p>
             </div>
 
-            <div class="admin-page-actions">
+            <div class="admin-page-actions" data-guide-target="usuarios-criar">
                 <a href="{{ route('admin.usuarios.create') }}" class="admin-btn admin-btn-primary">Cadastrar usuário</a>
             </div>
         </section>
@@ -97,7 +97,7 @@
             </div>
         @endif
 
-        <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-7">
+        <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-7" data-guide-target="usuarios-resumo">
             <a href="{{ route('admin.usuarios.index') }}" class="admin-stat-card user-metric-link block p-5">
                 <div class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Total</div>
                 <div class="mt-3 text-3xl font-black text-slate-900">{{ $metricas['total'] ?? 0 }}</div>
@@ -134,9 +134,9 @@
             </a>
         </section>
 
-        <section class="admin-section-card p-5">
+        <section class="admin-section-card p-5" data-guide-target="usuarios-filtros">
             <form method="GET" action="{{ route('admin.usuarios.index') }}" class="admin-form-grid xl:grid-cols-5">
-                <div class="relative xl:col-span-2">
+                <div class="relative xl:col-span-2" data-guide-target="usuarios-busca">
                     <label for="q" class="block text-xs font-black uppercase tracking-[0.18em] text-gray-400">Pesquisar usuario</label>
                     <input id="q" type="search" name="q" value="{{ $buscaAtual }}" class="mt-2 block w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-gray-800 shadow-sm outline-none transition focus:border-[#6c4a21] focus:ring-4 focus:ring-[#6c4a21]/10" placeholder="Nome, e-mail, CPF, igreja ou cidade" autocomplete="off" minlength="3" data-user-search-input>
                     <div class="absolute z-20 mt-2 hidden w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl" data-user-suggestions></div>
@@ -151,7 +151,7 @@
                     @endif
                 </div>
 
-                <div>
+                <div data-guide-target="usuarios-tipo">
                     <label class="admin-label">Tipo</label>
                     <select name="tipo" class="admin-select">
                         <option value="">Todos</option>
@@ -164,7 +164,7 @@
                     </select>
                 </div>
 
-                <div>
+                <div data-guide-target="usuarios-presenca">
                     <label class="admin-label">Presença</label>
                     <select name="presenca" class="admin-select">
                         <option value="">Todos</option>
@@ -173,7 +173,7 @@
                     </select>
                 </div>
 
-                <div>
+                <div data-guide-target="usuarios-status">
                     <label class="admin-label">Status</label>
                     <select name="status" class="admin-select">
                         <option value="">Todos</option>
@@ -182,7 +182,7 @@
                     </select>
                 </div>
 
-                <div class="xl:col-span-5 admin-actions">
+                <div class="xl:col-span-5 admin-actions" data-guide-target="usuarios-filtrar">
                     <button type="submit" class="admin-btn admin-btn-warm">Buscar</button>
                     @if ($buscaAtual !== '' || $tipoAtual !== '' || $presencaAtual !== '' || $statusAtual !== '')
                         <a href="{{ route('admin.usuarios.index') }}" class="admin-btn admin-btn-secondary">Limpar</a>
@@ -191,7 +191,7 @@
             </form>
         </section>
 
-        <section class="admin-panel">
+        <section class="admin-panel" data-guide-target="usuarios-lista">
             <div class="admin-panel-header">
                 <div>
                     <h2 class="text-lg font-bold text-gray-800">Base de usuários</h2>
