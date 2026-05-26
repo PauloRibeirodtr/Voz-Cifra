@@ -31,6 +31,23 @@
             ],
         ];
     };
+    $guiaCadastrarIgrejaAjuda = [
+        'id' => 'cadastro-igreja',
+        'rota' => 'admin.igrejas.create',
+        'passos' => [
+            ['alvo' => '[data-guide-target="igreja-imagem"]', 'foco' => '[name="imagem"]', 'titulo' => 'Imagem ou logo', 'texto' => 'Opcional, mas ajuda a comunidade a reconhecer a igreja nos cards e links publicos.'],
+            ['alvo' => '[data-guide-target="igreja-nome"]', 'foco' => '[name="nome"]', 'titulo' => 'Nome da igreja', 'texto' => 'Digite o nome oficial ou o nome mais conhecido pela comunidade.'],
+            ['alvo' => '[data-guide-target="igreja-cnpj"]', 'foco' => '[name="cnpj"]', 'titulo' => 'CNPJ', 'texto' => 'Informe o CNPJ para evitar cadastro duplicado e manter a identificacao da igreja.'],
+            ['alvo' => '[data-guide-target="igreja-telefone"]', 'foco' => '[name="telefone_secretaria"]', 'titulo' => 'Telefone da secretaria', 'texto' => 'Opcional. Use o contato oficial para fieis e equipe musical terem uma referencia confiavel.'],
+            ['alvo' => '[data-guide-target="igreja-cep"]', 'foco' => '[name="cep"]', 'titulo' => 'CEP', 'texto' => 'Se souber o CEP, preencha primeiro. O sistema pode ajudar a sugerir cidade, estado e endereco.'],
+            ['alvo' => '[data-guide-target="igreja-estado"]', 'foco' => '[name="estado"]', 'titulo' => 'Estado', 'texto' => 'Use a sigla com duas letras, como MS, MT ou SP.'],
+            ['alvo' => '[data-guide-target="igreja-endereco"]', 'foco' => '[name="endereco"]', 'titulo' => 'Endereco', 'texto' => 'Coloque rua, numero e complemento. Esse texto aparece para quem abrir a pagina publica.'],
+            ['alvo' => '[data-guide-target="igreja-cidade"]', 'foco' => '[name="cidade"]', 'titulo' => 'Cidade', 'texto' => 'A cidade ajuda na busca publica e na organizacao das igrejas cadastradas.'],
+            ['alvo' => '[data-guide-target="igreja-admin-toggle"]', 'foco' => '[name="criar_admin_local_agora"]', 'titulo' => 'Administrador local', 'texto' => 'Marque apenas se a igreja ja tiver uma pessoa responsavel. Se nao tiver, pode deixar para depois.'],
+            ['alvo' => '[data-guide-target="igreja-admin-dados"]', 'foco' => '[name="admin_nome"]', 'titulo' => 'Dados do administrador', 'texto' => 'Se marcou administrador local, preencha nome, CPF, e-mail e telefone para enviar acesso seguro.'],
+            ['alvo' => '[data-guide-target="igreja-salvar"]', 'titulo' => 'Salvar igreja', 'texto' => 'Revise os dados. Se o sistema avisar sobre igreja parecida, confira antes de confirmar.'],
+        ],
+    ];
 
     $acoesAjuda = [];
     $adicionarAcaoAjuda = static function (string $perfil, string $titulo, string $url, string $icone, array $termos = [], ?array $guia = null, string $descricao = '') use (&$acoesAjuda): void {
@@ -91,7 +108,7 @@
         ], 'Crie contas e atribua o primeiro perfil conforme a permissao correta.');
         $adicionarAcaoAjuda('Admin master', 'Gerenciar usuarios', $urlAjuda('admin.usuarios.index') ?? '', 'fa-users-gear', ['perfis', 'papeis', 'acesso'], null, 'Pesquise pessoas, edite dados, ative contas e reenvie convites.');
         $adicionarAcaoAjuda('Admin master', 'Ver hierarquia de usuarios', $urlAjuda('admin.usuarios.hierarquia') ?? '', 'fa-sitemap', ['hierarquia', 'vinculos', 'perfis'], null, 'Confira como os usuarios estao distribuidos por perfil e igreja.');
-        $adicionarAcaoAjuda('Admin master', 'Cadastrar igreja', $urlAjuda('admin.igrejas.create') ?? '', 'fa-church', ['paroquia', 'comunidade'], null, 'Crie uma igreja ou comunidade e depois vincule equipe local.');
+        $adicionarAcaoAjuda('Admin master', 'Cadastrar igreja', $urlAjuda('admin.igrejas.create') ?? '', 'fa-church', ['paroquia', 'comunidade'], $guiaCadastrarIgrejaAjuda, 'Crie uma igreja ou comunidade e depois vincule equipe local.');
         $adicionarAcaoAjuda('Admin master', 'Gerenciar igrejas', $urlAjuda('admin.igrejas.index') ?? '', 'fa-building-columns', ['dados', 'links', 'paroquia'], null, 'Edite dados, links publicos, coordenadores e admins locais das igrejas.');
         $adicionarAcaoAjuda('Admin master', 'Administrar admins locais', $urlAjuda('admin.admins-locais.index') ?? '', 'fa-user-shield', ['admin local', 'senha', 'acesso'], null, 'Acompanhe admins locais e envie novo link de senha quando precisar.');
         $adicionarAcaoAjuda('Admin master', 'Cadastrar musica ou cifra', $urlAjuda('admin.musicas.create') ?? '', 'fa-music', ['musica', 'cifra', 'versao'], null, 'Inclua musicas e crie versoes de cifras para uso nas missas.');
@@ -262,8 +279,7 @@
                         <i class="fa-solid {{ $acaoAjuda['icone'] }}"></i>
                     </span>
                     <span class="min-w-0">
-                        <span class="block text-xs font-black uppercase tracking-[0.14em] text-[#8a5a1f]">{{ $acaoAjuda['perfil'] }}</span>
-                        <span class="mt-1 block text-sm font-black">{{ $acaoAjuda['titulo'] }}</span>
+                        <span class="block text-sm font-black">{{ $acaoAjuda['titulo'] }}</span>
                         @if ($acaoAjuda['descricao'] !== '')
                             <span class="mt-1 block text-xs leading-5 text-[#6d5242]">{{ $acaoAjuda['descricao'] }}</span>
                         @endif

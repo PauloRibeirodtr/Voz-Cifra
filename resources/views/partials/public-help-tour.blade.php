@@ -4,7 +4,7 @@
 
     $guiasPublicos = [];
 
-    if ($rotaPublicaAjuda === 'root') {
+    if (auth()->check() && $rotaPublicaAjuda === 'root') {
         $guiasPublicos[] = [
             'id' => 'publico-inicio',
             'titulo' => 'Encontrar uma igreja',
@@ -18,7 +18,7 @@
         ];
     }
 
-    if (isset($igreja) && in_array($rotaPublicaAjuda, ['igrejas.public.show', 'igrejas.public.musicos.show'], true)) {
+    if (auth()->check() && isset($igreja) && in_array($rotaPublicaAjuda, ['igrejas.public.show', 'igrejas.public.musicos.show'], true)) {
         $guiasPublicos[] = [
             'id' => 'publico-igreja',
             'titulo' => $modoPublicoAjuda === 'musicos' ? 'Ver cifras da missa' : 'Acompanhar missa publica',

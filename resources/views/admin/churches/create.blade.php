@@ -75,7 +75,7 @@
             <h2 class="text-lg font-bold text-gray-800 mb-4">Dados da igreja</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="md:col-span-2 rounded-3xl border border-gray-200 bg-gray-50 p-5">
+                <div class="md:col-span-2 rounded-3xl border border-gray-200 bg-gray-50 p-5" data-guide-target="igreja-imagem">
                     <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
                         <div class="h-28 w-28 overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
                             <img
@@ -101,23 +101,23 @@
                     </div>
                 </div>
 
-                <div class="md:col-span-2">
+                <div class="md:col-span-2" data-guide-target="igreja-nome">
                     <label class="block text-sm font-medium text-gray-700">Nome</label>
                     <input type="text" name="nome" value="{{ old('nome') }}" required placeholder="Ex.: Paroquia Sao Jose" class="{{ $classeInput }}" />
                 </div>
 
-                <div>
+                <div data-guide-target="igreja-cnpj">
                     <label class="block text-sm font-medium text-gray-700">CNPJ</label>
                     <input type="text" name="cnpj" value="{{ old('cnpj') }}" required placeholder="00.000.000/0000-00" data-cnpj-input class="{{ $classeInput }}" />
                 </div>
 
-                <div>
+                <div data-guide-target="igreja-telefone">
                     <label class="block text-sm font-medium text-gray-700">Telefone da secretaria</label>
                     <input type="text" name="telefone_secretaria" value="{{ old('telefone_secretaria') }}" placeholder="(65) 99999-9999" data-telefone-input class="{{ $classeInput }}" />
                     <p class="text-xs text-gray-500 mt-1">Opcional. Use o telefone oficial da secretaria ou atendimento da igreja.</p>
                 </div>
 
-                <div>
+                <div data-guide-target="igreja-cep">
                     <label class="block text-sm font-medium text-gray-700">CEP</label>
                     <input
                         type="text"
@@ -131,22 +131,22 @@
                     <p class="text-xs text-gray-500 mt-1">Ao informar um CEP válido, cidade, estado e endereço poderão ser sugeridos automaticamente.</p>
                 </div>
 
-                <div>
+                <div data-guide-target="igreja-estado">
                     <label class="block text-sm font-medium text-gray-700">Estado</label>
                     <input type="text" name="estado" value="{{ old('estado') }}" maxlength="2" required placeholder="UF" data-estado-input class="{{ $classeInput }} uppercase" />
                 </div>
 
-                <div class="md:col-span-2">
+                <div class="md:col-span-2" data-guide-target="igreja-endereco">
                     <label class="block text-sm font-medium text-gray-700">Endereço</label>
                     <input type="text" name="endereco" value="{{ old('endereco') }}" placeholder="Rua, número e complemento" data-endereco-input class="{{ $classeInput }}" />
                 </div>
 
-                <div class="md:col-span-2">
+                <div class="md:col-span-2" data-guide-target="igreja-cidade">
                     <label class="block text-sm font-medium text-gray-700">Cidade</label>
                     <input type="text" name="cidade" value="{{ old('cidade') }}" required placeholder="Ex.: Cuiabá" data-cidade-input class="{{ $classeInput }}" />
                 </div>
 
-                <div class="flex items-center gap-3 pt-2">
+                <div class="flex items-center gap-3 pt-2" data-guide-target="igreja-ativo">
                     <input type="hidden" name="ativo" value="0" />
                     <input id="ativo" type="checkbox" name="ativo" value="1" {{ old('ativo', '1') ? 'checked' : '' }} class="rounded border-gray-300 text-[#6c4a21] focus:ring-[#6c4a21]" />
                     <label for="ativo" class="text-sm font-medium text-gray-700">Igreja ativa</label>
@@ -159,7 +159,7 @@
             <p class="mb-4 text-sm text-gray-500">Defina se a unidade já sai pronta para operação local ou se ficará aguardando administrador local.</p>
 
             <div class="space-y-4">
-                <div>
+                <div data-guide-target="igreja-admin-toggle">
                     @php($criarAdminLocalAgora = (bool) old('criar_admin_local_agora', false))
                     <input type="hidden" name="criar_admin_local_agora" value="0">
                     <label class="flex items-start gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-4 text-sm text-gray-700">
@@ -182,7 +182,7 @@
                     Se a caixa ficar desmarcada, a igreja será cadastrada normalmente, continuará editável pelo admin master e aparecerá com o status <strong>aguardando administrador local</strong>.
                 </div>
 
-                <div data-admin-local-panel class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div data-admin-local-panel data-guide-target="igreja-admin-dados" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700">Nome</label>
                         <input type="text" name="admin_nome" value="{{ old('admin_nome') }}" placeholder="Nome completo do administrador local" class="{{ $classeInput }}" />
@@ -210,7 +210,7 @@
             </div>
         </div>
 
-        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end" data-guide-target="igreja-salvar">
             <a href="{{ route('admin.igrejas.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 text-gray-700 font-medium hover:bg-gray-50">
                 Cancelar
             </a>
