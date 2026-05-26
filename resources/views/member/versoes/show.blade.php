@@ -15,7 +15,7 @@
             const preview = document.getElementById('letra_com_cifras_preview');
             const previewContainer = document.getElementById('preview_musico_container');
             const tomBadge = document.getElementById('tom_atual_badge');
-            const tomIndicador = document.getElementById('indicador_tom_atual');
+            const tomIndicadores = Array.from(document.querySelectorAll('[data-tom-indicator]'));
             const textoOriginal = @json($textoCifraExibicao, JSON_UNESCAPED_UNICODE);
             const tomBase = @json($tomExibicao);
             const bibliotecaAcordes = @json($bibliotecaAcordes);
@@ -38,10 +38,10 @@
             const botaoAumentarBpm = document.getElementById('aumentar_bpm');
             const rotuloBpm = document.getElementById('rotulo_bpm');
             const controleVolumeMetronomo = document.getElementById('volume_metronomo');
-            const indicadorFonte = document.getElementById('indicador_fonte_atual');
-            const controleCapotraste = document.getElementById('controle_capotraste');
+            const indicadoresFonte = Array.from(document.querySelectorAll('[data-font-indicator]'));
+            const controlesCapotraste = Array.from(document.querySelectorAll('[data-capo-control]'));
             const capoBadge = document.getElementById('capotraste_badge');
-            const capoIndicador = document.getElementById('indicador_capotraste');
+            const capoIndicadores = Array.from(document.querySelectorAll('[data-capo-indicator]'));
             const studyToast = document.getElementById('study_toast');
             const modalPlaylist = document.getElementById('playlist_modal');
             const modalPlaylistBackdrop = document.getElementById('playlist_modal_backdrop');
@@ -49,7 +49,7 @@
             const fecharModalPlaylist = document.getElementById('fechar_modal_playlist');
             const modalControles = document.getElementById('controles_modal');
             const modalControlesBackdrop = document.getElementById('controles_modal_backdrop');
-            const abrirModalControles = document.getElementById('abrir_modal_controles');
+            const abrirModalControles = Array.from(document.querySelectorAll('[data-open-controls]'));
             const fecharModalControles = document.getElementById('fechar_modal_controles');
             let transposicaoAtual = 0;
             let capotrasteAtual = 0;
@@ -223,13 +223,21 @@
             };
 
             const atualizarTomBadge = () => {
-                const valorAtual = !tomBase || !helper.isChord(tomBase) ? 'nao informado' : helper.transposeChord(tomBase, transposicaoAtual);
-                const formaAtual = !tomBase || !helper.isChord(tomBase) ? 'nao informado' : helper.transposeChord(tomBase, transposicaoAtual - capotrasteAtual);
+                const temTomBase = tomBase && helper.isChord(tomBase);
+                const valorAtual = temTomBase ? helper.transposeChord(tomBase, transposicaoAtual) : 'nao informado';
+                const formaAtual = temTomBase ? helper.transposeChord(tomBase, transposicaoAtual - capotrasteAtual) : null;
                 const capoTexto = capotrasteAtual > 0 ? `Capo ${capotrasteAtual}` : 'Sem capo';
-                if (tomBadge) tomBadge.textContent = `Tom atual ${valorAtual}`;
-                if (tomIndicador) tomIndicador.textContent = `Tom atual: ${valorAtual}`;
-                if (capoBadge) capoBadge.textContent = `${capoTexto} / tocar como ${formaAtual}`;
-                if (capoIndicador) capoIndicador.textContent = `${capoTexto} / tocar como ${formaAtual}`;
+                const capoResumo = capotrasteAtual > 0
+                    ? (formaAtual ? `${capoTexto} / tocar como ${formaAtual}` : `${capoTexto} / cifra ${capotrasteAtual} semitom(ns) abaixo`)
+                    : 'Sem capo';
+                if (tomBadge) tomBadge.textContent = `Tom ${valorAtual}`;
+                tomIndicadores.forEach((indicador) => {
+                    indicador.textContent = `Tom: ${valorAtual}`;
+                });
+                if (capoBadge) capoBadge.textContent = capoResumo;
+                capoIndicadores.forEach((indicador) => {
+                    indicador.textContent = capoResumo;
+                });
             };
 
             const renderizar = () => {
@@ -237,7 +245,9 @@
                 preview.innerHTML = helper.renderChordSheetHtml(textoTransposto, { chordAttribute: 'data-acorde-hover' });
                 const fonte = fonteConfig[fonteNivel] || fonteConfig[1];
                 previewContainer.style.setProperty('--escala-fonte', String(fonte.escala));
-                if (indicadorFonte) indicadorFonte.textContent = `Fonte: ${fonte.label}`;
+                indicadoresFonte.forEach((indicador) => {
+                    indicador.textContent = `Fonte: ${fonte.label}`;
+                });
                 renderizarListaAcordes(textoTransposto);
                 atualizarTomBadge();
             };
@@ -316,15 +326,24 @@
                     mostrarToast('Tom alterado');
                 });
             });
-            document.querySelector('[data-transpose-reset]')?.addEventListener('click', () => {
-                transposicaoAtual = 0;
-                renderizar();
-                mostrarToast('Tom original restaurado');
+            document.querySelectorAll('[data-transpose-reset]').forEach((botao) => {
+                botao.addEventListener('click', () => {
+                    transposicaoAtual = 0;
+                    renderizar();
+                    mostrarToast('Tom original restaurado');
+                });
             });
-            controleCapotraste?.addEventListener('change', () => {
-                capotrasteAtual = Math.max(0, Math.min(11, Number(controleCapotraste.value || 0)));
-                renderizar();
-                mostrarToast(capotrasteAtual > 0 ? `Capotraste na casa ${capotrasteAtual}` : 'Capotraste removido');
+            controlesCapotraste.forEach((controle) => {
+                controle.addEventListener('change', () => {
+                    capotrasteAtual = Math.max(0, Math.min(11, Number(controle.value || 0)));
+                    controlesCapotraste.forEach((outroControle) => {
+                        if (outroControle !== controle) {
+                            outroControle.value = String(capotrasteAtual);
+                        }
+                    });
+                    renderizar();
+                    mostrarToast(capotrasteAtual > 0 ? `Capotraste na casa ${capotrasteAtual}` : 'Capotraste removido');
+                });
             });
             document.querySelectorAll('[data-font]').forEach((botao) => {
                 botao.addEventListener('click', () => {
@@ -339,10 +358,12 @@
                     }
                 });
             });
-            document.querySelector('[data-font-reset]')?.addEventListener('click', () => {
-                fonteNivel = 1;
-                renderizar();
-                mostrarToast('Fonte normal');
+            document.querySelectorAll('[data-font-reset]').forEach((botao) => {
+                botao.addEventListener('click', () => {
+                    fonteNivel = 1;
+                    renderizar();
+                    mostrarToast('Fonte normal');
+                });
             });
             botaoRolagem?.addEventListener('click', () => {
                 if (rolagemAtiva) {
@@ -399,7 +420,9 @@
             abrirModalPlaylist?.addEventListener('click', () => abrirModal(modalPlaylist, modalPlaylistBackdrop));
             fecharModalPlaylist?.addEventListener('click', () => fecharModal(modalPlaylist, modalPlaylistBackdrop));
             modalPlaylistBackdrop?.addEventListener('click', () => fecharModal(modalPlaylist, modalPlaylistBackdrop));
-            abrirModalControles?.addEventListener('click', () => abrirModal(modalControles, modalControlesBackdrop));
+            abrirModalControles.forEach((botao) => {
+                botao.addEventListener('click', () => abrirModal(modalControles, modalControlesBackdrop));
+            });
             fecharModalControles?.addEventListener('click', () => fecharModal(modalControles, modalControlesBackdrop));
             modalControlesBackdrop?.addEventListener('click', () => fecharModal(modalControles, modalControlesBackdrop));
             document.addEventListener('mouseover', (event) => {
@@ -437,7 +460,7 @@
             window.addEventListener('wheel', pausarPorInteracaoManual, { passive: true });
             window.addEventListener('touchstart', pausarPorInteracaoManual, { passive: true });
             window.addEventListener('pointerdown', (event) => {
-                if (!event.target.closest('#toggle_autorrolagem, #controles_modal, #abrir_modal_controles')) {
+                if (!event.target.closest('#toggle_autorrolagem, #controles_modal, [data-open-controls]')) {
                     pausarPorInteracaoManual();
                 }
             });
@@ -470,6 +493,12 @@
         .study-badge-yellow { background:rgba(251,191,36,.14); color:#fde68a; }
         .study-badge-blue { background:rgba(96,165,250,.14); color:#bfdbfe; }
         .study-cifra-card { border:1px solid rgba(148,163,184,.18); background:#101a2d; border-radius:1.5rem; padding:1rem; }
+        .study-quick-controls { position:sticky; top:.75rem; z-index:40; display:grid; gap:.85rem; border:1px solid rgba(16,185,129,.22); background:rgba(6,20,34,.96); border-radius:1.35rem; padding:.9rem; box-shadow:0 18px 40px rgba(0,0,0,.22); backdrop-filter:blur(10px); }
+        .study-quick-title { color:#6ee7b7; font-size:.68rem; font-weight:950; letter-spacing:.18em; text-transform:uppercase; }
+        .study-control-row { display:flex; flex-wrap:wrap; align-items:center; gap:.65rem; }
+        .study-control-group { display:inline-flex; align-items:center; gap:.45rem; border:1px solid rgba(148,163,184,.18); border-radius:1rem; background:rgba(15,23,42,.86); padding:.35rem; }
+        .study-control-label { color:#cbd5e1; font-size:.78rem; font-weight:900; }
+        .study-control-select { min-height:2.65rem; border:1px solid rgba(148,163,184,.22); border-radius:.85rem; background:#fffaf2; color:#1f2937; padding:0 .75rem; font-weight:900; }
         .study-cifra-scroll { overflow:visible; min-height:55vh; }
         .study-video-frame { aspect-ratio:16/9; overflow:hidden; border-radius:1.25rem; background:#020617; }
         .study-video-frame iframe { width:100%; height:100%; display:block; }
@@ -497,6 +526,9 @@
             .study-shell { grid-template-columns:minmax(0,1fr) 23rem; gap:1.25rem; }
             .study-cifra-card { padding:1.35rem; }
             .study-side { align-self:start; position:sticky; top:1rem; }
+        }
+        @media (min-width:1024px) {
+            .study-floating-controls { display:none; }
         }
         @media (max-width:767px) {
             .study-stage { margin:-1rem; border-radius:0; padding:.75rem; }
@@ -578,46 +610,59 @@
                 @if ($versaoMusical->bpm)
                     <span class="study-badge study-badge-blue">BPM {{ $versaoMusical->bpm }}</span>
                 @endif
-                <span id="tom_atual_badge" class="study-badge bg-emerald-400/15 text-emerald-200">Tom atual {{ $tomExibicao ?: 'nao informado' }}</span>
+                <span id="tom_atual_badge" class="study-badge bg-emerald-400/15 text-emerald-200">Tom {{ $tomExibicao ?: 'nao informado' }}</span>
                 <span id="capotraste_badge" class="study-badge bg-orange-400/15 text-orange-100">Sem capo</span>
             </div>
         </section>
 
         <div class="mt-4 study-shell">
             <main class="study-cifra-card">
+                <section class="study-quick-controls mb-4" aria-label="Controles rapidos da cifra">
+                    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                        <div>
+                            <p class="study-quick-title">Leitura da cifra</p>
+                            <div class="mt-2 flex flex-wrap gap-2">
+                                <span class="study-badge study-badge-yellow" data-tom-indicator>Tom: {{ $tomExibicao ?: 'nao informado' }}</span>
+                                <span class="study-badge bg-orange-400/15 text-orange-100" data-capo-indicator>Sem capo</span>
+                                <span class="study-badge study-badge-blue" data-font-indicator>Fonte: normal</span>
+                            </div>
+                        </div>
+
+                        <div class="study-control-row">
+                            <div class="study-control-group" aria-label="Transpor tom">
+                                <span class="study-control-label">Tom</span>
+                                <button type="button" data-transpose="-1" class="study-button py-2 text-sm">-</button>
+                                <button type="button" data-transpose-reset class="study-button py-2 text-sm">Original</button>
+                                <button type="button" data-transpose="1" class="study-button py-2 text-sm">+</button>
+                            </div>
+                            <label class="study-control-group" for="controle_capotraste_rapido">
+                                <span class="study-control-label">Capotraste</span>
+                                <select id="controle_capotraste_rapido" data-capo-control class="study-control-select">
+                                    <option value="0">Sem capo</option>
+                                    @for ($casaCapotraste = 1; $casaCapotraste <= 11; $casaCapotraste++)
+                                        <option value="{{ $casaCapotraste }}">{{ $casaCapotraste }} casa</option>
+                                    @endfor
+                                </select>
+                            </label>
+                            <div class="study-control-group" aria-label="Tamanho da fonte">
+                                <span class="study-control-label">Fonte</span>
+                                <button type="button" data-font="-1" class="study-button py-2 text-sm">A-</button>
+                                <button type="button" data-font-reset class="study-button py-2 text-sm">Padrao</button>
+                                <button type="button" data-font="1" class="study-button py-2 text-sm">A+</button>
+                            </div>
+                            <button type="button" data-open-controls class="study-button study-button-primary py-2 text-sm">
+                                Mais controles
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
                 <div class="study-cifra-scroll" id="preview_musico_container">
                     <div id="letra_com_cifras_preview" class="space-y-1"></div>
                 </div>
             </main>
 
             <aside class="study-side">
-                <section class="study-panel desktop-video p-4">
-                    <h2 class="text-base font-black text-white">Video</h2>
-                    @if ($youtubeVideoId)
-                        <div class="study-video-frame mt-3">
-                            <iframe src="https://www.youtube.com/embed/{{ $youtubeVideoId }}" title="Video de apoio" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-                        </div>
-                    @else
-                        <div class="study-empty-video mt-3 p-4">
-                            <div>
-                                <p class="font-black text-slate-200">Video nao informado</p>
-                                <p class="mt-1 text-sm">Nenhum ID ou link valido do YouTube foi vinculado.</p>
-                            </div>
-                        </div>
-                    @endif
-                </section>
-
-                <details class="study-panel p-4 md:hidden">
-                    <summary class="cursor-pointer text-base font-black text-white">Ver video</summary>
-                    @if ($youtubeVideoId)
-                        <div class="study-video-frame mt-3">
-                            <iframe src="https://www.youtube.com/embed/{{ $youtubeVideoId }}" title="Video de apoio" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-                        </div>
-                    @else
-                        <div class="study-empty-video mt-3 p-4 text-sm">Video nao informado.</div>
-                    @endif
-                </details>
-
                 <details class="study-panel p-4 xl:block">
                     <summary class="cursor-pointer text-base font-black text-white">Dicionario de acordes</summary>
                     <p class="mt-1 text-sm text-slate-300">Toque ou passe sobre um acorde para ver o shape.</p>
@@ -635,10 +680,26 @@
                         @endforeach
                     </div>
                 </details>
+
+                <details class="study-panel desktop-video p-4">
+                    <summary class="cursor-pointer text-base font-black text-white">Video de apoio</summary>
+                    @if ($youtubeVideoId)
+                        <div class="study-video-frame mt-3">
+                            <iframe src="https://www.youtube.com/embed/{{ $youtubeVideoId }}" title="Video de apoio" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                        </div>
+                    @else
+                        <div class="study-empty-video mt-3 p-4">
+                            <div>
+                                <p class="font-black text-slate-200">Video nao informado</p>
+                                <p class="mt-1 text-sm">Nenhum ID ou link valido do YouTube foi vinculado.</p>
+                            </div>
+                        </div>
+                    @endif
+                </details>
             </aside>
         </div>
 
-        <button type="button" id="abrir_modal_controles" class="study-floating-controls study-button study-button-primary">
+        <button type="button" data-open-controls class="study-floating-controls study-button study-button-primary">
             <i class="fa-solid fa-sliders"></i>
             Controles
         </button>
@@ -690,19 +751,19 @@
                     <section class="rounded-2xl border border-white/10 bg-white/5 p-4">
                         <h3 class="font-black text-white">Tom e fonte</h3>
                         <div class="mt-4 flex flex-wrap items-center gap-3">
-                            <span class="study-badge study-badge-yellow" id="indicador_tom_atual">Tom atual: {{ $tomExibicao ?: 'nao informado' }}</span>
-                            <span class="study-badge bg-orange-400/15 text-orange-100" id="indicador_capotraste">Sem capo</span>
+                            <span class="study-badge study-badge-yellow" data-tom-indicator>Tom: {{ $tomExibicao ?: 'nao informado' }}</span>
+                            <span class="study-badge bg-orange-400/15 text-orange-100" data-capo-indicator>Sem capo</span>
                             <button type="button" data-transpose="-1" class="study-button py-2 text-sm">Tom -</button>
                             <button type="button" data-transpose-reset class="study-button py-2 text-sm">Tom original</button>
                             <button type="button" data-transpose="1" class="study-button py-2 text-sm">Tom +</button>
                             <label for="controle_capotraste" class="text-sm font-semibold text-slate-300">Capotraste</label>
-                            <select id="controle_capotraste" class="rounded-xl border border-white/10 bg-slate-950 px-3 py-3 text-sm font-bold text-white focus:border-emerald-500 focus:ring-emerald-500">
+                            <select id="controle_capotraste" data-capo-control class="rounded-xl border border-white/10 bg-slate-950 px-3 py-3 text-sm font-bold text-white focus:border-emerald-500 focus:ring-emerald-500">
                                 <option value="0">Sem capo</option>
                                 @for ($casaCapotraste = 1; $casaCapotraste <= 11; $casaCapotraste++)
                                     <option value="{{ $casaCapotraste }}">{{ $casaCapotraste }} casa</option>
                                 @endfor
                             </select>
-                            <span id="indicador_fonte_atual" class="study-badge study-badge-blue">Fonte: normal</span>
+                            <span class="study-badge study-badge-blue" data-font-indicator>Fonte: normal</span>
                             <button type="button" data-font="-1" class="study-button py-2 text-sm">A-</button>
                             <button type="button" data-font-reset class="study-button py-2 text-sm">Fonte padrao</button>
                             <button type="button" data-font="1" class="study-button py-2 text-sm">A+</button>
