@@ -502,7 +502,6 @@
 <body data-contrast="{{ $forcedContrast === 'high' ? 'high' : 'normal' }}">
     {{ $slot }}
 
-    @include('partials.public-help-tour')
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const navToggle = document.querySelector('[data-nav-toggle]');

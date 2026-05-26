@@ -175,21 +175,29 @@
 
         .schedule-shell {
             position: relative;
+            overflow: visible;
         }
 
         .schedule-carousel {
             display: grid;
-            grid-auto-columns: minmax(235px, 82%);
+            grid-auto-columns: minmax(min(82vw, 320px), 88%);
             grid-auto-flow: column;
-            gap: 10px;
+            gap: 12px;
             overflow-x: auto;
-            padding: 2px 2px 8px;
+            overscroll-behavior-x: contain;
+            padding: 2px 4px 10px;
             scroll-snap-type: x mandatory;
-            scrollbar-width: thin;
+            scrollbar-width: none;
+        }
+
+        .schedule-carousel::-webkit-scrollbar {
+            display: none;
         }
 
         .schedule-carousel .card {
             min-height: 116px;
+            width: 100%;
+            min-width: 0;
             scroll-snap-align: start;
         }
 
@@ -200,7 +208,6 @@
         .card,
         .history-item,
         .celebration-item,
-        .access-bar,
         .empty-state,
         .history-form {
             border-radius: 22px;
@@ -339,26 +346,6 @@
             margin-top: 6px;
             font-size: clamp(calc(22px * var(--public-font-scale)), calc(5vw * var(--public-font-scale)), calc(32px * var(--public-font-scale)));
             line-height: 1.08;
-        }
-
-        .access-bar {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 8px;
-            padding: 8px;
-        }
-
-        .access-bar button {
-            min-height: 36px;
-            border-radius: 10px;
-            border: 1px solid rgba(227, 190, 132, 0.22);
-            background: rgba(227, 190, 132, 0.08);
-            color: var(--accent);
-            font: inherit;
-            font-size: 12px;
-            font-weight: 800;
-            cursor: pointer;
-            touch-action: manipulation;
         }
 
         .history-form {
@@ -777,83 +764,6 @@
             display: block;
         }
 
-        .scroll-controls {
-            display: grid;
-            gap: 8px;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid var(--line);
-        }
-
-        .scroll-controls__top {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .scroll-controls button {
-            min-height: 42px;
-            border-radius: 14px;
-            border: 1px solid rgba(227, 190, 132, 0.22);
-            background: rgba(227, 190, 132, 0.12);
-            color: var(--accent);
-            font-weight: 900;
-        }
-
-        .scroll-controls button.is-active {
-            background: #ffd99d;
-            color: #160c0d;
-            border-color: #ffd99d;
-        }
-
-        .scroll-controls input {
-            width: 100%;
-            accent-color: #ffd99d;
-        }
-
-        .access-floating {
-            position: fixed;
-            right: 14px;
-            bottom: 14px;
-            z-index: 60;
-        }
-
-        .access-floating__button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 54px;
-            height: 54px;
-            border-radius: 999px;
-            border: 1px solid rgba(227, 190, 132, 0.22);
-            background: rgba(13, 8, 8, 0.96);
-            color: var(--accent);
-            box-shadow: var(--shadow);
-            cursor: pointer;
-            font-size: 22px;
-        }
-
-        .access-floating__panel {
-            position: absolute;
-            right: 0;
-            bottom: 64px;
-            display: none;
-            width: min(280px, calc(100vw - 28px));
-            border: 1px solid var(--line);
-            border-radius: 18px;
-            background: rgba(22, 12, 13, 0.98);
-            box-shadow: var(--shadow);
-            padding: 10px;
-        }
-
-        .access-floating[data-open="true"] .access-floating__panel {
-            display: block;
-        }
-
-        .access-floating .access-bar {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-
         @media (max-width: 719px) {
             .card {
                 flex-direction: column;
@@ -864,14 +774,6 @@
             .history-form button,
             .history-form a {
                 width: 100%;
-            }
-
-            .access-bar {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-
-            .access-floating .access-bar {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
             }
 
             .home-floating__link {
@@ -926,7 +828,7 @@
             }
 
             .schedule-carousel {
-                grid-auto-columns: minmax(250px, 31%);
+                grid-auto-columns: minmax(260px, 34%);
             }
 
             .schedule-nav {
@@ -945,6 +847,11 @@
                 box-shadow: var(--shadow);
                 cursor: pointer;
                 transform: translateY(-50%);
+            }
+
+            .schedule-nav:disabled {
+                cursor: not-allowed;
+                opacity: 0.35;
             }
 
             .schedule-nav--prev {
@@ -1241,41 +1148,6 @@
             </a>
         </div>
 
-        <div class="access-floating" data-access-floating data-open="false">
-            <div class="access-floating__panel" id="access-panel">
-                <div class="access-bar">
-                    <button type="button" data-public-font="-1">A-</button>
-                    <button type="button" data-public-font-reset>A</button>
-                    <button type="button" data-public-font="1">A+</button>
-                </div>
-                @if (($modoPublico ?? 'fieis') === 'musicos')
-                    <div class="scroll-controls">
-                        <div class="scroll-controls__top">
-                            <button type="button" data-public-scroll-toggle>Iniciar rolagem</button>
-                            <span data-public-scroll-speed-label>2.00</span>
-                        </div>
-                        <input
-                            type="range"
-                            min="1"
-                            max="6"
-                            step="0.25"
-                            value="2"
-                            aria-label="Velocidade da rolagem"
-                            data-public-scroll-speed
-                        >
-                    </div>
-                @endif
-            </div>
-            <button
-                type="button"
-                class="access-floating__button"
-                data-access-toggle
-                aria-expanded="false"
-                aria-controls="access-panel"
-                aria-label="Abrir acessibilidade"
-            >&#9881;</button>
-        </div>
-
         @if (($modoPublico ?? 'fieis') === 'musicos')
             <div class="public-chord-tooltip" data-public-chord-tooltip hidden>
                 <p class="public-chord-tooltip__name" data-public-chord-tooltip-name></p>
@@ -1288,66 +1160,50 @@
         @include('partials.chord-transposer-script')
     @endif
 
-    @include('partials.public-help-tour')
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const statusSync = document.querySelector('[data-public-status-sync]');
-            const accessFloating = document.querySelector('[data-access-floating]');
-            const accessToggle = document.querySelector('[data-access-toggle]');
-            const celebrationFontTarget = document.querySelector('[data-celebration-section]');
-            const fontKey = 'vozecifra-public-celebration-font-scale';
-            let escalaFonte = Number(localStorage.getItem(fontKey) || '1');
-
-            const aplicarEscalaFonte = () => {
-                const escalaSegura = Math.max(0.9, Math.min(1.45, escalaFonte));
-                escalaFonte = escalaSegura;
-                celebrationFontTarget?.style.setProperty('--celebration-font-scale', escalaSegura.toFixed(2));
-                localStorage.setItem(fontKey, escalaSegura.toFixed(2));
-            };
-
-            aplicarEscalaFonte();
-
-            document.querySelectorAll('[data-public-font]').forEach((botao) => {
-                botao.addEventListener('click', () => {
-                    escalaFonte += Number(botao.dataset.publicFont || 0) * 0.08;
-                    aplicarEscalaFonte();
-                });
-            });
-
-            const resetButton = document.querySelector('[data-public-font-reset]');
-            if (resetButton) {
-                resetButton.addEventListener('click', () => {
-                    escalaFonte = 1;
-                    aplicarEscalaFonte();
-                });
-            }
-
-            if (accessFloating && accessToggle) {
-                accessToggle.addEventListener('click', () => {
-                    const aberto = accessFloating.dataset.open === 'true';
-                    accessFloating.dataset.open = aberto ? 'false' : 'true';
-                    accessToggle.setAttribute('aria-expanded', aberto ? 'false' : 'true');
-                });
-            }
 
             document.querySelectorAll('.schedule-shell').forEach((shell) => {
                 const carousel = shell.querySelector('[data-schedule-carousel]');
                 const previous = shell.querySelector('[data-schedule-prev]');
                 const next = shell.querySelector('[data-schedule-next]');
-                const move = (direction) => {
-                    if (!carousel) {
-                        return;
+
+                if (!carousel) {
+                    return;
+                }
+
+                const atualizarBotoes = () => {
+                    const podeRolar = carousel.scrollWidth > carousel.clientWidth + 2;
+                    const noInicio = carousel.scrollLeft <= 2;
+                    const noFim = carousel.scrollLeft + carousel.clientWidth >= carousel.scrollWidth - 2;
+
+                    if (previous) {
+                        previous.disabled = !podeRolar || noInicio;
                     }
 
+                    if (next) {
+                        next.disabled = !podeRolar || noFim;
+                    }
+                };
+
+                const move = (direction) => {
+                    const card = carousel.querySelector('.card');
+                    const estilos = window.getComputedStyle(carousel);
+                    const gap = Number.parseFloat(estilos.columnGap || estilos.gap || '12') || 12;
+                    const larguraCard = card ? card.getBoundingClientRect().width + gap : Math.max(240, carousel.clientWidth * 0.82);
+
                     carousel.scrollBy({
-                        left: direction * Math.max(240, carousel.clientWidth * 0.82),
+                        left: direction * larguraCard,
                         behavior: 'smooth',
                     });
                 };
 
                 previous?.addEventListener('click', () => move(-1));
                 next?.addEventListener('click', () => move(1));
+                carousel.addEventListener('scroll', atualizarBotoes, { passive: true });
+                window.addEventListener('resize', atualizarBotoes);
+                atualizarBotoes();
             });
 
             const historyForm = document.querySelector('[data-history-form]');
@@ -1468,22 +1324,6 @@
                 const tooltipAcorde = document.querySelector('[data-public-chord-tooltip]');
                 const tooltipNome = document.querySelector('[data-public-chord-tooltip-name]');
                 const tooltipDiagrama = document.querySelector('[data-public-chord-tooltip-diagram]');
-                const botaoRolagem = document.querySelector('[data-public-scroll-toggle]');
-                const controleVelocidade = document.querySelector('[data-public-scroll-speed]');
-                const rotuloVelocidade = document.querySelector('[data-public-scroll-speed-label]');
-                let quadroRolagem = null;
-                let ultimoFrameRolagem = 0;
-
-                const atualizarRotuloVelocidade = () => {
-                    if (!controleVelocidade || !rotuloVelocidade) {
-                        return Number(controleVelocidade?.value || 2);
-                    }
-
-                    const velocidade = Number(controleVelocidade.value || 2);
-                    rotuloVelocidade.textContent = velocidade.toFixed(2);
-                    return velocidade;
-                };
-
                 const renderizarDiagrama = (shape) => {
                     if (!shape) {
                         return '<div>Sem desenho cadastrado.</div>';
@@ -1612,68 +1452,6 @@
                     mostrarTooltipAcorde(acorde.dataset.acordeHover, rect.left, rect.top);
                 });
 
-                const pararRolagem = () => {
-                    if (quadroRolagem) {
-                        window.cancelAnimationFrame(quadroRolagem);
-                        quadroRolagem = null;
-                        ultimoFrameRolagem = 0;
-                    }
-
-                    if (botaoRolagem) {
-                        botaoRolagem.textContent = 'Iniciar rolagem';
-                        botaoRolagem.classList.remove('is-active');
-                    }
-                };
-
-                const iniciarRolagem = () => {
-                    pararRolagem();
-
-                    if (botaoRolagem) {
-                        botaoRolagem.textContent = 'Parar rolagem';
-                        botaoRolagem.classList.add('is-active');
-                    }
-
-                    const animarRolagem = (timestamp) => {
-                        if (!quadroRolagem) {
-                            return;
-                        }
-
-                        if (!ultimoFrameRolagem) {
-                            ultimoFrameRolagem = timestamp;
-                        }
-
-                        const deltaSegundos = Math.min((timestamp - ultimoFrameRolagem) / 1000, 0.08);
-                        ultimoFrameRolagem = timestamp;
-                        const velocidade = atualizarRotuloVelocidade();
-                        const pixelsPorSegundo = Math.max(28, velocidade * 34);
-
-                        window.scrollBy({ top: pixelsPorSegundo * deltaSegundos, left: 0, behavior: 'auto' });
-
-                        if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
-                            pararRolagem();
-                            return;
-                        }
-
-                        quadroRolagem = window.requestAnimationFrame(animarRolagem);
-                    };
-
-                    quadroRolagem = window.requestAnimationFrame(animarRolagem);
-                };
-
-                botaoRolagem?.addEventListener('click', () => {
-                    if (quadroRolagem) {
-                        pararRolagem();
-                        return;
-                    }
-
-                    iniciarRolagem();
-                });
-
-                controleVelocidade?.addEventListener('input', () => {
-                    atualizarRotuloVelocidade();
-                });
-
-                atualizarRotuloVelocidade();
             }
 
             if (!statusSync || !statusSync.dataset.statusUrl) {
