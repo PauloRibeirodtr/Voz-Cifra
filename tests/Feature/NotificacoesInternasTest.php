@@ -144,4 +144,31 @@ class NotificacoesInternasTest extends TestCase
         $this->assertFalse($usuario->receber_notificacoes_email);
         $this->assertSame('dark', $usuario->theme_preference);
     }
+
+    public function test_admin_master_pode_alterar_preferencias_na_central_de_configuracoes(): void
+    {
+        $adminMaster = Usuario::factory()->adminMaster()->create([
+            'theme_preference' => 'system',
+            'receber_notificacoes_email' => true,
+            'primeiro_acesso' => false,
+        ]);
+
+        $this
+            ->actingAs($adminMaster)
+            ->put(route('admin.settings.preferences.update'), [
+                'theme_preference' => 'dark',
+                'receber_notificacoes_email' => '0',
+            ])
+            ->assertRedirect();
+
+        $adminMaster->refresh();
+
+        $this->assertSame('dark', $adminMaster->theme_preference);
+        $this->assertFalse($adminMaster->receber_notificacoes_email);
+        $this->assertDatabaseHas('auditoria_eventos', [
+            'evento' => 'preferencias_atualizadas',
+            'ator_id' => $adminMaster->id,
+            'alvo_id' => $adminMaster->id,
+        ]);
+    }
 }

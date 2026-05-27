@@ -4,22 +4,49 @@
 @section('mobile_title', 'Configuracoes')
 
 @section('content')
-    <div class="admin-page-intro">
-        <p class="admin-page-kicker">Conta e sistema</p>
-        <h1 class="admin-page-title mt-2 text-2xl font-bold">Configuracoes</h1>
-        <p class="admin-page-copy mt-3 text-sm sm:text-base">Organize sua conta, acompanhe o estado atual do sistema e acesse os ajustes disponiveis nesta etapa.</p>
-    </div>
+    @php
+        $themeAtual = old('theme_preference', $usuario->theme_preference ?? 'system');
+        $recebeEmail = (bool) old('receber_notificacoes_email', $usuario->receber_notificacoes_email ?? true);
+        $temaLabel = ['system' => 'Automatico', 'light' => 'Claro', 'dark' => 'Escuro'][$themeAtual] ?? 'Automatico';
+        $emailLabel = $recebeEmail ? 'Avisos gerais por e-mail ligados' : 'Somente alertas criticos por e-mail';
 
-    <div class="space-y-6">
+        $atalhos = [
+            ['titulo' => 'Editar perfil', 'texto' => 'Foto, e-mail, telefone e senha.', 'icone' => 'fa-user-pen', 'url' => route('admin.profile'), 'grupo' => 'conta perfil senha foto'],
+            ['titulo' => 'Usuarios e papeis', 'texto' => 'Cadastrar, promover e vincular usuarios.', 'icone' => 'fa-users-gear', 'url' => route('admin.usuarios.index'), 'grupo' => 'usuarios papeis acesso seguranca'],
+            ['titulo' => 'Enviar aviso', 'texto' => 'Comunicar pessoas, papeis ou igrejas.', 'icone' => 'fa-bullhorn', 'url' => route('admin.avisos.create'), 'grupo' => 'notificacoes avisos email'],
+            ['titulo' => 'Auditoria', 'texto' => 'Conferir acoes sensiveis do sistema.', 'icone' => 'fa-shield-halved', 'url' => route('admin.auditoria.index'), 'grupo' => 'seguranca auditoria logs'],
+            ['titulo' => 'Igrejas', 'texto' => 'Dados, links publicos e liderancas.', 'icone' => 'fa-church', 'url' => route('admin.igrejas.index'), 'grupo' => 'igrejas vinculos contexto'],
+            ['titulo' => 'Biblioteca musical', 'texto' => 'Musicas, versoes, cifras e acordes.', 'icone' => 'fa-music', 'url' => route('admin.musicas.index'), 'grupo' => 'musicas cifras acordes repertorio'],
+        ];
+
+        $metricas = [
+            ['label' => 'Usuarios', 'valor' => $metricasSistema['total_usuarios']],
+            ['label' => 'Igrejas', 'valor' => $metricasSistema['total_igrejas']],
+            ['label' => 'Musicas', 'valor' => $metricasSistema['total_musicas']],
+            ['label' => 'Missas', 'valor' => $metricasSistema['total_missas']],
+        ];
+    @endphp
+
+    <div class="admin-page-shell">
+        <section class="admin-page-header">
+            <div class="admin-page-intro">
+                <p class="admin-page-kicker">Configuracoes e privacidade</p>
+                <h1 class="admin-page-title mt-2 text-2xl font-black sm:text-3xl">Central do admin master</h1>
+                <p class="admin-page-copy mt-3 max-w-3xl text-sm sm:text-base">
+                    Encontre ajustes da conta, notificacoes, seguranca e atalhos administrativos sem precisar garimpar o menu lateral.
+                </p>
+            </div>
+        </section>
+
         @if (session('success'))
-            <div class="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-sm text-green-800">
+            <div class="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-sm font-semibold text-green-800">
                 {{ session('success') }}
             </div>
         @endif
 
         @if ($errors->any())
             <div class="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800">
-                <ul class="list-disc pl-5 space-y-1">
+                <ul class="list-disc space-y-1 pl-5">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -27,211 +54,250 @@
             </div>
         @endif
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="admin-stat-card p-6">
-                <div class="flex items-start justify-between gap-4">
-                    <div>
-                        <h2 class="text-lg font-bold text-gray-800">Perfil</h2>
-                        <p class="text-sm text-gray-500 mt-2">Atualize email, telefone e senha do administrador principal em um unico lugar.</p>
-                    </div>
-                    <div class="h-11 w-11 rounded-full bg-green-100 text-green-700 flex items-center justify-center">
-                        <i class="fa-solid fa-user"></i>
+        <div class="grid grid-cols-1 gap-6 xl:grid-cols-[20rem_minmax(0,1fr)]">
+            <aside class="space-y-4 xl:sticky xl:top-6 xl:self-start">
+                <div class="admin-panel p-4">
+                    <label for="settings-search" class="admin-label">Pesquisar configuracoes</label>
+                    <div class="mt-2 flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+                        <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+                        <input
+                            id="settings-search"
+                            type="search"
+                            class="w-full border-0 bg-transparent text-sm font-semibold text-gray-800 outline-none placeholder:text-gray-400 focus:ring-0"
+                            placeholder="Tema, notificacoes, usuarios..."
+                            data-settings-search
+                        >
                     </div>
                 </div>
 
-                <div class="mt-6">
-                    <a href="{{ route('admin.profile') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-green-700 text-white rounded-lg font-semibold hover:bg-green-800">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                        <span>Editar perfil</span>
+                <nav class="admin-panel overflow-hidden p-2" aria-label="Categorias de configuracao">
+                    <a href="#mais-acessadas" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-black text-gray-800 transition hover:bg-[#f5eee6]">
+                        <i class="fa-solid fa-star text-[#8a5a26]"></i>
+                        Mais acessadas
                     </a>
-                </div>
-            </div>
+                    <a href="#conta" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-black text-gray-800 transition hover:bg-[#f5eee6]">
+                        <i class="fa-solid fa-user-shield text-[#8a5a26]"></i>
+                        Conta
+                    </a>
+                    <a href="#preferencias" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-black text-gray-800 transition hover:bg-[#f5eee6]">
+                        <i class="fa-solid fa-sliders text-[#8a5a26]"></i>
+                        Preferencias
+                    </a>
+                    <a href="#notificacoes" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-black text-gray-800 transition hover:bg-[#f5eee6]">
+                        <i class="fa-solid fa-bell text-[#8a5a26]"></i>
+                        Notificacoes
+                    </a>
+                    <a href="#seguranca" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-black text-gray-800 transition hover:bg-[#f5eee6]">
+                        <i class="fa-solid fa-lock text-[#8a5a26]"></i>
+                        Seguranca
+                    </a>
+                    <a href="#sistema" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-black text-gray-800 transition hover:bg-[#f5eee6]">
+                        <i class="fa-solid fa-chart-simple text-[#8a5a26]"></i>
+                        Sistema
+                    </a>
+                </nav>
 
-            <div class="admin-stat-card p-6">
-                <div class="flex items-start justify-between gap-4">
-                    <div>
-                        <h2 class="text-lg font-bold text-gray-800">Preferencias</h2>
-                        <p class="text-sm text-gray-500 mt-2">Tema, foto, telefone, senha e avisos por e-mail ficam no perfil da conta.</p>
-                    </div>
-                    <div class="h-11 w-11 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                        <i class="fa-solid fa-sliders"></i>
-                    </div>
+                <div class="admin-inline-note px-4 py-4 text-sm">
+                    <strong class="block text-gray-900">Regra de seguranca</strong>
+                    Notificacoes internas importantes continuam ativas mesmo quando o e-mail geral estiver desligado.
                 </div>
+            </aside>
 
-                <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <div class="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-                        <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Tema</span>
-                        <span class="mt-1 block text-sm font-bold text-gray-800">
-                            {{ ['system' => 'Seguir dispositivo', 'light' => 'Claro', 'dark' => 'Escuro'][$usuario->theme_preference ?? 'system'] ?? 'Seguir dispositivo' }}
+            <div class="space-y-6">
+                <section id="mais-acessadas" class="admin-panel p-5 sm:p-6">
+                    <div class="mb-5">
+                        <p class="admin-page-kicker">Comece por aqui</p>
+                        <h2 class="text-xl font-black text-gray-900">Configuracoes mais acessadas</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                        <a href="{{ route('admin.profile') }}" class="settings-card rounded-3xl border border-gray-200 bg-[#f8f1e8] p-5 transition hover:-translate-y-0.5 hover:border-[#c9a15f] hover:shadow-lg" data-settings-card data-settings-keywords="perfil foto senha email telefone conta">
+                            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#8a5a26] shadow-sm">
+                                <i class="fa-solid fa-user-pen"></i>
+                            </span>
+                            <h3 class="mt-5 text-base font-black text-gray-950">Perfil</h3>
+                            <p class="mt-2 text-sm text-gray-600">Atualize foto, contato e senha.</p>
+                        </a>
+
+                        <a href="#preferencias" class="settings-card rounded-3xl border border-gray-200 bg-[#f8f1e8] p-5 transition hover:-translate-y-0.5 hover:border-[#c9a15f] hover:shadow-lg" data-settings-card data-settings-keywords="modo escuro claro tema aparencia">
+                            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#8a5a26] shadow-sm">
+                                <i class="fa-solid fa-moon"></i>
+                            </span>
+                            <h3 class="mt-5 text-base font-black text-gray-950">Modo escuro</h3>
+                            <p class="mt-2 text-sm text-gray-600">Atual: {{ $temaLabel }}.</p>
+                        </a>
+
+                        <a href="#notificacoes" class="settings-card rounded-3xl border border-gray-200 bg-[#f8f1e8] p-5 transition hover:-translate-y-0.5 hover:border-[#c9a15f] hover:shadow-lg" data-settings-card data-settings-keywords="notificacoes sininho email avisos">
+                            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#8a5a26] shadow-sm">
+                                <i class="fa-solid fa-bell"></i>
+                            </span>
+                            <h3 class="mt-5 text-base font-black text-gray-950">Notificacoes</h3>
+                            <p class="mt-2 text-sm text-gray-600">{{ $notificacoesNaoLidas }} aviso(s) nao lido(s).</p>
+                        </a>
+                    </div>
+                </section>
+
+                <section id="preferencias" class="admin-panel p-5 sm:p-6">
+                    <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                            <p class="admin-page-kicker">Preferencias</p>
+                            <h2 class="text-xl font-black text-gray-900">Aparencia e comunicacao</h2>
+                            <p class="mt-2 text-sm text-gray-600">Ajustes rapidos que mudam a experiencia sem tocar nos dados sensiveis do perfil.</p>
+                        </div>
+                        <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">{{ $emailLabel }}</span>
+                    </div>
+
+                    <form method="POST" action="{{ route('admin.settings.preferences.update') }}" class="space-y-5" data-preferences-form>
+                        @csrf
+                        @method('PUT')
+
+                        <div class="rounded-3xl border border-gray-200 bg-white p-4">
+                            <span class="admin-label mb-3 block">Tema da interface</span>
+                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                                @foreach (['system' => ['Automatico', 'Segue o dispositivo', 'fa-display'], 'light' => ['Claro', 'Mais limpo de dia', 'fa-sun'], 'dark' => ['Escuro', 'Mais confortavel a noite', 'fa-moon']] as $valor => $tema)
+                                    <label class="cursor-pointer rounded-2xl border px-4 py-4 transition {{ $themeAtual === $valor ? 'border-emerald-300 bg-emerald-50 text-emerald-950' : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-[#c9a15f]' }}">
+                                        <input type="radio" name="theme_preference" value="{{ $valor }}" class="sr-only" @checked($themeAtual === $valor) data-preference-radio>
+                                        <span class="flex items-center gap-3">
+                                            <i class="fa-solid {{ $tema[2] }}"></i>
+                                            <span>
+                                                <strong class="block">{{ $tema[0] }}</strong>
+                                                <small class="text-xs">{{ $tema[1] }}</small>
+                                            </span>
+                                        </span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <div class="rounded-3xl border border-gray-200 bg-white p-4">
+                            <label class="flex cursor-pointer items-start justify-between gap-4 rounded-2xl bg-gray-50 p-4">
+                                <span>
+                                    <strong class="block text-gray-950">Receber avisos gerais por e-mail</strong>
+                                    <span class="mt-1 block text-sm text-gray-600">Chamados, avisos administrativos e comunicados comuns podem chegar por e-mail.</span>
+                                    <span class="mt-2 block text-xs font-bold text-amber-700">Alertas criticos de seguranca continuam ativos.</span>
+                                </span>
+                                <span class="relative mt-1 inline-flex h-7 w-12 flex-none items-center rounded-full {{ $recebeEmail ? 'bg-emerald-600' : 'bg-gray-300' }}" data-toggle-shell>
+                                    <input type="hidden" name="receber_notificacoes_email" value="0">
+                                    <input type="checkbox" name="receber_notificacoes_email" value="1" class="peer sr-only" @checked($recebeEmail) data-email-toggle>
+                                    <span class="absolute left-1 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5"></span>
+                                </span>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="admin-btn admin-btn-primary w-full sm:w-auto">Salvar preferencias</button>
+                    </form>
+                </section>
+
+                <section id="conta" class="admin-panel p-5 sm:p-6">
+                    <div class="mb-5">
+                        <p class="admin-page-kicker">Conta</p>
+                        <h2 class="text-xl font-black text-gray-900">Perfil e acesso</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                        <a href="{{ route('admin.profile') }}" class="settings-card rounded-3xl border border-gray-200 bg-white p-5 transition hover:border-[#c9a15f]" data-settings-card data-settings-keywords="perfil conta foto email telefone">
+                            <h3 class="font-black text-gray-950">Editar meus dados</h3>
+                            <p class="mt-2 text-sm text-gray-600">Foto, telefone, e-mail e senha ficam em uma tela propria.</p>
+                        </a>
+                        <a href="{{ route('admin.profile') }}#password" class="settings-card rounded-3xl border border-gray-200 bg-white p-5 transition hover:border-[#c9a15f]" data-settings-card data-settings-keywords="senha seguranca primeiro acesso">
+                            <h3 class="font-black text-gray-950">Trocar senha</h3>
+                            <p class="mt-2 text-sm text-gray-600">Mantem o acesso global separado dos papeis por igreja.</p>
+                        </a>
+                    </div>
+                </section>
+
+                <section id="notificacoes" class="admin-panel p-5 sm:p-6">
+                    <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                            <p class="admin-page-kicker">Notificacoes</p>
+                            <h2 class="text-xl font-black text-gray-900">Central de avisos internos</h2>
+                            <p class="mt-2 text-sm text-gray-600">O sininho mostra pedidos de tom, mudancas de acesso, avisos e acoes direcionadas.</p>
+                        </div>
+                        <span class="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-700">
+                            {{ $notificacoesNaoLidas }} nao lida(s)
                         </span>
                     </div>
-                    <div class="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-                        <span class="block text-xs font-black uppercase tracking-wider text-gray-400">E-mail</span>
-                        <span class="mt-1 block text-sm font-bold text-gray-800">
-                            {{ ($usuario->receber_notificacoes_email ?? true) ? 'Avisos gerais ligados' : 'Apenas criticos' }}
-                        </span>
+
+                    <div class="space-y-3">
+                        @forelse ($notificacoesRecentes as $notificacao)
+                            <form method="POST" action="{{ route('notificacoes.ler', $notificacao) }}" class="rounded-2xl border {{ $notificacao->lida_em ? 'border-gray-100 bg-gray-50' : 'border-emerald-100 bg-emerald-50' }} px-4 py-4">
+                                @csrf
+                                <button type="submit" class="block w-full text-left">
+                                    <span class="block text-sm font-black text-gray-900">{{ $notificacao->titulo }}</span>
+                                    @if ($notificacao->mensagem)
+                                        <span class="mt-1 block text-sm text-gray-600">{{ $notificacao->mensagem }}</span>
+                                    @endif
+                                    <span class="mt-2 block text-xs font-bold text-gray-400">{{ $notificacao->created_at?->diffForHumans() }}</span>
+                                </button>
+                            </form>
+                        @empty
+                            <div class="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-8 text-center text-sm text-gray-500">
+                                Tudo limpo por aqui. Quando houver pedido de tom, aviso ou alteracao de acesso, aparece aqui e no sininho.
+                            </div>
+                        @endforelse
                     </div>
-                </div>
 
-                <div class="mt-5">
-                    <a href="{{ route('admin.profile') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-700 text-white rounded-lg font-semibold hover:bg-emerald-800">
-                        <i class="fa-solid fa-user-gear"></i>
-                        <span>Editar preferencias</span>
-                    </a>
-                </div>
-            </div>
-
-            <div class="admin-stat-card p-6">
-                <div class="flex items-start justify-between gap-4">
-                    <div>
-                        <h2 class="text-lg font-bold text-gray-800">Avisos</h2>
-                        <p class="mt-2 text-sm text-gray-500">Envie uma mensagem para todos, uma igreja, um papel ou uma pessoa especifica.</p>
+                    <div class="mt-5">
+                        <a href="{{ route('admin.avisos.create') }}" class="admin-btn admin-btn-secondary inline-flex">Enviar novo aviso</a>
                     </div>
-                    <div class="flex h-11 w-11 items-center justify-center rounded-full bg-amber-100 text-amber-700">
-                        <i class="fa-solid fa-bullhorn"></i>
+                </section>
+
+                <section id="seguranca" class="admin-panel p-5 sm:p-6">
+                    <div class="mb-5">
+                        <p class="admin-page-kicker">Seguranca</p>
+                        <h2 class="text-xl font-black text-gray-900">Acoes sensiveis e rastreio</h2>
                     </div>
-                </div>
 
-                <div class="mt-6">
-                    <a href="{{ route('admin.avisos.create') }}" class="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-4 py-2 font-semibold text-white hover:bg-amber-700">
-                        <i class="fa-solid fa-paper-plane"></i>
-                        <span>Enviar aviso</span>
-                    </a>
-                </div>
-            </div>
-
-            <div class="admin-stat-card p-6">
-                <div class="flex items-start justify-between gap-4">
-                    <div>
-                        <h2 class="text-lg font-bold text-gray-800">Sessao</h2>
-                        <p class="text-sm text-gray-500 mt-2">Encerre o acesso atual com seguranca quando terminar de usar o painel.</p>
+                    <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                        <a href="{{ route('admin.auditoria.index') }}" class="settings-card rounded-3xl border border-gray-200 bg-white p-5 transition hover:border-[#c9a15f]" data-settings-card data-settings-keywords="auditoria seguranca logs">
+                            <h3 class="font-black text-gray-950">Auditoria</h3>
+                            <p class="mt-2 text-sm text-gray-600">Veja movimentacoes importantes e quem executou cada acao.</p>
+                        </a>
+                        <a href="{{ route('admin.usuarios.index') }}" class="settings-card rounded-3xl border border-gray-200 bg-white p-5 transition hover:border-[#c9a15f]" data-settings-card data-settings-keywords="usuarios papeis acesso perfil">
+                            <h3 class="font-black text-gray-950">Acessos</h3>
+                            <p class="mt-2 text-sm text-gray-600">Promova, remova ou ajuste papeis por igreja com controle.</p>
+                        </a>
+                        <form action="{{ route('logout') }}" method="POST" class="settings-card rounded-3xl border border-red-100 bg-red-50 p-5" data-settings-card data-settings-keywords="sair logout sessao">
+                            @csrf
+                            <h3 class="font-black text-red-950">Sessao atual</h3>
+                            <p class="mt-2 text-sm text-red-800">Encerre o acesso quando terminar de administrar.</p>
+                            <button type="submit" class="mt-4 rounded-xl bg-red-600 px-4 py-2 text-sm font-black text-white transition hover:bg-red-700">Sair da conta</button>
+                        </form>
                     </div>
-                    <div class="h-11 w-11 rounded-full bg-red-100 text-red-700 flex items-center justify-center">
-                        <i class="fa-solid fa-right-from-bracket"></i>
+                </section>
+
+                <section id="sistema" class="admin-highlight-surface p-5 sm:p-6">
+                    <div class="mb-5">
+                        <p class="admin-page-kicker">Sistema</p>
+                        <h2 class="text-xl font-black text-gray-900">Resumo operacional</h2>
+                        <p class="mt-2 text-sm text-gray-600">Numeros rapidos e atalhos para manutencao central.</p>
                     </div>
-                </div>
 
-                <div class="mt-6">
-                    <form action="{{ route('logout') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700">
-                            <i class="fa-solid fa-right-from-bracket"></i>
-                            <span>Sair da conta</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-            <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800">Notificacoes internas</h2>
-                    <p class="mt-2 text-sm text-gray-500">Resumo do sininho. As notificacoes internas continuam ativas mesmo se os avisos por e-mail forem desligados.</p>
-                </div>
-                <span class="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-700">
-                    {{ $notificacoesNaoLidas }} nao lida(s)
-                </span>
-            </div>
-
-            <div class="space-y-3">
-                @forelse ($notificacoesRecentes as $notificacao)
-                    <form method="POST" action="{{ route('notificacoes.ler', $notificacao) }}" class="rounded-2xl border {{ $notificacao->lida_em ? 'border-gray-100 bg-gray-50' : 'border-emerald-100 bg-emerald-50' }} px-4 py-4">
-                        @csrf
-                        <button type="submit" class="block w-full text-left">
-                            <span class="block text-sm font-black text-gray-900">{{ $notificacao->titulo }}</span>
-                            @if ($notificacao->mensagem)
-                                <span class="mt-1 block text-sm text-gray-600">{{ $notificacao->mensagem }}</span>
-                            @endif
-                            <span class="mt-2 block text-xs font-bold text-gray-400">{{ $notificacao->created_at?->diffForHumans() }}</span>
-                        </button>
-                    </form>
-                @empty
-                    <div class="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-sm text-gray-500">
-                        Nenhuma notificacao interna recente.
+                    <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                        @foreach ($metricas as $metrica)
+                            <div class="rounded-2xl border border-white/70 bg-white/70 p-4">
+                                <span class="block text-xs font-black uppercase tracking-[0.16em] text-gray-400">{{ $metrica['label'] }}</span>
+                                <span class="mt-2 block text-3xl font-black text-gray-950">{{ $metrica['valor'] }}</span>
+                            </div>
+                        @endforeach
                     </div>
-                @endforelse
-            </div>
-        </div>
 
-        <div class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-            <div class="flex items-start justify-between gap-4 mb-6">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800">Configuracoes do sistema</h2>
-                    <p class="text-sm text-gray-500 mt-2">Informacoes basicas da instalacao atual. Nesta fase, esses dados sao apenas informativos.</p>
-                </div>
-                <div class="h-11 w-11 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center">
-                    <i class="fa-solid fa-sliders"></i>
-                </div>
-            </div>
+                    <div class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                        @foreach ($atalhos as $atalho)
+                            <a href="{{ $atalho['url'] }}" class="settings-card rounded-3xl border border-white/70 bg-white/75 p-5 transition hover:-translate-y-0.5 hover:border-[#c9a15f] hover:shadow-lg" data-settings-card data-settings-keywords="{{ $atalho['grupo'] }}">
+                                <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#f8f1e8] text-[#8a5a26]">
+                                    <i class="fa-solid {{ $atalho['icone'] }}"></i>
+                                </span>
+                                <h3 class="mt-4 font-black text-gray-950">{{ $atalho['titulo'] }}</h3>
+                                <p class="mt-2 text-sm text-gray-600">{{ $atalho['texto'] }}</p>
+                            </a>
+                        @endforeach
+                    </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-4">
-                    <span class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Nome do sistema</span>
-                    <span class="text-sm font-semibold text-gray-800">Voz &amp; Cifra</span>
-                </div>
-
-                <div class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-4">
-                    <span class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Descricao</span>
-                    <span class="text-sm text-gray-700">Sistema administrativo para organizacao do ministerio musical e do nucleo liturgico.</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="admin-highlight-surface rounded-3xl p-6 shadow-sm">
-            <div class="flex items-start justify-between gap-4 mb-6">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800">Informacoes do sistema</h2>
-                    <p class="text-sm text-gray-500 mt-2">Resumo rapido da base atual para acompanhamento da etapa do admin master.</p>
-                </div>
-                <div class="h-11 w-11 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center">
-                    <i class="fa-solid fa-chart-column"></i>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                <div class="admin-muted-surface rounded-xl p-5">
-                    <span class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Igrejas</span>
-                    <span class="text-3xl font-black text-gray-800">{{ $metricasSistema['total_igrejas'] }}</span>
-                </div>
-
-                <div class="admin-muted-surface rounded-xl p-5">
-                    <span class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Musicas</span>
-                    <span class="text-3xl font-black text-gray-800">{{ $metricasSistema['total_musicas'] }}</span>
-                </div>
-
-                <div class="admin-muted-surface rounded-xl p-5">
-                    <span class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Acordes</span>
-                    <span class="text-3xl font-black text-gray-800">{{ $metricasSistema['total_acordes'] }}</span>
-                </div>
-
-                <div class="admin-muted-surface rounded-xl p-5">
-                    <span class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Usuarios</span>
-                    <span class="text-3xl font-black text-gray-800">{{ $metricasSistema['total_usuarios'] }}</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-            <div class="flex items-start justify-between gap-4 mb-6">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800">Gestao de admins master</h2>
-                    <p class="text-sm text-gray-500 mt-2">A criacao de novos admins master agora fica centralizada em Usuarios para evitar fluxo duplicado.</p>
-                </div>
-                <div class="h-11 w-11 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                    <i class="fa-solid fa-users-gear"></i>
-                </div>
-            </div>
-
-            <div class="rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-4 text-sm text-emerald-900">
-                Use o modulo <strong>Usuarios</strong> para cadastrar novas contas admin master. A edicao da propria senha, e-mail e telefone continua disponivel aqui em <strong>Perfil</strong>.
-            </div>
-
-            <div class="mt-5">
-                <a href="{{ route('admin.usuarios.create') }}" class="inline-flex items-center gap-2 rounded-xl bg-green-700 px-5 py-3 font-semibold text-white hover:bg-green-800">
-                    <i class="fa-solid fa-user-plus"></i>
-                    <span>Ir para Usuarios</span>
-                </a>
+                    <div class="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-4 text-sm text-emerald-950">
+                        <strong>Igreja ativa:</strong> {{ $igrejaAtiva?->nome ?? 'Nenhuma igreja ativa neste momento.' }}
+                    </div>
+                </section>
             </div>
         </div>
     </div>
@@ -240,47 +306,33 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const campoCpf = document.querySelector('[data-cpf-input]');
-            const campoTelefone = document.querySelector('[data-telefone-input]');
+            const search = document.querySelector('[data-settings-search]');
+            const cards = Array.from(document.querySelectorAll('[data-settings-card]'));
+            const normalize = (value) => (value || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .trim();
 
-            const aplicarMascaraCpf = (valor) => {
-                valor = valor.replace(/\D/g, '').slice(0, 11);
-                valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
-                valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
-                valor = valor.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-                return valor;
-            };
+            search?.addEventListener('input', () => {
+                const term = normalize(search.value);
 
-            const aplicarMascaraTelefone = (valor) => {
-                valor = valor.replace(/\D/g, '').slice(0, 11);
-
-                if (valor.length <= 10) {
-                    valor = valor.replace(/^(\d{2})(\d)/, '($1) $2');
-                    valor = valor.replace(/(\d{4})(\d)/, '$1-$2');
-                } else {
-                    valor = valor.replace(/^(\d{2})(\d)/, '($1) $2');
-                    valor = valor.replace(/(\d{5})(\d)/, '$1-$2');
-                }
-
-                return valor;
-            };
-
-            campoCpf?.addEventListener('input', () => {
-                campoCpf.value = aplicarMascaraCpf(campoCpf.value);
+                cards.forEach((card) => {
+                    const haystack = normalize(`${card.textContent} ${card.dataset.settingsKeywords || ''}`);
+                    card.classList.toggle('hidden', term !== '' && !haystack.includes(term));
+                });
             });
 
-            campoTelefone?.addEventListener('input', () => {
-                campoTelefone.value = aplicarMascaraTelefone(campoTelefone.value);
+            document.querySelectorAll('[data-preference-radio]').forEach((radio) => {
+                radio.addEventListener('change', () => radio.closest('form')?.requestSubmit());
             });
 
-            if (campoCpf) {
-                campoCpf.value = aplicarMascaraCpf(campoCpf.value);
-            }
-
-            if (campoTelefone) {
-                campoTelefone.value = aplicarMascaraTelefone(campoTelefone.value);
-            }
+            const emailToggle = document.querySelector('[data-email-toggle]');
+            const toggleShell = document.querySelector('[data-toggle-shell]');
+            emailToggle?.addEventListener('change', () => {
+                toggleShell?.classList.toggle('bg-emerald-600', emailToggle.checked);
+                toggleShell?.classList.toggle('bg-gray-300', !emailToggle.checked);
+            });
         });
     </script>
-    @include('partials.password-strength-script')
 @endpush

@@ -71,6 +71,7 @@ class AdminMasterController extends Controller
     {
         /** @var \App\Models\Usuario $usuario */
         $usuario = Auth::user();
+        $igrejaAtiva = $usuario->igrejaAtiva();
 
         return view('admin.settings.index', [
             'metricasSistema' => [
@@ -78,11 +79,50 @@ class AdminMasterController extends Controller
                 'total_musicas' => Musica::count(),
                 'total_acordes' => Acorde::count(),
                 'total_usuarios' => Usuario::count(),
+                'total_missas' => Missa::count(),
             ],
             'usuario' => $usuario,
+            'igrejaAtiva' => $igrejaAtiva,
             'notificacoesRecentes' => $usuario->notificacoesInternas()->latest()->limit(5)->get(),
             'notificacoesNaoLidas' => $usuario->notificacoesInternas()->whereNull('lida_em')->count(),
         ]);
+    }
+
+    public function updateSettingsPreferences(Request $request): RedirectResponse
+    {
+        /** @var \App\Models\Usuario $usuario */
+        $usuario = Auth::user();
+
+        $dados = $request->validate([
+            'theme_preference' => ['required', Rule::in(['system', 'light', 'dark'])],
+            'receber_notificacoes_email' => ['nullable', 'boolean'],
+        ]);
+
+        $antes = [
+            'theme_preference' => $usuario->theme_preference ?? 'system',
+            'receber_notificacoes_email' => (bool) ($usuario->receber_notificacoes_email ?? true),
+        ];
+
+        $usuario->theme_preference = $dados['theme_preference'];
+        $usuario->receber_notificacoes_email = $request->boolean('receber_notificacoes_email');
+        $usuario->save();
+
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'preferencias_atualizadas',
+            ator: $usuario,
+            alvo: $usuario,
+            igreja: $usuario->igrejaAtiva(),
+            contexto: [
+                'origem' => 'admin_settings_preferences_update',
+                'antes' => $antes,
+                'depois' => [
+                    'theme_preference' => $usuario->theme_preference,
+                    'receber_notificacoes_email' => (bool) $usuario->receber_notificacoes_email,
+                ],
+            ]
+        );
+
+        return back()->with('success', 'Preferencias atualizadas com sucesso.');
     }
 
     public function profile(): View

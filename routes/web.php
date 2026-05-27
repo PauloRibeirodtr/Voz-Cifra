@@ -68,6 +68,7 @@ Route::middleware(['auth', 'verified_custom', 'super.admin', 'primeiro_acesso'])
         Route::put('/perfil', [AdminMasterController::class, 'updateProfile'])->name('profile.update');
         Route::post('/perfil/vinculos', [AdminMasterController::class, 'storeProfileVinculo'])->name('profile.vinculos.store');
         Route::get('/configuracoes', [AdminMasterController::class, 'settings'])->name('settings');
+        Route::put('/configuracoes/preferencias', [AdminMasterController::class, 'updateSettingsPreferences'])->name('settings.preferences.update');
         Route::get('/avisos/criar', [AvisoController::class, 'create'])->name('avisos.create');
         Route::post('/avisos', [AvisoController::class, 'store'])->name('avisos.store');
 
