@@ -288,6 +288,48 @@ class UsuariosAdminMasterTest extends TestCase
         $this->assertTrue($padre->temPapelNaIgreja(PapelIgreja::MUSICO, $igreja->id));
     }
 
+    public function test_admin_master_remove_papel_de_uma_igreja_sem_bloquear_login_quando_existe_outro_vinculo(): void
+    {
+        $adminMaster = Usuario::factory()->adminMaster()->create([
+            'primeiro_acesso' => false,
+        ]);
+        $igrejaAntiga = Igreja::factory()->create();
+        $igrejaAtual = Igreja::factory()->create();
+        $usuario = Usuario::factory()->create([
+            'email' => 'multi.vinculo.admin@example.com',
+            'password' => 'SenhaManual123!',
+            'ativo' => true,
+            'primeiro_acesso' => false,
+        ]);
+
+        $usuario->adicionarPapel(PapelIgreja::MUSICO, $igrejaAntiga);
+        $usuario->adicionarPapel(PapelIgreja::COORDENADOR, $igrejaAtual);
+
+        $this
+            ->actingAs($adminMaster)
+            ->post(route('admin.usuarios.vinculos.store', $usuario), [
+                'igreja_id' => $igrejaAntiga->id,
+                'papeis' => [],
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('success', 'Papeis atualizados. A conta ainda possui acesso operacional em 1 igreja(s).');
+
+        $usuario->refresh();
+
+        $this->assertFalse($usuario->temPapelNaIgreja(PapelIgreja::MUSICO, $igrejaAntiga->id));
+        $this->assertTrue($usuario->temPapelNaIgreja(PapelIgreja::COORDENADOR, $igrejaAtual->id));
+        $this->assertSame($igrejaAtual->id, $usuario->igreja_id);
+
+        auth()->logout();
+
+        $this
+            ->post(route('login.attempt'), [
+                'email' => 'multi.vinculo.admin@example.com',
+                'password' => 'SenhaManual123!',
+            ])
+            ->assertRedirect(route('coordenador.dashboard'));
+    }
+
     public function test_admin_master_em_primeiro_acesso_precisa_trocar_senha_com_regra_forte(): void
     {
         $adminMaster = Usuario::factory()->adminMaster()->create([

@@ -321,9 +321,18 @@ class UsuarioController extends Controller
             );
         }
 
+        $usuario->refresh();
+        $vinculosOperacionais = $usuario->vinculosIgrejaAtivos()
+            ->whereHas('papeisAtivos')
+            ->count();
+
+        $mensagem = $vinculosOperacionais > 0
+            ? 'Papeis atualizados. A conta ainda possui acesso operacional em ' . $vinculosOperacionais . ' igreja(s).'
+            : 'Papeis atualizados. Esta conta ficou sem acesso operacional ate receber um novo papel.';
+
         return redirect()
             ->route('admin.usuarios.edit', $usuario)
-            ->with('success', 'Papeis da igreja atualizados com sucesso.');
+            ->with('success', $mensagem);
     }
 
     public function toggle(Usuario $usuario): RedirectResponse

@@ -21,6 +21,7 @@
                     ->values()
                     ->all(),
             ]);
+        $nomesIgrejasPorId = $igrejas->mapWithKeys(fn ($igreja) => [(string) $igreja->id => $igreja->nome]);
         $igrejaSelecionadaPapeis = old('igreja_id')
             ?: optional($usuario->vinculosIgreja
                 ->where('ativo', true)
@@ -205,7 +206,7 @@
                     <div class="mb-5">
                         <p class="admin-page-kicker">Permissoes por igreja</p>
                         <h2 class="text-lg font-bold text-gray-800">Ajustar papeis por igreja</h2>
-                        <p class="mt-2 text-sm text-gray-500">Esta e a parte principal da tela. Escolha uma igreja, marque o que a pessoa faz ali e salve. Desmarcar todos remove o acesso daquela igreja.</p>
+                        <p class="mt-2 text-sm text-gray-500">Esta e a parte principal da tela. Escolha uma igreja, marque o que a pessoa faz ali e salve. Desmarcar todos remove o acesso apenas daquela igreja.</p>
                         @if ($emailTecnico)
                             <p class="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                                 Esta conta ainda esta em modo tecnico sem login publico. Se o padre for operar com login, primeiro salve um e-mail real na conta base.
@@ -218,6 +219,13 @@
 
                         <div>
                             <label class="admin-label">Igreja</label>
+                            <input
+                                type="search"
+                                class="admin-input mb-2"
+                                placeholder="Buscar igreja pelo nome"
+                                autocomplete="off"
+                                data-igreja-papeis-filter
+                            >
                             <select name="igreja_id" class="admin-select" required data-igreja-papeis-select>
                                 <option value="">Selecione a igreja</option>
                                 @foreach ($igrejas as $igreja)
@@ -239,6 +247,10 @@
                             <p class="mt-3 text-xs text-gray-500" data-papeis-helper>
                                 Escolha uma igreja para carregar os papeis atuais desta conta.
                             </p>
+                        </div>
+
+                        <div class="rounded-2xl border border-[#ead6b3] bg-[#fff8ed] px-4 py-4 text-sm text-[#6c4a21]" data-impacto-papeis>
+                            Selecione uma igreja para ver o impacto antes de salvar.
                         </div>
 
                         <div class="admin-actions">
@@ -383,10 +395,92 @@
             }
 
             const papeisPorIgreja = @json($papeisPorIgreja);
+            const nomesIgrejasPorId = @json($nomesIgrejasPorId);
             const selectIgreja = document.querySelector('[data-igreja-papeis-select]');
+            const filtroIgreja = document.querySelector('[data-igreja-papeis-filter]');
             const checkboxesPapeis = Array.from(document.querySelectorAll('[data-papel-checkbox]'));
             const helperPapeis = document.querySelector('[data-papeis-helper]');
+            const impactoPapeis = document.querySelector('[data-impacto-papeis]');
             const blocoPapeis = selectIgreja?.closest('section');
+            const opcoesIgrejaOriginais = selectIgreja
+                ? Array.from(selectIgreja.options).map((option) => ({ value: option.value, text: option.textContent || '' }))
+                : [];
+            const normalizar = (valor) => (valor || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .trim();
+
+            const papeisSelecionadosAgora = () => checkboxesPapeis
+                .filter((checkbox) => checkbox.checked)
+                .map((checkbox) => checkbox.value);
+
+            const atualizarImpacto = () => {
+                if (!impactoPapeis || !selectIgreja) {
+                    return;
+                }
+
+                const igrejaId = String(selectIgreja.value || '');
+                const papeisSelecionados = papeisSelecionadosAgora();
+                const igrejasComAcessoDepois = Object.entries(papeisPorIgreja)
+                    .filter(([id, papeis]) => id !== igrejaId && Array.isArray(papeis) && papeis.length > 0)
+                    .map(([id]) => nomesIgrejasPorId[id] || `Igreja ${id}`);
+
+                if (!igrejaId) {
+                    impactoPapeis.textContent = 'Selecione uma igreja para ver o impacto antes de salvar.';
+                    impactoPapeis.className = 'rounded-2xl border border-[#ead6b3] bg-[#fff8ed] px-4 py-4 text-sm text-[#6c4a21]';
+                    return;
+                }
+
+                if (papeisSelecionados.length > 0) {
+                    impactoPapeis.textContent = `Ao salvar, esta pessoa ficara com ${papeisSelecionados.length} papel(is) nesta igreja. O login continua liberado se a conta estiver ativa.`;
+                    impactoPapeis.className = 'rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm text-emerald-900';
+                    return;
+                }
+
+                if (igrejasComAcessoDepois.length > 0) {
+                    impactoPapeis.textContent = `Ao salvar sem papeis, o acesso desta igreja sera removido, mas o login continua por: ${igrejasComAcessoDepois.join(', ')}.`;
+                    impactoPapeis.className = 'rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900';
+                    return;
+                }
+
+                impactoPapeis.textContent = 'Atenção: ao salvar sem papeis, esta conta ficara sem acesso operacional e nao entrara no painel ate receber novo papel.';
+                impactoPapeis.className = 'rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-900';
+            };
+
+            const destacarCheckboxesSelecionados = () => {
+                checkboxesPapeis.forEach((checkbox) => {
+                    const label = checkbox.closest('label');
+
+                    label?.classList.toggle('bg-emerald-50', checkbox.checked);
+                    label?.classList.toggle('border-emerald-200', checkbox.checked);
+                    label?.classList.toggle('text-emerald-800', checkbox.checked);
+                });
+            };
+
+            if (selectIgreja && filtroIgreja) {
+                filtroIgreja.addEventListener('input', () => {
+                    const termo = normalizar(filtroIgreja.value);
+                    const valorAtual = selectIgreja.value;
+                    const filtradas = opcoesIgrejaOriginais.filter((option, index) => index === 0 || termo === '' || normalizar(option.text).includes(termo));
+
+                    selectIgreja.replaceChildren();
+                    filtradas.forEach((optionData, index) => {
+                        selectIgreja.appendChild(new Option(
+                            index === 0 && termo !== '' ? `Selecione a igreja (${Math.max(filtradas.length - 1, 0)} encontrada(s))` : optionData.text,
+                            optionData.value,
+                            false,
+                            optionData.value === valorAtual
+                        ));
+                    });
+
+                    if (filtradas.length === 1 && termo !== '') {
+                        const option = new Option('Nenhuma igreja encontrada', '', false, false);
+                        option.disabled = true;
+                        selectIgreja.appendChild(option);
+                    }
+                });
+            }
 
             const atualizarPapeisDaIgreja = () => {
                 if (!selectIgreja) {
@@ -398,13 +492,11 @@
 
                 checkboxesPapeis.forEach((checkbox) => {
                     const papelAtual = papeisAtuais.has(checkbox.value);
-                    const label = checkbox.closest('label');
 
                     checkbox.checked = papelAtual;
-                    label?.classList.toggle('bg-emerald-50', papelAtual);
-                    label?.classList.toggle('border-emerald-200', papelAtual);
-                    label?.classList.toggle('text-emerald-800', papelAtual);
                 });
+                destacarCheckboxesSelecionados();
+                atualizarImpacto();
 
                 if (!helperPapeis) {
                     return;
@@ -424,6 +516,12 @@
             };
 
             selectIgreja?.addEventListener('change', atualizarPapeisDaIgreja);
+            checkboxesPapeis.forEach((checkbox) => {
+                checkbox.addEventListener('change', () => {
+                    destacarCheckboxesSelecionados();
+                    atualizarImpacto();
+                });
+            });
             atualizarPapeisDaIgreja();
 
             document.querySelectorAll('[data-editar-igreja]').forEach((botao) => {
