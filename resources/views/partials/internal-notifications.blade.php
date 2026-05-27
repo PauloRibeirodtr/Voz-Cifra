@@ -50,7 +50,7 @@
                 @endif
             </summary>
 
-            <div class="absolute right-0 z-50 mt-3 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-[1.35rem] border border-[#e7d8c6] bg-white text-[#261a14] shadow-2xl shadow-slate-950/20">
+            <div class="fixed right-3 top-20 z-[90] w-[min(24rem,calc(100vw-1.5rem))] overflow-hidden rounded-[1.35rem] border border-[#e7d8c6] bg-white text-[#261a14] shadow-2xl shadow-slate-950/20 lg:right-8 lg:top-24">
                 <div class="flex items-start justify-between gap-3 border-b border-[#efe4d6] px-4 py-3">
                     <div>
                         <p class="text-[10px] font-black uppercase tracking-[0.2em] text-[#8a5a26]">Notificacoes</p>
@@ -90,7 +90,7 @@
                     @empty
                         <div class="px-4 py-8 text-center">
                             <p class="text-sm font-bold text-[#4b3426]">Tudo limpo por aqui.</p>
-                            <p class="mt-1 text-xs text-[#8b7565]">Quando algo importante mudar, aparece neste sininho.</p>
+                            <p class="mt-1 text-xs text-[#8b7565]">Quando um papel, acesso ou pedido de tom mudar, aparece neste sininho.</p>
                         </div>
                     @endforelse
                 </div>

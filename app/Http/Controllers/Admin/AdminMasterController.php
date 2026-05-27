@@ -69,6 +69,9 @@ class AdminMasterController extends Controller
 
     public function settings(): View
     {
+        /** @var \App\Models\Usuario $usuario */
+        $usuario = Auth::user();
+
         return view('admin.settings.index', [
             'metricasSistema' => [
                 'total_igrejas' => Igreja::count(),
@@ -76,6 +79,9 @@ class AdminMasterController extends Controller
                 'total_acordes' => Acorde::count(),
                 'total_usuarios' => Usuario::count(),
             ],
+            'usuario' => $usuario,
+            'notificacoesRecentes' => $usuario->notificacoesInternas()->latest()->limit(5)->get(),
+            'notificacoesNaoLidas' => $usuario->notificacoesInternas()->whereNull('lida_em')->count(),
         ]);
     }
 
@@ -113,6 +119,7 @@ class AdminMasterController extends Controller
             'foto_perfil' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'password' => [$primeiroAcesso ? 'required' : 'nullable', 'confirmed', new StrongPassword()],
             'theme_preference' => ['required', Rule::in(['system', 'light', 'dark'])],
+            'receber_notificacoes_email' => ['nullable', 'boolean'],
         ], [
             'password.required' => 'No primeiro acesso, defina uma nova senha forte para liberar o painel administrativo.',
             'password.confirmed' => 'A confirmacao da senha nao confere.',
@@ -121,6 +128,7 @@ class AdminMasterController extends Controller
         $usuario->email = $dados['email'];
         $usuario->telefone = $dados['telefone'] ?? null;
         $usuario->theme_preference = $dados['theme_preference'];
+        $usuario->receber_notificacoes_email = $request->boolean('receber_notificacoes_email');
 
         if (!empty($dados['password'])) {
             $usuario->password = $dados['password'];

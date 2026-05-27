@@ -84,6 +84,37 @@ class NotificacaoInternaService
         );
     }
 
+    public function statusContaAlterado(Usuario $usuario, bool $ativo, ?Usuario $ator = null): void
+    {
+        $this->criar(
+            usuario: $usuario,
+            tipo: $ativo ? 'conta_reativada' : 'conta_inativada',
+            titulo: $ativo ? 'Conta reativada' : 'Conta inativada',
+            mensagem: $ativo
+                ? 'Seu acesso ao Voz & Cifra foi reativado.'
+                : 'Seu acesso ao Voz & Cifra foi inativado. Fale com a administracao se precisar de ajuda.',
+            url: null,
+            ator: $ator,
+            igreja: $usuario->igrejaAtiva(),
+            dados: [
+                'ativo' => $ativo,
+            ]
+        );
+    }
+
+    public function senhaRedefinida(Usuario $usuario, ?Usuario $ator = null): void
+    {
+        $this->criar(
+            usuario: $usuario,
+            tipo: 'reset_senha',
+            titulo: 'Link de acesso enviado',
+            mensagem: 'Um novo link de definicao de senha foi gerado para sua conta.',
+            url: null,
+            ator: $ator,
+            igreja: $usuario->igrejaAtiva()
+        );
+    }
+
     public function pedidoMudancaTomCriado(Usuario $destinatario, SolicitacaoMudancaTom $solicitacao, ?Usuario $ator = null): void
     {
         $solicitacao->loadMissing(['missa', 'missaMusica.musica', 'igreja']);

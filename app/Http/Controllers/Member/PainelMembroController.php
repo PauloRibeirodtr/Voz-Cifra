@@ -69,6 +69,7 @@ class PainelMembroController extends Controller
             'foto_perfil' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'password' => [$primeiroAcesso ? 'required' : 'nullable', 'confirmed', new StrongPassword()],
             'theme_preference' => ['required', Rule::in(['system', 'light', 'dark'])],
+            'receber_notificacoes_email' => ['nullable', 'boolean'],
         ], [
             'password.required' => 'No primeiro acesso, defina uma nova senha para liberar o painel do músico.',
             'password.confirmed' => 'A confirmação da senha não confere.',
@@ -77,6 +78,7 @@ class PainelMembroController extends Controller
         $usuario->email = $dados['email'];
         $usuario->telefone = $dados['telefone'] ?? null;
         $usuario->theme_preference = $dados['theme_preference'];
+        $usuario->receber_notificacoes_email = $request->boolean('receber_notificacoes_email');
 
         if (!empty($dados['password'])) {
             $usuario->password = $dados['password'];

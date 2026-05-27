@@ -29,6 +29,12 @@ class NotificacaoSegurancaService
 
         $contexto = $this->normalizarContexto($alvo, $evento, $ator, $contexto);
 
+        if (!$alvo->recebeNotificacoesEmail() && !$this->deveEnviarMesmoComOptOut($evento)) {
+            $this->registrarHistoricoEmailCancelado($alvo, $evento, $contexto, 'Usuario optou por nao receber avisos por e-mail.');
+
+            return;
+        }
+
         if (!filter_var((string) $alvo->email, FILTER_VALIDATE_EMAIL)) {
             $this->registrarHistoricoEmailCancelado($alvo, $evento, $contexto, 'Email invalido ou ausente.');
 
@@ -84,6 +90,17 @@ class NotificacaoSegurancaService
         $eventosHabilitados = config('notificacoes.eventos_habilitados', []);
 
         return in_array($evento, is_array($eventosHabilitados) ? $eventosHabilitados : [], true);
+    }
+
+    private function deveEnviarMesmoComOptOut(string $evento): bool
+    {
+        return in_array($evento, [
+            'conta_inativada',
+            'conta_reativada',
+            'papel_local_revogado',
+            'reset_senha',
+            'troca_nivel_global',
+        ], true);
     }
 
     private function normalizarContexto(

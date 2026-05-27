@@ -28,6 +28,7 @@ class UsuarioFactory extends Factory
             'ativo' => true,
             'primeiro_acesso' => false,
             'theme_preference' => 'system',
+            'receber_notificacoes_email' => true,
             'remember_token' => Str::random(10),
         ];
     }

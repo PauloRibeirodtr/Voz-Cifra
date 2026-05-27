@@ -50,6 +50,40 @@
             <div class="admin-stat-card p-6">
                 <div class="flex items-start justify-between gap-4">
                     <div>
+                        <h2 class="text-lg font-bold text-gray-800">Preferencias</h2>
+                        <p class="text-sm text-gray-500 mt-2">Tema, foto, telefone, senha e avisos por e-mail ficam no perfil da conta.</p>
+                    </div>
+                    <div class="h-11 w-11 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                        <i class="fa-solid fa-sliders"></i>
+                    </div>
+                </div>
+
+                <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div class="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+                        <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Tema</span>
+                        <span class="mt-1 block text-sm font-bold text-gray-800">
+                            {{ ['system' => 'Seguir dispositivo', 'light' => 'Claro', 'dark' => 'Escuro'][$usuario->theme_preference ?? 'system'] ?? 'Seguir dispositivo' }}
+                        </span>
+                    </div>
+                    <div class="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+                        <span class="block text-xs font-black uppercase tracking-wider text-gray-400">E-mail</span>
+                        <span class="mt-1 block text-sm font-bold text-gray-800">
+                            {{ ($usuario->receber_notificacoes_email ?? true) ? 'Avisos gerais ligados' : 'Apenas criticos' }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mt-5">
+                    <a href="{{ route('admin.profile') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-700 text-white rounded-lg font-semibold hover:bg-emerald-800">
+                        <i class="fa-solid fa-user-gear"></i>
+                        <span>Editar preferencias</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="admin-stat-card p-6">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
                         <h2 class="text-lg font-bold text-gray-800">Avisos</h2>
                         <p class="mt-2 text-sm text-gray-500">Envie uma mensagem para todos, uma igreja, um papel ou uma pessoa especifica.</p>
                     </div>
@@ -86,6 +120,37 @@
                         </button>
                     </form>
                 </div>
+            </div>
+        </div>
+
+        <div class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+            <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-800">Notificacoes internas</h2>
+                    <p class="mt-2 text-sm text-gray-500">Resumo do sininho. As notificacoes internas continuam ativas mesmo se os avisos por e-mail forem desligados.</p>
+                </div>
+                <span class="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-700">
+                    {{ $notificacoesNaoLidas }} nao lida(s)
+                </span>
+            </div>
+
+            <div class="space-y-3">
+                @forelse ($notificacoesRecentes as $notificacao)
+                    <form method="POST" action="{{ route('notificacoes.ler', $notificacao) }}" class="rounded-2xl border {{ $notificacao->lida_em ? 'border-gray-100 bg-gray-50' : 'border-emerald-100 bg-emerald-50' }} px-4 py-4">
+                        @csrf
+                        <button type="submit" class="block w-full text-left">
+                            <span class="block text-sm font-black text-gray-900">{{ $notificacao->titulo }}</span>
+                            @if ($notificacao->mensagem)
+                                <span class="mt-1 block text-sm text-gray-600">{{ $notificacao->mensagem }}</span>
+                            @endif
+                            <span class="mt-2 block text-xs font-bold text-gray-400">{{ $notificacao->created_at?->diffForHumans() }}</span>
+                        </button>
+                    </form>
+                @empty
+                    <div class="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-sm text-gray-500">
+                        Nenhuma notificacao interna recente.
+                    </div>
+                @endforelse
             </div>
         </div>
 

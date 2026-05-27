@@ -102,6 +102,17 @@
                         </select>
                     </div>
 
+                    <div class="rounded-2xl border border-green-100 bg-green-50 p-4">
+                        <label class="flex items-start gap-3 text-sm text-green-950">
+                            <input type="hidden" name="receber_notificacoes_email" value="0">
+                            <input type="checkbox" name="receber_notificacoes_email" value="1" class="mt-1 rounded border-green-300 text-green-700 focus:ring-green-200" @checked(old('receber_notificacoes_email', $user->receber_notificacoes_email ?? true))>
+                            <span>
+                                <strong class="block">Receber avisos por e-mail</strong>
+                                <span class="mt-1 block text-xs text-green-800">Avisos gerais podem ser desligados. Alertas criticos, como inativacao de conta ou remocao de acesso, continuam chegando.</span>
+                            </span>
+                        </label>
+                    </div>
+
                     <button class="mt-2 rounded-xl bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800">
                         Atualizar perfil
                     </button>

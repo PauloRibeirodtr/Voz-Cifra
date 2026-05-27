@@ -118,6 +118,17 @@
                             <option value="dark" @selected(old('theme_preference', $user->theme_preference ?? 'system') === 'dark')>Modo escuro</option>
                         </select>
                     </div>
+
+                    <div class="md:col-span-2 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+                        <label class="flex items-start gap-3 text-sm text-emerald-950">
+                            <input type="hidden" name="receber_notificacoes_email" value="0">
+                            <input type="checkbox" name="receber_notificacoes_email" value="1" class="mt-1 rounded border-emerald-300 text-emerald-700 focus:ring-emerald-200" @checked(old('receber_notificacoes_email', $user->receber_notificacoes_email ?? true))>
+                            <span>
+                                <strong class="block">Receber avisos por e-mail</strong>
+                                <span class="mt-1 block text-xs text-emerald-800">Avisos gerais podem ser desligados. Alertas criticos, como inativacao de conta ou remocao de acesso, continuam chegando.</span>
+                            </span>
+                        </label>
+                    </div>
                 </div>
             </section>
 

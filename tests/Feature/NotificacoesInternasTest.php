@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\PapelIgreja;
 use App\Models\Igreja;
 use App\Models\Usuario;
+use App\Services\GestaoUsuariosIgrejaService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
@@ -91,5 +92,56 @@ class NotificacoesInternasTest extends TestCase
             ->assertRedirect();
 
         $this->assertNotNull($outraNotificacao->fresh()->lida_em);
+    }
+
+    public function test_alteracao_de_status_gera_notificacao_interna_direcional(): void
+    {
+        Mail::fake();
+
+        $adminMaster = Usuario::factory()->adminMaster()->create();
+        $usuario = Usuario::factory()->create([
+            'ativo' => true,
+        ]);
+
+        app(GestaoUsuariosIgrejaService::class)->alterarStatusConta(
+            usuario: $usuario,
+            ativo: false,
+            ator: $adminMaster,
+            contexto: ['origem' => 'teste']
+        );
+
+        $this->assertDatabaseHas('notificacoes_internas', [
+            'usuario_id' => $usuario->id,
+            'ator_id' => $adminMaster->id,
+            'tipo' => 'conta_inativada',
+            'titulo' => 'Conta inativada',
+        ]);
+    }
+
+    public function test_musico_pode_desligar_avisos_gerais_por_email_no_perfil(): void
+    {
+        $igreja = Igreja::factory()->create();
+        $usuario = Usuario::factory()->create([
+            'email' => 'preferencias@example.com',
+            'receber_notificacoes_email' => true,
+        ]);
+        $usuario->adicionarPapel(PapelIgreja::MUSICO, $igreja);
+
+        $this
+            ->actingAs($usuario)
+            ->put(route('member.profile.update'), [
+                'email' => 'preferencias@example.com',
+                'telefone' => '(67) 99999-9999',
+                'theme_preference' => 'dark',
+                'receber_notificacoes_email' => '0',
+                'password' => '',
+                'password_confirmation' => '',
+            ])
+            ->assertRedirect(route('member.dashboard'));
+
+        $usuario->refresh();
+
+        $this->assertFalse($usuario->receber_notificacoes_email);
+        $this->assertSame('dark', $usuario->theme_preference);
     }
 }

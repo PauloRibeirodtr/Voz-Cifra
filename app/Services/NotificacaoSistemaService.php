@@ -115,6 +115,12 @@ class NotificacaoSistemaService
         ?Usuario $ator,
         array $contexto
     ): void {
+        if (!$usuario->recebeNotificacoesEmail()) {
+            $this->registrarHistoricoCancelado($usuario, $evento, $contexto, 'Usuario optou por nao receber avisos por e-mail.');
+
+            return;
+        }
+
         if (!filter_var((string) $usuario->email, FILTER_VALIDATE_EMAIL)) {
             $this->registrarHistoricoCancelado($usuario, $evento, $contexto, 'Email invalido ou ausente.');
 

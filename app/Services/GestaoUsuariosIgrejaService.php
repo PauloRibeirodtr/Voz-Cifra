@@ -471,6 +471,7 @@ class GestaoUsuariosIgrejaService
             ator: $ator,
             contexto: $contexto
         );
+        $this->notificacaoInternaService->statusContaAlterado($usuario, $ativo, $ator);
 
         $usuario = $usuario->fresh();
         $this->statusOperacionalIgrejaService->atualizarPorUsuario($usuario);
@@ -509,6 +510,7 @@ class GestaoUsuariosIgrejaService
                 ],
             ]
         );
+        $this->notificacaoInternaService->senhaRedefinida($usuario, $ator);
 
         if (filter_var((string) $usuario->email, FILTER_VALIDATE_EMAIL)) {
             $this->notificacaoAcessoInicialService->enviarConvite(

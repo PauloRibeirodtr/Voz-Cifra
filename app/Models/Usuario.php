@@ -34,6 +34,7 @@ class Usuario extends Authenticatable
         'ativo',
         'primeiro_acesso',
         'theme_preference',
+        'receber_notificacoes_email',
     ];
 
     protected $hidden = [
@@ -48,6 +49,7 @@ class Usuario extends Authenticatable
             'primeiro_acesso' => 'boolean',
             'nivel_global' => 'integer',
             'eh_padre' => 'boolean',
+            'receber_notificacoes_email' => 'boolean',
             'password' => 'hashed',
         ];
     }
@@ -346,6 +348,11 @@ class Usuario extends Authenticatable
     public function ehAdminMaster(): bool
     {
         return $this->perfil_global === 'admin_master' || (int) ($this->nivel_global ?? 0) >= 6;
+    }
+
+    public function recebeNotificacoesEmail(): bool
+    {
+        return (bool) ($this->receber_notificacoes_email ?? true);
     }
 
     public function ehAdminLocal(): bool
