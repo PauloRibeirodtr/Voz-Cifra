@@ -958,6 +958,8 @@ body.theme-dark .admin-section-card,
 body.theme-dark .admin-inline-note,
 body.theme-dark .admin-inline-note-warm,
 body.theme-dark .admin-panel,
+body.theme-dark .settings-card,
+body.theme-dark .settings-option,
 body.theme-dark .admin-filter-surface,
 body.theme-dark .admin-table-shell,
 body.theme-dark .admin-list-card,
@@ -967,6 +969,42 @@ body.theme-dark .music-card,
 body.theme-dark .music-empty {
     background: var(--admin-surface-muted) !important;
     border-color: var(--admin-border) !important;
+    color: var(--admin-text) !important;
+}
+
+body.theme-dark .settings-card,
+body.theme-dark .settings-option,
+body.theme-dark .bg-\[\#f8f1e8\],
+body.theme-dark .bg-\[\#f8f1e7\],
+body.theme-dark .bg-\[\#fff8ed\],
+body.theme-dark .bg-\[\#f5eee6\] {
+    background: #241716 !important;
+    border-color: var(--admin-border) !important;
+    color: var(--admin-text) !important;
+}
+
+body.theme-dark .settings-card:hover,
+body.theme-dark .settings-option:hover {
+    background: #2c1d1b !important;
+    border-color: rgba(232, 190, 132, 0.42) !important;
+}
+
+body.theme-dark .settings-option.is-selected,
+body.theme-dark .settings-option.is-selected.bg-emerald-50 {
+    background: rgba(5, 150, 105, 0.2) !important;
+    border-color: rgba(52, 211, 153, 0.58) !important;
+    color: #dcfce7 !important;
+}
+
+body.theme-dark .settings-card .bg-white,
+body.theme-dark .settings-card .bg-\[\#f8f1e8\],
+body.theme-dark .settings-card .bg-\[\#f8f1e7\] {
+    background: #31211f !important;
+}
+
+body.theme-dark .text-gray-950,
+body.theme-dark .text-emerald-950,
+body.theme-dark .text-red-950 {
     color: var(--admin-text) !important;
 }
 
