@@ -24,7 +24,7 @@ class RepertorioMusicoService
             ->with([
                 'tempoLiturgico',
                 'missaMusicas' => fn ($query) => $query
-                    ->with(['musica', 'versaoMusical', 'momentoLiturgico'])
+                    ->with(['musica', 'versaoMusical', 'momentoLiturgico', 'solicitacoesMudancaTom'])
                     ->orderBy('ordem'),
             ])
             ->where('igreja_id', $igrejaId)
@@ -56,6 +56,7 @@ class RepertorioMusicoService
             ->with([
                 'missaMusicas' => fn ($query) => $query
                     ->where('versao_musical_id', $versaoMusical->id)
+                    ->with('solicitacoesMudancaTom')
                     ->orderBy('ordem'),
             ])
             ->where('igreja_id', $igrejaId)

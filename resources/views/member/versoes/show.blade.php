@@ -7,6 +7,16 @@
 @section('header_actions')
 @endsection
 
+@php
+    $tonsMusicais = config('musical.tons', []);
+    $pedidoTomPendente = $itemMissa
+        ? $itemMissa->solicitacoesMudancaTom
+            ->where('usuario_id', auth()->id())
+            ->where('status', \App\Models\SolicitacaoMudancaTom::STATUS_PENDENTE)
+            ->first()
+        : null;
+@endphp
+
 @push('scripts')
     @include('partials.chord-transposer-script')
     <script>
@@ -633,6 +643,9 @@
         @if (session('status'))
             <div class="mb-4 rounded-2xl border border-amber-400/30 bg-amber-950 px-5 py-4 text-sm text-amber-100">{{ session('status') }}</div>
         @endif
+        @if (session('info'))
+            <div class="mb-4 rounded-2xl border border-sky-400/30 bg-sky-950 px-5 py-4 text-sm text-sky-100">{{ session('info') }}</div>
+        @endif
         @if ($errors->any())
             <div class="mb-4 rounded-2xl border border-red-400/30 bg-red-950 px-5 py-4 text-sm text-red-100">
                 <ul class="list-disc pl-5">
@@ -683,6 +696,39 @@
                 <span id="tom_atual_badge" class="study-badge bg-emerald-400/15 text-emerald-200">Tom {{ $tomExibicao ?: 'nao informado' }}</span>
                 <span id="capotraste_badge" class="study-badge bg-orange-400/15 text-orange-100">Sem capo</span>
             </div>
+
+            @if ($itemMissa)
+                <details class="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-black text-white [&::-webkit-details-marker]:hidden">
+                        <span>{{ $pedidoTomPendente ? 'Pedido de tom em analise' : 'Sugerir mudanca de tom para esta missa' }}</span>
+                        <span class="rounded-full bg-white/10 px-3 py-1 text-xs text-slate-200">{{ $pedidoTomPendente ? $pedidoTomPendente->tom_sugerido : 'Abrir' }}</span>
+                    </summary>
+
+                    @if ($pedidoTomPendente)
+                        <p class="mt-3 text-sm text-slate-300">Pedido enviado para tocar em {{ $pedidoTomPendente->tom_sugerido }}. Quando a equipe aprovar ou recusar, voce recebe aviso no sininho.</p>
+                    @else
+                        <form action="{{ route('member.repertorio.tom.solicitar', $itemMissa) }}" method="POST" class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-[12rem_1fr_auto] md:items-end">
+                            @csrf
+                            <div>
+                                <label class="block text-xs font-black uppercase tracking-wider text-slate-400">Novo tom</label>
+                                <select name="tom_sugerido" class="mt-1 w-full rounded-xl border border-white/10 bg-white px-3 py-2 text-sm font-bold text-slate-900">
+                                    <option value="">Escolha</option>
+                                    @foreach ($tonsMusicais as $tomMusical)
+                                        <option value="{{ $tomMusical }}">{{ $tomMusical }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black uppercase tracking-wider text-slate-400">Motivo opcional</label>
+                                <input name="observacao" maxlength="500" class="mt-1 w-full rounded-xl border border-white/10 bg-white px-3 py-2 text-sm text-slate-900" placeholder="Ex.: fica melhor para as vozes">
+                            </div>
+                            <button type="submit" class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-black text-white hover:bg-emerald-700">
+                                Enviar pedido
+                            </button>
+                        </form>
+                    @endif
+                </details>
+            @endif
         </section>
 
         <div class="mt-4 study-shell">

@@ -29,6 +29,10 @@
         ->groupBy('musica_id')
         ->filter(fn ($grupo) => $grupo->count() > 1)
         ->count();
+    $totalPedidosTomPendentes = $missa->missaMusicas
+        ->flatMap(fn ($item) => $item->solicitacoesMudancaTom)
+        ->where('status', \App\Models\SolicitacaoMudancaTom::STATUS_PENDENTE)
+        ->count();
 @endphp
 
 @push('styles')
@@ -169,6 +173,12 @@
             <p class="mt-2 max-w-2xl text-sm text-gray-600">
                 Crie a missa, salve os dados principais e depois monte o repert&oacute;rio logo abaixo. Cada m&uacute;sica adicionada j&aacute; fica salva automaticamente.
             </p>
+            @if ($totalPedidosTomPendentes > 0)
+                <div class="mt-4 inline-flex items-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-bold text-sky-800">
+                    <i class="fa-solid fa-bell" aria-hidden="true"></i>
+                    {{ $totalPedidosTomPendentes }} pedido(s) de mudanca de tom aguardando decisao.
+                </div>
+            @endif
         </div>
 
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:min-w-[23rem]">
@@ -492,6 +502,10 @@
                 @else
                     <div class="space-y-4">
                         @foreach ($missa->missaMusicas as $item)
+                            @php
+                                $pedidosTomPendentes = $item->solicitacoesMudancaTom
+                                    ->where('status', \App\Models\SolicitacaoMudancaTom::STATUS_PENDENTE);
+                            @endphp
                             <article id="repertorio-item-{{ $item->id }}" class="repertorio-item-card scroll-mt-24 rounded-2xl border border-gray-200 bg-gray-50 p-4">
                                 <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                                     <div class="min-w-0">
@@ -504,6 +518,9 @@
                                             @endif
                                             @if (!$item->versaoMusical)
                                                 <span class="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">Sem cifra vinculada</span>
+                                            @endif
+                                            @if ($pedidosTomPendentes->isNotEmpty())
+                                                <span class="inline-flex rounded-full bg-sky-100 px-3 py-1 text-xs font-bold text-sky-700">{{ $pedidosTomPendentes->count() }} pedido(s) de tom</span>
                                             @endif
                                         </div>
                                         <h3 class="mt-3 text-lg font-bold text-gray-900">{{ $item->musica->titulo }}</h3>
@@ -549,6 +566,51 @@
                                         </form>
                                     </div>
                                 </div>
+
+                                @if ($pedidosTomPendentes->isNotEmpty())
+                                    <div class="mt-4 rounded-2xl border border-sky-200 bg-sky-50 p-4">
+                                        <div class="mb-3">
+                                            <h4 class="text-sm font-black text-sky-950">Pedidos de mudanca de tom</h4>
+                                            <p class="mt-1 text-xs text-sky-800">Aprove somente se esse tom realmente deve valer para todos os musicos desta missa.</p>
+                                        </div>
+
+                                        <div class="space-y-3">
+                                            @foreach ($pedidosTomPendentes as $pedidoTom)
+                                                <div class="rounded-xl border border-sky-100 bg-white p-3">
+                                                    <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                                                        <div class="min-w-0">
+                                                            <p class="text-sm font-bold text-gray-900">
+                                                                {{ $pedidoTom->usuario?->nome ?: 'Musico' }} pediu tom {{ $pedidoTom->tom_sugerido }}
+                                                            </p>
+                                                            <p class="mt-1 text-xs text-gray-500">
+                                                                Atual: {{ $pedidoTom->tom_atual ?: 'nao informado' }} &bull; {{ $pedidoTom->created_at?->diffForHumans() }}
+                                                            </p>
+                                                            @if ($pedidoTom->observacao)
+                                                                <p class="mt-2 text-sm text-gray-600">{{ $pedidoTom->observacao }}</p>
+                                                            @endif
+                                                        </div>
+
+                                                        <div class="flex flex-wrap gap-2">
+                                                            <form action="{{ route('local-admin.repertorio.tom.aprovar', $pedidoTom) }}" method="POST">
+                                                                @csrf
+                                                                <button type="submit" class="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-800">
+                                                                    Aprovar
+                                                                </button>
+                                                            </form>
+                                                            <form action="{{ route('local-admin.repertorio.tom.recusar', $pedidoTom) }}" method="POST" class="flex flex-wrap gap-2">
+                                                                @csrf
+                                                                <input name="resposta" maxlength="500" class="min-w-0 rounded-xl border border-gray-200 px-3 py-2 text-sm" placeholder="Motivo opcional">
+                                                                <button type="submit" class="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-100">
+                                                                    Recusar
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
 
                                 <details class="mt-4 rounded-xl border border-gray-200 bg-white p-3" @if (!$item->versaoMusical) open @endif>
                                     <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-gray-700 [&::-webkit-details-marker]:hidden">

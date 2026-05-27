@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MissaMusica extends Model
 {
@@ -46,6 +47,11 @@ class MissaMusica extends Model
     public function momentoLiturgico(): BelongsTo
     {
         return $this->belongsTo(MomentoLiturgico::class, 'momento_liturgico_id');
+    }
+
+    public function solicitacoesMudancaTom(): HasMany
+    {
+        return $this->hasMany(SolicitacaoMudancaTom::class, 'missa_musica_id');
     }
 
     public function getTomExibicaoAttribute(): ?string

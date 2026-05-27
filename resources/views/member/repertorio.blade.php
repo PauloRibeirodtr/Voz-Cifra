@@ -4,6 +4,10 @@
 @section('mobile_title', 'Repertorio')
 @section('desktop_subtitle', 'Missa publicada da sua igreja para tocar em sequencia')
 
+@php
+    $tonsMusicais = config('musical.tons', []);
+@endphp
+
 @section('header_actions')
     <a href="{{ route('member.musicas.index') }}" class="music-btn">
         Consultar musicas
@@ -143,6 +147,18 @@
             <p class="mt-2 text-sm text-gray-500">Assim que a igreja publicar a celebracao, as musicas vao aparecer aqui para estudo e leitura.</p>
         </div>
     @else
+        @if (session('success'))
+            <div class="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-bold text-emerald-800">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if (session('info'))
+            <div class="mt-6 rounded-2xl border border-sky-200 bg-sky-50 px-5 py-4 text-sm font-bold text-sky-800">
+                {{ session('info') }}
+            </div>
+        @endif
+
         <details class="missa-card mt-6" data-missa-card open>
             <summary class="p-5 sm:p-6">
                 <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -175,9 +191,13 @@
                     @forelse ($missa->missaMusicas as $item)
                         @php
                             $textoCifra = (string) ($item->versaoMusical?->letra_com_cifras ?? '');
+                            $pedidoTomPendente = $item->solicitacoesMudancaTom
+                                ->where('usuario_id', auth()->id())
+                                ->where('status', \App\Models\SolicitacaoMudancaTom::STATUS_PENDENTE)
+                                ->first();
                         @endphp
 
-                        <details class="musica-item" data-musica-item>
+                        <details id="repertorio-item-{{ $item->id }}" class="musica-item scroll-mt-24" data-musica-item>
                             <summary class="p-4 sm:p-5">
                                 <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                                     <div class="min-w-0">
@@ -198,6 +218,9 @@
                                         @if ($item->tom_exibicao)
                                             <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">Tom {{ $item->tom_exibicao }}</span>
                                         @endif
+                                        @if ($pedidoTomPendente)
+                                            <span class="rounded-full bg-sky-100 px-3 py-1 text-xs font-bold text-sky-700">Pedido: {{ $pedidoTomPendente->tom_sugerido }}</span>
+                                        @endif
                                         <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700">
                                             <i class="fa-solid fa-chevron-down missa-toggle-icon"></i>
                                         </span>
@@ -216,6 +239,37 @@
                                             Modo estudo
                                         </a>
                                     </div>
+
+                                    <details class="mb-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+                                        <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-black text-white [&::-webkit-details-marker]:hidden">
+                                            <span>{{ $pedidoTomPendente ? 'Pedido de tom em analise' : 'Sugerir mudanca de tom' }}</span>
+                                            <span class="rounded-full bg-white/10 px-3 py-1 text-xs text-slate-200">{{ $pedidoTomPendente ? $pedidoTomPendente->tom_sugerido : 'Abrir' }}</span>
+                                        </summary>
+
+                                        @if ($pedidoTomPendente)
+                                            <p class="mt-3 text-sm text-slate-300">Seu pedido para tocar em {{ $pedidoTomPendente->tom_sugerido }} foi enviado. A equipe da igreja precisa aprovar antes de mudar o repertorio.</p>
+                                        @else
+                                            <form action="{{ route('member.repertorio.tom.solicitar', $item) }}" method="POST" class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[12rem_1fr_auto] sm:items-end">
+                                                @csrf
+                                                <div>
+                                                    <label class="block text-xs font-black uppercase tracking-wider text-slate-400">Novo tom</label>
+                                                    <select name="tom_sugerido" class="mt-1 w-full rounded-xl border border-white/10 bg-white px-3 py-2 text-sm font-bold text-slate-900">
+                                                        <option value="">Escolha</option>
+                                                        @foreach ($tonsMusicais as $tomMusical)
+                                                            <option value="{{ $tomMusical }}">{{ $tomMusical }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs font-black uppercase tracking-wider text-slate-400">Motivo opcional</label>
+                                                    <input name="observacao" maxlength="500" class="mt-1 w-full rounded-xl border border-white/10 bg-white px-3 py-2 text-sm text-slate-900" placeholder="Ex.: fica melhor para as vozes">
+                                                </div>
+                                                <button type="submit" class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-black text-white hover:bg-emerald-700">
+                                                    Enviar
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </details>
 
                                     <div class="mb-4 flex flex-wrap gap-2" data-repertorio-acordes></div>
                                     <div

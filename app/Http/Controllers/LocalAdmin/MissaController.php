@@ -168,6 +168,8 @@ class MissaController extends Controller
                     'musica.versoesMusicais' => fn ($subQuery) => $subQuery->where('ativo', true)->orderBy('titulo'),
                     'versaoMusical',
                     'momentoLiturgico',
+                    'solicitacoesMudancaTom.usuario',
+                    'solicitacoesMudancaTom.revisor',
                 ])
                 ->orderBy('ordem'),
         ]);

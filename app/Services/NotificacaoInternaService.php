@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\PapelIgreja;
 use App\Models\Igreja;
 use App\Models\NotificacaoInterna;
+use App\Models\SolicitacaoMudancaTom;
 use App\Models\Usuario;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -79,6 +80,64 @@ class NotificacaoInternaService
                 'papel' => $papel->value,
                 'papel_label' => $papel->label(),
                 'igreja_nome' => $igreja->nome,
+            ]
+        );
+    }
+
+    public function pedidoMudancaTomCriado(Usuario $destinatario, SolicitacaoMudancaTom $solicitacao, ?Usuario $ator = null): void
+    {
+        $solicitacao->loadMissing(['missa', 'missaMusica.musica', 'igreja']);
+
+        $this->criar(
+            usuario: $destinatario,
+            tipo: 'pedido_mudanca_tom',
+            titulo: 'Pedido de mudanca de tom',
+            mensagem: sprintf(
+                '%s pediu para tocar %s em %s na missa %s.',
+                $ator?->nome ?: 'Um musico',
+                $solicitacao->missaMusica?->musica?->titulo ?: 'uma musica',
+                $solicitacao->tom_sugerido,
+                $solicitacao->missa?->titulo ?: 'selecionada'
+            ),
+            url: route('local-admin.missas.show', $solicitacao->missa_id, false) . '#repertorio-item-' . $solicitacao->missa_musica_id,
+            ator: $ator,
+            igreja: $solicitacao->igreja,
+            dados: [
+                'solicitacao_id' => $solicitacao->id,
+                'missa_id' => $solicitacao->missa_id,
+                'missa_musica_id' => $solicitacao->missa_musica_id,
+                'tom_atual' => $solicitacao->tom_atual,
+                'tom_sugerido' => $solicitacao->tom_sugerido,
+            ]
+        );
+    }
+
+    public function pedidoMudancaTomRespondido(SolicitacaoMudancaTom $solicitacao, ?Usuario $ator = null): void
+    {
+        $solicitacao->loadMissing(['missa', 'missaMusica.musica', 'igreja', 'usuario']);
+
+        $aprovada = $solicitacao->status === SolicitacaoMudancaTom::STATUS_APROVADA;
+
+        $this->criar(
+            usuario: $solicitacao->usuario,
+            tipo: $aprovada ? 'pedido_mudanca_tom_aprovado' : 'pedido_mudanca_tom_recusado',
+            titulo: $aprovada ? 'Mudanca de tom aprovada' : 'Mudanca de tom recusada',
+            mensagem: sprintf(
+                '%s: %s para %s.',
+                $solicitacao->missaMusica?->musica?->titulo ?: 'Musica',
+                $aprovada ? 'tom alterado' : 'pedido analisado',
+                $solicitacao->tom_sugerido
+            ),
+            url: route('member.repertorio', [], false) . '#repertorio-item-' . $solicitacao->missa_musica_id,
+            ator: $ator,
+            igreja: $solicitacao->igreja,
+            dados: [
+                'solicitacao_id' => $solicitacao->id,
+                'missa_id' => $solicitacao->missa_id,
+                'missa_musica_id' => $solicitacao->missa_musica_id,
+                'tom_atual' => $solicitacao->tom_atual,
+                'tom_sugerido' => $solicitacao->tom_sugerido,
+                'status' => $solicitacao->status,
             ]
         );
     }

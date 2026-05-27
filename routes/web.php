@@ -30,6 +30,7 @@ use App\Http\Controllers\Member\ChamadoController as MemberChamadoController;
 use App\Http\Controllers\NotificacaoInternaController;
 use App\Http\Controllers\Publico\HomeController;
 use App\Http\Controllers\Publico\IgrejaPublicaController;
+use App\Http\Controllers\RepertorioTomController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('root');
@@ -202,6 +203,8 @@ Route::middleware(['auth', 'verified_custom', 'role:admin_local', 'primeiro_aces
         Route::get('/missas/{missa}/repertorio/{missaMusica}/cifra', [LocalAdminMissaController::class, 'showCifra'])->name('repertorio.cifra');
         Route::get('/missas/{missa}/repertorio/{missaMusica}/impressao', [LocalAdminMissaController::class, 'imprimirCifra'])->name('repertorio.print');
         Route::get('/missas/{missa}/repertorio/{missaMusica}/pdf', [LocalAdminMissaController::class, 'pdfCifra'])->name('repertorio.pdf');
+        Route::post('/repertorio/tom/{solicitacao}/aprovar', [RepertorioTomController::class, 'aprovar'])->name('repertorio.tom.aprovar');
+        Route::post('/repertorio/tom/{solicitacao}/recusar', [RepertorioTomController::class, 'recusar'])->name('repertorio.tom.recusar');
     });
 
 Route::middleware(['auth', 'verified_custom', 'role:coordenador', 'primeiro_acesso'])
@@ -271,6 +274,7 @@ Route::middleware(['auth', 'verified_custom', 'role:member', 'primeiro_acesso'])
         Route::get('/musicas/{musica}/versoes/{versaoMusical}', [BibliotecaMusicalController::class, 'versao'])->name('versoes.show');
         Route::get('/musicas/{musica}/versoes/{versaoMusical}/impressao', [BibliotecaMusicalController::class, 'imprimirVersao'])->name('versoes.print');
         Route::get('/musicas/{musica}/versoes/{versaoMusical}/pdf', [BibliotecaMusicalController::class, 'pdfVersao'])->name('versoes.pdf');
+        Route::post('/repertorio/{missaMusica}/pedir-tom', [RepertorioTomController::class, 'solicitar'])->name('repertorio.tom.solicitar');
         Route::get('/colecoes', [ColecaoEstudoController::class, 'index'])->name('colecoes.index');
         Route::post('/colecoes', [ColecaoEstudoController::class, 'store'])->name('colecoes.store');
         Route::get('/colecoes/{colecao}', [ColecaoEstudoController::class, 'show'])->name('colecoes.show');
