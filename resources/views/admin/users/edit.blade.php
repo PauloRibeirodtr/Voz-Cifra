@@ -14,6 +14,12 @@
                     ->values()
                     ->all(),
             ]);
+        $igrejaSelecionadaPapeis = old('igreja_id')
+            ?: optional($usuario->vinculosIgreja
+                ->where('ativo', true)
+                ->filter(fn ($vinculo) => $vinculo->listarPapeisAtivos()->isNotEmpty())
+                ->sortByDesc('responsavel_principal')
+                ->first())->igreja_id;
     @endphp
 
     <div class="admin-page-shell">
@@ -140,7 +146,7 @@
                     <div class="mb-5">
                         <p class="admin-page-kicker">Acumulo de papeis</p>
                         <h2 class="text-lg font-bold text-gray-800">Ajustar papeis por igreja</h2>
-                        <p class="mt-2 text-sm text-gray-500">Selecione a igreja e marque apenas os papeis que esta pessoa deve manter. Desmarcar um papel remove o acesso naquela igreja.</p>
+                        <p class="mt-2 text-sm text-gray-500">Escolha uma igreja, revise os papeis marcados e salve. Se desmarcar todos, o acesso daquela igreja deixa de contar para login e troca de painel.</p>
                         @if ($emailTecnico)
                             <p class="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                                 Esta conta ainda esta em modo tecnico sem login publico. Se o padre for operar com login, primeiro salve um e-mail real na conta base.
@@ -156,7 +162,7 @@
                             <select name="igreja_id" class="admin-select" required data-igreja-papeis-select>
                                 <option value="">Selecione a igreja</option>
                                 @foreach ($igrejas as $igreja)
-                                    <option value="{{ $igreja->id }}" @selected((string) old('igreja_id') === (string) $igreja->id)>{{ $igreja->nome }}</option>
+                                    <option value="{{ $igreja->id }}" @selected((string) $igrejaSelecionadaPapeis === (string) $igreja->id)>{{ $igreja->nome }}</option>
                                 @endforeach
                             </select>
                         </div>

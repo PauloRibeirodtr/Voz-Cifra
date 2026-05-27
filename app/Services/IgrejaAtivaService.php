@@ -67,6 +67,7 @@ class IgrejaAtivaService
         if ($this->tabelaVinculosDisponivel()) {
             $primeiroVinculoAtivo = $usuario->vinculosIgreja()
                 ->where('ativo', true)
+                ->whereHas('papeisAtivos')
                 ->orderByDesc('responsavel_principal')
                 ->orderBy('id')
                 ->value('igreja_id');
@@ -116,6 +117,7 @@ class IgrejaAtivaService
         if ($usuario->vinculosIgreja()
             ->where('igreja_id', $igrejaId)
             ->where('ativo', true)
+            ->whereHas('papeisAtivos')
             ->exists()) {
             return true;
         }

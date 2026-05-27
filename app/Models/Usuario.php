@@ -130,6 +130,7 @@ class Usuario extends Authenticatable
     {
         /** @var UsuarioIgreja|null $vinculo */
         $vinculo = $this->vinculosIgrejaAtivos()
+            ->whereHas('papeisAtivos')
             ->orderByDesc('responsavel_principal')
             ->orderBy('id')
             ->first();
@@ -200,6 +201,15 @@ class Usuario extends Authenticatable
             }
 
             $registro = $vinculo->removerPapel($papel, $ator);
+
+            if (!$vinculo->papeisAtivos()->exists()) {
+                $vinculo->forceFill([
+                    'ativo' => false,
+                    'responsavel_principal' => false,
+                    'desvinculado_em' => now(),
+                ])->save();
+            }
+
             $this->sincronizarIgrejaLegadaPrincipal();
 
             return $registro;
@@ -461,7 +471,7 @@ class Usuario extends Authenticatable
                 'desvinculado_em' => null,
             ]);
 
-            if (!$this->vinculosIgrejaAtivos()->where('responsavel_principal', true)->exists()) {
+            if (!$this->vinculosIgrejaAtivos()->whereHas('papeisAtivos')->where('responsavel_principal', true)->exists()) {
                 $vinculoExistente->responsavel_principal = true;
             }
 
@@ -473,7 +483,7 @@ class Usuario extends Authenticatable
         return $this->vinculosIgreja()->create([
             'igreja_id' => $igrejaId,
             'ativo' => true,
-            'responsavel_principal' => !$this->vinculosIgrejaAtivos()->where('responsavel_principal', true)->exists(),
+            'responsavel_principal' => !$this->vinculosIgrejaAtivos()->whereHas('papeisAtivos')->where('responsavel_principal', true)->exists(),
             'vinculado_em' => now(),
             'desvinculado_em' => null,
         ]);
@@ -482,6 +492,7 @@ class Usuario extends Authenticatable
     protected function sincronizarIgrejaLegadaPrincipal(): void
     {
         $igrejaPrincipalId = $this->vinculosIgrejaAtivos()
+            ->whereHas('papeisAtivos')
             ->orderByDesc('responsavel_principal')
             ->orderBy('id')
             ->value('igreja_id');

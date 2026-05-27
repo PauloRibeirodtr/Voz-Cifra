@@ -322,7 +322,7 @@ class UsuarioController extends Controller
         }
 
         return redirect()
-            ->route('admin.usuarios.index')
+            ->route('admin.usuarios.edit', $usuario)
             ->with('success', 'Papeis da igreja atualizados com sucesso.');
     }
 

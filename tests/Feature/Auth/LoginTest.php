@@ -58,6 +58,37 @@ class LoginTest extends TestCase
         $this->assertAuthenticatedAs($usuario);
     }
 
+    public function test_usuario_com_multiplas_igrejas_continua_acessando_apos_perder_papel_em_uma_delas(): void
+    {
+        $igrejaAntiga = Igreja::factory()->create();
+        $igrejaAtual = Igreja::factory()->create();
+        $usuario = Usuario::factory()->create([
+            'email' => 'multi.igreja@example.com',
+            'password' => 'SenhaManual123!',
+            'ativo' => true,
+            'primeiro_acesso' => false,
+        ]);
+
+        $usuario->adicionarPapel(PapelIgreja::MUSICO, $igrejaAntiga);
+        $usuario->adicionarPapel(PapelIgreja::MUSICO, $igrejaAtual);
+        $usuario->removerPapel(PapelIgreja::MUSICO, $igrejaAntiga);
+
+        $usuario->refresh();
+
+        $this->assertFalse($usuario->temPapelNaIgreja(PapelIgreja::MUSICO, $igrejaAntiga->id));
+        $this->assertTrue($usuario->temPapelNaIgreja(PapelIgreja::MUSICO, $igrejaAtual->id));
+        $this->assertSame($igrejaAtual->id, $usuario->igreja_id);
+
+        $this
+            ->post(route('login.attempt'), [
+                'email' => 'multi.igreja@example.com',
+                'password' => 'SenhaManual123!',
+            ])
+            ->assertRedirect(route('member.dashboard'));
+
+        $this->assertAuthenticatedAs($usuario);
+    }
+
     public function test_usuario_apenas_musico_em_primeiro_acesso_consegue_abrir_perfil(): void
     {
         $igreja = Igreja::factory()->create();
