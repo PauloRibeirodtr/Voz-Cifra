@@ -27,6 +27,7 @@ use App\Http\Controllers\LocalAdmin\PainelAdminLocalController;
 use App\Http\Controllers\LocalAdmin\ChamadoController as LocalAdminChamadoController;
 use App\Http\Controllers\Member\PainelMembroController;
 use App\Http\Controllers\Member\ChamadoController as MemberChamadoController;
+use App\Http\Controllers\NotificacaoInternaController;
 use App\Http\Controllers\Publico\HomeController;
 use App\Http\Controllers\Publico\IgrejaPublicaController;
 use Illuminate\Support\Facades\Route;
@@ -48,6 +49,14 @@ Route::post('/logout', [AuthController::class, 'logout'])
 Route::post('/contexto/igreja-ativa', [IgrejaAtivaController::class, 'update'])
     ->middleware(['auth', 'verified_custom', 'primeiro_acesso'])
     ->name('contexto.igreja-ativa.update');
+
+Route::middleware(['auth', 'verified_custom', 'primeiro_acesso'])
+    ->prefix('notificacoes')
+    ->name('notificacoes.')
+    ->group(function () {
+        Route::post('/ler-todas', [NotificacaoInternaController::class, 'marcarTodasComoLidas'])->name('ler-todas');
+        Route::post('/{notificacao}/ler', [NotificacaoInternaController::class, 'marcarComoLida'])->name('ler');
+    });
 
 Route::middleware(['auth', 'verified_custom', 'super.admin', 'primeiro_acesso'])
     ->prefix('admin')

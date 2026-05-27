@@ -16,7 +16,8 @@ class GestaoUsuariosIgrejaService
         private readonly AuditoriaOperacionalService $auditoriaOperacionalService,
         private readonly NotificacaoSegurancaService $notificacaoSegurancaService,
         private readonly NotificacaoAcessoInicialService $notificacaoAcessoInicialService,
-        private readonly StatusOperacionalIgrejaService $statusOperacionalIgrejaService
+        private readonly StatusOperacionalIgrejaService $statusOperacionalIgrejaService,
+        private readonly NotificacaoInternaService $notificacaoInternaService
     ) {
     }
 
@@ -376,6 +377,7 @@ class GestaoUsuariosIgrejaService
                 'papel_label' => $papelEnum->label(),
             ]
         );
+        $this->notificacaoInternaService->papelRevogado($usuario, $igreja, $papelEnum, $ator);
 
         $this->statusOperacionalIgrejaService->atualizar($igreja);
 
@@ -713,6 +715,8 @@ class GestaoUsuariosIgrejaService
                         ]
                     );
                 }
+
+                $this->notificacaoInternaService->papelConcedido($usuario, $igreja, $papel, $ator);
             });
     }
 

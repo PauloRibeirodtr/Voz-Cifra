@@ -33,6 +33,8 @@
                     </div>
 
                     <div class="flex items-center gap-2">
+                        @include('partials.internal-notifications', ['tone' => 'dark'])
+
                         <button
                             type="button"
                             id="admin_sidebar_toggle"
@@ -59,6 +61,8 @@
                             @yield('header_actions')
 
                             @auth
+                                @include('partials.internal-notifications')
+
                                 <a href="{{ route($profileRoute) }}" class="admin-user-chip admin-user-link" aria-label="Abrir meu perfil">
                                     <div class="admin-user-chip-avatar">
                                         @if (filled(auth()->user()->foto_perfil_path))

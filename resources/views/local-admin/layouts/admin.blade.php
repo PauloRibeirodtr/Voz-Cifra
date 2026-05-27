@@ -25,6 +25,8 @@
                     </div>
 
                     <div class="flex items-center gap-2">
+                        @include('partials.internal-notifications', ['tone' => 'dark'])
+
                         <button
                             type="button"
                             id="admin_sidebar_toggle"
@@ -48,24 +50,28 @@
                         </div>
 
                         @auth
-                            <a href="{{ route('local-admin.profile') }}" class="admin-user-chip admin-user-link" aria-label="Abrir meu perfil">
-                                <div class="admin-user-chip-avatar">
-                                    @if (filled(auth()->user()->foto_perfil_path))
-                                        <img
-                                            src="{{ auth()->user()->fotoPerfilUrl() }}"
-                                            alt="Foto de {{ auth()->user()->nome }}"
-                                            class="admin-avatar-image"
-                                            onerror="this.onerror=null;this.src='{{ asset('logo/final.png') }}';"
-                                        >
-                                    @else
-                                        {{ strtoupper(substr(auth()->user()->nome, 0, 1)) }}
-                                    @endif
-                                </div>
-                                <div class="min-w-0">
-                                    <div class="truncate text-sm font-semibold text-gray-800">{{ auth()->user()->nome }}</div>
-                                    <div class="truncate text-xs text-gray-500">{{ auth()->user()->email }}</div>
-                                </div>
-                            </a>
+                            <div class="flex items-center gap-3">
+                                @include('partials.internal-notifications')
+
+                                <a href="{{ route('local-admin.profile') }}" class="admin-user-chip admin-user-link" aria-label="Abrir meu perfil">
+                                    <div class="admin-user-chip-avatar">
+                                        @if (filled(auth()->user()->foto_perfil_path))
+                                            <img
+                                                src="{{ auth()->user()->fotoPerfilUrl() }}"
+                                                alt="Foto de {{ auth()->user()->nome }}"
+                                                class="admin-avatar-image"
+                                                onerror="this.onerror=null;this.src='{{ asset('logo/final.png') }}';"
+                                            >
+                                        @else
+                                            {{ strtoupper(substr(auth()->user()->nome, 0, 1)) }}
+                                        @endif
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="truncate text-sm font-semibold text-gray-800">{{ auth()->user()->nome }}</div>
+                                        <div class="truncate text-xs text-gray-500">{{ auth()->user()->email }}</div>
+                                    </div>
+                                </a>
+                            </div>
                         @endauth
                     </div>
 

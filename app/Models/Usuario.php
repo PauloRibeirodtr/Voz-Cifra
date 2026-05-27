@@ -338,6 +338,11 @@ class Usuario extends Authenticatable
         return $this->hasMany(HistoricoEnvioEmail::class, 'usuario_id');
     }
 
+    public function notificacoesInternas(): HasMany
+    {
+        return $this->hasMany(NotificacaoInterna::class, 'usuario_id');
+    }
+
     public function ehAdminMaster(): bool
     {
         return $this->perfil_global === 'admin_master' || (int) ($this->nivel_global ?? 0) >= 6;
