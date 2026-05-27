@@ -272,7 +272,7 @@ class UsuarioController extends Controller
         );
 
         return redirect()
-            ->route('admin.usuarios.index')
+            ->route('admin.usuarios.edit', $usuario)
             ->with('success', 'Dados da conta atualizados com sucesso.');
     }
 
@@ -345,7 +345,7 @@ class UsuarioController extends Controller
             ]
         );
 
-        return redirect()->route('admin.usuarios.index')->with('success', $usuario->ativo
+        return back()->with('success', $usuario->ativo
             ? 'Conta reativada com sucesso.'
             : 'Conta inativada com sucesso.');
     }

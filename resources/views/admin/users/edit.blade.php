@@ -6,6 +6,13 @@
 @section('content')
     @php
         $emailTecnico = str_ends_with(mb_strtolower(trim((string) $usuario->email)), '@sem-login.local');
+        $vinculosAtivos = $usuario->vinculosIgreja->where('ativo', true);
+        $vinculosComPapel = $vinculosAtivos->filter(fn ($vinculo) => $vinculo->listarPapeisAtivos()->isNotEmpty());
+        $totalPapeisAtivos = $vinculosComPapel->sum(fn ($vinculo) => $vinculo->listarPapeisAtivos()->count());
+        $igrejaPrincipal = $vinculosComPapel->sortByDesc('responsavel_principal')->first()?->igreja;
+        $podeAcessarSistema = $usuario->ativo && ($usuario->ehAdminMaster() || $vinculosComPapel->isNotEmpty());
+        $perfilGlobalLabel = $usuario->ehAdminMaster() ? 'Admin master' : 'Operacional';
+        $statusAcessoLabel = $podeAcessarSistema ? 'Acesso possivel' : 'Acesso bloqueado';
         $papeisPorIgreja = $usuario->vinculosIgreja
             ->where('ativo', true)
             ->mapWithKeys(fn ($vinculo) => [
@@ -28,7 +35,7 @@
                 <p class="admin-page-kicker">Conta central</p>
                 <h1 class="admin-page-title mt-2 text-2xl font-black sm:text-3xl">{{ $usuario->nome }}</h1>
                 <p class="admin-page-copy mt-3 max-w-3xl text-sm sm:text-base">
-                    Atualize a conta base, acompanhe os vinculos atuais e adicione novos papeis por igreja sem duplicar usuario.
+                    Veja primeiro se a pessoa consegue acessar, em quais igrejas atua e quais papeis possui. Depois ajuste somente o bloco necessario.
                 </p>
             </div>
 
@@ -52,6 +59,58 @@
                 </ul>
             </section>
         @endif
+
+        <section class="admin-panel">
+            <div class="admin-panel-header">
+                <div>
+                    <p class="admin-page-kicker">Mapa de acesso</p>
+                    <h2 class="text-lg font-bold text-gray-800">Resumo antes de alterar</h2>
+                    <p class="mt-2 text-sm text-gray-500">Use este painel para conferir o impacto antes de salvar permissoes ou mexer na conta.</p>
+                </div>
+            </div>
+
+            <div class="admin-panel-body">
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+                    <div class="rounded-2xl border {{ $podeAcessarSistema ? 'border-emerald-100 bg-emerald-50' : 'border-red-100 bg-red-50' }} p-4">
+                        <span class="text-xs font-black uppercase tracking-wider {{ $podeAcessarSistema ? 'text-emerald-700' : 'text-red-700' }}">Status de acesso</span>
+                        <strong class="mt-2 block text-xl text-gray-900">{{ $statusAcessoLabel }}</strong>
+                        <p class="mt-2 text-xs text-gray-600">
+                            {{ $usuario->ativo ? 'Conta ativa' : 'Conta inativa' }}
+                            @if (!$usuario->ehAdminMaster())
+                                &bull; {{ $vinculosComPapel->isNotEmpty() ? 'tem papel ativo' : 'sem papel ativo' }}
+                            @endif
+                        </p>
+                    </div>
+
+                    <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                        <span class="text-xs font-black uppercase tracking-wider text-gray-500">Perfil global</span>
+                        <strong class="mt-2 block text-xl text-gray-900">{{ $perfilGlobalLabel }}</strong>
+                        <p class="mt-2 text-xs text-gray-600">{{ $usuario->primeiro_acesso ? 'Primeiro acesso pendente' : 'Senha/entrada liberada' }}</p>
+                    </div>
+
+                    <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                        <span class="text-xs font-black uppercase tracking-wider text-gray-500">Igrejas</span>
+                        <strong class="mt-2 block text-xl text-gray-900">{{ $vinculosComPapel->count() }}</strong>
+                        <p class="mt-2 text-xs text-gray-600">{{ $igrejaPrincipal?->nome ?: 'Nenhuma igreja operacional' }}</p>
+                    </div>
+
+                    <div class="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                        <span class="text-xs font-black uppercase tracking-wider text-gray-500">Papeis ativos</span>
+                        <strong class="mt-2 block text-xl text-gray-900">{{ $totalPapeisAtivos }}</strong>
+                        <p class="mt-2 text-xs text-gray-600">Soma de funcoes em todas as igrejas</p>
+                    </div>
+                </div>
+
+                <div class="mt-4 rounded-2xl border border-[#ead6b3] bg-[#fff8ed] p-4 text-sm text-[#6c4a21]">
+                    <strong class="block">Fluxo recomendado:</strong>
+                    <span>1. Confira o mapa de acesso.</span>
+                    <span class="mx-1 text-[#b78a4a]">/</span>
+                    <span>2. Ajuste papeis por igreja.</span>
+                    <span class="mx-1 text-[#b78a4a]">/</span>
+                    <span>3. Use acoes sensiveis somente se precisar resetar ou bloquear a conta.</span>
+                </div>
+            </div>
+        </section>
 
         <div class="grid grid-cols-1 gap-6 2xl:grid-cols-[minmax(0,1.7fr)_minmax(21rem,0.9fr)]">
             <div class="space-y-6">
@@ -144,9 +203,9 @@
 
                 <section class="admin-highlight-surface p-5 sm:p-6">
                     <div class="mb-5">
-                        <p class="admin-page-kicker">Acumulo de papeis</p>
+                        <p class="admin-page-kicker">Permissoes por igreja</p>
                         <h2 class="text-lg font-bold text-gray-800">Ajustar papeis por igreja</h2>
-                        <p class="mt-2 text-sm text-gray-500">Escolha uma igreja, revise os papeis marcados e salve. Se desmarcar todos, o acesso daquela igreja deixa de contar para login e troca de painel.</p>
+                        <p class="mt-2 text-sm text-gray-500">Esta e a parte principal da tela. Escolha uma igreja, marque o que a pessoa faz ali e salve. Desmarcar todos remove o acesso daquela igreja.</p>
                         @if ($emailTecnico)
                             <p class="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                                 Esta conta ainda esta em modo tecnico sem login publico. Se o padre for operar com login, primeiro salve um e-mail real na conta base.
@@ -225,13 +284,20 @@
                     <div class="admin-panel-body space-y-4">
                         @forelse ($usuario->vinculosIgreja->where('ativo', true) as $vinculo)
                             <article class="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4">
-                                <div class="flex items-center justify-between gap-3">
+                                <div class="flex items-start justify-between gap-3">
                                     <div>
                                         <div class="font-semibold text-gray-800">{{ $vinculo->igreja?->nome }}</div>
                                         <div class="mt-1 text-xs text-gray-400">
                                             {{ $vinculo->responsavel_principal ? 'Vinculo principal' : 'Vinculo ativo' }}
                                         </div>
                                     </div>
+                                    <button
+                                        type="button"
+                                        class="rounded-xl border border-[#ead6b3] bg-white px-3 py-2 text-xs font-bold text-[#6c4a21] hover:bg-[#fff8ed]"
+                                        data-editar-igreja="{{ $vinculo->igreja_id }}"
+                                    >
+                                        Editar
+                                    </button>
                                 </div>
 
                                 <div class="mt-3 flex flex-wrap gap-2">
@@ -320,6 +386,7 @@
             const selectIgreja = document.querySelector('[data-igreja-papeis-select]');
             const checkboxesPapeis = Array.from(document.querySelectorAll('[data-papel-checkbox]'));
             const helperPapeis = document.querySelector('[data-papeis-helper]');
+            const blocoPapeis = selectIgreja?.closest('section');
 
             const atualizarPapeisDaIgreja = () => {
                 if (!selectIgreja) {
@@ -358,6 +425,19 @@
 
             selectIgreja?.addEventListener('change', atualizarPapeisDaIgreja);
             atualizarPapeisDaIgreja();
+
+            document.querySelectorAll('[data-editar-igreja]').forEach((botao) => {
+                botao.addEventListener('click', () => {
+                    if (!selectIgreja) {
+                        return;
+                    }
+
+                    selectIgreja.value = botao.dataset.editarIgreja || '';
+                    atualizarPapeisDaIgreja();
+                    blocoPapeis?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    selectIgreja.focus({ preventScroll: true });
+                });
+            });
         });
     </script>
     @include('partials.password-strength-script')
