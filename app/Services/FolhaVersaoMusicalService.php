@@ -47,11 +47,36 @@ class FolhaVersaoMusicalService
     {
         preg_match_all('/\[([^\[\]\r\n]+)\]/', $texto, $matches);
 
-        return collect($matches[1] ?? [])
+        $acordesEntreColchetes = collect($matches[1] ?? [])
             ->map(fn ($acorde) => trim((string) $acorde))
-            ->filter(fn ($acorde) => $acorde !== '')
+            ->filter(fn ($acorde) => $this->ehAcorde($acorde));
+
+        $acordesEmLinhasSoltas = collect(preg_split('/\r\n|\r|\n/', $texto) ?: [])
+            ->flatMap(function (string $linha): array {
+                $partes = preg_split('/\s+/', trim($linha)) ?: [];
+                $partes = array_values(array_filter($partes, fn (string $parte): bool => $parte !== ''));
+
+                return $partes !== [] && collect($partes)->every(fn (string $parte): bool => $this->ehAcorde($parte))
+                    ? $partes
+                    : [];
+            });
+
+        return $acordesEntreColchetes
+            ->merge($acordesEmLinhasSoltas)
             ->unique()
+            ->sort()
             ->values()
             ->all();
+    }
+
+    private function ehAcorde(string $valor): bool
+    {
+        $valor = trim($valor);
+
+        if ($valor === '' || str_contains($valor, ' ')) {
+            return false;
+        }
+
+        return preg_match('/^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\\+|-|[0-9#b])|\\([^\\)\\]]+\\))*(?:\\/[A-G](?:#|b)?)?$/u', $valor) === 1;
     }
 }

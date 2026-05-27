@@ -38,6 +38,13 @@ class RenderizadorCifrasHtmlService
                 $proximaLinhaRefrao = false;
             }
 
+            if ($this->ehLinhaSomenteAcordes($linha)) {
+                $indentacao = strlen($linha) - strlen(ltrim($linha));
+                $acordes = preg_split('/\s+/', trim($linha)) ?: [];
+
+                return '<div class="cifra-linha cifra-linha--acordes' . ($blocoAtualRefrao ? ' cifra-linha--refrao' : '') . '" style="--cifra-indent:' . $indentacao . 'ch"><span class="cifra-acordes">' . $this->renderizarAcordesInline($acordes) . '</span></div>';
+            }
+
             preg_match_all('/\[([^\[\]\r\n]+)\]/', $linha, $matches, PREG_OFFSET_CAPTURE);
 
             $ultimoIndice = 0;
@@ -77,12 +84,25 @@ class RenderizadorCifrasHtmlService
 
     private function renderizarSegmento(array $acordes, string $texto): string
     {
-        $htmlAcordes = implode(' ', array_map(
+        $htmlAcordes = $this->renderizarAcordesInline($acordes);
+
+        return '<span class="cifra-segmento"><span class="cifra-acordes">' . $htmlAcordes . '</span><span class="cifra-letra">' . e($texto) . '</span></span>';
+    }
+
+    private function renderizarAcordesInline(array $acordes): string
+    {
+        return implode(' ', array_map(
             fn (string $acorde): string => '<span class="cifra-acorde">' . e($acorde) . '</span>',
             $acordes
         ));
+    }
 
-        return '<span class="cifra-segmento"><span class="cifra-acordes">' . $htmlAcordes . '</span><span class="cifra-letra">' . e($texto) . '</span></span>';
+    private function ehLinhaSomenteAcordes(string $valor): bool
+    {
+        $partes = preg_split('/\s+/', trim($valor)) ?: [];
+        $partes = array_values(array_filter($partes, fn (string $parte): bool => $parte !== ''));
+
+        return $partes !== [] && collect($partes)->every(fn (string $parte): bool => $this->ehAcorde($parte));
     }
 
     private function ehAcorde(string $valor): bool
@@ -93,7 +113,7 @@ class RenderizadorCifrasHtmlService
             return false;
         }
 
-        return preg_match('/^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\\+|-|[0-9#b])|\\([^\\)\\]]+\\))*(?:\\/[A-G](?:#|b)?)?$/', $valor) === 1;
+        return preg_match('/^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\\+|-|[0-9#b])|\\([^\\)\\]]+\\))*(?:\\/[A-G](?:#|b)?)?$/u', $valor) === 1;
     }
 
     private function ehMarcacaoSecao(string $valor): bool

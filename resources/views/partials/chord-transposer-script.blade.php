@@ -64,6 +64,12 @@
             return chord !== '' && !chord.includes(' ') && CHORD_REGEX.test(chord);
         };
 
+        const isChordOnlyLine = (value) => {
+            const parts = String(value || '').trim().split(/\s+/).filter(Boolean);
+
+            return parts.length > 0 && parts.every((part) => isChord(part));
+        };
+
         const getSemitone = (note) => {
             const normalized = String(note || '').trim();
             return Object.prototype.hasOwnProperty.call(NOTE_TO_SEMITONE, normalized)
@@ -190,6 +196,15 @@
                     nextLineIsChorus = false;
                 }
 
+                if (isChordOnlyLine(line)) {
+                    const indent = line.match(/^\s*/)?.[0]?.length || 0;
+                    const chordsHtml = line.trim().split(/\s+/)
+                        .map((chord) => `<span class="cifra-acorde" ${attributeName}="${escapeHtml(chord)}">${escapeHtml(chord)}</span>`)
+                        .join(' ');
+
+                    return `<div class="cifra-linha cifra-linha--acordes${currentBlockIsChorus ? ' cifra-linha--refrao' : ''}" style="--cifra-indent:${indent}ch"><span class="cifra-acordes">${chordsHtml}</span></div>`;
+                }
+
                 const regex = /\[([^\[\]\r\n]+)\]/g;
                 let lastIndex = 0;
                 let pendingChords = [];
@@ -283,6 +298,7 @@
         window.VozECifraChord = {
             escapeHtml,
             isChord,
+            isChordOnlyLine,
             parseChord,
             transposeNote,
             transposeChord,
