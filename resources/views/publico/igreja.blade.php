@@ -507,6 +507,150 @@
             font-weight: 800;
         }
 
+        .public-reader-tools {
+            position: sticky;
+            top: 8px;
+            z-index: 40;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            margin: 14px 0 0;
+            padding: 4px 2px 10px;
+            scrollbar-width: none;
+        }
+
+        .public-reader-tools::-webkit-scrollbar {
+            display: none;
+        }
+
+        .public-tool-button {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 46px;
+            border: 1px solid rgba(227, 190, 132, 0.20);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.94);
+            color: #3b2a20;
+            padding: 0 13px;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 900;
+            box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+            cursor: pointer;
+        }
+
+        .public-tool-button--primary {
+            background: #f97316;
+            border-color: #fb923c;
+            color: white;
+        }
+
+        .public-tool-popover {
+            position: fixed;
+            left: 50%;
+            bottom: 16px;
+            z-index: 95;
+            width: min(20rem, calc(100vw - 2rem));
+            transform: translateX(-50%);
+            border: 1px solid rgba(227, 190, 132, 0.28);
+            border-radius: 20px;
+            background: #fffaf2;
+            color: #271b15;
+            box-shadow: var(--shadow);
+            padding: 14px;
+        }
+
+        .public-tool-popover[hidden] {
+            display: none;
+        }
+
+        .public-capo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 7px;
+            margin-top: 12px;
+        }
+
+        .public-capo-choice {
+            position: relative;
+            display: block;
+        }
+
+        .public-capo-choice input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .public-capo-choice span {
+            display: flex;
+            min-height: 42px;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(140, 105, 51, 0.24);
+            border-radius: 13px;
+            background: white;
+            color: #4b382a;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .public-capo-choice input:checked + span {
+            border-color: #047857;
+            background: #ecfdf5;
+            color: #065f46;
+        }
+
+        .public-chord-drawer {
+            position: fixed;
+            inset: 0 0 0 auto;
+            z-index: 94;
+            width: min(27rem, calc(100vw - 1rem));
+            overflow: auto;
+            border-left: 1px solid rgba(227, 190, 132, 0.22);
+            background: #fffaf2;
+            color: #211713;
+            box-shadow: -24px 0 70px rgba(0, 0, 0, 0.34);
+            padding: 16px;
+        }
+
+        .public-chord-drawer[hidden],
+        .public-drawer-backdrop[hidden] {
+            display: none;
+        }
+
+        .public-drawer-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 93;
+            background: rgba(13, 8, 8, 0.54);
+            backdrop-filter: blur(3px);
+        }
+
+        .public-chord-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .public-chord-card {
+            border: 1px solid rgba(140, 105, 51, 0.18);
+            border-radius: 16px;
+            background: white;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .public-chord-card svg {
+            width: 100%;
+            height: auto;
+            max-width: 150px;
+        }
+
         .history-list--compact {
             gap: 8px;
         }
@@ -1054,15 +1198,16 @@
                                 {{ $missaPublica->data_missa->format('d/m/Y') }} • {{ substr((string) $missaPublica->hora_inicio, 0, 5) }}
                             </p>
                             @if (($modoPublico ?? 'fieis') === 'musicos')
-                                <div class="capo-control" data-public-capo-control>
-                                    <label for="public_capo">Capotraste</label>
-                                    <select id="public_capo" data-public-capo>
-                                        <option value="0">Sem capo</option>
-                                        @for ($casaCapotraste = 1; $casaCapotraste <= 11; $casaCapotraste++)
-                                            <option value="{{ $casaCapotraste }}">{{ $casaCapotraste }} casa</option>
-                                        @endfor
-                                    </select>
-                                    <span class="capo-control__status" data-public-capo-summary>Tom real preservado; formas originais.</span>
+                                <div class="celebration-meta" style="margin-top: 12px;">
+                                    <span class="badge" data-public-capo-summary>Sem capotraste</span>
+                                    <span class="badge" data-public-font-summary>Fonte normal</span>
+                                </div>
+                                <div class="public-reader-tools" aria-label="Ferramentas de leitura">
+                                    <button type="button" class="public-tool-button public-tool-button--primary" data-public-auto-scroll>Auto rolagem</button>
+                                    <button type="button" class="public-tool-button" data-public-font="-1">A- Texto</button>
+                                    <button type="button" class="public-tool-button" data-public-font="1">A+ Texto</button>
+                                    <button type="button" class="public-tool-button" data-public-capo-open>Capotraste</button>
+                                    <button type="button" class="public-tool-button" data-public-chords-open>Acordes</button>
                                 </div>
                             @endif
                         </div>
@@ -1199,6 +1344,40 @@
         </div>
 
         @if (($modoPublico ?? 'fieis') === 'musicos')
+            <div class="public-tool-popover" data-public-capo-popover hidden>
+                <div class="history-top">
+                    <div>
+                        <p class="history-section-title">Capotraste</p>
+                        <p class="history-search-hint" data-public-capo-summary-popover>Sem capotraste</p>
+                    </div>
+                    <button type="button" class="public-tool-button" data-public-capo-close aria-label="Fechar capotraste">x</button>
+                </div>
+                <div class="public-capo-grid" role="radiogroup" aria-label="Casa do capotraste">
+                    <label class="public-capo-choice">
+                        <input type="radio" name="public_capo_visual" value="0" data-public-capo checked>
+                        <span>Sem</span>
+                    </label>
+                    @for ($casaCapotraste = 1; $casaCapotraste <= 11; $casaCapotraste++)
+                        <label class="public-capo-choice">
+                            <input type="radio" name="public_capo_visual" value="{{ $casaCapotraste }}" data-public-capo>
+                            <span>{{ $casaCapotraste }} casa</span>
+                        </label>
+                    @endfor
+                </div>
+            </div>
+
+            <div class="public-drawer-backdrop" data-public-chords-backdrop hidden></div>
+            <aside class="public-chord-drawer" data-public-chords-drawer hidden aria-label="Acordes do repertorio">
+                <div class="history-top">
+                    <div>
+                        <p class="history-section-title">Acordes</p>
+                        <h2 class="card-title" style="color:#211713;font-size:28px;">Dicionario rapido</h2>
+                    </div>
+                    <button type="button" class="public-tool-button" data-public-chords-close aria-label="Fechar acordes">x</button>
+                </div>
+                <div class="public-chord-grid" data-public-chords-grid></div>
+            </aside>
+
             <div class="public-chord-tooltip" data-public-chord-tooltip hidden>
                 <p class="public-chord-tooltip__name" data-public-chord-tooltip-name></p>
                 <div data-public-chord-tooltip-diagram></div>
@@ -1374,9 +1553,23 @@
                 const tooltipAcorde = document.querySelector('[data-public-chord-tooltip]');
                 const tooltipNome = document.querySelector('[data-public-chord-tooltip-name]');
                 const tooltipDiagrama = document.querySelector('[data-public-chord-tooltip-diagram]');
-                const controleCapotraste = document.querySelector('[data-public-capo]');
-                const resumoCapotraste = document.querySelector('[data-public-capo-summary]');
+                const controlesCapotraste = Array.from(document.querySelectorAll('[data-public-capo]'));
+                const resumosCapotraste = Array.from(document.querySelectorAll('[data-public-capo-summary], [data-public-capo-summary-popover]'));
+                const resumoFonte = document.querySelector('[data-public-font-summary]');
+                const botaoAutoRolagem = document.querySelector('[data-public-auto-scroll]');
+                const botoesFonte = Array.from(document.querySelectorAll('[data-public-font]'));
+                const botaoCapoAbrir = document.querySelector('[data-public-capo-open]');
+                const botaoCapoFechar = document.querySelector('[data-public-capo-close]');
+                const popoverCapo = document.querySelector('[data-public-capo-popover]');
+                const botaoAcordesAbrir = document.querySelector('[data-public-chords-open]');
+                const botaoAcordesFechar = document.querySelector('[data-public-chords-close]');
+                const drawerAcordes = document.querySelector('[data-public-chords-drawer]');
+                const drawerAcordesBackdrop = document.querySelector('[data-public-chords-backdrop]');
+                const gradeAcordes = document.querySelector('[data-public-chords-grid]');
                 let capotrasteAtual = 0;
+                let publicFontLevel = 1;
+                let publicAutoScrollActive = false;
+                let publicAutoScrollInterval = null;
                 const renderizarDiagrama = (shape) => {
                     if (!shape) {
                         return '<div>Sem desenho cadastrado.</div>';
@@ -1491,19 +1684,100 @@
                         badge.textContent = `Capo ${capotrasteAtual} / tocar como ${helper.transposeChord(tomBase, -capotrasteAtual)}`;
                     });
 
-                    if (resumoCapotraste) {
-                        resumoCapotraste.textContent = capotrasteAtual > 0
-                            ? `Tom real preservado; cifras exibidas ${capotrasteAtual} semitom(ns) abaixo.`
-                            : 'Tom real preservado; formas originais.';
-                    }
+                    const textoCapo = capotrasteAtual > 0
+                        ? `Capotraste ${capotrasteAtual} casa`
+                        : 'Sem capotraste';
+                    resumosCapotraste.forEach((resumo) => {
+                        resumo.textContent = textoCapo;
+                    });
+                    controlesCapotraste.forEach((controle) => {
+                        controle.checked = Number(controle.value || 0) === capotrasteAtual;
+                    });
                 };
 
-                controleCapotraste?.addEventListener('change', () => {
-                    capotrasteAtual = Math.max(0, Math.min(11, Number(controleCapotraste.value || 0)));
-                    renderizarCifrasPublicas();
+                const renderizarGradeAcordes = () => {
+                    if (!gradeAcordes || !helper || !gruposAcorde) {
+                        return;
+                    }
+
+                    const acordes = new Set();
+                    document.querySelectorAll('[data-public-musician-lyrics]').forEach((lyrics) => {
+                        helper.extractChordsFromBracketedText(helper.transposeBracketedText(lyrics.dataset.lyrics || '', -capotrasteAtual))
+                            .forEach((acorde) => acordes.add(acorde));
+                    });
+
+                    gradeAcordes.innerHTML = Array.from(acordes).map((nome) => {
+                        const acorde = helper.getChordMatches(gruposAcorde, nome)[0] || null;
+                        return `<button type="button" class="public-chord-card" data-public-chord-card="${helper.escapeHtml(nome)}"><strong>${helper.escapeHtml(nome)}</strong>${acorde ? renderizarDiagrama(acorde.shape) : '<p>Sem desenho.</p>'}</button>`;
+                    }).join('');
+                };
+
+                controlesCapotraste.forEach((controle) => {
+                    controle.addEventListener('change', () => {
+                        capotrasteAtual = Math.max(0, Math.min(11, Number(controle.value || 0)));
+                        renderizarCifrasPublicas();
+                        renderizarGradeAcordes();
+                    });
+                });
+
+                botoesFonte.forEach((botao) => {
+                    botao.addEventListener('click', () => {
+                        publicFontLevel = Math.max(0, Math.min(3, publicFontLevel + Number(botao.dataset.publicFont || 0)));
+                        const escala = [0.92, 1, 1.14, 1.28][publicFontLevel] || 1;
+                        document.documentElement.style.setProperty('--celebration-font-scale', String(escala));
+                        if (resumoFonte) {
+                            resumoFonte.textContent = `Fonte ${['menor', 'normal', 'maior', 'grande'][publicFontLevel]}`;
+                        }
+                    });
+                });
+
+                botaoAutoRolagem?.addEventListener('click', () => {
+                    if (publicAutoScrollActive) {
+                        window.clearInterval(publicAutoScrollInterval);
+                        publicAutoScrollInterval = null;
+                        publicAutoScrollActive = false;
+                        botaoAutoRolagem.textContent = 'Auto rolagem';
+                        return;
+                    }
+
+                    publicAutoScrollActive = true;
+                    botaoAutoRolagem.textContent = 'Pausar rolagem';
+                    publicAutoScrollInterval = window.setInterval(() => {
+                        const fim = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 8;
+                        if (fim) {
+                            botaoAutoRolagem.click();
+                            return;
+                        }
+                        window.scrollBy({ top: 1.7, left: 0, behavior: 'auto' });
+                    }, 34);
+                });
+
+                botaoCapoAbrir?.addEventListener('click', () => {
+                    if (popoverCapo) popoverCapo.hidden = false;
+                });
+                botaoCapoFechar?.addEventListener('click', () => {
+                    if (popoverCapo) popoverCapo.hidden = true;
+                });
+                botaoAcordesAbrir?.addEventListener('click', () => {
+                    renderizarGradeAcordes();
+                    if (drawerAcordes) drawerAcordes.hidden = false;
+                    if (drawerAcordesBackdrop) drawerAcordesBackdrop.hidden = false;
+                });
+                const fecharDrawerAcordes = () => {
+                    if (drawerAcordes) drawerAcordes.hidden = true;
+                    if (drawerAcordesBackdrop) drawerAcordesBackdrop.hidden = true;
+                };
+                botaoAcordesFechar?.addEventListener('click', fecharDrawerAcordes);
+                drawerAcordesBackdrop?.addEventListener('click', fecharDrawerAcordes);
+                gradeAcordes?.addEventListener('click', (event) => {
+                    const card = event.target.closest('[data-public-chord-card]');
+                    if (card) {
+                        ativarAcorde(card.dataset.publicChordCard);
+                    }
                 });
 
                 renderizarCifrasPublicas();
+                renderizarGradeAcordes();
 
                 document.addEventListener('mouseover', (event) => {
                     const acorde = event.target.closest('[data-acorde-hover]');

@@ -51,6 +51,15 @@
             const modalControlesBackdrop = document.getElementById('controles_modal_backdrop');
             const abrirModalControles = Array.from(document.querySelectorAll('[data-open-controls]'));
             const fecharModalControles = document.getElementById('fechar_modal_controles');
+            const drawerAcordes = document.getElementById('acordes_drawer');
+            const drawerAcordesBackdrop = document.getElementById('acordes_drawer_backdrop');
+            const abrirDrawerAcordes = Array.from(document.querySelectorAll('[data-open-chords]'));
+            const fecharDrawerAcordes = document.getElementById('fechar_acordes_drawer');
+            const botoesAutoRolagemRapida = Array.from(document.querySelectorAll('[data-toggle-autoscroll-quick]'));
+            const botoesCapoPopover = Array.from(document.querySelectorAll('[data-toggle-capo-popover]'));
+            const capoPopover = document.getElementById('capo_popover');
+            const fecharCapoPopover = document.getElementById('fechar_capo_popover');
+            const botoesVideoApoio = Array.from(document.querySelectorAll('[data-scroll-video]'));
             let transposicaoAtual = 0;
             let capotrasteAtual = 0;
             let fonteNivel = 1;
@@ -93,6 +102,15 @@
                 modal?.classList.add('hidden');
                 backdrop?.classList.add('hidden');
                 document.body.classList.remove('overflow-hidden');
+            };
+
+            const alternarPopoverCapo = (mostrar = null) => {
+                if (!capoPopover) {
+                    return;
+                }
+
+                const deveMostrar = mostrar === null ? capoPopover.classList.contains('hidden') : mostrar;
+                capoPopover.classList.toggle('hidden', !deveMostrar);
             };
 
             const mostrarToast = (mensagem) => {
@@ -338,7 +356,11 @@
                     capotrasteAtual = Math.max(0, Math.min(11, Number(controle.value || 0)));
                     controlesCapotraste.forEach((outroControle) => {
                         if (outroControle !== controle) {
-                            outroControle.value = String(capotrasteAtual);
+                            if (outroControle.type === 'radio') {
+                                outroControle.checked = Number(outroControle.value || 0) === capotrasteAtual;
+                            } else {
+                                outroControle.value = String(capotrasteAtual);
+                            }
                         }
                     });
                     renderizar();
@@ -378,6 +400,9 @@
                 iniciarRolagem();
                 mostrarToast('Auto rolagem iniciada');
                 fecharModal(modalControles, modalControlesBackdrop);
+            });
+            botoesAutoRolagemRapida.forEach((botao) => {
+                botao.addEventListener('click', () => botaoRolagem?.click());
             });
             controleVelocidade?.addEventListener('input', () => {
                 const velocidade = atualizarRotuloVelocidade();
@@ -425,6 +450,20 @@
             });
             fecharModalControles?.addEventListener('click', () => fecharModal(modalControles, modalControlesBackdrop));
             modalControlesBackdrop?.addEventListener('click', () => fecharModal(modalControles, modalControlesBackdrop));
+            abrirDrawerAcordes.forEach((botao) => {
+                botao.addEventListener('click', () => abrirModal(drawerAcordes, drawerAcordesBackdrop));
+            });
+            fecharDrawerAcordes?.addEventListener('click', () => fecharModal(drawerAcordes, drawerAcordesBackdrop));
+            drawerAcordesBackdrop?.addEventListener('click', () => fecharModal(drawerAcordes, drawerAcordesBackdrop));
+            botoesCapoPopover.forEach((botao) => {
+                botao.addEventListener('click', () => alternarPopoverCapo());
+            });
+            fecharCapoPopover?.addEventListener('click', () => alternarPopoverCapo(false));
+            botoesVideoApoio.forEach((botao) => {
+                botao.addEventListener('click', () => {
+                    document.getElementById('video_apoio')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+            });
             document.addEventListener('mouseover', (event) => {
                 const acorde = event.target.closest('[data-acorde-hover]');
                 if (!acorde) return;
@@ -442,11 +481,20 @@
             document.addEventListener('click', (event) => {
                 const acorde = event.target.closest('[data-acorde-hover], [data-acorde-card]');
                 if (acorde) ativarAcorde(acorde.dataset.acordeHover || acorde.dataset.acordeCard);
+
+                if (capoPopover && !capoPopover.classList.contains('hidden')) {
+                    const clicouNoPopover = event.target.closest('#capo_popover, [data-toggle-capo-popover]');
+                    if (!clicouNoPopover) {
+                        alternarPopoverCapo(false);
+                    }
+                }
             });
             document.addEventListener('keydown', (event) => {
                 if (event.key === 'Escape') {
                     fecharModal(modalPlaylist, modalPlaylistBackdrop);
                     fecharModal(modalControles, modalControlesBackdrop);
+                    fecharModal(drawerAcordes, drawerAcordesBackdrop);
+                    alternarPopoverCapo(false);
                 }
             });
 
@@ -460,7 +508,7 @@
             window.addEventListener('wheel', pausarPorInteracaoManual, { passive: true });
             window.addEventListener('touchstart', pausarPorInteracaoManual, { passive: true });
             window.addEventListener('pointerdown', (event) => {
-                if (!event.target.closest('#toggle_autorrolagem, #controles_modal, [data-open-controls]')) {
+                if (!event.target.closest('#toggle_autorrolagem, #controles_modal, [data-open-controls], [data-toggle-autoscroll-quick], [data-open-chords], #acordes_drawer, #capo_popover, [data-toggle-capo-popover]')) {
                     pausarPorInteracaoManual();
                 }
             });
@@ -483,6 +531,20 @@
         .study-panel { border:1px solid rgba(148,163,184,.18); background:rgba(15,23,42,.88); border-radius:1.5rem; box-shadow:0 20px 50px rgba(0,0,0,.28); }
         .study-shell { display:grid; grid-template-columns:minmax(0,1fr); gap:1rem; }
         .study-side { display:grid; gap:1rem; }
+        .study-reader-frame { display:grid; grid-template-columns:minmax(0,1fr); gap:1rem; align-items:start; }
+        .study-toolrail { display:flex; gap:.55rem; overflow-x:auto; padding:.25rem .1rem .65rem; scrollbar-width:none; }
+        .study-toolrail::-webkit-scrollbar { display:none; }
+        .study-tool-button { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; gap:.45rem; min-height:2.75rem; border:1px solid rgba(148,163,184,.22); border-radius:1rem; background:rgba(248,250,252,.96); color:#334155; padding:.65rem .85rem; font-size:.82rem; font-weight:900; box-shadow:0 10px 26px rgba(2,6,23,.14); transition:.16s ease; }
+        .study-tool-button:hover { border-color:rgba(16,185,129,.45); color:#064e3b; transform:translateY(-1px); }
+        .study-tool-button.is-primary { background:#f97316; border-color:#fb923c; color:#fff; }
+        .study-tool-button i { width:1rem; text-align:center; color:currentColor; }
+        .study-popover { position:absolute; z-index:75; width:min(18rem, calc(100vw - 2rem)); border:1px solid rgba(148,163,184,.22); border-radius:1.15rem; background:#fffaf2; color:#1f2937; padding:1rem; box-shadow:0 20px 48px rgba(2,6,23,.32); }
+        .study-popover.hidden { display:none; }
+        .study-capo-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.45rem; }
+        .study-capo-option { position:relative; display:block; }
+        .study-capo-option input { position:absolute; opacity:0; pointer-events:none; }
+        .study-capo-option span { display:flex; min-height:2.55rem; align-items:center; justify-content:center; border:1px solid rgba(148,163,184,.35); border-radius:.85rem; background:#fff; color:#334155; font-size:.8rem; font-weight:900; }
+        .study-capo-option input:checked + span { border-color:#059669; background:#ecfdf5; color:#065f46; box-shadow:0 0 0 3px rgba(16,185,129,.12); }
         .study-button { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; min-height:2.75rem; border-radius:1rem; border:1px solid rgba(148,163,184,.24); background:rgba(30,41,59,.92); color:#e5e7eb; padding:.75rem 1rem; font-weight:800; transition:.2s ease; }
         .study-button:hover { border-color:rgba(16,185,129,.42); background:rgba(51,65,85,.96); color:#fff; }
         .study-button-primary { border-color:rgba(16,185,129,.35); background:#059669; color:#fff; }
@@ -507,6 +569,11 @@
         .study-modal { position:fixed; inset:0; z-index:91; display:flex; align-items:center; justify-content:center; padding:1rem; }
         .study-modal.hidden, .study-modal-backdrop.hidden { display:none; }
         .study-modal-card { width:min(100%,44rem); max-height:min(88vh,900px); overflow:auto; border:1px solid rgba(148,163,184,.2); border-radius:1.5rem; background:#0f172a; color:#f8fafc; box-shadow:0 24px 70px rgba(0,0,0,.45); }
+        .study-drawer { position:fixed; inset:0 0 0 auto; z-index:91; width:min(28rem, calc(100vw - 1.25rem)); overflow:auto; border-left:1px solid rgba(148,163,184,.22); background:#f8fafc; color:#0f172a; box-shadow:-24px 0 70px rgba(2,6,23,.42); padding:1rem; }
+        .study-drawer.hidden { display:none; }
+        .study-drawer .study-button { background:#fff; color:#334155; border-color:rgba(148,163,184,.28); }
+        .study-drawer .study-button-primary { background:#059669; color:#fff; }
+        .study-drawer .diagrama-acorde svg { max-width:210px; }
         .study-floating-controls { position:fixed; right:1rem; bottom:1rem; z-index:70; box-shadow:0 18px 40px rgba(0,0,0,.35); }
         .study-toast { position:fixed; left:50%; bottom:5.25rem; z-index:95; transform:translate(-50%, 16px); border:1px solid rgba(16,185,129,.28); border-radius:999px; background:rgba(6,78,59,.96); color:#ecfdf5; padding:.75rem 1rem; font-size:.9rem; font-weight:900; box-shadow:0 18px 40px rgba(0,0,0,.35); opacity:0; pointer-events:none; transition:.18s ease; }
         .study-toast.is-visible { opacity:1; transform:translate(-50%, 0); }
@@ -524,6 +591,9 @@
         .study-stage .cifra-marcacao { margin:.7rem 0 .45rem; background:rgba(16,185,129,.16); color:#a7f3d0; }
         @media (min-width:1280px) {
             .study-shell { grid-template-columns:minmax(0,1fr) 23rem; gap:1.25rem; }
+            .study-reader-frame { grid-template-columns:10.5rem minmax(0,1fr); }
+            .study-toolrail { position:sticky; top:1rem; display:grid; overflow:visible; padding:0; }
+            .study-tool-button { justify-content:flex-start; width:100%; min-height:3rem; }
             .study-cifra-card { padding:1.35rem; }
             .study-side { align-self:start; position:sticky; top:1rem; }
         }
@@ -616,7 +686,70 @@
         </section>
 
         <div class="mt-4 study-shell">
-            <main class="study-cifra-card">
+            <div class="study-reader-frame">
+                <nav class="study-toolrail" aria-label="Ferramentas da cifra">
+                    <button type="button" class="study-tool-button is-primary" data-scroll-video>
+                        <i class="fa-solid fa-play"></i>
+                        Video
+                    </button>
+                    <button type="button" class="study-tool-button" data-toggle-autoscroll-quick>
+                        <i class="fa-solid fa-angles-down"></i>
+                        Auto rolagem
+                    </button>
+                    <button type="button" class="study-tool-button" data-font="-1" aria-label="Diminuir fonte">
+                        <i class="fa-solid fa-minus"></i>
+                        Texto
+                    </button>
+                    <button type="button" class="study-tool-button" data-font="1" aria-label="Aumentar fonte">
+                        <i class="fa-solid fa-plus"></i>
+                        Texto
+                    </button>
+                    <button type="button" class="study-tool-button" data-transpose="-1">
+                        <i class="fa-solid fa-minus"></i>
+                        Tom
+                    </button>
+                    <button type="button" class="study-tool-button" data-transpose="1">
+                        <i class="fa-solid fa-plus"></i>
+                        Tom
+                    </button>
+                    <button type="button" class="study-tool-button" data-open-chords>
+                        <i class="fa-solid fa-guitar"></i>
+                        Acordes
+                    </button>
+                    <div class="relative">
+                        <button type="button" class="study-tool-button" data-toggle-capo-popover>
+                            <i class="fa-solid fa-grip-lines-vertical"></i>
+                            Capotraste
+                        </button>
+                        <div id="capo_popover" class="study-popover hidden xl:left-full xl:top-0 xl:ml-3 max-xl:left-0 max-xl:top-full max-xl:mt-2">
+                            <div class="mb-3 flex items-start justify-between gap-3">
+                                <div>
+                                    <p class="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-700">Capotraste</p>
+                                    <p class="mt-1 text-sm font-bold text-slate-600" data-capo-indicator>Sem capo</p>
+                                </div>
+                                <button type="button" id="fechar_capo_popover" class="rounded-full border border-slate-200 px-2 py-1 text-sm font-black text-slate-500">x</button>
+                            </div>
+                            <div class="study-capo-grid" role="radiogroup" aria-label="Casa do capotraste">
+                                <label class="study-capo-option">
+                                    <input type="radio" name="capo_visual" value="0" data-capo-control checked>
+                                    <span>Sem</span>
+                                </label>
+                                @for ($casaCapotraste = 1; $casaCapotraste <= 11; $casaCapotraste++)
+                                    <label class="study-capo-option">
+                                        <input type="radio" name="capo_visual" value="{{ $casaCapotraste }}" data-capo-control>
+                                        <span>{{ $casaCapotraste }} casa</span>
+                                    </label>
+                                @endfor
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="study-tool-button" data-open-controls>
+                        <i class="fa-solid fa-sliders"></i>
+                        Mais
+                    </button>
+                </nav>
+
+                <main class="study-cifra-card">
                 <section class="study-quick-controls mb-4" aria-label="Controles rapidos da cifra">
                     <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                         <div>
@@ -660,28 +793,11 @@
                 <div class="study-cifra-scroll" id="preview_musico_container">
                     <div id="letra_com_cifras_preview" class="space-y-1"></div>
                 </div>
-            </main>
+                </main>
+            </div>
 
             <aside class="study-side">
-                <details class="study-panel p-4 xl:block">
-                    <summary class="cursor-pointer text-base font-black text-white">Dicionario de acordes</summary>
-                    <p class="mt-1 text-sm text-slate-300">Toque ou passe sobre um acorde para ver o shape.</p>
-                    <div class="mt-4 rounded-[1.25rem] border border-white/10 bg-white/5 p-4">
-                        <div class="diagrama-acorde flex justify-center" id="painel_diagrama_acorde"></div>
-                        <div class="mt-4 text-center">
-                            <div id="nome_acorde_ativo" class="text-lg font-black text-white">Nenhum acorde selecionado</div>
-                            <p id="descricao_acorde_ativo" class="mt-1 text-sm text-slate-300">Selecione um acorde para visualizar o desenho.</p>
-                        </div>
-                        <div id="variacoes_acorde" class="mt-4 flex flex-wrap justify-center gap-2"></div>
-                    </div>
-                    <div class="mt-4 flex flex-wrap gap-2" id="lista_acordes_transpostos">
-                        @foreach ($acordesDaVersao as $acorde)
-                            <button type="button" class="study-button px-3 py-2 text-sm" data-acorde-card="{{ $acorde }}">{{ $acorde }}</button>
-                        @endforeach
-                    </div>
-                </details>
-
-                <details class="study-panel desktop-video p-4">
+                <details id="video_apoio" class="study-panel desktop-video p-4">
                     <summary class="cursor-pointer text-base font-black text-white">Video de apoio</summary>
                     @if ($youtubeVideoId)
                         <div class="study-video-frame mt-3">
@@ -706,6 +822,38 @@
         <div id="study_toast" class="study-toast" role="status" aria-live="polite"></div>
 
         <div id="tooltip_acorde" class="tooltip-acorde hidden"><div class="text-center"><div id="tooltip_acorde_nome" class="text-sm font-black text-white">Acorde</div><div id="tooltip_acorde_diagrama" class="mt-3 diagrama-acorde"></div></div></div>
+
+        <div id="acordes_drawer_backdrop" class="study-modal-backdrop hidden"></div>
+        <aside id="acordes_drawer" class="study-drawer hidden" aria-hidden="true">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-700">Acordes desta cifra</p>
+                    <h2 class="mt-2 text-2xl font-black text-slate-950">Dicionario rapido</h2>
+                    <p class="mt-2 text-sm font-semibold text-slate-500">Toque em um acorde na cifra ou escolha abaixo para ver o desenho.</p>
+                </div>
+                <button type="button" id="fechar_acordes_drawer" class="study-button" aria-label="Fechar acordes">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="mt-5 rounded-[1.25rem] border border-slate-200 bg-white p-4 shadow-sm">
+                <div class="diagrama-acorde flex justify-center" id="painel_diagrama_acorde"></div>
+                <div class="mt-4 text-center">
+                    <div id="nome_acorde_ativo" class="text-lg font-black text-slate-950">Nenhum acorde selecionado</div>
+                    <p id="descricao_acorde_ativo" class="mt-1 text-sm font-semibold text-slate-500">Selecione um acorde para visualizar o desenho.</p>
+                </div>
+                <div id="variacoes_acorde" class="mt-4 flex flex-wrap justify-center gap-2"></div>
+            </div>
+
+            <div class="mt-5">
+                <p class="mb-3 text-xs font-black uppercase tracking-[0.18em] text-slate-400">Usados na musica</p>
+                <div class="flex flex-wrap gap-2" id="lista_acordes_transpostos">
+                    @foreach ($acordesDaVersao as $acorde)
+                        <button type="button" class="study-button px-3 py-2 text-sm" data-acorde-card="{{ $acorde }}">{{ $acorde }}</button>
+                    @endforeach
+                </div>
+            </div>
+        </aside>
 
         <div id="controles_modal_backdrop" class="study-modal-backdrop hidden"></div>
         <div id="controles_modal" class="study-modal hidden" aria-hidden="true">
