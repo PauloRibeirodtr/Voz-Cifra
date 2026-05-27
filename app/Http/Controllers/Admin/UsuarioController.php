@@ -330,9 +330,11 @@ class UsuarioController extends Controller
             ? 'Papeis atualizados. A conta ainda possui acesso operacional em ' . $vinculosOperacionais . ' igreja(s).'
             : 'Papeis atualizados. Esta conta ficou sem acesso operacional ate receber um novo papel.';
 
-        return redirect()
-            ->route('admin.usuarios.edit', $usuario)
-            ->with('success', $mensagem);
+        $rotaRetorno = $request->input('origem') === 'igreja_edit'
+            ? redirect()->route('admin.igrejas.edit', $igreja)
+            : redirect()->route('admin.usuarios.edit', $usuario);
+
+        return $rotaRetorno->with('success', $mensagem);
     }
 
     public function toggle(Usuario $usuario): RedirectResponse

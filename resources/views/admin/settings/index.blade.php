@@ -94,7 +94,7 @@
                         <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
                             @foreach (['system' => ['Automatico', 'fa-display'], 'light' => ['Claro', 'fa-sun'], 'dark' => ['Escuro', 'fa-moon']] as $valor => $tema)
                                 <label class="settings-option cursor-pointer rounded-2xl border px-4 py-4 transition {{ $themeAtual === $valor ? 'is-selected border-emerald-300 bg-emerald-50 text-emerald-950' : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-[#c9a15f]' }}">
-                                    <input type="radio" name="theme_preference" value="{{ $valor }}" class="sr-only" @checked($themeAtual === $valor)>
+                                    <input type="radio" name="theme_preference" value="{{ $valor }}" class="sr-only" @checked($themeAtual === $valor) data-theme-radio>
                                     <span class="flex items-center gap-3">
                                         <i class="fa-solid {{ $tema[1] }}"></i>
                                         <strong>{{ $tema[0] }}</strong>
@@ -152,10 +152,28 @@
         document.addEventListener('DOMContentLoaded', () => {
             const emailToggle = document.querySelector('[data-email-toggle]');
             const toggleShell = document.querySelector('[data-toggle-shell]');
+            const mediaScheme = window.matchMedia('(prefers-color-scheme: dark)');
+
+            const applyThemePreview = (preference) => {
+                const resolved = preference === 'system' ? (mediaScheme.matches ? 'dark' : 'light') : preference;
+
+                document.body.dataset.themePreference = preference;
+                document.body.classList.toggle('theme-dark', resolved === 'dark');
+                document.body.classList.toggle('theme-light', resolved !== 'dark');
+                document.documentElement.classList.toggle('theme-dark', resolved === 'dark');
+                document.documentElement.classList.toggle('theme-light', resolved !== 'dark');
+            };
 
             emailToggle?.addEventListener('change', () => {
                 toggleShell?.classList.toggle('bg-emerald-600', emailToggle.checked);
                 toggleShell?.classList.toggle('bg-gray-300', !emailToggle.checked);
+            });
+
+            document.querySelectorAll('[data-theme-radio]').forEach((radio) => {
+                radio.addEventListener('change', () => {
+                    applyThemePreview(radio.value);
+                    radio.closest('form')?.requestSubmit();
+                });
             });
         });
     </script>

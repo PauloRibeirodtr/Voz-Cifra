@@ -6,11 +6,15 @@
 @section('content')
     @php
         $classeInput = 'mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 shadow-sm focus:border-[#6c4a21] focus:ring-2 focus:ring-[#d6ad6c]/30';
+        $totalVinculados = ($usuariosVinculados ?? collect())->count();
+        $totalAdminsLocais = ($adminsLocais ?? collect())->count();
+        $totalCoordenadores = ($coordenadores ?? collect())->count();
     @endphp
 
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-800">Editar igreja</h1>
+        <div class="max-w-3xl">
+            <p class="admin-page-kicker">Igreja</p>
+            <h1 class="mt-2 text-2xl font-black text-gray-900">{{ $igreja->nome }}</h1>
             <p class="text-sm text-gray-500">Atualize os dados da igreja e gerencie coordenadores, administradores locais e links públicos de forma organizada.</p>
         </div>
 
@@ -19,11 +23,11 @@
         </a>
     </div>
 
-    <div class="admin-inline-note mb-6 px-5 py-4 text-sm leading-7">
+    <div class="hidden">
         Esta igreja pode continuar ativa mesmo sem administrador local vinculado. O papel local só se torna necessário quando alguém vai operar missas, repertórios e a rotina da comunidade.
     </div>
 
-    <div class="mb-6">
+    <div class="hidden">
         <span class="inline-flex rounded-full px-4 py-2 text-sm font-semibold {{ $igreja->estaOperacional() ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700' }}">
             Status operacional: {{ $igreja->statusOperacionalLabel() }}
         </span>
@@ -56,6 +60,32 @@
             </ul>
         </div>
     @endif
+
+    <section class="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-4">
+        <div class="admin-section-card p-5">
+            <p class="admin-page-kicker">Status</p>
+            <strong class="mt-3 block text-xl text-gray-900">{{ $igreja->statusOperacionalLabel() }}</strong>
+            <p class="mt-2 text-sm text-gray-500">{{ $igreja->ativo ? 'Igreja ativa' : 'Igreja inativa' }}</p>
+        </div>
+
+        <div class="admin-section-card p-5">
+            <p class="admin-page-kicker">Equipe</p>
+            <strong class="mt-3 block text-xl text-gray-900">{{ $totalVinculados }}</strong>
+            <p class="mt-2 text-sm text-gray-500">{{ $totalAdminsLocais }} admin(s), {{ $totalCoordenadores }} coordenador(es)</p>
+        </div>
+
+        <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="admin-section-card block p-5 transition hover:-translate-y-0.5 hover:shadow-lg">
+            <p class="admin-page-kicker">Publico</p>
+            <strong class="mt-3 block text-xl text-gray-900">Fieis</strong>
+            <p class="mt-2 text-sm text-gray-500">Abrir pagina publica.</p>
+        </a>
+
+        <a href="{{ $igreja->link_publico_musicos }}" target="_blank" rel="noopener noreferrer" class="admin-section-card block p-5 transition hover:-translate-y-0.5 hover:shadow-lg">
+            <p class="admin-page-kicker">Musicos</p>
+            <strong class="mt-3 block text-xl text-gray-900">Repertorio</strong>
+            <p class="mt-2 text-sm text-gray-500">Abrir link musical.</p>
+        </a>
+    </section>
 
     <form action="{{ route('admin.igrejas.update', $igreja) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
         @csrf
@@ -316,7 +346,7 @@
                                 </div>
                             </div>
 
-                            <div class="grid gap-3 sm:grid-cols-2 xl:w-[38rem]">
+                            <div class="hidden">
                                 <form action="{{ route('admin.igrejas.usuarios.papeis.store', [$igreja, $usuarioVinculado]) }}" method="POST">
                                     @csrf
                                     <input type="hidden" name="papel" value="admin_local">
@@ -399,6 +429,42 @@
                                     </button>
                                 @endif
                             </div>
+
+                            <form action="{{ route('admin.usuarios.vinculos.store', $usuarioVinculado) }}" method="POST" class="rounded-2xl border border-gray-200 bg-white p-4 xl:w-[28rem]">
+                                @csrf
+                                <input type="hidden" name="igreja_id" value="{{ $igreja->id }}">
+                                <input type="hidden" name="origem" value="igreja_edit">
+
+                                <p class="text-xs font-black uppercase tracking-[0.16em] text-gray-400">Papeis nesta igreja</p>
+                                <div class="mt-3 grid grid-cols-1 gap-2">
+                                    @foreach (\App\Enums\PapelIgreja::cases() as $papel)
+                                        <label class="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-sm font-bold text-gray-800">
+                                            <span>{{ $papel->label() }}</span>
+                                            <input
+                                                type="checkbox"
+                                                name="papeis[]"
+                                                value="{{ $papel->value }}"
+                                                class="rounded border-gray-300 text-emerald-700 focus:ring-emerald-500"
+                                                @checked($papeisAtivos->contains(fn ($papelAtivo) => $papelAtivo->value === $papel->value))
+                                            >
+                                        </label>
+                                    @endforeach
+                                </div>
+
+                                <div class="mt-4 flex flex-col gap-2 sm:flex-row">
+                                    <button type="submit" class="admin-btn admin-btn-primary flex-1">Salvar papeis</button>
+
+                                    @if ($ehAdminLocal)
+                                        <button
+                                            type="button"
+                                            class="admin-btn admin-btn-secondary flex-1"
+                                            data-reset-vinculo-toggle="reset-vinculo-{{ $usuarioVinculado->id }}"
+                                        >
+                                            Resetar senha
+                                        </button>
+                                    @endif
+                                </div>
+                            </form>
                         </div>
 
                         @if ($ehAdminLocal)
