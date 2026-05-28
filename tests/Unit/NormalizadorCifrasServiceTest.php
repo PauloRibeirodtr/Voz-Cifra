@@ -54,6 +54,36 @@ class NormalizadorCifrasServiceTest extends TestCase
         $this->assertSame(['D', 'A', 'Am', 'C'], $servico->extrairAcordes($resultado));
     }
 
+    public function test_intro_com_acordes_na_mesma_linha_vira_marcacao_e_linha_instrumental(): void
+    {
+        $servico = new NormalizadorCifrasService();
+
+        $resultado = $servico->normalizarFormato('[Intro] G5  D/F#  Em  D9');
+
+        $this->assertSame("[Intro]\n[G5] [D/F#] [Em] [D9]", $resultado);
+        $this->assertSame(['G5', 'D/F#', 'Em', 'D9'], $servico->extrairAcordes($resultado));
+    }
+
+    public function test_acordes_complexos_com_baixo_sao_reconhecidos(): void
+    {
+        $servico = new NormalizadorCifrasService();
+
+        $resultado = $servico->normalizarFormato('[Final] A9/G#  F#m(7/11)/C#  Em');
+
+        $this->assertSame("[Final]\n[A9/G#] [F#m(7/11)/C#] [Em]", $resultado);
+        $this->assertSame(['A9/G#', 'F#m(7/11)/C#', 'Em'], $servico->extrairAcordes($resultado));
+    }
+
+    public function test_virada_instrumental_com_parenteses_vira_linha_de_acordes(): void
+    {
+        $servico = new NormalizadorCifrasService();
+
+        $resultado = $servico->normalizarFormato("( G5  D9  Am )");
+
+        $this->assertSame("[G5] [D9] [Am]", $resultado);
+        $this->assertSame(['G5', 'D9', 'Am'], $servico->extrairAcordes($resultado));
+    }
+
     public function test_refrain_pode_repetir_e_ser_digitado_sem_acento_ou_colchetes(): void
     {
         $servico = new NormalizadorCifrasService();

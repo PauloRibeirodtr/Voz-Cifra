@@ -55,7 +55,14 @@ class NormalizadorCifrasService
         for ($indice = 0; $indice < count($linhas); $indice++) {
             $linhaAtual = rtrim($linhas[$indice]);
             $proximaLinha = $linhas[$indice + 1] ?? null;
+            $marcacaoEAcordes = $this->separarMarcacaoEAcordes($linhaAtual);
             $marcacaoNormalizada = $this->normalizarMarcacaoLinha($linhaAtual);
+
+            if ($marcacaoEAcordes !== null) {
+                $linhasNormalizadas[] = $marcacaoEAcordes['marcacao'];
+                $linhasNormalizadas[] = $marcacaoEAcordes['acordes'];
+                continue;
+            }
 
             if ($marcacaoNormalizada !== null) {
                 $linhasNormalizadas[] = $marcacaoNormalizada;
@@ -127,13 +134,42 @@ class NormalizadorCifrasService
 
     private function converterLinhaSomenteAcordesParaCifras(string $linhaAcordes): string
     {
-        return (string) preg_replace_callback(
-            '/\S+/',
-            fn (array $matches): string => ($acorde = $this->normalizarTokenAcorde($matches[0])) !== null
+        $linhaAcordes = $this->limparLinhaAcordes($linhaAcordes);
+        $indentacao = '';
+
+        if (preg_match('/^\s*/', $linhaAcordes, $matches) === 1) {
+            $indentacao = $matches[0] ?? '';
+        }
+
+        $tokens = preg_split('/\s+/', trim($linhaAcordes), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        return $indentacao . implode(' ', array_map(
+            fn (string $token): string => ($acorde = $this->normalizarTokenAcorde($token)) !== null
                 ? '[' . $acorde . ']'
-                : $matches[0],
-            $linhaAcordes
-        );
+                : $token,
+            $tokens
+        ));
+    }
+
+    private function separarMarcacaoEAcordes(string $linha): ?array
+    {
+        $linha = trim($linha);
+
+        if (!preg_match('/^\[([^\[\]\r\n]+)\]\s+(.+)$/', $linha, $matches)) {
+            return null;
+        }
+
+        $marcacao = trim($matches[1]);
+        $resto = trim($matches[2]);
+
+        if ($this->ehAcorde($marcacao) || !$this->ehLinhaApenasAcordes($resto)) {
+            return null;
+        }
+
+        return [
+            'marcacao' => '[' . $marcacao . ']',
+            'acordes' => $this->converterLinhaSomenteAcordesParaCifras($resto),
+        ];
     }
 
     private function localizarPosicaoSeguraNaLetra(string $linhaLetra, int $offset): int
@@ -182,7 +218,7 @@ class NormalizadorCifrasService
 
     private function ehLinhaApenasAcordes(string $linha): bool
     {
-        $linha = trim($linha);
+        $linha = trim($this->limparLinhaAcordes($linha));
 
         if ($linha === '' || $this->ehLinhaTablatura($linha)) {
             return false;
@@ -271,12 +307,24 @@ class NormalizadorCifrasService
     private function normalizarTokenAcorde(string $token): ?string
     {
         $token = trim($token);
+        $token = preg_replace('/^[([]+/', '', $token) ?? $token;
+        $token = preg_replace('/[)\],.;]+$/', '', $token) ?? $token;
 
         if (preg_match('/^\[([^\[\]\r\n]+)\]$/', $token, $matches)) {
             $token = trim($matches[1]);
         }
 
         return $this->ehAcorde($token) ? $token : null;
+    }
+
+    private function limparLinhaAcordes(string $linha): string
+    {
+        $linha = rtrim($linha);
+        $linha = (string) preg_replace('/^(\s*)\(\s*/', '$1', $linha);
+        $linha = (string) preg_replace('/\s*\)\s*$/', '', $linha);
+        $linha = (string) preg_replace('/[|]+\s*$/', '', $linha);
+
+        return rtrim($linha);
     }
 
     private function ehLinhaTablatura(string $linha): bool
@@ -296,7 +344,7 @@ class NormalizadorCifrasService
             return false;
         }
 
-        return (bool) preg_match('/^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\\+|-|[0-9#b])|\\([^\\)\\]]+\\))*(?:\\/[A-G](?:#|b)?)?$/', $valor);
+        return (bool) preg_match('/^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\\+|-|[0-9#b])|\\([^\\)\\]]+\\))*(?:\\/[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\\+|-|[0-9#b])|\\([^\\)\\]]+\\))*)?$/u', $valor);
     }
 
     private function normalizarQuebrasDeLinha(string $texto): string

@@ -30,7 +30,7 @@
 
         const SEMITONE_TO_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
         const SEMITONE_TO_FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
-        const CHORD_REGEX = /^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\+|-|[0-9#b])|\([^\)\]]+\))*(?:\/[A-G](?:#|b)?)?$/;
+        const CHORD_REGEX = /^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|\u00ba|\u00b0|\+|-|[0-9#b])|\([^\)\]]+\))*(?:\/[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|\u00ba|\u00b0|\+|-|[0-9#b])|\([^\)\]]+\))*)?$/i;
         const CHORD_PARTS_REGEX = /^([A-G](?:#|b)?)(.*?)(?:\/([A-G](?:#|b)?))?$/;
 
         const normalizeWhitespace = (value) => (value || '').replace(/\\n/g, '\n').replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n{3,}/g, '\n\n');
@@ -68,6 +68,34 @@
             const parts = String(value || '').trim().split(/\s+/).filter(Boolean);
 
             return parts.length > 0 && parts.every((part) => isChord(part));
+        };
+
+        const getBracketedChordOnlyLine = (value) => {
+            const line = String(value || '').trim();
+
+            if (!line || !/^(?:\[[^\[\]\r\n]+\]\s*)+$/u.test(line)) {
+                return null;
+            }
+
+            const chords = Array.from(line.matchAll(/\[([^\[\]\r\n]+)\]/gu))
+                .map((match) => String(match[1] || '').trim());
+
+            return chords.length > 0 && chords.every((chord) => isChord(chord)) ? chords : null;
+        };
+
+        const getSectionAndChordLine = (value) => {
+            const match = String(value || '').trim().match(/^\[([^\[\]\r\n]+)\]\s+(.+)$/u);
+
+            if (!match || isChord(match[1])) {
+                return null;
+            }
+
+            const rest = String(match[2] || '').trim();
+            const bracketedChords = getBracketedChordOnlyLine(rest);
+            const looseChords = isChordOnlyLine(rest) ? rest.split(/\s+/).filter(Boolean) : null;
+            const chords = bracketedChords || looseChords;
+
+            return chords ? { label: match[1].trim(), chords } : null;
         };
 
         const getSemitone = (note) => {
@@ -178,7 +206,31 @@
                     return '<div class="h-4"></div>';
                 }
 
-                const labelMatch = trimmed.match(/^\[(.+)\]$/u);
+                const sectionAndChordLine = getSectionAndChordLine(trimmed);
+                if (sectionAndChordLine) {
+                    currentBlockIsChorus = false;
+                    nextLineIsChorus = sectionLabelClass(sectionAndChordLine.label).includes('--refrao');
+                    const chordsHtml = sectionAndChordLine.chords
+                        .map((chord) => `<span class="cifra-acorde" ${attributeName}="${escapeHtml(chord)}">${escapeHtml(chord)}</span>`)
+                        .join(' ');
+
+                    return [
+                        `<div class="${sectionLabelClass(sectionAndChordLine.label)}">${escapeHtml(sectionAndChordLine.label)}</div>`,
+                        `<div class="cifra-linha cifra-linha--acordes"><span class="cifra-acordes">${chordsHtml}</span></div>`,
+                    ].join('');
+                }
+
+                const bracketedChordLine = getBracketedChordOnlyLine(trimmed);
+                if (bracketedChordLine) {
+                    const indent = line.match(/^\s*/)?.[0]?.length || 0;
+                    const chordsHtml = bracketedChordLine
+                        .map((chord) => `<span class="cifra-acorde" ${attributeName}="${escapeHtml(chord)}">${escapeHtml(chord)}</span>`)
+                        .join(' ');
+
+                    return `<div class="cifra-linha cifra-linha--acordes${currentBlockIsChorus ? ' cifra-linha--refrao' : ''}" style="--cifra-indent:${indent}ch"><span class="cifra-acordes">${chordsHtml}</span></div>`;
+                }
+
+                const labelMatch = trimmed.match(/^\[([^\[\]\r\n]+)\]$/u);
                 if (labelMatch && !isChord(labelMatch[1])) {
                     currentBlockIsChorus = false;
                     nextLineIsChorus = sectionLabelClass(labelMatch[1]).includes('--refrao');

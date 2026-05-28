@@ -19,7 +19,23 @@ class RenderizadorCifrasHtmlService
                 return '<div class="cifra-espaco"></div>';
             }
 
-            if (preg_match('/^\[(.+)\]$/u', $linhaLimpa, $matches) === 1 && !$this->ehAcorde($matches[1])) {
+            $marcacaoEAcordes = $this->extrairMarcacaoEAcordes($linhaLimpa);
+            if ($marcacaoEAcordes !== null) {
+                $blocoAtualRefrao = false;
+                $proximaLinhaRefrao = $this->ehMarcacaoRefrao($marcacaoEAcordes['marcacao']);
+
+                return '<div class="' . $this->classeMarcacaoSecao($marcacaoEAcordes['marcacao']) . '">' . e($marcacaoEAcordes['marcacao']) . '</div>'
+                    . '<div class="cifra-linha cifra-linha--acordes"><span class="cifra-acordes">' . $this->renderizarAcordesInline($marcacaoEAcordes['acordes']) . '</span></div>';
+            }
+
+            $acordesComColchetes = $this->extrairLinhaSomenteAcordesComColchetes($linhaLimpa);
+            if ($acordesComColchetes !== null) {
+                $indentacao = strlen($linha) - strlen(ltrim($linha));
+
+                return '<div class="cifra-linha cifra-linha--acordes' . ($blocoAtualRefrao ? ' cifra-linha--refrao' : '') . '" style="--cifra-indent:' . $indentacao . 'ch"><span class="cifra-acordes">' . $this->renderizarAcordesInline($acordesComColchetes) . '</span></div>';
+            }
+
+            if (preg_match('/^\[([^\[\]\r\n]+)\]$/u', $linhaLimpa, $matches) === 1 && !$this->ehAcorde($matches[1])) {
                 $blocoAtualRefrao = false;
                 $proximaLinhaRefrao = $this->ehMarcacaoRefrao((string) $matches[1]);
 
@@ -105,6 +121,52 @@ class RenderizadorCifrasHtmlService
         return $partes !== [] && collect($partes)->every(fn (string $parte): bool => $this->ehAcorde($parte));
     }
 
+    private function extrairLinhaSomenteAcordesComColchetes(string $valor): ?array
+    {
+        $linha = trim($valor);
+
+        if ($linha === '' || preg_match('/^(?:\[[^\[\]\r\n]+\]\s*)+$/u', $linha) !== 1) {
+            return null;
+        }
+
+        preg_match_all('/\[([^\[\]\r\n]+)\]/u', $linha, $matches);
+        $acordes = array_map('trim', $matches[1] ?? []);
+
+        if ($acordes === [] || ! collect($acordes)->every(fn (string $acorde): bool => $this->ehAcorde($acorde))) {
+            return null;
+        }
+
+        return $acordes;
+    }
+
+    private function extrairMarcacaoEAcordes(string $valor): ?array
+    {
+        if (preg_match('/^\[([^\[\]\r\n]+)\]\s+(.+)$/u', trim($valor), $matches) !== 1) {
+            return null;
+        }
+
+        $marcacao = trim($matches[1]);
+        $resto = trim($matches[2]);
+
+        if ($this->ehAcorde($marcacao)) {
+            return null;
+        }
+
+        $acordes = $this->extrairLinhaSomenteAcordesComColchetes($resto);
+        if ($acordes === null && $this->ehLinhaSomenteAcordes($resto)) {
+            $acordes = preg_split('/\s+/', $resto) ?: [];
+        }
+
+        if ($acordes === null || $acordes === []) {
+            return null;
+        }
+
+        return [
+            'marcacao' => $marcacao,
+            'acordes' => $acordes,
+        ];
+    }
+
     private function ehAcorde(string $valor): bool
     {
         $valor = trim($valor);
@@ -113,7 +175,7 @@ class RenderizadorCifrasHtmlService
             return false;
         }
 
-        return preg_match('/^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\\+|-|[0-9#b])|\\([^\\)\\]]+\\))*(?:\\/[A-G](?:#|b)?)?$/u', $valor) === 1;
+        return preg_match('/^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\\+|-|[0-9#b])|\\([^\\)\\]]+\\))*(?:\\/[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\\+|-|[0-9#b])|\\([^\\)\\]]+\\))*)?$/u', $valor) === 1;
     }
 
     private function ehMarcacaoSecao(string $valor): bool

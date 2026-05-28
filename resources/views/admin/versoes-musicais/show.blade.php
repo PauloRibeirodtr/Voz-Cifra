@@ -47,7 +47,7 @@
         .botao-pill:hover { border-color: #fdba74; background: #fff7ed; color: #c2410c; }
         .pill-info { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 2.35rem; padding: 0 0.85rem; border-radius: 9999px; background: #f8fafc; border: 1px solid #e2e8f0; color: #0f172a; font-size: 0.82rem; font-weight: 700; }
         .musico-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
-        .admin-musico-stage { border: 1px solid rgba(15, 23, 42, .14); border-radius: 1.35rem; background: #08111f; padding: 1rem; }
+        .admin-musico-stage { border: 1px solid #ead6b3; border-radius: 1.35rem; background: #fffdf8; padding: 1rem; }
         .admin-musico-reader { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; align-items: start; }
         .admin-musico-rail { display: flex; gap: .55rem; overflow-x: auto; padding-bottom: .35rem; scrollbar-width: none; }
         .admin-musico-rail::-webkit-scrollbar { display: none; }
@@ -58,11 +58,11 @@
         .admin-musico-speed { margin-top: .55rem; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: .5rem; }
         .admin-musico-speed input { width: 100%; accent-color: #059669; }
         .admin-musico-speed span { min-width: 3.25rem; border-radius: 999px; background: #ecfdf5; color: #047857; padding: .25rem .45rem; text-align: center; font-size: .72rem; font-weight: 950; }
-        .admin-musico-cifra { max-height: 68vh; min-height: 56vh; overflow-y: auto; border: 1px solid rgba(148, 163, 184, .18); border-radius: 1.15rem; background: #101a2d; padding: 1.15rem; color: #d1fae5; scroll-behavior: smooth; }
-        .admin-musico-cifra .cifra-letra { color: #d1fae5; }
+        .admin-musico-cifra { max-height: 68vh; min-height: 56vh; overflow-y: auto; border: 1px solid #ead6b3; border-radius: 1.15rem; background: #ffffff; padding: 1.15rem; color: #172033; scroll-behavior: smooth; }
+        .admin-musico-cifra .cifra-letra { color: #172033; }
         .admin-musico-cifra .cifra-linha--acordes { display: block; padding-left: var(--cifra-indent, 0); margin: .12rem 0 .42rem; }
         .admin-musico-cifra .cifra-linha--acordes .cifra-acordes { display: inline-flex; flex-wrap: wrap; gap: .75rem; min-height: auto; line-height: 1.35; }
-        .admin-musico-cifra .cifra-marcacao { background: rgba(16, 185, 129, .16); color: #a7f3d0; }
+        .admin-musico-cifra .cifra-marcacao { background: #ecfdf5; color: #047857; }
         .preview-admin-texto { font-size: calc(0.95rem * var(--admin-escala-fonte)); line-height: calc(1.75rem * var(--admin-escala-fonte)); }
         @media (min-width: 1280px) {
             .painel-musico-topo { grid-template-columns: minmax(0, 1fr) 380px; align-items: start; }
@@ -220,7 +220,7 @@
                         </span>
                     </div>
 
-                    <div class="preview-musico-scroll rounded-xl border border-slate-800 bg-slate-900 p-6" id="preview_admin_container">
+                    <div class="preview-musico-scroll rounded-xl border border-[#ead6b3] bg-white p-6" id="preview_admin_container">
                         <div id="preview_admin_render" class="space-y-2"></div>
                     </div>
                 </div>

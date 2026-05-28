@@ -1,4 +1,4 @@
-﻿@php
+@php
     $classeInput = 'mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-100';
     $letraInicial = old('letra_com_cifras', $versaoMusical->letra_com_cifras ?? $musica->letra ?? '');
 @endphp
@@ -12,6 +12,8 @@
         .editor-cifra-preview .cifra-letra { color: #172033; font-size: 1.06rem; line-height: 1.9rem; white-space: pre-wrap; }
         .editor-cifra-preview .cifra-marcacao { display: inline-flex; align-items: center; border-radius: 9999px; background: #eef2f7; color: #334155; font-size: 0.78rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 0.85rem; margin: 1rem 0 0.75rem; }
         .editor-cifra-preview .cifra-marcacao--refrao { background: #f7ead4; color: #6c4a21; }
+        .editor-cifra-preview .cifra-linha--acordes { display: block; padding-left: var(--cifra-indent, 0); margin: 0.05rem 0 0.75rem; }
+        .editor-cifra-preview .cifra-linha--acordes .cifra-acordes { display: inline-flex; flex-wrap: wrap; gap: 0.75rem; min-height: auto; line-height: 1.35; }
         .editor-cifra-preview [data-preview-line] { scroll-margin: 1rem; transition: background-color 0.18s ease, box-shadow 0.18s ease; }
         .editor-cifra-preview [data-preview-line].is-current-line { border-radius: 0.85rem; background: rgba(16, 185, 129, 0.08); box-shadow: inset 3px 0 0 rgba(16, 185, 129, 0.65); }
         @media (max-width: 767px) {
@@ -194,7 +196,7 @@
                 return false;
             }
 
-            return /^[A-G](?:#|b)?[A-Za-z0-9#bº°()+\-\/]*(?:\/[A-G](?:#|b)?[A-Za-z0-9#bº°()+\-\/]*)?$/i.test(texto);
+            return /^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|\u00ba|\u00b0|\+|-|[0-9#b])|\([^\)\]]+\))*(?:\/[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|\u00ba|\u00b0|\+|-|[0-9#b])|\([^\)\]]+\))*)?$/i.test(texto);
         };
 
         const ehLinhaTablatura = (linha) => {
@@ -245,6 +247,19 @@
             return true;
         };
 
+        const acordesDeLinhaComColchetes = (linha) => {
+            const texto = String(linha || '').trim();
+
+            if (!texto || !/^(?:\[[^\[\]\r\n]+\]\s*)+$/u.test(texto)) {
+                return null;
+            }
+
+            const acordes = Array.from(texto.matchAll(/\[([^\[\]\r\n]+)\]/gu))
+                .map((match) => String(match[1] || '').trim());
+
+            return acordes.length > 0 && acordes.every((acorde) => ehAcorde(acorde)) ? acordes : null;
+        };
+
         const localizarPosicaoSeguraNaLetra = (linhaLetra, offset) => {
             const palavras = Array.from(linhaLetra.matchAll(/\S+/gu));
 
@@ -288,10 +303,14 @@
         };
 
         const converterLinhaSomenteAcordesParaCifras = (linhaAcordes) => {
-            return limparLinhaAcordes(linhaAcordes).replace(/\S+/g, (token) => {
+            const linhaLimpa = limparLinhaAcordes(linhaAcordes);
+            const indentacao = linhaLimpa.match(/^\s*/)?.[0] || '';
+            const tokens = linhaLimpa.trim().split(/\s+/).filter(Boolean);
+
+            return indentacao + tokens.map((token) => {
                 const acorde = normalizarTokenAcorde(token);
                 return acorde ? `[${acorde}]` : token;
-            });
+            }).join(' ');
         };
 
         const normalizarMarcacao = (texto) => String(texto || '')
@@ -538,7 +557,14 @@
                 return '<div class="h-5"></div>';
             }
 
-            const marcacao = linhaLimpa.match(/^\[(.+)\]$/);
+            const acordesLinha = acordesDeLinhaComColchetes(linhaLimpa);
+            if (acordesLinha) {
+                const acordes = acordesLinha.map((acorde) => `<span>${escaparHtml(acorde)}</span>`).join(' ');
+                const indentacao = linha.match(/^\s*/)?.[0]?.length || 0;
+                return `<div class="cifra-linha cifra-linha--acordes" style="--cifra-indent:${indentacao}ch"><span class="cifra-acordes">${acordes}</span></div>`;
+            }
+
+            const marcacao = linhaLimpa.match(/^\[([^\[\]\r\n]+)\]$/);
             if (marcacao && !ehAcorde(marcacao[1])) {
                 return `<div class="cifra-marcacao ${normalizarMarcacao(marcacao[1]).startsWith('refrao') ? 'cifra-marcacao--refrao' : ''}">${escaparHtml(marcacao[1])}</div>`;
             }
