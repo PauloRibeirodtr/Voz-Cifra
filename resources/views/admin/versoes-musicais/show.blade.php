@@ -47,7 +47,7 @@
         .botao-pill:hover { border-color: #fdba74; background: #fff7ed; color: #c2410c; }
         .pill-info { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 2.35rem; padding: 0 0.85rem; border-radius: 9999px; background: #f8fafc; border: 1px solid #e2e8f0; color: #0f172a; font-size: 0.82rem; font-weight: 700; }
         .musico-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
-        .admin-musico-stage { border: 1px solid #ead6b3; border-radius: 1.35rem; background: #fffdf8; padding: 1rem; }
+        .admin-musico-stage { border: 1px solid #ead6b3; border-radius: 1.35rem; background: #ffffff; padding: 1rem; box-shadow: 0 16px 44px rgba(120, 53, 15, .08); }
         .admin-musico-reader { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; align-items: start; }
         .admin-musico-rail { display: flex; gap: .55rem; overflow-x: auto; padding-bottom: .35rem; scrollbar-width: none; }
         .admin-musico-rail::-webkit-scrollbar { display: none; }
@@ -58,7 +58,13 @@
         .admin-musico-speed { margin-top: .55rem; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: .5rem; }
         .admin-musico-speed input { width: 100%; accent-color: #059669; }
         .admin-musico-speed span { min-width: 3.25rem; border-radius: 999px; background: #ecfdf5; color: #047857; padding: .25rem .45rem; text-align: center; font-size: .72rem; font-weight: 950; }
-        .admin-musico-cifra { max-height: 68vh; min-height: 56vh; overflow-y: auto; border: 1px solid #ead6b3; border-radius: 1.15rem; background: #ffffff; padding: 1.15rem; color: #172033; scroll-behavior: smooth; }
+        .admin-musico-cifra { max-height: 68vh; min-height: 56vh; overflow-y: auto; border: 1px solid #ead6b3; border-radius: 1.15rem; background: #ffffff !important; padding: 1.15rem; color: #172033; scroll-behavior: smooth; }
+        .admin-musico-cifra .cifra-linha { margin-bottom: .72rem; }
+        .admin-musico-cifra .cifra-linha--refrao { border-left: 3px solid #f59e0b; border-radius: .65rem; background: linear-gradient(90deg, #fff7ed 0%, #ffffff 74%) !important; margin: .12rem 0 .72rem; padding: .35rem 0 .35rem .8rem; }
+        .admin-musico-cifra .cifra-linha--refrao .cifra-letra { color: #172033 !important; font-weight: 700; }
+        .admin-musico-cifra .cifra-linha--refrao .cifra-acordes { color: #ea580c !important; }
+        .admin-musico-cifra .cifra-segmento { min-height: 2.65rem; }
+        .admin-musico-cifra .cifra-acordes { color: #ea580c !important; }
         .admin-musico-cifra .cifra-letra { color: #172033; }
         .admin-musico-cifra .cifra-linha--acordes { display: block; padding-left: var(--cifra-indent, 0); margin: .12rem 0 .42rem; }
         .admin-musico-cifra .cifra-linha--acordes .cifra-acordes { display: inline-flex; flex-wrap: wrap; gap: .75rem; min-height: auto; line-height: 1.35; }
@@ -240,9 +246,9 @@
             <section id="painel_modo_musico" data-painel-modo="musico" class="painel-modo hidden space-y-6">
                 <div class="admin-musico-stage">
                     <div class="mb-4">
-                        <h2 class="text-xl font-black text-white">Previa do musico</h2>
-                        <p class="mt-1 text-sm text-slate-300">Mesmo parser da tela de estudo: confira leitura, tom, fonte e acordes sem sair do admin.</p>
-                        <p class="mt-3 text-xs font-bold text-slate-400">
+                        <h2 class="text-xl font-black text-gray-900">Previa do musico</h2>
+                        <p class="mt-1 text-sm text-gray-600">Mesmo parser da tela de estudo: confira leitura, tom, fonte e acordes sem sair do admin.</p>
+                        <p class="mt-3 text-xs font-bold text-amber-800">
                             <span id="indicador_tom_atual_musico">Tom {{ $versaoMusical->tom_musical ?: 'Nao informado' }}</span>
                             <span aria-hidden="true">/</span>
                             <span>BPM {{ $versaoMusical->bpm ?: '-' }}</span>
