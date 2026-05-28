@@ -6,14 +6,14 @@
 @push('styles')
     <style>
         .editor-cifra-preview .cifra-linha { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.18rem; margin-bottom: 0.72rem; }
-        .editor-cifra-preview .cifra-linha--refrao { border-left: 4px solid #f59e0b; background: linear-gradient(90deg, rgba(255, 251, 235, 0.12), rgba(255, 251, 235, 0)); margin: 0.18rem 0 0.74rem; padding: 0.42rem 0 0.42rem 0.85rem; }
+        .editor-cifra-preview .cifra-linha--refrao { border-left: 3px solid #d6ad6c; background: linear-gradient(90deg, rgba(214, 173, 108, 0.1), rgba(255, 255, 255, 0)); margin: 0.18rem 0 0.74rem; padding: 0.35rem 0 0.35rem 0.75rem; }
         .editor-cifra-preview .cifra-segmento { display: inline-flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; min-height: 2.85rem; }
-        .editor-cifra-preview .cifra-acordes { min-height: 1.1rem; margin-bottom: 0.02rem; color: #fb923c; font-weight: 900; font-size: 0.95rem; line-height: 1rem; white-space: pre; }
-        .editor-cifra-preview .cifra-letra { color: #f8fafc; font-size: 1.06rem; line-height: 1.9rem; white-space: pre-wrap; }
-        .editor-cifra-preview .cifra-marcacao { display: inline-flex; align-items: center; border-radius: 9999px; background: #334155; color: #f8fafc; font-size: 0.78rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 0.85rem; margin: 1rem 0 0.75rem; }
-        .editor-cifra-preview .cifra-marcacao--refrao { background: #fef3c7; color: #92400e; }
+        .editor-cifra-preview .cifra-acordes { min-height: 1.1rem; margin-bottom: 0.02rem; color: #d97706; font-weight: 900; font-size: 0.95rem; line-height: 1rem; white-space: pre; }
+        .editor-cifra-preview .cifra-letra { color: #172033; font-size: 1.06rem; line-height: 1.9rem; white-space: pre-wrap; }
+        .editor-cifra-preview .cifra-marcacao { display: inline-flex; align-items: center; border-radius: 9999px; background: #eef2f7; color: #334155; font-size: 0.78rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 0.85rem; margin: 1rem 0 0.75rem; }
+        .editor-cifra-preview .cifra-marcacao--refrao { background: #f7ead4; color: #6c4a21; }
         .editor-cifra-preview [data-preview-line] { scroll-margin: 1rem; transition: background-color 0.18s ease, box-shadow 0.18s ease; }
-        .editor-cifra-preview [data-preview-line].is-current-line { border-radius: 0.85rem; background: rgba(16, 185, 129, 0.08); box-shadow: inset 3px 0 0 rgba(16, 185, 129, 0.75); }
+        .editor-cifra-preview [data-preview-line].is-current-line { border-radius: 0.85rem; background: rgba(16, 185, 129, 0.08); box-shadow: inset 3px 0 0 rgba(16, 185, 129, 0.65); }
         @media (max-width: 767px) {
             .editor-cifra-preview .cifra-linha { display: block; margin-bottom: 0.8rem; }
             .editor-cifra-preview .cifra-segmento { display: inline-flex; min-height: 2.25rem; max-width: 100%; }
@@ -87,22 +87,6 @@
                             </div>
                         </div>
 
-                        <div id="painel_alertas_cifra" class="hidden rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900" data-guide-target="cifra-alertas">
-                            <h3 class="mb-2 font-black">Antes de salvar, vale revisar</h3>
-                            <ul id="lista_alertas_cifra" class="list-disc space-y-1 pl-5"></ul>
-                            <p class="mt-2 text-xs">Esses avisos nao bloqueiam o salvamento. Eles so ajudam a evitar cifra incompleta ou desalinhada.</p>
-                        </div>
-
-                        <div id="painel_validacao_cifras" class="hidden rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-                            <h3 class="font-bold mb-2">Acordes nao encontrados na biblioteca</h3>
-                            <p id="lista_acordes_invalidos"></p>
-                            <p class="mt-2 text-xs">O salvamento continua liberado, mas vale revisar esses acordes.</p>
-                        </div>
-
-                        <div id="painel_conversao_automatica" class="hidden rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">
-                            O texto colado foi reconhecido e sera salvo no padrao interno com colchetes. Revise a previa antes de salvar.
-                        </div>
-
                         <pre id="preview_padrao_interno" class="hidden"></pre>
                     </div>
                 </div>
@@ -166,7 +150,7 @@
             <div class="space-y-4">
                 <div data-preview-panel="com-cifras">
                     <h3 class="text-sm font-semibold text-gray-700 mb-2">Visao com cifra</h3>
-                    <div id="preview_com_cifras" class="editor-cifra-preview min-h-[520px] max-h-[72vh] rounded-xl bg-slate-900 p-5 text-green-100 border border-slate-800 overflow-auto"></div>
+                    <div id="preview_com_cifras" class="editor-cifra-preview min-h-[520px] max-h-[72vh] rounded-xl border border-[#ead6b3] bg-[#fffdf8] p-5 text-gray-900 overflow-auto"></div>
                 </div>
 
                 <div class="hidden" data-preview-panel="sem-cifras">
@@ -760,6 +744,10 @@
             const blocos = [];
             let proximoBlocoRefrao = false;
             let blocoAtualRefrao = false;
+            const ehMarcacaoInstrumental = (textoMarcacao) => {
+                const normalizada = normalizarMarcacao(textoMarcacao);
+                return /^(intro|introducao|final|solo|instrumental)(?:\s|$)/.test(normalizada);
+            };
 
             linhas.forEach((linha, indiceLinha) => {
                 const linhaLimpa = linha.trim();
@@ -773,18 +761,30 @@
 
                 const marcacao = linhaLimpa.match(/^\[(.+)\]$/);
                 if (marcacao && !ehAcorde(marcacao[1])) {
+                    if (ehMarcacaoInstrumental(marcacao[1])) {
+                        blocoAtualRefrao = false;
+                        proximoBlocoRefrao = false;
+                        return;
+                    }
+
                     const classe = normalizarMarcacao(marcacao[1]).startsWith('refrao')
-                        ? 'bg-amber-100 text-amber-900 font-black'
-                        : 'bg-indigo-100 text-indigo-700';
+                        ? 'bg-[#f7ead4] text-[#6c4a21] font-black'
+                        : 'bg-gray-100 text-gray-700';
                     blocos.push(`<div ${atributoLinha} class="my-4 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] ${classe}">${escaparHtml(marcacao[1])}</div>`);
                     proximoBlocoRefrao = normalizarMarcacao(marcacao[1]).startsWith('refrao') || normalizarMarcacao(marcacao[1]).startsWith('ref:');
                     return;
                 }
 
                 if (ehMarcacaoSecao(linhaLimpa)) {
+                    if (ehMarcacaoInstrumental(linhaLimpa)) {
+                        blocoAtualRefrao = false;
+                        proximoBlocoRefrao = false;
+                        return;
+                    }
+
                     const classe = normalizarMarcacao(linhaLimpa).startsWith('refrao')
-                        ? 'bg-amber-100 text-amber-900 font-black'
-                        : 'bg-indigo-100 text-indigo-700';
+                        ? 'bg-[#f7ead4] text-[#6c4a21] font-black'
+                        : 'bg-gray-100 text-gray-700';
                     blocos.push(`<div ${atributoLinha} class="my-4 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] ${classe}">${escaparHtml(linhaLimpa)}</div>`);
                     proximoBlocoRefrao = normalizarMarcacao(linhaLimpa).startsWith('refrao') || normalizarMarcacao(linhaLimpa).startsWith('ref:');
                     return;
@@ -796,7 +796,7 @@
                 }
 
                 const classeBloco = blocoAtualRefrao
-                    ? 'border-amber-200 bg-amber-50 text-amber-950 font-bold'
+                    ? 'border-[#ead6b3] bg-[#fff8ed] text-gray-900 font-semibold'
                     : 'border-gray-200 bg-gray-50 text-gray-800';
                 blocos.push(`<div ${atributoLinha} class="mb-3 rounded-xl border px-4 py-3 ${classeBloco}"><p class="whitespace-pre-wrap break-words text-[1.02rem] leading-8">${escaparHtml(linhaLimpa)}</p></div>`);
             });
@@ -865,16 +865,16 @@
             previewComCifras.innerHTML = renderizarComCifras(resultado.textoNormalizado);
             previewSemCifras.innerHTML = renderizarSemCifras(resultado.textoNormalizado);
 
-            if (resultado.houveConversao) {
+            if (resultado.houveConversao && painelConversaoAutomatica) {
                 painelConversaoAutomatica.classList.remove('hidden');
-            } else {
+            } else if (painelConversaoAutomatica) {
                 painelConversaoAutomatica.classList.add('hidden');
             }
 
-            if (acordesInvalidos.length > 0) {
+            if (acordesInvalidos.length > 0 && painelValidacaoCifras && listaAcordesInvalidos) {
                 painelValidacaoCifras.classList.remove('hidden');
                 listaAcordesInvalidos.textContent = acordesInvalidos.join(', ');
-            } else {
+            } else if (painelValidacaoCifras && listaAcordesInvalidos) {
                 painelValidacaoCifras.classList.add('hidden');
                 listaAcordesInvalidos.textContent = '';
             }
