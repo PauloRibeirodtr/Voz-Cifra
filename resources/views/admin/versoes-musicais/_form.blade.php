@@ -72,21 +72,12 @@
                     <div id="cifra_club_hint" class="mt-3 hidden rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm text-sky-800">
                         Cole a cifra inteira abaixo. Depois clique em <strong>Arrumar cifra automaticamente</strong> para alinhar acordes, refrões e partes antes de salvar.
                     </div>
-                    <textarea id="letra_com_cifras" name="letra_com_cifras" rows="18" required placeholder="[G]Quao grande e o meu Deus
+                    <textarea id="letra_com_cifras" name="letra_com_cifras" rows="18" required spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="[G]Quao grande e o meu Deus
 [D/F#]Cantarei quao grande e o meu Deus
 [Em7]E todos hao de ver
 [C9]Quao grande e o meu Deus" class="{{ $classeInput }} font-mono text-sm">{{ $letraInicial }}</textarea>
 
-                    <div class="mt-3 space-y-3">
-                        <div id="painel_rascunho_cifra" class="hidden rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
-                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                <span>Existe um rascunho salvo neste navegador para esta cifra.</span>
-                                <button type="button" class="rounded-lg border border-blue-300 bg-white px-3 py-2 text-xs font-black text-blue-800 hover:bg-blue-100" data-descartar-rascunho-cifra>
-                                    Descartar rascunho
-                                </button>
-                            </div>
-                        </div>
-
+                    <div class="mt-3">
                         <pre id="preview_padrao_interno" class="hidden"></pre>
                     </div>
                 </div>
@@ -149,8 +140,7 @@
 
             <div class="space-y-4">
                 <div data-preview-panel="com-cifras">
-                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Visao com cifra</h3>
-                    <div id="preview_com_cifras" class="editor-cifra-preview min-h-[520px] max-h-[72vh] rounded-xl border border-[#ead6b3] bg-[#fffdf8] p-5 text-gray-900 overflow-auto"></div>
+                    <div id="preview_com_cifras" class="editor-cifra-preview min-h-[520px] max-h-[72vh] rounded-xl border border-[#ead6b3] bg-white p-5 text-gray-900 overflow-auto" style="background:#ffffff;color:#172033;"></div>
                 </div>
 
                 <div class="hidden" data-preview-panel="sem-cifras">
@@ -172,16 +162,7 @@
         const previewSemCifras = document.getElementById('preview_sem_cifras');
         const previewPadraoInterno = document.getElementById('preview_padrao_interno');
         const botoesAcorde = document.querySelectorAll('.botao-acorde');
-        const painelConversaoAutomatica = document.getElementById('painel_conversao_automatica');
-        const painelValidacaoCifras = document.getElementById('painel_validacao_cifras');
-        const listaAcordesInvalidos = document.getElementById('lista_acordes_invalidos');
-        const painelAlertasCifra = document.getElementById('painel_alertas_cifra');
-        const listaAlertasCifra = document.getElementById('lista_alertas_cifra');
-        const painelRascunhoCifra = document.getElementById('painel_rascunho_cifra');
-        const botaoDescartarRascunho = document.querySelector('[data-descartar-rascunho-cifra]');
         const dicaCifraClub = document.getElementById('cifra_club_hint');
-        const acordesValidos = @json($acordesValidos ?? []);
-        const bibliotecaAcordes = new Set(acordesValidos.map((item) => String(item).toUpperCase()));
         const botoesPreview = document.querySelectorAll('[data-preview-toggle]');
         const paineisPreview = document.querySelectorAll('[data-preview-panel]');
         const botoesExemplo = document.querySelectorAll('[data-exemplo-toggle]');
@@ -190,8 +171,6 @@
         const botoesMarcarLinha = document.querySelectorAll('[data-marcar-linha]');
         const botaoOrganizarCifra = document.querySelector('[data-organizar-cifra-visual]');
         const botaoCifraClub = document.querySelector('[data-cifra-club-mode]');
-        const chaveRascunho = `voz-cifra-rascunho-cifra:${window.location.pathname}`;
-        const valorInicialTextarea = textarea?.value || '';
         let previewSyncTimer = null;
         let ignorarScrollPreview = false;
 
@@ -215,7 +194,7 @@
                 return false;
             }
 
-            return /^[A-G](?:#|b)?(?:m|maj|min|dim|aug|sus|add|omit|no|M|º|°|-|\+|[0-9#b()\/])*(?:\/[A-G](?:#|b)?(?:[0-9#b()\/])*)?$/i.test(texto);
+            return /^[A-G](?:#|b)?[A-Za-z0-9#bº°()+\-\/]*(?:\/[A-G](?:#|b)?[A-Za-z0-9#bº°()+\-\/]*)?$/i.test(texto);
         };
 
         const ehLinhaTablatura = (linha) => {
@@ -441,91 +420,6 @@
                 textoNormalizado: resultado.join('\n').replace(/\n{3,}/g, '\n\n').replace(/^\n+|\n+$/g, ''),
                 houveConversao,
             };
-        };
-
-        const extrairAcordes = (texto) => {
-            const acordes = [];
-            const matches = texto.matchAll(/\[([^\[\]\r\n]+)\]/g);
-
-            for (const match of matches) {
-                const acorde = (match[1] || '').trim();
-
-                if (ehAcorde(acorde)) {
-                    acordes.push(acorde);
-                }
-            }
-
-            return [...new Set(acordes)];
-        };
-
-        const detectarAlertasCifra = (textoNormalizado) => {
-            const linhas = (textoNormalizado || '').split('\n');
-            const alertas = [];
-            let refraoVazio = false;
-            let muitosAcordesSemLetra = false;
-            let linhasTextoSemCifra = 0;
-
-            linhas.forEach((linha, indice) => {
-                const linhaLimpa = linha.trim();
-
-                if (!linhaLimpa) {
-                    return;
-                }
-
-                const marcacao = linhaLimpa.match(/^\[(.+)\]$/);
-                const textoMarcacao = marcacao && !ehAcorde(marcacao[1]) ? marcacao[1] : linhaLimpa;
-                const normalizada = normalizarMarcacao(textoMarcacao);
-
-                if (/^(refrao:?|refr\.?|ref:)(?:\s|$)/.test(normalizada)) {
-                    let encontrouLetra = false;
-
-                    for (let proxima = indice + 1; proxima < linhas.length; proxima++) {
-                        const proximaLinha = String(linhas[proxima] || '').trim();
-
-                        if (!proximaLinha) {
-                            break;
-                        }
-
-                        if (ehMarcacaoSecao(proximaLinha)) {
-                            break;
-                        }
-
-                        if (removerCifras(proximaLinha).trim() !== '') {
-                            encontrouLetra = true;
-                            break;
-                        }
-                    }
-
-                    if (!encontrouLetra) {
-                        refraoVazio = true;
-                    }
-
-                    return;
-                }
-
-                if (ehLinhaApenasAcordes(linha) && linhaLimpa.split(/\s+/).length >= 4) {
-                    muitosAcordesSemLetra = true;
-                    return;
-                }
-
-                if (!linha.includes('[') && !ehMarcacaoSecao(linhaLimpa) && removerCifras(linhaLimpa).trim().length >= 18) {
-                    linhasTextoSemCifra += 1;
-                }
-            });
-
-            if (refraoVazio) {
-                alertas.push('Existe Refrão sem letra logo abaixo.');
-            }
-
-            if (muitosAcordesSemLetra) {
-                alertas.push('Ha uma linha com muitos acordes seguidos sem letra. Confira se e uma preparacao ou se faltou alinhar com a frase.');
-            }
-
-            if (linhasTextoSemCifra >= 4) {
-                alertas.push('Varias linhas de texto nao possuem cifra. Se isso for proposital, pode salvar normalmente.');
-            }
-
-            return alertas;
         };
 
         const colocarTextoEmLinha = (linha, posicao, texto) => {
@@ -857,35 +751,10 @@
         const atualizarPreview = () => {
             const valor = textarea.value || '';
             const resultado = normalizarFormato(valor);
-            const acordesEncontrados = extrairAcordes(resultado.textoNormalizado);
-            const acordesInvalidos = acordesEncontrados.filter((acorde) => !bibliotecaAcordes.has(acorde.toUpperCase()));
-            const alertas = detectarAlertasCifra(resultado.textoNormalizado);
 
             previewPadraoInterno.textContent = resultado.textoNormalizado;
             previewComCifras.innerHTML = renderizarComCifras(resultado.textoNormalizado);
             previewSemCifras.innerHTML = renderizarSemCifras(resultado.textoNormalizado);
-
-            if (resultado.houveConversao && painelConversaoAutomatica) {
-                painelConversaoAutomatica.classList.remove('hidden');
-            } else if (painelConversaoAutomatica) {
-                painelConversaoAutomatica.classList.add('hidden');
-            }
-
-            if (acordesInvalidos.length > 0 && painelValidacaoCifras && listaAcordesInvalidos) {
-                painelValidacaoCifras.classList.remove('hidden');
-                listaAcordesInvalidos.textContent = acordesInvalidos.join(', ');
-            } else if (painelValidacaoCifras && listaAcordesInvalidos) {
-                painelValidacaoCifras.classList.add('hidden');
-                listaAcordesInvalidos.textContent = '';
-            }
-
-            if (alertas.length > 0 && painelAlertasCifra && listaAlertasCifra) {
-                painelAlertasCifra.classList.remove('hidden');
-                listaAlertasCifra.innerHTML = alertas.map((alerta) => `<li>${escaparHtml(alerta)}</li>`).join('');
-            } else if (painelAlertasCifra && listaAlertasCifra) {
-                painelAlertasCifra.classList.add('hidden');
-                listaAlertasCifra.innerHTML = '';
-            }
 
             sincronizarPreviewComCursor(false);
         };
@@ -919,24 +788,9 @@
             atualizarPreview();
         };
 
-        const salvarRascunhoLocal = () => {
-            const valorAtual = textarea.value || '';
-
-            if (valorAtual !== valorInicialTextarea) {
-                localStorage.setItem(chaveRascunho, valorAtual);
-            }
-        };
-
-        const rascunhoSalvo = localStorage.getItem(chaveRascunho);
-        if (rascunhoSalvo && rascunhoSalvo !== valorInicialTextarea) {
-            textarea.value = rascunhoSalvo;
-            painelRascunhoCifra?.classList.remove('hidden');
-        }
-
         textarea.addEventListener('input', () => {
             atualizarPreview();
             sincronizarPreviewComCursor();
-            salvarRascunhoLocal();
         });
 
         textarea.addEventListener('click', () => sincronizarPreviewComCursor());
@@ -946,12 +800,6 @@
         formulario?.addEventListener('submit', () => {
             const resultado = normalizarFormato(textarea.value || '');
             textarea.value = resultado.textoNormalizado;
-            localStorage.removeItem(chaveRascunho);
-        });
-
-        botaoDescartarRascunho?.addEventListener('click', () => {
-            localStorage.removeItem(chaveRascunho);
-            painelRascunhoCifra?.classList.add('hidden');
         });
 
         botoesAcorde.forEach((botao) => {
@@ -984,7 +832,6 @@
             textarea.focus();
             atualizarPreview();
             sincronizarPreviewComCursor();
-            salvarRascunhoLocal();
         });
 
         botaoCifraClub?.addEventListener('click', () => {
