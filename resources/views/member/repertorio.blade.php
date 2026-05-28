@@ -107,6 +107,44 @@
             color: #fde68a;
         }
 
+        .repertorio-flow {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .repertorio-flow-item {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 0.75rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(226, 232, 240, 0.96);
+            background: #ffffff;
+            padding: 0.85rem;
+            color: #111827;
+            transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+        }
+
+        .repertorio-flow-item:hover,
+        .repertorio-flow-item.is-active {
+            border-color: rgba(16, 185, 129, 0.38);
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .repertorio-flow-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.35rem;
+            height: 2.35rem;
+            border-radius: 0.85rem;
+            background: #ecfdf5;
+            color: #047857;
+            font-size: 0.9rem;
+            font-weight: 950;
+        }
+
         .scroll-dock {
             position: fixed;
             left: 50%;
@@ -186,6 +224,25 @@
                 <div class="mb-5 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm text-amber-900">
                     <strong>Sequencia da celebracao:</strong> as musicas aparecem na ordem da missa. Toque em uma musica para abrir ou fechar a cifra.
                 </div>
+
+                @if ($missa->missaMusicas->isNotEmpty())
+                    <nav class="repertorio-flow mb-6" aria-label="Sequencia do repertorio">
+                        @foreach ($missa->missaMusicas as $itemSequencia)
+                            <a href="#repertorio-item-{{ $itemSequencia->id }}" class="repertorio-flow-item" data-repertorio-flow-link="{{ $itemSequencia->id }}">
+                                <span class="repertorio-flow-number">{{ $itemSequencia->ordem }}</span>
+                                <span class="min-w-0">
+                                    <span class="block truncate text-sm font-black">{{ $itemSequencia->musica->titulo }}</span>
+                                    <span class="mt-1 block truncate text-xs font-bold text-gray-500">
+                                        {{ $itemSequencia->momentoLiturgico?->nome ?: 'Momento nao definido' }}
+                                    </span>
+                                </span>
+                                <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-black text-amber-800">
+                                    {{ $itemSequencia->tom_exibicao ? 'Tom ' . $itemSequencia->tom_exibicao : 'Tom original' }}
+                                </span>
+                            </a>
+                        @endforeach
+                    </nav>
+                @endif
 
                 <div class="space-y-4" data-musicas-lista>
                     @forelse ($missa->missaMusicas as $item)
@@ -339,6 +396,11 @@
 
             document.querySelectorAll('[data-musica-item]').forEach((details) => {
                 details.addEventListener('toggle', () => {
+                    const itemId = details.id.replace('repertorio-item-', '');
+                    document.querySelectorAll('[data-repertorio-flow-link]').forEach((link) => {
+                        link.classList.toggle('is-active', details.open && link.dataset.repertorioFlowLink === itemId);
+                    });
+
                     if (!details.open) {
                         return;
                     }
