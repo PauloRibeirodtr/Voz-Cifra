@@ -57,12 +57,7 @@
             const modalPlaylistBackdrop = document.getElementById('playlist_modal_backdrop');
             const abrirModalPlaylist = document.getElementById('abrir_modal_playlist');
             const fecharModalPlaylist = document.getElementById('fechar_modal_playlist');
-            const modalControles = document.getElementById('controles_modal');
-            const modalControlesBackdrop = document.getElementById('controles_modal_backdrop');
-            const abrirModalControles = Array.from(document.querySelectorAll('[data-open-controls]'));
-            const fecharModalControles = document.getElementById('fechar_modal_controles');
             const drawerAcordes = document.getElementById('acordes_drawer');
-            const drawerAcordesBackdrop = document.getElementById('acordes_drawer_backdrop');
             const abrirDrawerAcordes = Array.from(document.querySelectorAll('[data-open-chords]'));
             const fecharDrawerAcordes = document.getElementById('fechar_acordes_drawer');
             const botoesAutoRolagemRapida = Array.from(document.querySelectorAll('[data-toggle-autoscroll-quick]'));
@@ -303,9 +298,8 @@
                 }
                 rolagemAtiva = false;
                 if (botaoRolagem) {
-                    botaoRolagem.textContent = 'Iniciar auto rolagem';
-                    botaoRolagem.classList.remove('study-button-danger');
-                    botaoRolagem.classList.add('study-button-primary');
+                    botaoRolagem.innerHTML = '<i class="fa-solid fa-angles-down"></i> Auto rolagem';
+                    botaoRolagem.classList.remove('is-running');
                     botaoRolagem.setAttribute('aria-pressed', 'false');
                 }
                 if (mensagem) mostrarToast(mensagem);
@@ -413,9 +407,8 @@
                     return;
                 }
                 rolagemAtiva = true;
-                botaoRolagem.textContent = 'Parar auto rolagem';
-                botaoRolagem.classList.remove('study-button-primary');
-                botaoRolagem.classList.add('study-button-danger');
+                botaoRolagem.innerHTML = '<i class="fa-solid fa-pause"></i> Parar rolagem';
+                botaoRolagem.classList.add('is-running');
                 botaoRolagem.setAttribute('aria-pressed', 'true');
                 iniciarRolagem();
                 mostrarToast('Auto rolagem iniciada');
@@ -464,11 +457,6 @@
             abrirModalPlaylist?.addEventListener('click', () => abrirModal(modalPlaylist, modalPlaylistBackdrop));
             fecharModalPlaylist?.addEventListener('click', () => fecharModal(modalPlaylist, modalPlaylistBackdrop));
             modalPlaylistBackdrop?.addEventListener('click', () => fecharModal(modalPlaylist, modalPlaylistBackdrop));
-            abrirModalControles.forEach((botao) => {
-                botao.addEventListener('click', () => abrirModal(modalControles, modalControlesBackdrop));
-            });
-            fecharModalControles?.addEventListener('click', () => fecharModal(modalControles, modalControlesBackdrop));
-            modalControlesBackdrop?.addEventListener('click', () => fecharModal(modalControles, modalControlesBackdrop));
             abrirDrawerAcordes.forEach((botao) => {
                 botao.addEventListener('click', () => abrirDrawer(drawerAcordes));
             });
@@ -510,7 +498,6 @@
             document.addEventListener('keydown', (event) => {
                 if (event.key === 'Escape') {
                     fecharModal(modalPlaylist, modalPlaylistBackdrop);
-                    fecharModal(modalControles, modalControlesBackdrop);
                     fecharDrawer(drawerAcordes);
                     alternarPopoverCapo(false);
                 }
@@ -526,7 +513,7 @@
             window.addEventListener('wheel', pausarPorInteracaoManual, { passive: true });
             window.addEventListener('touchstart', pausarPorInteracaoManual, { passive: true });
             window.addEventListener('pointerdown', (event) => {
-                if (!event.target.closest('#toggle_autorrolagem, #controles_modal, [data-open-controls], [data-toggle-autoscroll-quick], [data-open-chords], #acordes_drawer, #capo_popover, [data-toggle-capo-popover]')) {
+                if (!event.target.closest('#toggle_autorrolagem, #velocidade_rolagem, [data-open-chords], #acordes_drawer, #capo_popover, [data-toggle-capo-popover]')) {
                     pausarPorInteracaoManual();
                 }
             });
@@ -557,7 +544,8 @@
         .study-tool-button.is-primary { background:#f97316; border-color:#fb923c; color:#fff; }
         .study-tool-button i { width:1rem; text-align:center; color:currentColor; }
         .study-tool-panel { flex:0 0 15rem; border:1px solid rgba(148,163,184,.22); border-radius:1rem; background:rgba(248,250,252,.96); color:#334155; padding:.75rem; box-shadow:0 10px 26px rgba(2,6,23,.14); }
-        .study-tool-panel-title { display:flex; align-items:center; gap:.45rem; color:#0f172a; font-size:.82rem; font-weight:950; }
+        .study-tool-panel-title { display:flex; width:100%; align-items:center; gap:.45rem; border:0; background:transparent; color:#0f172a; font-size:.82rem; font-weight:950; cursor:pointer; }
+        .study-tool-panel-title.is-running { color:#b91c1c; }
         .study-tool-panel-control { margin-top:.65rem; display:grid; grid-template-columns:1fr auto; align-items:center; gap:.5rem; }
         .study-tool-panel input[type="range"] { width:100%; accent-color:#059669; }
         .study-tool-panel-value { min-width:4.25rem; border-radius:999px; background:#ecfdf5; color:#047857; padding:.3rem .55rem; text-align:center; font-size:.72rem; font-weight:950; }
@@ -578,12 +566,6 @@
         .study-badge-yellow { background:rgba(251,191,36,.14); color:#fde68a; }
         .study-badge-blue { background:rgba(96,165,250,.14); color:#bfdbfe; }
         .study-cifra-card { border:1px solid rgba(148,163,184,.18); background:#101a2d; border-radius:1.5rem; padding:1rem; }
-        .study-quick-controls { position:sticky; top:.75rem; z-index:40; display:grid; gap:.85rem; border:1px solid rgba(16,185,129,.22); background:rgba(6,20,34,.96); border-radius:1.35rem; padding:.9rem; box-shadow:0 18px 40px rgba(0,0,0,.22); backdrop-filter:blur(10px); }
-        .study-quick-title { color:#6ee7b7; font-size:.68rem; font-weight:950; letter-spacing:.18em; text-transform:uppercase; }
-        .study-control-row { display:flex; flex-wrap:wrap; align-items:center; gap:.65rem; }
-        .study-control-group { display:inline-flex; align-items:center; gap:.45rem; border:1px solid rgba(148,163,184,.18); border-radius:1rem; background:rgba(15,23,42,.86); padding:.35rem; }
-        .study-control-label { color:#cbd5e1; font-size:.78rem; font-weight:900; }
-        .study-control-select { min-height:2.65rem; border:1px solid rgba(148,163,184,.22); border-radius:.85rem; background:#fffaf2; color:#1f2937; padding:0 .75rem; font-weight:900; }
         .study-cifra-scroll { overflow:visible; min-height:55vh; }
         .study-video-frame { aspect-ratio:16/9; overflow:hidden; border-radius:1.25rem; background:#020617; }
         .study-video-frame iframe { width:100%; height:100%; display:block; }
@@ -699,18 +681,10 @@
                 </details>
             </div>
 
-            <div class="mt-5 flex flex-wrap gap-2">
-                @if ($itemMissa && $itemMissa->tom_usado)
-                    <span class="study-badge study-badge-yellow">Tom da missa {{ $itemMissa->tom_usado }}</span>
-                @endif
-                @if ($tomOriginal)
-                    <span class="study-badge study-badge-yellow">Tom original {{ $tomOriginal }}</span>
-                @endif
-                @if ($versaoMusical->bpm)
-                    <span class="study-badge study-badge-blue">BPM {{ $versaoMusical->bpm }}</span>
-                @endif
-                <span id="tom_atual_badge" class="study-badge bg-emerald-400/15 text-emerald-200">Tom {{ $tomExibicao ?: 'nao informado' }}</span>
-                <span id="capotraste_badge" class="study-badge bg-orange-400/15 text-orange-100">Sem capo</span>
+            <div class="mt-5 flex flex-wrap gap-2 text-xs font-bold text-slate-400">
+                <span id="tom_atual_badge">Tom {{ $tomExibicao ?: 'nao informado' }}</span>
+                <span aria-hidden="true">/</span>
+                <span id="capotraste_badge">Sem capo</span>
             </div>
 
             @if ($itemMissa)
@@ -754,10 +728,16 @@
                         <i class="fa-solid fa-play"></i>
                         Video
                     </button>
-                    <button type="button" class="study-tool-button" data-toggle-autoscroll-quick>
-                        <i class="fa-solid fa-angles-down"></i>
-                        Auto rolagem
-                    </button>
+                    <div class="study-tool-panel" aria-label="Auto rolagem">
+                        <button type="button" id="toggle_autorrolagem" class="study-tool-panel-title" aria-pressed="false">
+                            <i class="fa-solid fa-angles-down"></i>
+                            Auto rolagem
+                        </button>
+                        <div class="study-tool-panel-control">
+                            <input id="velocidade_rolagem" type="range" min="1" max="3" value="2" step="1" aria-label="Velocidade da auto rolagem" aria-describedby="valor_velocidade">
+                            <span id="valor_velocidade" class="study-tool-panel-value">Normal</span>
+                        </div>
+                    </div>
                     <button type="button" class="study-tool-button" data-font="-1" aria-label="Diminuir fonte">
                         <i class="fa-solid fa-minus"></i>
                         Texto
@@ -805,53 +785,9 @@
                             </div>
                         </div>
                     </div>
-                    <button type="button" class="study-tool-button" data-open-controls>
-                        <i class="fa-solid fa-sliders"></i>
-                        Mais
-                    </button>
                 </nav>
 
                 <main class="study-cifra-card">
-                <section class="study-quick-controls mb-4" aria-label="Controles rapidos da cifra">
-                    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                        <div>
-                            <p class="study-quick-title">Leitura da cifra</p>
-                            <div class="mt-2 flex flex-wrap gap-2">
-                                <span class="study-badge study-badge-yellow" data-tom-indicator>Tom: {{ $tomExibicao ?: 'nao informado' }}</span>
-                                <span class="study-badge bg-orange-400/15 text-orange-100" data-capo-indicator>Sem capo</span>
-                                <span class="study-badge study-badge-blue" data-font-indicator>Fonte: normal</span>
-                            </div>
-                        </div>
-
-                        <div class="study-control-row">
-                            <div class="study-control-group" aria-label="Transpor tom">
-                                <span class="study-control-label">Tom</span>
-                                <button type="button" data-transpose="-1" class="study-button py-2 text-sm">-</button>
-                                <button type="button" data-transpose-reset class="study-button py-2 text-sm">Original</button>
-                                <button type="button" data-transpose="1" class="study-button py-2 text-sm">+</button>
-                            </div>
-                            <label class="study-control-group" for="controle_capotraste_rapido">
-                                <span class="study-control-label">Capotraste</span>
-                                <select id="controle_capotraste_rapido" data-capo-control class="study-control-select">
-                                    <option value="0">Sem capo</option>
-                                    @for ($casaCapotraste = 1; $casaCapotraste <= 11; $casaCapotraste++)
-                                        <option value="{{ $casaCapotraste }}">{{ $casaCapotraste }} casa</option>
-                                    @endfor
-                                </select>
-                            </label>
-                            <div class="study-control-group" aria-label="Tamanho da fonte">
-                                <span class="study-control-label">Fonte</span>
-                                <button type="button" data-font="-1" class="study-button py-2 text-sm">A-</button>
-                                <button type="button" data-font-reset class="study-button py-2 text-sm">Padrao</button>
-                                <button type="button" data-font="1" class="study-button py-2 text-sm">A+</button>
-                            </div>
-                            <button type="button" data-open-controls class="study-button study-button-primary py-2 text-sm">
-                                Mais controles
-                            </button>
-                        </div>
-                    </div>
-                </section>
-
                 <div class="study-cifra-scroll" id="preview_musico_container">
                     <div id="letra_com_cifras_preview" class="space-y-1"></div>
                 </div>
@@ -877,15 +813,10 @@
             </aside>
         </div>
 
-        <button type="button" data-open-controls class="study-floating-controls study-button study-button-primary">
-            <i class="fa-solid fa-sliders"></i>
-            Controles
-        </button>
         <div id="study_toast" class="study-toast" role="status" aria-live="polite"></div>
 
         <div id="tooltip_acorde" class="tooltip-acorde hidden"><div class="text-center"><div id="tooltip_acorde_nome" class="text-sm font-black text-white">Acorde</div><div id="tooltip_acorde_diagrama" class="mt-3 diagrama-acorde"></div></div></div>
 
-        <div id="acordes_drawer_backdrop" class="study-modal-backdrop hidden"></div>
         <aside id="acordes_drawer" class="study-drawer hidden" aria-hidden="true">
             <div class="flex items-start justify-between gap-4">
                 <div>
@@ -916,72 +847,6 @@
                 </div>
             </div>
         </aside>
-
-        <div id="controles_modal_backdrop" class="study-modal-backdrop hidden"></div>
-        <div id="controles_modal" class="study-modal hidden" aria-hidden="true">
-            <div class="study-modal-card p-5">
-                <div class="flex items-start justify-between gap-4">
-                    <div>
-                        <p class="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-300">Controles</p>
-                        <h2 class="mt-2 text-2xl font-black text-white">Ajustes da leitura</h2>
-                    </div>
-                    <button type="button" id="fechar_modal_controles" class="study-button" aria-label="Fechar controles"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-
-                <div class="mt-6 grid gap-5">
-                    <section class="rounded-2xl border border-white/10 bg-white/5 p-4">
-                        <h3 class="font-black text-white">Auto rolagem</h3>
-                        <div class="mt-4 flex flex-wrap items-center gap-3">
-                            <button type="button" id="toggle_autorrolagem" class="study-button study-button-primary text-sm" aria-pressed="false">Iniciar auto rolagem</button>
-                            <label for="velocidade_rolagem" class="text-sm font-semibold text-slate-300">Velocidade</label>
-                            <input id="velocidade_rolagem" type="range" min="1" max="3" value="2" step="1" class="accent-emerald-500" aria-describedby="valor_velocidade">
-                            <span id="valor_velocidade" class="min-w-[4.5rem] rounded-full bg-emerald-400/10 px-3 py-1 text-center text-sm font-black text-emerald-100">Normal</span>
-                        </div>
-                    </section>
-
-                    <section class="rounded-2xl border border-white/10 bg-white/5 p-4">
-                        <h3 class="font-black text-white">Metronomo</h3>
-                        <div class="mt-4 flex flex-wrap items-center gap-3">
-                            <button type="button" id="toggle_metronomo" class="study-button text-sm">Iniciar metronomo</button>
-                            <div class="inline-flex items-center overflow-hidden rounded-xl border border-white/10 bg-slate-950">
-                                <button type="button" id="diminuir_bpm" class="h-11 w-11 text-lg font-bold text-slate-100 hover:bg-white/10">-</button>
-                                <input id="controle_bpm" type="number" min="20" max="240" value="{{ $versaoMusical->bpm ?: 72 }}" class="w-20 border-0 bg-slate-900 text-center text-base font-bold text-white focus:ring-0">
-                                <button type="button" id="aumentar_bpm" class="h-11 w-11 text-lg font-bold text-slate-100 hover:bg-white/10">+</button>
-                            </div>
-                            <span id="rotulo_bpm" class="study-badge study-badge-blue">{{ $versaoMusical->bpm ?: 72 }} BPM</span>
-                            <label class="text-sm font-semibold text-slate-300" for="volume_metronomo">Volume</label>
-                            <select id="volume_metronomo" class="rounded-xl border border-white/10 bg-slate-950 px-3 py-3 text-sm font-bold text-white focus:border-emerald-500 focus:ring-emerald-500">
-                                <option value="baixo">Baixo</option>
-                                <option value="medio" selected>Medio</option>
-                                <option value="alto">Alto</option>
-                            </select>
-                        </div>
-                    </section>
-
-                    <section class="rounded-2xl border border-white/10 bg-white/5 p-4">
-                        <h3 class="font-black text-white">Tom e fonte</h3>
-                        <div class="mt-4 flex flex-wrap items-center gap-3">
-                            <span class="study-badge study-badge-yellow" data-tom-indicator>Tom: {{ $tomExibicao ?: 'nao informado' }}</span>
-                            <span class="study-badge bg-orange-400/15 text-orange-100" data-capo-indicator>Sem capo</span>
-                            <button type="button" data-transpose="-1" class="study-button py-2 text-sm">Tom -</button>
-                            <button type="button" data-transpose-reset class="study-button py-2 text-sm">Tom original</button>
-                            <button type="button" data-transpose="1" class="study-button py-2 text-sm">Tom +</button>
-                            <label for="controle_capotraste" class="text-sm font-semibold text-slate-300">Capotraste</label>
-                            <select id="controle_capotraste" data-capo-control class="rounded-xl border border-white/10 bg-slate-950 px-3 py-3 text-sm font-bold text-white focus:border-emerald-500 focus:ring-emerald-500">
-                                <option value="0">Sem capo</option>
-                                @for ($casaCapotraste = 1; $casaCapotraste <= 11; $casaCapotraste++)
-                                    <option value="{{ $casaCapotraste }}">{{ $casaCapotraste }} casa</option>
-                                @endfor
-                            </select>
-                            <span class="study-badge study-badge-blue" data-font-indicator>Fonte: normal</span>
-                            <button type="button" data-font="-1" class="study-button py-2 text-sm">A-</button>
-                            <button type="button" data-font-reset class="study-button py-2 text-sm">Fonte padrao</button>
-                            <button type="button" data-font="1" class="study-button py-2 text-sm">A+</button>
-                        </div>
-                    </section>
-                </div>
-            </div>
-        </div>
 
         <div id="playlist_modal_backdrop" class="study-modal-backdrop hidden"></div>
         <div id="playlist_modal" class="study-modal hidden" aria-hidden="true">
