@@ -114,6 +114,16 @@
                 document.body.classList.remove('overflow-hidden');
             };
 
+            const abrirDrawer = (drawer) => {
+                drawer?.classList.remove('hidden');
+                drawer?.setAttribute('aria-hidden', 'false');
+            };
+
+            const fecharDrawer = (drawer) => {
+                drawer?.classList.add('hidden');
+                drawer?.setAttribute('aria-hidden', 'true');
+            };
+
             const alternarPopoverCapo = (mostrar = null) => {
                 if (!capoPopover) {
                     return;
@@ -409,7 +419,6 @@
                 botaoRolagem.setAttribute('aria-pressed', 'true');
                 iniciarRolagem();
                 mostrarToast('Auto rolagem iniciada');
-                fecharModal(modalControles, modalControlesBackdrop);
             });
             botoesAutoRolagemRapida.forEach((botao) => {
                 botao.addEventListener('click', () => botaoRolagem?.click());
@@ -461,10 +470,9 @@
             fecharModalControles?.addEventListener('click', () => fecharModal(modalControles, modalControlesBackdrop));
             modalControlesBackdrop?.addEventListener('click', () => fecharModal(modalControles, modalControlesBackdrop));
             abrirDrawerAcordes.forEach((botao) => {
-                botao.addEventListener('click', () => abrirModal(drawerAcordes, drawerAcordesBackdrop));
+                botao.addEventListener('click', () => abrirDrawer(drawerAcordes));
             });
-            fecharDrawerAcordes?.addEventListener('click', () => fecharModal(drawerAcordes, drawerAcordesBackdrop));
-            drawerAcordesBackdrop?.addEventListener('click', () => fecharModal(drawerAcordes, drawerAcordesBackdrop));
+            fecharDrawerAcordes?.addEventListener('click', () => fecharDrawer(drawerAcordes));
             botoesCapoPopover.forEach((botao) => {
                 botao.addEventListener('click', () => alternarPopoverCapo());
             });
@@ -503,7 +511,7 @@
                 if (event.key === 'Escape') {
                     fecharModal(modalPlaylist, modalPlaylistBackdrop);
                     fecharModal(modalControles, modalControlesBackdrop);
-                    fecharModal(drawerAcordes, drawerAcordesBackdrop);
+                    fecharDrawer(drawerAcordes);
                     alternarPopoverCapo(false);
                 }
             });
@@ -548,6 +556,11 @@
         .study-tool-button:hover { border-color:rgba(16,185,129,.45); color:#064e3b; transform:translateY(-1px); }
         .study-tool-button.is-primary { background:#f97316; border-color:#fb923c; color:#fff; }
         .study-tool-button i { width:1rem; text-align:center; color:currentColor; }
+        .study-tool-panel { flex:0 0 15rem; border:1px solid rgba(148,163,184,.22); border-radius:1rem; background:rgba(248,250,252,.96); color:#334155; padding:.75rem; box-shadow:0 10px 26px rgba(2,6,23,.14); }
+        .study-tool-panel-title { display:flex; align-items:center; gap:.45rem; color:#0f172a; font-size:.82rem; font-weight:950; }
+        .study-tool-panel-control { margin-top:.65rem; display:grid; grid-template-columns:1fr auto; align-items:center; gap:.5rem; }
+        .study-tool-panel input[type="range"] { width:100%; accent-color:#059669; }
+        .study-tool-panel-value { min-width:4.25rem; border-radius:999px; background:#ecfdf5; color:#047857; padding:.3rem .55rem; text-align:center; font-size:.72rem; font-weight:950; }
         .study-popover { position:absolute; z-index:75; width:min(18rem, calc(100vw - 2rem)); border:1px solid rgba(148,163,184,.22); border-radius:1.15rem; background:#fffaf2; color:#1f2937; padding:1rem; box-shadow:0 20px 48px rgba(2,6,23,.32); }
         .study-popover.hidden { display:none; }
         .study-capo-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.45rem; }
@@ -593,6 +606,8 @@
         .tooltip-acorde.hidden { display:none; }
         .diagrama-acorde svg, .tooltip-acorde svg { width:100%; height:auto; max-width:240px; }
         .study-stage .cifra-linha { margin-bottom:.25rem; gap:.12rem; }
+        .study-stage .cifra-linha--acordes { display:block; padding-left:var(--cifra-indent, 0); margin:.12rem 0 .42rem; }
+        .study-stage .cifra-linha--acordes .cifra-acordes { display:inline-flex; flex-wrap:wrap; gap:.75rem; min-height:auto; line-height:1.35; }
         .study-stage .cifra-linha--refrao { border-left:4px solid #fbbf24; border-radius:0; background:linear-gradient(90deg, rgba(251,191,36,.12), transparent); margin:.18rem 0 .68rem; padding:.42rem 0 .42rem .75rem; }
         .study-stage .cifra-linha--refrao .cifra-letra { color:#fde68a; font-weight:850; }
         .study-stage .cifra-segmento { min-height:2.2rem; }
@@ -604,6 +619,7 @@
             .study-reader-frame { grid-template-columns:10.5rem minmax(0,1fr); }
             .study-toolrail { position:sticky; top:1rem; display:grid; overflow:visible; padding:0; }
             .study-tool-button { justify-content:flex-start; width:100%; min-height:3rem; }
+            .study-tool-panel { width:100%; }
             .study-cifra-card { padding:1.35rem; }
             .study-side { align-self:start; position:sticky; top:1rem; }
         }
