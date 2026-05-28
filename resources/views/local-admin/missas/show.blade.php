@@ -66,6 +66,93 @@
             box-shadow: 0 14px 30px rgba(15, 23, 42, 0.07);
         }
 
+        .repertorio-item-card.is-focused {
+            border-color: #34d399;
+            box-shadow: 0 18px 36px rgba(16, 185, 129, 0.14);
+        }
+
+        .repertorio-sequence {
+            border: 1px solid #e5e7eb;
+            border-radius: 1.25rem;
+            background: linear-gradient(180deg, #ffffff, #fbfaf7);
+            padding: 1rem;
+        }
+
+        .repertorio-sequence-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+            gap: 0.75rem;
+        }
+
+        .repertorio-sequence-item {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: 0.75rem;
+            align-items: flex-start;
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            background: #ffffff;
+            padding: 0.85rem;
+            color: #111827;
+            text-decoration: none;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+        }
+
+        .repertorio-sequence-item:hover,
+        .repertorio-sequence-item:focus,
+        .repertorio-sequence-item.is-active {
+            border-color: #34d399;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        .repertorio-sequence-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 999px;
+            background: #0f766e;
+            color: #ffffff;
+            font-size: 0.75rem;
+            font-weight: 900;
+        }
+
+        .repertorio-sequence-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            margin-top: 0.55rem;
+        }
+
+        .repertorio-sequence-chip {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.2rem 0.55rem;
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 0.68rem;
+            font-weight: 800;
+        }
+
+        .repertorio-sequence-chip--warn {
+            background: #fffbeb;
+            color: #92400e;
+        }
+
+        .repertorio-sequence-chip--danger {
+            background: #fef2f2;
+            color: #b91c1c;
+        }
+
+        .repertorio-sequence-chip--info {
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+
         .repertorio-status-card {
             border-radius: 1.25rem;
             border: 1px solid #e5e7eb;
@@ -299,13 +386,9 @@
                 <h2 class="text-lg font-bold text-gray-900">Checklist da montagem</h2>
                 <p class="mt-1 text-sm text-gray-500">Confer&ecirc;ncia r&aacute;pida, ordem e pend&ecirc;ncias. Abra quando precisar.</p>
             </div>
-            <form action="{{ route('local-admin.missas.repertorio.corrigir-ordem', $missa) }}" method="POST" class="w-full sm:w-auto">
-                @csrf
-                <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#ead6b3] bg-[#fff8ed] px-4 py-3 text-sm font-semibold text-[#6c4a21] transition hover:bg-[#f8ecd7] sm:w-auto">
-                    <i class="fa-solid fa-arrow-down-wide-short" aria-hidden="true"></i>
-                    Corrigir ordem
-                </button>
-            </form>
+            <span class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700 sm:w-auto">
+                Abrir checklist
+            </span>
         </summary>
 
         <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -500,6 +583,53 @@
                         Ainda n&atilde;o existe m&uacute;sica cadastrada no repert&oacute;rio desta missa.
                     </div>
                 @else
+                    <div class="repertorio-sequence mb-5">
+                        <div class="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                            <div>
+                                <h3 class="text-base font-black text-gray-900">Sequencia da celebracao</h3>
+                                <p class="mt-1 text-sm text-gray-500">Use esta linha para conferir a ordem sem abrir todos os cards.</p>
+                            </div>
+                            <form action="{{ route('local-admin.missas.repertorio.corrigir-ordem', $missa) }}" method="POST" class="w-full sm:w-auto">
+                                @csrf
+                                <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[#ead6b3] bg-[#fff8ed] px-4 py-3 text-sm font-semibold text-[#6c4a21] transition hover:bg-[#f8ecd7] sm:w-auto">
+                                    <i class="fa-solid fa-arrow-down-wide-short" aria-hidden="true"></i>
+                                    Ordenar por momentos
+                                </button>
+                            </form>
+                        </div>
+
+                        <nav class="repertorio-sequence-list" aria-label="Sequencia do repertorio da missa">
+                            @foreach ($missa->missaMusicas as $itemSequencia)
+                                @php
+                                    $pedidosTomSequencia = $itemSequencia->solicitacoesMudancaTom
+                                        ->where('status', \App\Models\SolicitacaoMudancaTom::STATUS_PENDENTE)
+                                        ->count();
+                                @endphp
+                                <a href="#repertorio-item-{{ $itemSequencia->id }}" class="repertorio-sequence-item" data-repertorio-sequence-link="{{ $itemSequencia->id }}">
+                                    <span class="repertorio-sequence-number">{{ $loop->iteration }}</span>
+                                    <span class="min-w-0">
+                                        <strong class="block truncate text-sm font-black text-gray-900">{{ $itemSequencia->musica->titulo }}</strong>
+                                        <span class="mt-1 block truncate text-xs font-bold uppercase tracking-wide text-gray-500">
+                                            {{ $itemSequencia->momentoLiturgico?->nome ?: 'Momento pendente' }}
+                                        </span>
+                                        <span class="repertorio-sequence-meta">
+                                            <span class="repertorio-sequence-chip">Tom {{ $itemSequencia->tom_exibicao ?: 'original' }}</span>
+                                            @if (!$itemSequencia->momentoLiturgico)
+                                                <span class="repertorio-sequence-chip repertorio-sequence-chip--warn">sem momento</span>
+                                            @endif
+                                            @if (!$itemSequencia->versaoMusical)
+                                                <span class="repertorio-sequence-chip repertorio-sequence-chip--danger">sem cifra</span>
+                                            @endif
+                                            @if ($pedidosTomSequencia > 0)
+                                                <span class="repertorio-sequence-chip repertorio-sequence-chip--info">{{ $pedidosTomSequencia }} pedido(s)</span>
+                                            @endif
+                                        </span>
+                                    </span>
+                                </a>
+                            @endforeach
+                        </nav>
+                    </div>
+
                     <div class="space-y-4">
                         @foreach ($missa->missaMusicas as $item)
                             @php
@@ -1007,6 +1137,23 @@
 
                     if (inputBusca.value.trim().length >= 2) {
                         renderizarResultados(inputBusca.value);
+                    }
+                });
+            });
+
+            document.querySelectorAll('[data-repertorio-sequence-link]').forEach((link) => {
+                link.addEventListener('click', () => {
+                    const itemId = String(link.dataset.repertorioSequenceLink || '');
+                    const card = document.getElementById('repertorio-item-' + itemId);
+
+                    document.querySelectorAll('[data-repertorio-sequence-link]').forEach((item) => item.classList.remove('is-active'));
+                    document.querySelectorAll('.repertorio-item-card').forEach((item) => item.classList.remove('is-focused'));
+
+                    link.classList.add('is-active');
+
+                    if (card) {
+                        card.classList.add('is-focused');
+                        window.setTimeout(() => card.classList.remove('is-focused'), 2400);
                     }
                 });
             });
