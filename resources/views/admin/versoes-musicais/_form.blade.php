@@ -12,6 +12,8 @@
         .editor-cifra-preview .cifra-letra { color: #f8fafc; font-size: 1.06rem; line-height: 1.9rem; white-space: pre-wrap; }
         .editor-cifra-preview .cifra-marcacao { display: inline-flex; align-items: center; border-radius: 9999px; background: #334155; color: #f8fafc; font-size: 0.78rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 0.85rem; margin: 1rem 0 0.75rem; }
         .editor-cifra-preview .cifra-marcacao--refrao { background: #fef3c7; color: #92400e; }
+        .editor-cifra-preview [data-preview-line] { scroll-margin: 1rem; transition: background-color 0.18s ease, box-shadow 0.18s ease; }
+        .editor-cifra-preview [data-preview-line].is-current-line { border-radius: 0.85rem; background: rgba(16, 185, 129, 0.08); box-shadow: inset 3px 0 0 rgba(16, 185, 129, 0.75); }
         @media (max-width: 767px) {
             .editor-cifra-preview .cifra-linha { display: block; margin-bottom: 0.8rem; }
             .editor-cifra-preview .cifra-segmento { display: inline-flex; min-height: 2.25rem; max-width: 100%; }
@@ -206,10 +208,21 @@
         const botaoCifraClub = document.querySelector('[data-cifra-club-mode]');
         const chaveRascunho = `voz-cifra-rascunho-cifra:${window.location.pathname}`;
         const valorInicialTextarea = textarea?.value || '';
+        let previewSyncTimer = null;
+        let ignorarScrollPreview = false;
 
         if (!textarea || !previewComCifras || !previewSemCifras || !previewPadraoInterno) {
             return;
         }
+
+        const limparLinhaAcordes = (linha) => {
+            return String(linha || '')
+                .trim()
+                .replace(/^\(\s*/, '')
+                .replace(/\s*\)$/, '')
+                .replace(/[|]+$/g, '')
+                .trim();
+        };
 
         const ehAcorde = (valor) => {
             const texto = (valor || '').trim();
@@ -218,7 +231,7 @@
                 return false;
             }
 
-            return /^[A-G](?:#|b)?(?:m|maj|min|dim|aug|sus|add|omit|no|M|º|°|-|\+|[0-9#b()])*(?:\/[A-G](?:#|b)?)?$/i.test(texto);
+            return /^[A-G](?:#|b)?(?:m|maj|min|dim|aug|sus|add|omit|no|M|º|°|-|\+|[0-9#b()\/])*(?:\/[A-G](?:#|b)?(?:[0-9#b()\/])*)?$/i.test(texto);
         };
 
         const ehLinhaTablatura = (linha) => {
@@ -227,7 +240,7 @@
         };
 
         const normalizarTokenAcorde = (token) => {
-            let texto = (token || '').trim();
+            let texto = (token || '').trim().replace(/^[([]+/, '').replace(/[)\],.;]+$/, '');
             const entreColchetes = texto.match(/^\[([^\[\]\r\n]+)\]$/);
 
             if (entreColchetes) {
@@ -254,7 +267,7 @@
         };
 
         const ehLinhaApenasAcordes = (linha) => {
-            const texto = linha.trim();
+            const texto = limparLinhaAcordes(linha);
 
             if (!texto || ehLinhaTablatura(texto)) {
                 return false;
@@ -312,7 +325,7 @@
         };
 
         const converterLinhaSomenteAcordesParaCifras = (linhaAcordes) => {
-            return linhaAcordes.replace(/\S+/g, (token) => {
+            return limparLinhaAcordes(linhaAcordes).replace(/\S+/g, (token) => {
                 const acorde = normalizarTokenAcorde(token);
                 return acorde ? `[${acorde}]` : token;
             });
@@ -349,6 +362,25 @@
             return normalizada.length <= 32 && /^(intro|refrao:?|pre[-\s]?refrao:?|refr\.?|ref:|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(?:\s|$)/.test(normalizada);
         };
 
+        const separarMarcacaoEAcordes = (linha) => {
+            const match = String(linha || '').trim().match(/^\[([^\[\]\r\n]+)\]\s+(.+)$/);
+
+            if (!match || ehAcorde(match[1])) {
+                return null;
+            }
+
+            const resto = match[2] || '';
+
+            if (!ehLinhaApenasAcordes(resto)) {
+                return null;
+            }
+
+            return {
+                marcacao: `[${match[1].trim()}]`,
+                acordes: converterLinhaSomenteAcordesParaCifras(resto),
+            };
+        };
+
         const linhaAnteriorEhMarcacao = (linhas, indiceAtual) => {
             for (let indice = indiceAtual - 1; indice >= 0; indice--) {
                 const linha = String(linhas[indice] || '').trim();
@@ -377,7 +409,15 @@
             for (let i = 0; i < linhas.length; i++) {
                 const linhaAtual = linhas[i].replace(/\s+$/g, '');
                 const proximaLinha = linhas[i + 1];
+                const marcacaoEAcordes = separarMarcacaoEAcordes(linhaAtual);
                 const marcacaoNormalizada = normalizarMarcacaoLinha(linhaAtual);
+
+                if (marcacaoEAcordes) {
+                    resultado.push(marcacaoEAcordes.marcacao);
+                    resultado.push(marcacaoEAcordes.acordes);
+                    houveConversao = true;
+                    continue;
+                }
 
                 if (marcacaoNormalizada) {
                     resultado.push(marcacaoNormalizada);
@@ -681,12 +721,14 @@
             const linhas = (texto || '').split('\n');
             let proximaLinhaRefrao = false;
             let blocoAtualRefrao = false;
-            const html = linhas.map((linha) => {
+            const html = linhas.map((linha, indiceLinha) => {
                 const linhaLimpa = linha.trim();
+                const abrirLinha = `<div data-preview-line="${indiceLinha}">`;
+                const fecharLinha = '</div>';
 
                 if (!linhaLimpa) {
                     blocoAtualRefrao = false;
-                    return renderizarLinhaComCifras(linha);
+                    return `${abrirLinha}${renderizarLinhaComCifras(linha)}${fecharLinha}`;
                 }
 
                 const marcacao = linhaLimpa.match(/^\[(.+)\]$/);
@@ -697,7 +739,7 @@
                 if (textoMarcacao) {
                     blocoAtualRefrao = false;
                     proximaLinhaRefrao = normalizarMarcacao(textoMarcacao).startsWith('refrao') || normalizarMarcacao(textoMarcacao).startsWith('ref:');
-                    return renderizarLinhaComCifras(linha);
+                    return `${abrirLinha}${renderizarLinhaComCifras(linha)}${fecharLinha}`;
                 }
 
                 if (proximaLinhaRefrao) {
@@ -707,7 +749,7 @@
 
                 const classeRefrao = blocoAtualRefrao ? ' cifra-linha--refrao' : '';
 
-                return `<div class="${classeRefrao}">${renderizarLinhaComCifras(linha)}</div>`;
+                return `<div data-preview-line="${indiceLinha}" class="${classeRefrao}">${renderizarLinhaComCifras(linha)}</div>`;
             }).join('');
 
             return html || '<p class="text-sm text-slate-400">A previa com cifra aparecera aqui.</p>';
@@ -719,12 +761,13 @@
             let proximoBlocoRefrao = false;
             let blocoAtualRefrao = false;
 
-            linhas.forEach((linha) => {
+            linhas.forEach((linha, indiceLinha) => {
                 const linhaLimpa = linha.trim();
+                const atributoLinha = `data-preview-line="${indiceLinha}"`;
 
                 if (!linhaLimpa) {
                     blocoAtualRefrao = false;
-                    blocos.push('<div class="h-4"></div>');
+                    blocos.push(`<div ${atributoLinha} class="h-4"></div>`);
                     return;
                 }
 
@@ -733,7 +776,7 @@
                     const classe = normalizarMarcacao(marcacao[1]).startsWith('refrao')
                         ? 'bg-amber-100 text-amber-900 font-black'
                         : 'bg-indigo-100 text-indigo-700';
-                    blocos.push(`<div class="my-4 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] ${classe}">${escaparHtml(marcacao[1])}</div>`);
+                    blocos.push(`<div ${atributoLinha} class="my-4 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] ${classe}">${escaparHtml(marcacao[1])}</div>`);
                     proximoBlocoRefrao = normalizarMarcacao(marcacao[1]).startsWith('refrao') || normalizarMarcacao(marcacao[1]).startsWith('ref:');
                     return;
                 }
@@ -742,7 +785,7 @@
                     const classe = normalizarMarcacao(linhaLimpa).startsWith('refrao')
                         ? 'bg-amber-100 text-amber-900 font-black'
                         : 'bg-indigo-100 text-indigo-700';
-                    blocos.push(`<div class="my-4 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] ${classe}">${escaparHtml(linhaLimpa)}</div>`);
+                    blocos.push(`<div ${atributoLinha} class="my-4 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] ${classe}">${escaparHtml(linhaLimpa)}</div>`);
                     proximoBlocoRefrao = normalizarMarcacao(linhaLimpa).startsWith('refrao') || normalizarMarcacao(linhaLimpa).startsWith('ref:');
                     return;
                 }
@@ -755,10 +798,60 @@
                 const classeBloco = blocoAtualRefrao
                     ? 'border-amber-200 bg-amber-50 text-amber-950 font-bold'
                     : 'border-gray-200 bg-gray-50 text-gray-800';
-                blocos.push(`<div class="mb-3 rounded-xl border px-4 py-3 ${classeBloco}"><p class="whitespace-pre-wrap break-words text-[1.02rem] leading-8">${escaparHtml(linhaLimpa)}</p></div>`);
+                blocos.push(`<div ${atributoLinha} class="mb-3 rounded-xl border px-4 py-3 ${classeBloco}"><p class="whitespace-pre-wrap break-words text-[1.02rem] leading-8">${escaparHtml(linhaLimpa)}</p></div>`);
             });
 
             return blocos.join('') || '<p class="text-sm text-gray-500">A previa sem cifra aparecera aqui.</p>';
+        };
+
+        const obterLinhaAtualTextarea = () => {
+            const inicio = textarea.selectionStart ?? 0;
+            return textarea.value.slice(0, inicio).split('\n').length - 1;
+        };
+
+        const destacarLinhaPreview = (indiceLinha, rolar = false) => {
+            const paineis = [previewComCifras, previewSemCifras];
+
+            paineis.forEach((painel) => {
+                const linhas = painel.querySelectorAll('[data-preview-line]');
+                let alvo = painel.querySelector(`[data-preview-line="${indiceLinha}"]`);
+
+                if (!alvo && linhas.length > 0) {
+                    alvo = linhas[Math.min(indiceLinha, linhas.length - 1)];
+                }
+
+                linhas.forEach((linha) => linha.classList.toggle('is-current-line', linha === alvo));
+
+                if (rolar && alvo) {
+                    ignorarScrollPreview = true;
+                    painel.scrollTo({
+                        top: Math.max(0, alvo.offsetTop - painel.clientHeight * 0.22),
+                        behavior: 'smooth',
+                    });
+                    window.setTimeout(() => {
+                        ignorarScrollPreview = false;
+                    }, 260);
+                }
+            });
+        };
+
+        const sincronizarPreviewComCursor = (rolar = true) => {
+            window.clearTimeout(previewSyncTimer);
+            previewSyncTimer = window.setTimeout(() => {
+                destacarLinhaPreview(obterLinhaAtualTextarea(), rolar);
+            }, rolar ? 40 : 0);
+        };
+
+        const sincronizarPreviewComScrollEditor = () => {
+            if (ignorarScrollPreview) {
+                return;
+            }
+
+            const proporcao = textarea.scrollTop / Math.max(1, textarea.scrollHeight - textarea.clientHeight);
+
+            [previewComCifras, previewSemCifras].forEach((painel) => {
+                painel.scrollTop = proporcao * Math.max(1, painel.scrollHeight - painel.clientHeight);
+            });
         };
 
         const atualizarPreview = () => {
@@ -793,6 +886,8 @@
                 painelAlertasCifra.classList.add('hidden');
                 listaAlertasCifra.innerHTML = '';
             }
+
+            sincronizarPreviewComCursor(false);
         };
 
         const inserirNoCursor = (texto) => {
@@ -840,8 +935,13 @@
 
         textarea.addEventListener('input', () => {
             atualizarPreview();
+            sincronizarPreviewComCursor();
             salvarRascunhoLocal();
         });
+
+        textarea.addEventListener('click', () => sincronizarPreviewComCursor());
+        textarea.addEventListener('keyup', () => sincronizarPreviewComCursor());
+        textarea.addEventListener('scroll', sincronizarPreviewComScrollEditor);
 
         formulario?.addEventListener('submit', () => {
             const resultado = normalizarFormato(textarea.value || '');
@@ -879,9 +979,11 @@
                 return;
             }
 
-            textarea.value = converterTextoParaEdicaoVisual(textarea.value || '');
+            const resultadoOrganizado = normalizarFormato(textarea.value || '');
+            textarea.value = converterTextoParaEdicaoVisual(resultadoOrganizado.textoNormalizado);
             textarea.focus();
             atualizarPreview();
+            sincronizarPreviewComCursor();
             salvarRascunhoLocal();
         });
 
@@ -934,6 +1036,7 @@
         ativarPreview('com-cifras');
         ativarExemplo('colchetes');
         atualizarPreview();
+        sincronizarPreviewComCursor(false);
     })();
 </script>
 @endpush

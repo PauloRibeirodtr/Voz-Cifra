@@ -140,12 +140,12 @@
                     @if ($temAdminLocalSidebar)
                         <a href="{{ route('local-admin.dashboard') }}" class="{{ $itemMenuClasse(request()->routeIs('local-admin.dashboard')) }}">
                             <i class="fa-solid fa-church w-5 text-center group-hover:scale-110 transition"></i>
-                            <span>Resumo</span>
+                            <span>Painel da igreja</span>
                         </a>
 
                         <a href="{{ route('local-admin.church') }}" class="{{ $itemMenuClasse(request()->routeIs('local-admin.church')) }}">
                             <i class="fa-solid fa-building-circle-check w-5 text-center group-hover:scale-110 transition"></i>
-                            <span>Dados e links</span>
+                            <span>Dados p&uacute;blicos</span>
                         </a>
                     @endif
 
@@ -159,7 +159,7 @@
                     @if ($linkPessoasSidebar)
                         <a href="{{ $linkPessoasSidebar }}" class="{{ $itemMenuClasse(request()->routeIs('local-admin.musicos.*', 'coordenador.musicos.*')) }}">
                             <i class="fa-solid fa-users w-5 text-center group-hover:scale-110 transition"></i>
-                            <span>Equipe</span>
+                            <span>Equipe e pap&eacute;is</span>
                         </a>
                     @endif
                 @endif
@@ -185,43 +185,12 @@
                 @if ($temCoordenadorSidebar || $temAcessoMusicalSidebar || (auth()->user() && auth()->user()->ehAdminMaster()))
                     <div class="admin-sidebar-section-label pt-3 pb-1 pl-4 text-[11px] font-black uppercase tracking-widest opacity-80">M&uacute;sica</div>
 
-                    @if ($temCoordenadorSidebar)
-                        <a href="{{ route('coordenador.musicas.index') }}" class="{{ $itemMenuClasse(request()->routeIs('coordenador.musicas.*', 'coordenador.versoes-musicais.*')) }}">
-                            <i class="fa-solid fa-sliders w-5 text-center group-hover:scale-110 transition"></i>
-                            <span>Cifras</span>
-                        </a>
-
-                        <a href="{{ $temAdminMasterSidebar ? route('admin.tempos-liturgicos.index') : route('coordenador.tempos-liturgicos.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.tempos-liturgicos.*', 'coordenador.tempos-liturgicos.*')) }}">
-                            <i class="fa-solid fa-calendar-days w-5 text-center group-hover:scale-110 transition"></i>
-                            <span>Tempos lit&uacute;rgicos</span>
-                        </a>
-
-                        <a href="{{ $temAdminMasterSidebar ? route('admin.momentos-liturgicos.index') : route('coordenador.momentos-liturgicos.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.momentos-liturgicos.*', 'coordenador.momentos-liturgicos.*')) }}">
-                            <i class="fa-solid fa-list-ol w-5 text-center group-hover:scale-110 transition"></i>
-                            <span>Momentos lit&uacute;rgicos</span>
-                        </a>
-                    @endif
-
-                    @if ($temAcessoMusicalSidebar)
-                        <a href="{{ route('member.musicas.index') }}" class="{{ $itemMenuClasse(request()->routeIs('member.musicas.*', 'member.versoes.*')) }}">
+                    @if ($temAdminMasterSidebar)
+                        <a href="{{ route('admin.musicas.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.musicas.*', 'admin.versoes-musicais.*')) }}">
                             <i class="fa-solid fa-music w-5 text-center group-hover:scale-110 transition"></i>
-                            <span>Biblioteca</span>
+                            <span>Biblioteca musical</span>
                         </a>
 
-                        <a href="{{ route('member.colecoes.index') }}" class="{{ $itemMenuClasse(request()->routeIs('member.colecoes.*')) }}">
-                            <i class="fa-solid fa-book-open-reader w-5 text-center group-hover:scale-110 transition"></i>
-                            <span>Meus estudos</span>
-                        </a>
-                    @endif
-
-                    @if ($temAdminMasterSidebar && $temCoordenadorSidebar)
-                        <a href="{{ route('admin.acordes.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.acordes.*')) }}">
-                            <i class="fa-solid fa-guitar w-5 text-center group-hover:scale-110 transition"></i>
-                            <span>Acordes</span>
-                        </a>
-                    @endif
-
-                    @if (auth()->user() && auth()->user()->ehAdminMaster() && !$temCoordenadorSidebar)
                         <a href="{{ route('admin.tempos-liturgicos.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.tempos-liturgicos.*')) }}">
                             <i class="fa-solid fa-calendar-days w-5 text-center group-hover:scale-110 transition"></i>
                             <span>Tempos lit&uacute;rgicos</span>
@@ -235,6 +204,33 @@
                         <a href="{{ route('admin.acordes.index') }}" class="{{ $itemMenuClasse(request()->routeIs('admin.acordes.*')) }}">
                             <i class="fa-solid fa-guitar w-5 text-center group-hover:scale-110 transition"></i>
                             <span>Acordes</span>
+                        </a>
+                    @elseif ($temCoordenadorSidebar)
+                        <a href="{{ route('coordenador.musicas.index') }}" class="{{ $itemMenuClasse(request()->routeIs('coordenador.musicas.*', 'coordenador.versoes-musicais.*')) }}">
+                            <i class="fa-solid fa-sliders w-5 text-center group-hover:scale-110 transition"></i>
+                            <span>Cifras</span>
+                        </a>
+
+                        <a href="{{ route('coordenador.tempos-liturgicos.index') }}" class="{{ $itemMenuClasse(request()->routeIs('coordenador.tempos-liturgicos.*')) }}">
+                            <i class="fa-solid fa-calendar-days w-5 text-center group-hover:scale-110 transition"></i>
+                            <span>Tempos lit&uacute;rgicos</span>
+                        </a>
+
+                        <a href="{{ route('coordenador.momentos-liturgicos.index') }}" class="{{ $itemMenuClasse(request()->routeIs('coordenador.momentos-liturgicos.*')) }}">
+                            <i class="fa-solid fa-list-ol w-5 text-center group-hover:scale-110 transition"></i>
+                            <span>Momentos lit&uacute;rgicos</span>
+                        </a>
+                    @endif
+
+                    @if ($temAcessoMusicalSidebar && !$temAdminMasterSidebar)
+                        <a href="{{ route('member.musicas.index') }}" class="{{ $itemMenuClasse(request()->routeIs('member.musicas.*', 'member.versoes.*')) }}">
+                            <i class="fa-solid fa-music w-5 text-center group-hover:scale-110 transition"></i>
+                            <span>Biblioteca</span>
+                        </a>
+
+                        <a href="{{ route('member.colecoes.index') }}" class="{{ $itemMenuClasse(request()->routeIs('member.colecoes.*')) }}">
+                            <i class="fa-solid fa-book-open-reader w-5 text-center group-hover:scale-110 transition"></i>
+                            <span>Meus estudos</span>
                         </a>
                     @endif
                 @endif
