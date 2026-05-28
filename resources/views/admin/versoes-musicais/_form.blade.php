@@ -15,7 +15,20 @@
         .editor-cifra-preview .cifra-linha--acordes { display: block; padding-left: var(--cifra-indent, 0); margin: 0.05rem 0 0.75rem; }
         .editor-cifra-preview .cifra-linha--acordes .cifra-acordes { display: inline-flex; flex-wrap: wrap; gap: 0.75rem; min-height: auto; line-height: 1.35; }
         .editor-cifra-preview [data-preview-line] { scroll-margin: 1rem; transition: background-color 0.18s ease, box-shadow 0.18s ease; }
-        .editor-cifra-preview [data-preview-line].is-current-line { border-radius: 0.85rem; background: rgba(16, 185, 129, 0.08); box-shadow: inset 3px 0 0 rgba(16, 185, 129, 0.65); }
+        .editor-cifra-preview [data-preview-line].is-current-line { border-radius: 0.85rem; background: rgba(255, 247, 237, 0.84); box-shadow: inset 3px 0 0 rgba(217, 119, 6, 0.62); }
+        .cifra-toolbar { display: grid; gap: 0.75rem; }
+        .cifra-toolbar-main { display: flex; flex-wrap: wrap; gap: 0.65rem; align-items: center; }
+        .cifra-action-primary { display: inline-flex; align-items: center; justify-content: center; border-radius: 9999px; border: 1px solid #15803d; background: #15803d; padding: 0.78rem 1.25rem; color: #ffffff; font-size: 0.82rem; font-weight: 950; box-shadow: 0 10px 22px rgba(21, 128, 61, 0.18); }
+        .cifra-action-primary:hover { background: #166534; }
+        .cifra-action-secondary { display: inline-flex; align-items: center; justify-content: center; border-radius: 9999px; border: 1px solid #bae6fd; background: #f0f9ff; padding: 0.72rem 1rem; color: #075985; font-size: 0.8rem; font-weight: 900; }
+        .cifra-action-secondary:hover { background: #e0f2fe; }
+        .cifra-more-tools { border: 1px solid #e5e7eb; border-radius: 1rem; background: #ffffff; }
+        .cifra-more-tools summary { cursor: pointer; list-style: none; padding: 0.85rem 1rem; color: #374151; font-size: 0.82rem; font-weight: 900; }
+        .cifra-more-tools summary::-webkit-details-marker { display: none; }
+        .cifra-more-tools[open] summary { border-bottom: 1px solid #f3f4f6; }
+        .cifra-more-tools-panel { display: flex; flex-wrap: wrap; gap: 0.55rem; padding: 0.85rem 1rem 1rem; }
+        .cifra-mini-tool { border-radius: 9999px; border: 1px solid #ead6b3; background: #fffdf8; padding: 0.55rem 0.85rem; color: #6c4a21; font-size: 0.75rem; font-weight: 900; }
+        .cifra-mini-tool:hover { background: #fff7ed; border-color: #d6ad6c; }
         @media (max-width: 767px) {
             .editor-cifra-preview .cifra-linha { display: block; margin-bottom: 0.8rem; }
             .editor-cifra-preview .cifra-segmento { display: inline-flex; min-height: 2.25rem; max-width: 100%; }
@@ -46,30 +59,38 @@
                 <div data-guide-target="cifra-editor">
                     <div class="flex items-center justify-between gap-3">
                         <label class="block text-sm font-medium text-gray-700">Letra com cifras</label>
-                        <span class="text-xs text-gray-500">Cole cifras com acordes em cima da letra ou entre colchetes. O sistema prepara o formato ao salvar.</span>
+                        <span class="text-xs text-gray-500">Cole a cifra e confira a previa ao lado.</span>
                     </div>
-                    <div class="mt-2 flex flex-wrap gap-2">
-                        <button type="button" class="rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-black text-amber-800 hover:bg-amber-100" data-inserir-marcacao="Refrão:\n">
-                            Inserir Refrão
-                        </button>
-                        <button type="button" class="rounded-full border border-amber-300 bg-white px-4 py-2 text-xs font-black text-amber-900 hover:bg-amber-50" data-marcar-linha="Refrão:">
-                            Marcar linha como Refrão
-                        </button>
-                        <button type="button" class="rounded-full border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs font-black text-indigo-700 hover:bg-indigo-100" data-inserir-marcacao="[Primeira parte]\n">
-                            Inserir Parte
-                        </button>
-                        <button type="button" class="rounded-full border border-indigo-300 bg-white px-4 py-2 text-xs font-black text-indigo-800 hover:bg-indigo-50" data-marcar-linha="[Primeira parte]">
-                            Transformar linha em Parte
-                        </button>
-                        <button type="button" class="rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-xs font-black text-orange-700 hover:bg-orange-100" data-inserir-marcacao="[D] [C]\n">
-                            Acordes antes da parte
-                        </button>
-                        <button type="button" class="rounded-full border border-sky-300 bg-sky-50 px-4 py-2 text-xs font-black text-sky-800 hover:bg-sky-100" data-cifra-club-mode>
-                            Colar formato Cifra Club
-                        </button>
-                        <button type="button" class="rounded-full border border-green-700 bg-green-700 px-5 py-2 text-xs font-black text-white shadow-sm hover:bg-green-800" data-organizar-cifra-visual data-guide-target="cifra-organizar">
-                            Arrumar cifra automaticamente
-                        </button>
+                    <div class="mt-3 cifra-toolbar">
+                        <div class="cifra-toolbar-main">
+                            <button type="button" class="cifra-action-primary" data-organizar-cifra-visual data-guide-target="cifra-organizar">
+                                Arrumar cifra
+                            </button>
+                            <button type="button" class="cifra-action-secondary" data-cifra-club-mode>
+                                Modo Cifra Club
+                            </button>
+                        </div>
+
+                        <details class="cifra-more-tools" data-guide-target="cifra-ferramentas">
+                            <summary>Mais ajustes de escrita</summary>
+                            <div class="cifra-more-tools-panel">
+                                <button type="button" class="cifra-mini-tool" data-inserir-marcacao="Refrão:\n">
+                                    Inserir refrão
+                                </button>
+                                <button type="button" class="cifra-mini-tool" data-marcar-linha="Refrão:">
+                                    Marcar linha como refrão
+                                </button>
+                                <button type="button" class="cifra-mini-tool" data-inserir-marcacao="[Primeira parte]\n">
+                                    Inserir parte
+                                </button>
+                                <button type="button" class="cifra-mini-tool" data-marcar-linha="[Primeira parte]">
+                                    Marcar linha como parte
+                                </button>
+                                <button type="button" class="cifra-mini-tool" data-inserir-marcacao="[D] [C]\n">
+                                    Inserir linha de acordes
+                                </button>
+                            </div>
+                        </details>
                     </div>
                     <div id="cifra_club_hint" class="mt-3 hidden rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm text-sky-800">
                         Cole a cifra inteira abaixo. Depois clique em <strong>Arrumar cifra automaticamente</strong> para alinhar acordes, refrões e partes antes de salvar.

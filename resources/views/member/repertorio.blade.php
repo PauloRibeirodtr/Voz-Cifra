@@ -74,24 +74,38 @@
 
         .cifra-palco {
             border-top: 1px solid rgba(226, 232, 240, 0.9);
-            background: #111827;
-            color: #f8fafc;
+            background: #ffffff;
+            color: #172033;
         }
 
         .cifra-palco .cifra-acordes {
-            color: #f59e0b;
+            color: #ea580c;
             font-size: 1rem;
         }
 
         .cifra-palco .cifra-acorde {
-            background: rgba(245, 158, 11, 0.14);
+            background: rgba(249, 115, 22, 0.1);
             border-radius: 0.4rem;
             padding: 0.08rem 0.35rem;
         }
 
         .cifra-palco .cifra-letra {
-            color: #f8fafc;
+            color: #172033;
             line-height: 2rem;
+        }
+
+        .cifra-palco .cifra-linha--refrao {
+            border-left-color: #f59e0b;
+            background: linear-gradient(90deg, #fff7ed, #ffffff);
+        }
+
+        .cifra-palco .cifra-linha--refrao .cifra-letra {
+            color: #172033;
+        }
+
+        .cifra-palco .cifra-marcacao {
+            background: #ecfdf5;
+            color: #047857;
         }
 
         .acorde-chip {
@@ -99,12 +113,12 @@
             align-items: center;
             min-height: 2rem;
             border-radius: 9999px;
-            border: 1px solid rgba(245, 158, 11, 0.26);
-            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.28);
+            background: #fff7ed;
             padding: 0.25rem 0.75rem;
             font-size: 0.78rem;
             font-weight: 800;
-            color: #fde68a;
+            color: #9a3412;
         }
 
         .repertorio-flow {
@@ -254,7 +268,7 @@
                                 ->first();
                         @endphp
 
-                        <details id="repertorio-item-{{ $item->id }}" class="musica-item scroll-mt-24" data-musica-item>
+                        <details id="repertorio-item-{{ $item->id }}" class="musica-item scroll-mt-24" data-musica-item open>
                             <summary class="p-4 sm:p-5">
                                 <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                                     <div class="min-w-0">
@@ -289,28 +303,28 @@
                                 <div class="cifra-palco p-4 sm:p-6">
                                     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
                                         <div>
-                                            <p class="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-300">Cifra da missa</p>
-                                            <p class="mt-1 text-sm text-slate-300">{{ $item->versaoMusical->titulo ?: 'Versao principal' }}</p>
+                                            <p class="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-700">Cifra da missa</p>
+                                            <p class="mt-1 text-sm text-gray-600">{{ $item->versaoMusical->titulo ?: 'Versao principal' }}</p>
                                         </div>
-                                        <a href="{{ route('member.versoes.show', [$item->musica, $item->versaoMusical]) }}" class="inline-flex rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/15">
+                                        <a href="{{ route('member.versoes.show', [$item->musica, $item->versaoMusical]) }}" class="inline-flex rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
                                             Modo estudo
                                         </a>
                                     </div>
 
-                                    <details class="mb-4 rounded-2xl border border-white/10 bg-white/5 p-4">
-                                        <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-black text-white [&::-webkit-details-marker]:hidden">
+                                    <details class="mb-4 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                                        <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-black text-gray-900 [&::-webkit-details-marker]:hidden">
                                             <span>{{ $pedidoTomPendente ? 'Pedido de tom em analise' : 'Sugerir mudanca de tom' }}</span>
-                                            <span class="rounded-full bg-white/10 px-3 py-1 text-xs text-slate-200">{{ $pedidoTomPendente ? $pedidoTomPendente->tom_sugerido : 'Abrir' }}</span>
+                                            <span class="rounded-full bg-white px-3 py-1 text-xs text-gray-600">{{ $pedidoTomPendente ? $pedidoTomPendente->tom_sugerido : 'Abrir' }}</span>
                                         </summary>
 
                                         @if ($pedidoTomPendente)
-                                            <p class="mt-3 text-sm text-slate-300">Seu pedido para tocar em {{ $pedidoTomPendente->tom_sugerido }} foi enviado. A equipe da igreja precisa aprovar antes de mudar o repertorio.</p>
+                                            <p class="mt-3 text-sm text-gray-600">Seu pedido para tocar em {{ $pedidoTomPendente->tom_sugerido }} foi enviado. A equipe da igreja precisa aprovar antes de mudar o repertorio.</p>
                                         @else
                                             <form action="{{ route('member.repertorio.tom.solicitar', $item) }}" method="POST" class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[12rem_1fr_auto] sm:items-end">
                                                 @csrf
                                                 <div>
-                                                    <label class="block text-xs font-black uppercase tracking-wider text-slate-400">Novo tom</label>
-                                                    <select name="tom_sugerido" class="mt-1 w-full rounded-xl border border-white/10 bg-white px-3 py-2 text-sm font-bold text-slate-900">
+                                                    <label class="block text-xs font-black uppercase tracking-wider text-gray-500">Novo tom</label>
+                                                    <select name="tom_sugerido" class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-bold text-slate-900">
                                                         <option value="">Escolha</option>
                                                         @foreach ($tonsMusicais as $tomMusical)
                                                             <option value="{{ $tomMusical }}">{{ $tomMusical }}</option>
@@ -318,8 +332,8 @@
                                                     </select>
                                                 </div>
                                                 <div>
-                                                    <label class="block text-xs font-black uppercase tracking-wider text-slate-400">Motivo opcional</label>
-                                                    <input name="observacao" maxlength="500" class="mt-1 w-full rounded-xl border border-white/10 bg-white px-3 py-2 text-sm text-slate-900" placeholder="Ex.: fica melhor para as vozes">
+                                                    <label class="block text-xs font-black uppercase tracking-wider text-gray-500">Motivo opcional</label>
+                                                    <input name="observacao" maxlength="500" class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-slate-900" placeholder="Ex.: fica melhor para as vozes">
                                                 </div>
                                                 <button type="submit" class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-black text-white hover:bg-emerald-700">
                                                     Enviar

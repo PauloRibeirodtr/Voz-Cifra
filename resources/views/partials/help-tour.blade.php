@@ -23,9 +23,9 @@
             'rota' => $rotaAtual,
             'passos' => [
                 ['alvo' => '[data-guide-target="cifra-editor"]', 'foco' => '#letra_com_cifras', 'titulo' => 'Cole ou edite a cifra', 'texto' => 'Cole a cifra inteira aqui. Pode vir com acordes em cima da letra, entre colchetes ou no formato do Cifra Club.'],
-                ['alvo' => '[data-guide-target="cifra-organizar"]', 'titulo' => 'Arrume automaticamente', 'texto' => 'Clique para converter acordes acima da letra, padronizar refroes e preparar o texto para salvar.'],
+                ['alvo' => '[data-guide-target="cifra-organizar"]', 'titulo' => 'Arrume automaticamente', 'texto' => 'Use este botao como primeiro passo depois de colar a cifra. Ele separa partes, acordes soltos e linhas no padrao de leitura.'],
                 ['alvo' => '[data-guide-target="cifra-preview"]', 'titulo' => 'Confira a previa', 'texto' => 'Acompanhe do lado como o musico vai ler. Se algo ficar fora do lugar, ajuste no editor e confira novamente.'],
-                ['alvo' => '[data-guide-target="cifra-alertas"]', 'titulo' => 'Revise avisos leves', 'texto' => 'Se aparecer aviso, ele nao bloqueia. Use como checklist para refrao vazio, acordes soltos ou letra sem cifra.'],
+                ['alvo' => '[data-guide-target="cifra-ferramentas"]', 'titulo' => 'Use ajustes extras so quando precisar', 'texto' => 'Aqui ficam atalhos para inserir refrao, parte ou linha instrumental sem encher a tela principal.'],
                 ['alvo' => '[data-guide-target="cifra-tom-bpm"]', 'titulo' => 'Defina tom e BPM', 'texto' => 'Informe o tom original e o BPM quando souber. Isso ajuda o musico no estudo e na missa.'],
                 ['alvo' => '[data-guide-target="cifra-youtube"]', 'titulo' => 'Adicione video se tiver', 'texto' => 'Cole o ID ou link do YouTube para facilitar o estudo da equipe.'],
             ],
