@@ -179,7 +179,7 @@ class IgrejaPublicaFieisTest extends TestCase
         $response->assertSee('Missa do Domingo Passado');
     }
 
-    public function test_link_publico_do_fiel_mostra_agenda_futura_publicada_do_mes(): void
+    public function test_link_publico_do_fiel_mostra_agenda_futura_publicada_do_trimestre(): void
     {
         CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-04-27 10:00:00', 'America/Cuiaba'));
 
@@ -201,8 +201,8 @@ class IgrejaPublicaFieisTest extends TestCase
 
         Missa::query()->create([
             'igreja_id' => $igreja->id,
-            'titulo' => 'Missa Fora do Mes',
-            'data_missa' => '2026-06-10',
+            'titulo' => 'Missa Fora do Trimestre',
+            'data_missa' => '2026-08-10',
             'hora_inicio' => '19:00:00',
             'hora_fim' => '20:00:00',
             'publica_para_fieis' => true,
@@ -217,7 +217,7 @@ class IgrejaPublicaFieisTest extends TestCase
         $response->assertSee('Missa da Proxima Semana');
         $response->assertSee('Abrir celebração');
         $response->assertSee('Celebração ainda sem repertório público.');
-        $response->assertDontSee('Missa Fora do Mes');
+        $response->assertDontSee('Missa Fora do Trimestre');
 
         $this
             ->get(route('igrejas.public.show', ['slug' => $igreja->slug, 'celebracao' => Missa::query()->where('titulo', 'Missa da Proxima Semana')->value('id')]))

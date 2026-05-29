@@ -129,7 +129,7 @@ class IgrejaPublicaController extends Controller
 
         $proximasMissasColecao = $missasOrdenadas
             ->filter(fn (Missa $missa): bool => $missa->dataHoraInicio($timezone)->greaterThan($agora)
-                && $missa->dataHoraInicio($timezone)->lessThanOrEqualTo($agora->addMonth()))
+                && $missa->dataHoraInicio($timezone)->lessThanOrEqualTo($agora->addMonths(3)))
             ->values();
 
         $missasHojeColecao = $missasOrdenadas

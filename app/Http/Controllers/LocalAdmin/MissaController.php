@@ -725,7 +725,7 @@ class MissaController extends Controller
     {
         $hoje = CarbonImmutable::now('America/Cuiaba')->startOfDay();
         $dataMinima = $hoje->subMonth()->toDateString();
-        $dataMaxima = $hoje->addMonth()->toDateString();
+        $dataMaxima = $hoje->addMonths(3)->toDateString();
 
         $validator = Validator::make($request->all(), [
             'titulo' => ['required', 'string', 'max:255'],
@@ -744,7 +744,7 @@ class MissaController extends Controller
             'titulo.required' => 'Informe o titulo da missa.',
             'data_missa.required' => 'Informe a data da missa.',
             'data_missa.after_or_equal' => 'A data da missa nao pode ser anterior a 1 mes atras.',
-            'data_missa.before_or_equal' => 'A data da missa nao pode ser posterior a 1 mes a frente.',
+            'data_missa.before_or_equal' => 'A data da missa nao pode ser posterior a 3 meses a frente.',
             'hora_inicio.required' => 'Informe o horario de inicio.',
             'hora_fim.required' => 'Informe o horario de termino.',
             'hora_inicio.date_format' => 'Informe o horario de inicio no formato HH:MM.',
@@ -795,7 +795,7 @@ class MissaController extends Controller
     private function validarDadosReativacao(Request $request, Missa $missa): array
     {
         $hoje = CarbonImmutable::now('America/Cuiaba')->startOfDay();
-        $dataMaxima = $hoje->addMonth()->toDateString();
+        $dataMaxima = $hoje->addMonths(3)->toDateString();
 
         $dados = $request->validate([
             'data_missa' => ['required', 'date', 'after_or_equal:' . $hoje->toDateString(), 'before_or_equal:' . $dataMaxima],
@@ -804,7 +804,7 @@ class MissaController extends Controller
         ], [
             'data_missa.required' => 'Informe a nova data para reativar a missa.',
             'data_missa.after_or_equal' => 'Para reativar, escolha hoje ou uma data futura.',
-            'data_missa.before_or_equal' => 'A nova data nao pode ser posterior a 1 mes a frente.',
+            'data_missa.before_or_equal' => 'A nova data nao pode ser posterior a 3 meses a frente.',
             'hora_inicio.required' => 'Informe o novo horario de inicio.',
             'hora_fim.required' => 'Informe o novo horario de termino.',
             'hora_inicio.date_format' => 'Informe o horario de inicio no formato HH:MM.',
