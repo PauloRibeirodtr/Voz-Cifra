@@ -122,84 +122,8 @@
 @push('scripts')
     @if ($itemRepertorio->versaoMusical)
         @include('partials.chord-transposer-script')
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const helper = window.VozECifraChord;
-                const preview = document.getElementById('letra_com_cifras_preview');
-                const tomBadge = document.getElementById('tom_atual_badge');
-                const capoBadge = document.getElementById('capotraste_badge');
-                const controleCapotraste = document.getElementById('controle_capotraste');
-                const textoOriginal = @json($textoCifraExibicao, JSON_UNESCAPED_UNICODE);
-                const tomOriginal = @json($tomExibicao);
-                let transposicaoAtual = 0;
-                let capotrasteAtual = 0;
-                let fonteAtual = 18;
-
-                if (!preview || !helper) {
-                    return;
-                }
-
-                const atualizarTomBadge = () => {
-                    if (!tomBadge) {
-                        return;
-                    }
-
-                    if (!tomOriginal || !helper.isChord(tomOriginal)) {
-                        tomBadge.textContent = 'Tom nao informado';
-                        return;
-                    }
-
-                    const tomReal = helper.transposeChord(tomOriginal, transposicaoAtual);
-                    const formaTocada = helper.transposeChord(tomOriginal, transposicaoAtual - capotrasteAtual);
-                    tomBadge.textContent = 'Tom ' + tomReal;
-
-                    if (capoBadge) {
-                        capoBadge.textContent = capotrasteAtual > 0
-                            ? 'Capo ' + capotrasteAtual + ' / tocar como ' + formaTocada
-                            : 'Sem capo';
-                    }
-                };
-
-                const renderizar = () => {
-                    preview.innerHTML = helper.renderChordSheetHtml(
-                        helper.transposeBracketedText(textoOriginal, transposicaoAtual - capotrasteAtual),
-                        { chordAttribute: 'data-acorde-hover' }
-                    );
-                    preview.style.setProperty('--escala-fonte', String(fonteAtual / 18));
-                    atualizarTomBadge();
-                };
-
-                document.querySelectorAll('[data-transpose]').forEach((botao) => {
-                    botao.addEventListener('click', () => {
-                        transposicaoAtual += Number(botao.dataset.transpose || 0);
-                        renderizar();
-                    });
-                });
-
-                document.querySelector('[data-transpose-reset]')?.addEventListener('click', () => {
-                    transposicaoAtual = 0;
-                    renderizar();
-                });
-
-                controleCapotraste?.addEventListener('change', () => {
-                    capotrasteAtual = Math.max(0, Math.min(11, Number(controleCapotraste.value || 0)));
-                    renderizar();
-                });
-
-                document.querySelectorAll('[data-font]').forEach((botao) => {
-                    botao.addEventListener('click', () => {
-                        fonteAtual = Math.min(32, Math.max(14, fonteAtual + (Number(botao.dataset.font || 0) * 2)));
-                        renderizar();
-                    });
-                });
-
-                document.querySelector('[data-font-reset]')?.addEventListener('click', () => {
-                    fonteAtual = 18;
-                    renderizar();
-                });
-
-                renderizar();
-            });
-        </script>
+        <script type="application/json" id="missa-cifra-texto">{!! json_encode($textoCifraExibicao, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}</script>
+        <script type="application/json" id="missa-cifra-tom">{!! json_encode($tomExibicao, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}</script>
+        <script src="{{ asset('js/local-admin/missa-cifra.js') }}"></script>
     @endif
 @endpush
