@@ -59,7 +59,7 @@
 
         .page {
             min-height: 100vh;
-            padding: 14px 12px 32px;
+            padding: 14px 12px 220px;
         }
 
         .shell {
@@ -1357,6 +1357,11 @@
                                     <span class="badge">Controles por musica</span>
                                     <span class="badge">Auto rolagem no rodape</span>
                                 </div>
+                            @else
+                                <div class="public-reader-tools" aria-label="Ajuste de leitura" style="position:static;">
+                                    <button type="button" class="public-tool-button" data-public-plain-font="-1">A- Letra</button>
+                                    <button type="button" class="public-tool-button" data-public-plain-font="1">A+ Letra</button>
+                                </div>
                             @endif
                         </div>
                         <span class="badge">{{ ($modoPublico ?? 'fieis') === 'musicos' ? 'Abrir repertório' : 'Abrir celebração' }}</span>
@@ -1721,6 +1726,15 @@
 
                 event.preventDefault();
                 document.getElementById('historico-publico')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+
+            let publicPlainFontLevel = 1;
+            document.querySelectorAll('[data-public-plain-font]').forEach((botao) => {
+                botao.addEventListener('click', () => {
+                    publicPlainFontLevel = Math.max(0, Math.min(3, publicPlainFontLevel + Number(botao.dataset.publicPlainFont || 0)));
+                    const escala = [0.94, 1.02, 1.16, 1.3][publicPlainFontLevel] || 1.02;
+                    document.documentElement.style.setProperty('--public-font-scale', String(escala));
+                });
             });
 
             if (document.body.dataset.publicMode === 'musicos') {
