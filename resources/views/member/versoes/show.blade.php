@@ -146,7 +146,7 @@
             };
 
             const renderizarDiagrama = (shape) => {
-                if (!shape) return '<div class="text-sm text-slate-300">Sem desenho disponivel.</div>';
+                if (!shape) return '<div class="text-sm text-slate-500">Sem desenho disponivel.</div>';
                 const config = { startX: 30, startY: 40, width: 180, height: 240, numStrings: 6, numFrets: 5 };
                 const stringGap = config.width / (config.numStrings - 1);
                 const fretGap = config.height / config.numFrets;
@@ -227,7 +227,7 @@
                 });
 
                 if (!acorde) {
-                    if (painelDiagrama) painelDiagrama.innerHTML = '<div class="text-sm text-slate-300">Sem desenho disponivel.</div>';
+                    if (painelDiagrama) painelDiagrama.innerHTML = '<div class="text-sm text-slate-500">Sem desenho disponivel.</div>';
                     if (nomeAcordeAtivo) nomeAcordeAtivo.textContent = nome || 'Nenhum acorde selecionado';
                     if (descricaoAcordeAtivo) descricaoAcordeAtivo.textContent = 'Esse acorde nao possui desenho cadastrado.';
                     return;
@@ -309,11 +309,11 @@
                 const velocidade = atualizarRotuloVelocidade();
                 intervaloRolagem = window.setInterval(() => {
                     rolagemProgramatica = true;
-                    window.scrollBy({ top: velocidade.passo, left: 0, behavior: 'auto' });
+                    previewContainer.scrollBy({ top: velocidade.passo, left: 0, behavior: 'auto' });
                     window.setTimeout(() => {
                         rolagemProgramatica = false;
                     }, 80);
-                    const chegouAoFim = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+                    const chegouAoFim = previewContainer.scrollTop + previewContainer.clientHeight >= previewContainer.scrollHeight - 2;
                     if (chegouAoFim) pararRolagem('Auto rolagem finalizada');
                 }, 50);
             };
@@ -510,8 +510,8 @@
                 }
             };
 
-            window.addEventListener('wheel', pausarPorInteracaoManual, { passive: true });
-            window.addEventListener('touchstart', pausarPorInteracaoManual, { passive: true });
+            previewContainer.addEventListener('wheel', pausarPorInteracaoManual, { passive: true });
+            previewContainer.addEventListener('touchstart', pausarPorInteracaoManual, { passive: true });
             window.addEventListener('pointerdown', (event) => {
                 if (!event.target.closest('#toggle_autorrolagem, #velocidade_rolagem, [data-open-chords], #acordes_drawer, #capo_popover, [data-toggle-capo-popover]')) {
                     pausarPorInteracaoManual();
@@ -532,8 +532,8 @@
 @push('styles')
     @include('partials.cifra-viewer-styles')
     <style>
-        .study-stage { margin: -0.75rem; min-height: calc(100vh - 2rem); border-radius: 2rem; background: radial-gradient(circle at top left, rgba(16,185,129,.16), transparent 32rem), linear-gradient(135deg,#030712 0%,#08111f 48%,#111827 100%); color:#f8fafc; padding:1rem; }
-        .study-panel { border:1px solid rgba(148,163,184,.18); background:rgba(15,23,42,.88); border-radius:1.5rem; box-shadow:0 20px 50px rgba(0,0,0,.28); }
+        .study-stage { margin: -0.75rem; min-height: calc(100vh - 2rem); border-radius: 2rem; background:#f7efe3; color:#172033; padding:1rem; }
+        .study-panel { border:1px solid rgba(140,105,51,.16); background:#fffdf9; border-radius:1.5rem; box-shadow:0 18px 42px rgba(34,20,12,.08); }
         .study-shell { display:grid; grid-template-columns:minmax(0,1fr); gap:1rem; }
         .study-side { display:grid; gap:1rem; }
         .study-reader-frame { display:grid; grid-template-columns:minmax(0,1fr); gap:1rem; align-items:start; }
@@ -556,24 +556,24 @@
         .study-capo-option input { position:absolute; opacity:0; pointer-events:none; }
         .study-capo-option span { display:flex; min-height:2.55rem; align-items:center; justify-content:center; border:1px solid rgba(148,163,184,.35); border-radius:.85rem; background:#fff; color:#334155; font-size:.8rem; font-weight:900; }
         .study-capo-option input:checked + span { border-color:#059669; background:#ecfdf5; color:#065f46; box-shadow:0 0 0 3px rgba(16,185,129,.12); }
-        .study-button { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; min-height:2.75rem; border-radius:1rem; border:1px solid rgba(148,163,184,.24); background:rgba(30,41,59,.92); color:#e5e7eb; padding:.75rem 1rem; font-weight:800; transition:.2s ease; }
-        .study-button:hover { border-color:rgba(16,185,129,.42); background:rgba(51,65,85,.96); color:#fff; }
+        .study-button { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; min-height:2.75rem; border-radius:1rem; border:1px solid rgba(140,105,51,.2); background:#fff; color:#172033; padding:.75rem 1rem; font-weight:800; transition:.2s ease; }
+        .study-button:hover { border-color:rgba(16,185,129,.38); background:#ecfdf5; color:#065f46; }
         .study-button-primary { border-color:rgba(16,185,129,.35); background:#059669; color:#fff; }
         .study-button-primary:hover { background:#047857; }
         .study-button-danger { border-color:rgba(248,113,113,.38); background:#dc2626; color:#fff; }
         .study-button-danger:hover { background:#b91c1c; }
         .study-badge { display:inline-flex; align-items:center; border-radius:9999px; padding:.35rem .75rem; font-size:.75rem; font-weight:900; }
-        .study-badge-yellow { background:rgba(251,191,36,.14); color:#fde68a; }
-        .study-badge-blue { background:rgba(96,165,250,.14); color:#bfdbfe; }
-        .study-cifra-card { border:1px solid rgba(148,163,184,.18); background:#101a2d; border-radius:1.5rem; padding:1rem; }
-        .study-cifra-scroll { overflow:visible; min-height:55vh; }
+        .study-badge-yellow { background:#fff7ed; color:#9a3412; }
+        .study-badge-blue { background:#eff6ff; color:#1d4ed8; }
+        .study-cifra-card { border:1px solid rgba(226,232,240,.95); background:#fff; border-radius:1.5rem; padding:1rem; }
+        .study-cifra-scroll { overflow:auto; min-height:55vh; max-height:calc(100vh - 9rem); padding-right:.6rem; scroll-behavior:auto; }
         .study-video-frame { aspect-ratio:16/9; overflow:hidden; border-radius:1.25rem; background:#020617; }
         .study-video-frame iframe { width:100%; height:100%; display:block; }
-        .study-empty-video { display:flex; min-height:11rem; align-items:center; justify-content:center; border:1px dashed rgba(148,163,184,.3); border-radius:1.25rem; background:rgba(15,23,42,.72); color:#94a3b8; text-align:center; }
+        .study-empty-video { display:flex; min-height:11rem; align-items:center; justify-content:center; border:1px dashed rgba(148,163,184,.4); border-radius:1.25rem; background:#f8fafc; color:#64748b; text-align:center; }
         .study-modal-backdrop { position:fixed; inset:0; z-index:90; background:rgba(2,6,23,.76); backdrop-filter:blur(4px); }
         .study-modal { position:fixed; inset:0; z-index:91; display:flex; align-items:center; justify-content:center; padding:1rem; }
         .study-modal.hidden, .study-modal-backdrop.hidden { display:none; }
-        .study-modal-card { width:min(100%,44rem); max-height:min(88vh,900px); overflow:auto; border:1px solid rgba(148,163,184,.2); border-radius:1.5rem; background:#0f172a; color:#f8fafc; box-shadow:0 24px 70px rgba(0,0,0,.45); }
+        .study-modal-card { width:min(100%,44rem); max-height:min(88vh,900px); overflow:auto; border:1px solid rgba(140,105,51,.18); border-radius:1.5rem; background:#fffdf9; color:#172033; box-shadow:0 24px 70px rgba(34,20,12,.22); }
         .study-drawer { position:fixed; inset:0 0 0 auto; z-index:91; width:min(28rem, calc(100vw - 1.25rem)); overflow:auto; border-left:1px solid rgba(148,163,184,.22); background:#f8fafc; color:#0f172a; box-shadow:-24px 0 70px rgba(2,6,23,.42); padding:1rem; }
         .study-drawer.hidden { display:none; }
         .study-drawer .study-button { background:#fff; color:#334155; border-color:rgba(148,163,184,.28); }
@@ -582,20 +582,20 @@
         .study-floating-controls { position:fixed; right:1rem; bottom:1rem; z-index:70; box-shadow:0 18px 40px rgba(0,0,0,.35); }
         .study-toast { position:fixed; left:50%; bottom:5.25rem; z-index:95; transform:translate(-50%, 16px); border:1px solid rgba(16,185,129,.28); border-radius:999px; background:rgba(6,78,59,.96); color:#ecfdf5; padding:.75rem 1rem; font-size:.9rem; font-weight:900; box-shadow:0 18px 40px rgba(0,0,0,.35); opacity:0; pointer-events:none; transition:.18s ease; }
         .study-toast.is-visible { opacity:1; transform:translate(-50%, 0); }
-        .playlist-card { border-radius:1.15rem; border:1px solid rgba(148,163,184,.15); background:rgba(15,23,42,.82); }
-        .playlist-existing-item { border-radius:1rem; border:1px solid rgba(148,163,184,.15); background:rgba(255,255,255,.04); }
-        .tooltip-acorde { position:fixed; z-index:80; width:220px; pointer-events:none; border-radius:1rem; border:1px solid rgba(16,185,129,.35); background:rgba(15,23,42,.96); box-shadow:0 18px 50px rgba(2,6,23,.28); padding:.85rem; backdrop-filter:blur(8px); }
+        .playlist-card { border-radius:1.15rem; border:1px solid rgba(226,232,240,.9); background:#fff; }
+        .playlist-existing-item { border-radius:1rem; border:1px solid rgba(226,232,240,.9); background:#fff; }
+        .tooltip-acorde { position:fixed; z-index:80; width:220px; pointer-events:none; border-radius:1rem; border:1px solid rgba(16,185,129,.35); background:#fff; box-shadow:0 18px 50px rgba(2,6,23,.18); padding:.85rem; }
         .tooltip-acorde.hidden { display:none; }
         .diagrama-acorde svg, .tooltip-acorde svg { width:100%; height:auto; max-width:240px; }
         .study-stage .cifra-linha { margin-bottom:.25rem; gap:.12rem; }
         .study-stage .cifra-linha--acordes { display:block; padding-left:var(--cifra-indent, 0); margin:.12rem 0 .42rem; }
         .study-stage .cifra-linha--acordes .cifra-acordes { display:inline-flex; flex-wrap:wrap; gap:.75rem; min-height:auto; line-height:1.35; }
-        .study-stage .cifra-linha--refrao { border-left:4px solid #fbbf24; border-radius:0; background:linear-gradient(90deg, rgba(251,191,36,.12), transparent); margin:.18rem 0 .68rem; padding:.42rem 0 .42rem .75rem; }
-        .study-stage .cifra-linha--refrao .cifra-letra { color:#fde68a; font-weight:850; }
+        .study-stage .cifra-linha--refrao { border-left:4px solid #f59e0b; border-radius:.2rem; background:linear-gradient(90deg, #fff7ed, #fff); margin:.18rem 0 .68rem; padding:.42rem 0 .42rem .75rem; }
+        .study-stage .cifra-linha--refrao .cifra-letra { color:#172033; font-weight:850; }
         .study-stage .cifra-segmento { min-height:2.2rem; }
-        .study-stage .cifra-acordes { color:#fb923c; font-size:calc(.9rem * var(--escala-fonte, 1)); line-height:1; }
-        .study-stage .cifra-letra { color:#d1fae5; font-size:calc(1.02rem * var(--escala-fonte, 1)); line-height:1.35; }
-        .study-stage .cifra-marcacao { margin:.7rem 0 .45rem; background:rgba(16,185,129,.16); color:#a7f3d0; }
+        .study-stage .cifra-acordes { color:#ea580c; font-size:calc(.9rem * var(--escala-fonte, 1)); line-height:1; }
+        .study-stage .cifra-letra { color:#172033; font-size:calc(1.02rem * var(--escala-fonte, 1)); line-height:1.35; }
+        .study-stage .cifra-marcacao { margin:.7rem 0 .45rem; background:#ecfdf5; color:#047857; }
         @media (min-width:1280px) {
             .study-shell { grid-template-columns:minmax(0,1fr) 23rem; gap:1.25rem; }
             .study-reader-frame { grid-template-columns:10.5rem minmax(0,1fr); }
@@ -636,16 +636,16 @@
 
     <div class="study-stage">
         @if (session('success'))
-            <div class="mb-4 rounded-2xl border border-emerald-400/30 bg-emerald-950 px-5 py-4 text-sm text-emerald-100">{{ session('success') }}</div>
+            <div class="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-bold text-emerald-800">{{ session('success') }}</div>
         @endif
         @if (session('status'))
-            <div class="mb-4 rounded-2xl border border-amber-400/30 bg-amber-950 px-5 py-4 text-sm text-amber-100">{{ session('status') }}</div>
+            <div class="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-bold text-amber-800">{{ session('status') }}</div>
         @endif
         @if (session('info'))
-            <div class="mb-4 rounded-2xl border border-sky-400/30 bg-sky-950 px-5 py-4 text-sm text-sky-100">{{ session('info') }}</div>
+            <div class="mb-4 rounded-2xl border border-sky-200 bg-sky-50 px-5 py-4 text-sm font-bold text-sky-800">{{ session('info') }}</div>
         @endif
         @if ($errors->any())
-            <div class="mb-4 rounded-2xl border border-red-400/30 bg-red-950 px-5 py-4 text-sm text-red-100">
+            <div class="mb-4 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-bold text-red-800">
                 <ul class="list-disc pl-5">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -654,54 +654,56 @@
             </div>
         @endif
 
+        @include('member.partials.church-switcher')
+
         <section class="study-panel p-5 lg:p-6">
             <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div class="min-w-0">
-                    <p class="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-300">Modo de estudo</p>
-                    <h1 class="mt-2 text-3xl font-black text-white md:text-4xl">{{ $musica->titulo }}</h1>
-                    <p class="mt-2 text-sm text-slate-300">
+                    <p class="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-700">Modo de estudo</p>
+                    <h1 class="mt-2 text-3xl font-black text-gray-950 md:text-4xl">{{ $musica->titulo }}</h1>
+                    <p class="mt-2 text-sm text-gray-600">
                         {{ $versaoMusical->titulo ?: $musica->artista ?: 'Versao principal' }}
                         @if ($missaAtiva)
-                            <span class="text-slate-500">/</span> Missa ativa: {{ $missaAtiva->titulo }}
+                            <span class="text-gray-400">/</span> Missa ativa: {{ $missaAtiva->titulo }}
                         @endif
                     </p>
                 </div>
 
                 <details class="relative">
                     <summary class="study-button cursor-pointer">Acoes</summary>
-                    <div class="mt-2 grid gap-2 rounded-2xl border border-white/10 bg-slate-950 p-2 shadow-xl md:absolute md:right-0 md:z-30 md:w-56">
-                        <button type="button" id="abrir_modal_playlist" class="rounded-xl px-3 py-2 text-left text-sm font-semibold text-slate-100 hover:bg-white/10">Adicionar a playlist</button>
-                        <a href="{{ route('member.versoes.print', [$musica, $versaoMusical]) }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10">Imprimir</a>
-                        <a href="{{ route('member.versoes.pdf', [$musica, $versaoMusical]) }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10">PDF</a>
-                        <a href="{{ route('member.colecoes.index') }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10">Playlists salvas</a>
-                        <a href="{{ route('member.musicas.index') }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10">Biblioteca musical</a>
-                        <a href="{{ route('member.repertorio') }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10">Meu repertorio</a>
-                        <a href="{{ route('member.dashboard') }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-slate-100 hover:bg-white/10">Painel</a>
+                    <div class="mt-2 grid gap-2 rounded-2xl border border-gray-200 bg-white p-2 shadow-xl md:absolute md:right-0 md:z-30 md:w-56">
+                        <button type="button" id="abrir_modal_playlist" class="rounded-xl px-3 py-2 text-left text-sm font-semibold text-gray-700 hover:bg-emerald-50">Adicionar a playlist</button>
+                        <a href="{{ route('member.versoes.print', [$musica, $versaoMusical]) }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-emerald-50">Imprimir</a>
+                        <a href="{{ route('member.versoes.pdf', [$musica, $versaoMusical]) }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-emerald-50">PDF</a>
+                        <a href="{{ route('member.colecoes.index') }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-emerald-50">Playlists salvas</a>
+                        <a href="{{ route('member.musicas.index') }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-emerald-50">Biblioteca musical</a>
+                        <a href="{{ route('member.repertorio') }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-emerald-50">Meu repertorio</a>
+                        <a href="{{ route('member.dashboard') }}" class="rounded-xl px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-emerald-50">Painel</a>
                     </div>
                 </details>
             </div>
 
-            <div class="mt-5 flex flex-wrap gap-2 text-xs font-bold text-slate-400">
+            <div class="mt-5 flex flex-wrap gap-2 text-xs font-bold text-gray-500">
                 <span id="tom_atual_badge">Tom {{ $tomExibicao ?: 'nao informado' }}</span>
                 <span aria-hidden="true">/</span>
                 <span id="capotraste_badge">Sem capo</span>
             </div>
 
             @if ($itemMissa)
-                <details class="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
-                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-black text-white [&::-webkit-details-marker]:hidden">
+                <details class="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4">
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-black text-gray-900 [&::-webkit-details-marker]:hidden">
                         <span>{{ $pedidoTomPendente ? 'Pedido de tom em analise' : 'Sugerir mudanca de tom para esta missa' }}</span>
-                        <span class="rounded-full bg-white/10 px-3 py-1 text-xs text-slate-200">{{ $pedidoTomPendente ? $pedidoTomPendente->tom_sugerido : 'Abrir' }}</span>
+                        <span class="rounded-full bg-white px-3 py-1 text-xs text-emerald-700">{{ $pedidoTomPendente ? $pedidoTomPendente->tom_sugerido : 'Abrir' }}</span>
                     </summary>
 
                     @if ($pedidoTomPendente)
-                        <p class="mt-3 text-sm text-slate-300">Pedido enviado para tocar em {{ $pedidoTomPendente->tom_sugerido }}. Quando a equipe aprovar ou recusar, voce recebe aviso no sininho.</p>
+                        <p class="mt-3 text-sm text-gray-600">Pedido enviado para tocar em {{ $pedidoTomPendente->tom_sugerido }}. Quando a equipe aprovar ou recusar, voce recebe aviso no sininho.</p>
                     @else
                         <form action="{{ route('member.repertorio.tom.solicitar', $itemMissa) }}" method="POST" class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-[12rem_1fr_auto] md:items-end">
                             @csrf
                             <div>
-                                <label class="block text-xs font-black uppercase tracking-wider text-slate-400">Novo tom</label>
-                                <select name="tom_sugerido" class="mt-1 w-full rounded-xl border border-white/10 bg-white px-3 py-2 text-sm font-bold text-slate-900">
+                                <label class="block text-xs font-black uppercase tracking-wider text-gray-500">Novo tom</label>
+                                <select name="tom_sugerido" class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-bold text-slate-900">
                                     <option value="">Escolha</option>
                                     @foreach ($tonsMusicais as $tomMusical)
                                         <option value="{{ $tomMusical }}">{{ $tomMusical }}</option>
@@ -709,8 +711,8 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-xs font-black uppercase tracking-wider text-slate-400">Motivo opcional</label>
-                                <input name="observacao" maxlength="500" class="mt-1 w-full rounded-xl border border-white/10 bg-white px-3 py-2 text-sm text-slate-900" placeholder="Ex.: fica melhor para as vozes">
+                                <label class="block text-xs font-black uppercase tracking-wider text-gray-500">Motivo opcional</label>
+                                <input name="observacao" maxlength="500" class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-slate-900" placeholder="Ex.: fica melhor para as vozes">
                             </div>
                             <button type="submit" class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-black text-white hover:bg-emerald-700">
                                 Enviar pedido
@@ -796,7 +798,7 @@
 
             <aside class="study-side">
                 <details id="video_apoio" class="study-panel desktop-video p-4">
-                    <summary class="cursor-pointer text-base font-black text-white">Video de apoio</summary>
+                    <summary class="cursor-pointer text-base font-black text-gray-950">Video de apoio</summary>
                     @if ($youtubeVideoId)
                         <div class="study-video-frame mt-3">
                             <iframe src="https://www.youtube.com/embed/{{ $youtubeVideoId }}" title="Video de apoio" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
@@ -804,7 +806,7 @@
                     @else
                         <div class="study-empty-video mt-3 p-4">
                             <div>
-                                <p class="font-black text-slate-200">Video nao informado</p>
+                                <p class="font-black text-gray-900">Video nao informado</p>
                                 <p class="mt-1 text-sm">Nenhum ID ou link valido do YouTube foi vinculado.</p>
                             </div>
                         </div>
@@ -815,7 +817,7 @@
 
         <div id="study_toast" class="study-toast" role="status" aria-live="polite"></div>
 
-        <div id="tooltip_acorde" class="tooltip-acorde hidden"><div class="text-center"><div id="tooltip_acorde_nome" class="text-sm font-black text-white">Acorde</div><div id="tooltip_acorde_diagrama" class="mt-3 diagrama-acorde"></div></div></div>
+        <div id="tooltip_acorde" class="tooltip-acorde hidden"><div class="text-center"><div id="tooltip_acorde_nome" class="text-sm font-black text-gray-950">Acorde</div><div id="tooltip_acorde_diagrama" class="mt-3 diagrama-acorde"></div></div></div>
 
         <aside id="acordes_drawer" class="study-drawer hidden" aria-hidden="true">
             <div class="flex items-start justify-between gap-4">
@@ -853,9 +855,9 @@
             <div class="study-modal-card p-5 sm:p-6">
                 <div class="flex items-start justify-between gap-4">
                     <div>
-                        <p class="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-300">Playlist</p>
-                        <h2 class="mt-2 text-2xl font-black text-white">Adicionar "{{ $musica->titulo }}"</h2>
-                        <p class="mt-2 text-sm text-slate-300">Escolha uma playlist existente ou crie uma nova sem sair da tela de estudo.</p>
+                        <p class="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-700">Playlist</p>
+                        <h2 class="mt-2 text-2xl font-black text-gray-950">Adicionar "{{ $musica->titulo }}"</h2>
+                        <p class="mt-2 text-sm text-gray-600">Escolha uma playlist existente ou crie uma nova sem sair da tela de estudo.</p>
                     </div>
                     <button type="button" id="fechar_modal_playlist" class="study-button" aria-label="Fechar modal">
                         <i class="fa-solid fa-xmark"></i>
@@ -864,19 +866,19 @@
 
                 <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
                     <section class="playlist-card p-4">
-                        <h3 class="text-base font-bold text-white">Criar nova playlist</h3>
-                        <p class="mt-1 text-sm text-slate-300">Separe por ensaio, missa ou estudo pessoal.</p>
+                        <h3 class="text-base font-bold text-gray-950">Criar nova playlist</h3>
+                        <p class="mt-1 text-sm text-gray-600">Separe por ensaio, missa ou estudo pessoal.</p>
                         <form action="{{ route('member.colecoes.store') }}" method="POST" class="mt-4 space-y-3">
                             @csrf
                             <input type="hidden" name="musica_id" value="{{ $musica->id }}">
                             <input type="hidden" name="versao_musical_id" value="{{ $versaoMusical->id }}">
-                            <input type="text" name="nome" class="block w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-slate-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" placeholder="Ex.: Ensaio de quarta" required>
+                            <input type="text" name="nome" class="block w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" placeholder="Ex.: Ensaio de quarta" required>
                             <button type="submit" class="study-button study-button-primary w-full text-sm">Criar e adicionar</button>
                         </form>
                     </section>
 
                     <section class="playlist-card p-4">
-                        <h3 class="text-base font-bold text-white">Playlist existente</h3>
+                        <h3 class="text-base font-bold text-gray-950">Playlist existente</h3>
                         <div class="mt-4 space-y-3">
                             @forelse ($colecoes as $colecao)
                                 <form action="{{ route('member.colecoes.itens.store', $colecao) }}" method="POST" class="playlist-existing-item flex items-center gap-3 px-3 py-3">
@@ -884,17 +886,17 @@
                                     <input type="hidden" name="musica_id" value="{{ $musica->id }}">
                                     <input type="hidden" name="versao_musical_id" value="{{ $versaoMusical->id }}">
                                     <div class="min-w-0 flex-1">
-                                        <p class="truncate text-sm font-semibold text-white">{{ $colecao->nome }}</p>
+                                        <p class="truncate text-sm font-semibold text-gray-900">{{ $colecao->nome }}</p>
                                         <p class="text-xs text-slate-400">{{ $colecao->itens_count }} itens</p>
                                     </div>
                                     @if ($colecaoIdsComMusica->contains($colecao->id))
-                                        <span class="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-300">Ja adicionada</span>
+                                        <span class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">Ja adicionada</span>
                                     @else
                                         <button type="submit" class="study-button px-3 py-2 text-xs">Adicionar</button>
                                     @endif
                                 </form>
                             @empty
-                                <div class="rounded-xl border border-dashed border-white/10 bg-white/5 p-4 text-sm text-slate-300">Nenhuma playlist criada ainda.</div>
+                                <div class="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">Nenhuma playlist criada ainda.</div>
                             @endforelse
                         </div>
                     </section>

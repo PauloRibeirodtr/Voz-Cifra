@@ -28,6 +28,8 @@
         </div>
     @endif
 
+    @include('member.partials.church-switcher', ['igrejaAtual' => $igreja])
+
     <section class="rounded-[2rem] bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-800 px-6 py-7 text-white shadow-sm">
         <p class="text-[11px] font-black uppercase tracking-[0.22em] text-emerald-200">{{ $isCoordenadorArea ? 'Area do coordenador' : 'Area do musico' }}</p>
         <h1 class="mt-3 text-3xl font-black">Ola, {{ $usuario->nome }}</h1>

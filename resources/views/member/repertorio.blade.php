@@ -80,7 +80,7 @@
 
         .cifra-palco .cifra-acordes {
             color: #ea580c;
-            font-size: 1rem;
+            font-size: calc(1rem * var(--escala-fonte, 1));
         }
 
         .cifra-palco .cifra-acorde {
@@ -91,6 +91,7 @@
 
         .cifra-palco .cifra-letra {
             color: #172033;
+            font-size: calc(1rem * var(--escala-fonte, 1));
             line-height: 2rem;
         }
 
@@ -119,6 +120,48 @@
             font-size: 0.78rem;
             font-weight: 800;
             color: #9a3412;
+        }
+
+        .repertorio-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.55rem;
+            border: 1px solid rgba(16, 185, 129, 0.16);
+            border-radius: 1.25rem;
+            background: #f8fffb;
+            padding: 0.7rem;
+        }
+
+        .repertorio-control-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 2.4rem;
+            border-radius: 0.9rem;
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            background: #ffffff;
+            padding: 0.55rem 0.8rem;
+            font-size: 0.8rem;
+            font-weight: 900;
+            color: #172033;
+        }
+
+        .repertorio-control-btn:hover {
+            border-color: rgba(16, 185, 129, 0.36);
+            background: #ecfdf5;
+            color: #047857;
+        }
+
+        .repertorio-control-select {
+            min-height: 2.4rem;
+            border-radius: 0.9rem;
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            background: #ffffff;
+            padding: 0.45rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 900;
+            color: #172033;
         }
 
         .repertorio-flow {
@@ -192,6 +235,8 @@
             <a href="{{ route('member.dashboard') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">Painel</a>
         </div>
     </section>
+
+    @include('member.partials.church-switcher', ['igrejaAtual' => $igreja ?? null])
 
     @if (!$missa)
         <div class="mt-6 rounded-3xl border border-dashed border-gray-300 bg-white p-8 text-center shadow-sm">
@@ -311,6 +356,25 @@
                                         </a>
                                     </div>
 
+                                    <div class="repertorio-controls mb-4" data-repertorio-controls>
+                                        <span class="rounded-full bg-amber-50 px-3 py-2 text-xs font-black text-amber-800" data-item-tom-label>Tom {{ $item->tom_exibicao ?: ($item->versaoMusical?->tom_musical ?: 'nao informado') }}</span>
+                                        <button type="button" class="repertorio-control-btn" data-item-transpose="-1">- Tom</button>
+                                        <button type="button" class="repertorio-control-btn" data-item-transpose-reset>Original</button>
+                                        <button type="button" class="repertorio-control-btn" data-item-transpose="1">+ Tom</button>
+                                        <label class="inline-flex items-center gap-2 text-xs font-black text-gray-500">
+                                            Capotraste
+                                            <select class="repertorio-control-select" data-item-capo>
+                                                <option value="0">Sem capo</option>
+                                                @for ($casaCapotraste = 1; $casaCapotraste <= 11; $casaCapotraste++)
+                                                    <option value="{{ $casaCapotraste }}">{{ $casaCapotraste }} casa</option>
+                                                @endfor
+                                            </select>
+                                        </label>
+                                        <button type="button" class="repertorio-control-btn" data-item-font="-1">A-</button>
+                                        <button type="button" class="repertorio-control-btn" data-item-font-reset>Padrao</button>
+                                        <button type="button" class="repertorio-control-btn" data-item-font="1">A+</button>
+                                    </div>
+
                                     <details class="mb-4 rounded-2xl border border-gray-200 bg-gray-50 p-4">
                                         <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-black text-gray-900 [&::-webkit-details-marker]:hidden">
                                             <span>{{ $pedidoTomPendente ? 'Pedido de tom em analise' : 'Sugerir mudanca de tom' }}</span>
@@ -346,6 +410,7 @@
                                     <div
                                         data-repertorio-cifra
                                         data-texto-cifra='@json($textoCifra, JSON_UNESCAPED_UNICODE | JSON_HEX_APOS)'
+                                        data-tom-base="{{ $item->tom_exibicao ?: $item->versaoMusical?->tom_musical }}"
                                         class="space-y-2 text-base"
                                     ></div>
                                 </div>
@@ -387,16 +452,36 @@
             const helper = window.VozECifraChord;
 
             if (helper) {
-                document.querySelectorAll('[data-repertorio-cifra]').forEach((container) => {
+                const estados = new WeakMap();
+                const fonteConfig = {
+                    0: 0.92,
+                    1: 1,
+                    2: 1.16,
+                    3: 1.32,
+                };
+
+                const renderizarItem = (container) => {
                     const texto = container.dataset.textoCifra || '';
+                    const tomBase = container.dataset.tomBase || '';
                     const palco = container.closest('.cifra-palco');
                     const listaAcordes = palco?.querySelector('[data-repertorio-acordes]');
+                    const tomLabel = palco?.querySelector('[data-item-tom-label]');
+                    const estado = estados.get(container) || { transposicao: 0, capo: 0, fonte: 1 };
+                    const textoTransposto = helper.transposeBracketedText(texto, estado.transposicao - estado.capo);
+                    const tomAtual = tomBase && helper.isChord(tomBase)
+                        ? helper.transposeChord(tomBase, estado.transposicao)
+                        : (tomBase || 'nao informado');
 
-                    container.innerHTML = helper.renderChordSheetHtml(texto, {
+                    container.innerHTML = helper.renderChordSheetHtml(textoTransposto, {
                         chordAttribute: 'data-acorde-hover',
                     });
+                    container.style.setProperty('--escala-fonte', String(fonteConfig[estado.fonte] || 1));
 
-                    const acordes = helper.extractChordsFromBracketedText(texto);
+                    if (tomLabel) {
+                        tomLabel.textContent = estado.capo > 0 ? `Tom ${tomAtual} / capo ${estado.capo}` : `Tom ${tomAtual}`;
+                    }
+
+                    const acordes = helper.extractChordsFromBracketedText(textoTransposto);
 
                     if (listaAcordes && acordes.length > 0) {
                         listaAcordes.innerHTML = acordes
@@ -405,6 +490,51 @@
                     } else if (listaAcordes) {
                         listaAcordes.innerHTML = '<span class="text-xs text-slate-400">Nenhum acorde identificado nesta cifra.</span>';
                     }
+                };
+
+                document.querySelectorAll('[data-repertorio-cifra]').forEach((container) => {
+                    estados.set(container, { transposicao: 0, capo: 0, fonte: 1 });
+                    renderizarItem(container);
+
+                    const palco = container.closest('.cifra-palco');
+                    palco?.querySelectorAll('[data-item-transpose]').forEach((botao) => {
+                        botao.addEventListener('click', () => {
+                            const estado = estados.get(container) || { transposicao: 0, capo: 0, fonte: 1 };
+                            estado.transposicao += Number(botao.dataset.itemTranspose || 0);
+                            estados.set(container, estado);
+                            renderizarItem(container);
+                        });
+                    });
+
+                    palco?.querySelector('[data-item-transpose-reset]')?.addEventListener('click', () => {
+                        const estado = estados.get(container) || { transposicao: 0, capo: 0, fonte: 1 };
+                        estado.transposicao = 0;
+                        estados.set(container, estado);
+                        renderizarItem(container);
+                    });
+
+                    palco?.querySelector('[data-item-capo]')?.addEventListener('change', (event) => {
+                        const estado = estados.get(container) || { transposicao: 0, capo: 0, fonte: 1 };
+                        estado.capo = Math.max(0, Math.min(11, Number(event.target.value || 0)));
+                        estados.set(container, estado);
+                        renderizarItem(container);
+                    });
+
+                    palco?.querySelectorAll('[data-item-font]').forEach((botao) => {
+                        botao.addEventListener('click', () => {
+                            const estado = estados.get(container) || { transposicao: 0, capo: 0, fonte: 1 };
+                            estado.fonte = Math.max(0, Math.min(3, estado.fonte + Number(botao.dataset.itemFont || 0)));
+                            estados.set(container, estado);
+                            renderizarItem(container);
+                        });
+                    });
+
+                    palco?.querySelector('[data-item-font-reset]')?.addEventListener('click', () => {
+                        const estado = estados.get(container) || { transposicao: 0, capo: 0, fonte: 1 };
+                        estado.fonte = 1;
+                        estados.set(container, estado);
+                        renderizarItem(container);
+                    });
                 });
             }
 

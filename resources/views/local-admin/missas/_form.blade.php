@@ -15,7 +15,7 @@
         @endif
 
         <div class="grid grid-cols-1 gap-4">
-            @if (!empty($modoCriacao))
+            @if (!empty($modoCriacao) && ($missasAnteriores ?? collect())->isNotEmpty())
                 <div class="rounded-2xl border border-[#ead6b3] bg-[#fff8ed] p-4" data-guide-target="missa-reaproveitar">
                     <span class="block text-sm font-semibold text-[#5b3d1a]">Deseja reaproveitar o repert&oacute;rio de uma missa anterior?</span>
                     <div class="mt-4 flex flex-wrap gap-4">

@@ -20,6 +20,11 @@ class RepertorioMudancaTomTest extends TestCase
     public function test_musico_solicita_mudanca_de_tom_e_admin_recebe_notificacao(): void
     {
         [$igreja, $adminLocal, $musico, $item] = $this->montarRepertorio();
+        $adminMaster = Usuario::factory()->create([
+            'perfil_global' => 'admin_master',
+            'nivel_global' => 6,
+            'primeiro_acesso' => false,
+        ]);
 
         $this
             ->actingAs($musico)
@@ -41,6 +46,32 @@ class RepertorioMudancaTomTest extends TestCase
         $this->assertDatabaseHas('notificacoes_internas', [
             'usuario_id' => $adminLocal->id,
             'ator_id' => $musico->id,
+            'igreja_id' => $igreja->id,
+            'tipo' => 'pedido_mudanca_tom',
+        ]);
+        $this->assertDatabaseHas('notificacoes_internas', [
+            'usuario_id' => $adminMaster->id,
+            'ator_id' => $musico->id,
+            'igreja_id' => $igreja->id,
+            'tipo' => 'pedido_mudanca_tom',
+        ]);
+    }
+
+    public function test_usuario_com_papel_de_admin_recebe_o_proprio_pedido_para_revisar(): void
+    {
+        [$igreja, , $usuario, $item] = $this->montarRepertorio();
+        $usuario->adicionarPapel(PapelIgreja::ADMIN_LOCAL, $igreja);
+
+        $this
+            ->actingAs($usuario->fresh())
+            ->post(route('member.repertorio.tom.solicitar', $item), [
+                'tom_sugerido' => 'G',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('notificacoes_internas', [
+            'usuario_id' => $usuario->id,
+            'ator_id' => $usuario->id,
             'igreja_id' => $igreja->id,
             'tipo' => 'pedido_mudanca_tom',
         ]);

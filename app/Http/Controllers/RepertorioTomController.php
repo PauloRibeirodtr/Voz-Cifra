@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\PapelIgreja;
 use App\Models\MissaMusica;
 use App\Models\SolicitacaoMudancaTom;
+use App\Models\Usuario;
 use App\Services\AuditoriaOperacionalService;
 use App\Services\NotificacaoInternaService;
 use Illuminate\Http\RedirectResponse;
@@ -72,8 +73,24 @@ class RepertorioTomController extends Controller
         $destinatarios = $igreja->usuariosComPapel(PapelIgreja::ADMIN_LOCAL)
             ->where('usuarios.ativo', true)
             ->get()
+            ->merge($igreja->usuariosComPapel(PapelIgreja::COORDENADOR)->where('usuarios.ativo', true)->get())
+            ->merge(Usuario::query()
+                ->where('ativo', true)
+                ->where(function ($query): void {
+                    $query->where('perfil_global', 'admin_master')
+                        ->orWhere('nivel_global', '>=', 6);
+                })
+                ->get())
             ->unique('id')
-            ->reject(fn ($destinatario) => (int) $destinatario->id === (int) $usuario->id);
+            ->values();
+
+        $atorPodeRevisar = $usuario->ehAdminMaster()
+            || $usuario->temPapelNaIgreja(PapelIgreja::ADMIN_LOCAL, $igreja->id)
+            || $usuario->temPapelNaIgreja(PapelIgreja::COORDENADOR, $igreja->id);
+
+        if (!$atorPodeRevisar) {
+            $destinatarios = $destinatarios->reject(fn ($destinatario) => (int) $destinatario->id === (int) $usuario->id);
+        }
 
         foreach ($destinatarios as $destinatario) {
             $this->notificacaoInternaService->pedidoMudancaTomCriado($destinatario, $solicitacao, $usuario);
