@@ -19,17 +19,36 @@
 
 @push('scripts')
     @include('partials.chord-transposer-script')
+    <script type="application/json" id="study-cifra-texto">{!! json_encode($textoCifraExibicao, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}</script>
+    <script type="application/json" id="study-tom-base">{!! json_encode($tomExibicao, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}</script>
+    <script type="application/json" id="study-biblioteca-acordes">{!! json_encode($bibliotecaAcordes, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}</script>
+    <script type="application/json" id="study-bpm-inicial">{!! json_encode($versaoMusical->bpm ?: 72, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}</script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const lerJson = (id, fallback = null) => {
+                const fonte = document.getElementById(id);
+
+                if (!fonte) {
+                    return fallback;
+                }
+
+                try {
+                    return JSON.parse(fonte.textContent || 'null') ?? fallback;
+                } catch (error) {
+                    console.error(error);
+                    return fallback;
+                }
+            };
+
             const helper = window.VozECifraChord;
             const preview = document.getElementById('letra_com_cifras_preview');
             const previewContainer = document.getElementById('preview_musico_container');
             const tomBadge = document.getElementById('tom_atual_badge');
             const tomIndicadores = Array.from(document.querySelectorAll('[data-tom-indicator]'));
-            const textoOriginal = @json($textoCifraExibicao, JSON_UNESCAPED_UNICODE);
-            const tomBase = @json($tomExibicao);
-            const bibliotecaAcordes = @json($bibliotecaAcordes);
-            const bpmInicial = Number(@json($versaoMusical->bpm ?: 72));
+            const textoOriginal = lerJson('study-cifra-texto', '');
+            const tomBase = lerJson('study-tom-base', null);
+            const bibliotecaAcordes = lerJson('study-biblioteca-acordes', []);
+            const bpmInicial = Number(lerJson('study-bpm-inicial', 72));
             const gruposAcorde = helper ? helper.buildChordGroups(bibliotecaAcordes) : null;
             const painelDiagrama = document.getElementById('painel_diagrama_acorde');
             const nomeAcordeAtivo = document.getElementById('nome_acorde_ativo');

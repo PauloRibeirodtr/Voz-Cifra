@@ -1,0 +1,30 @@
+{
+  "version": "0.2",
+  "language": "en,pt,pt_BR",
+  "words": [
+    "Acorde",
+    "Acordes",
+    "Admin",
+    "Capotraste",
+    "Cifra",
+    "Cifras",
+    "Igreja",
+    "Igrejas",
+    "Missa",
+    "Missas",
+    "Musico",
+    "Musicos",
+    "Papel",
+    "Papeis",
+    "Repertorio",
+    "Roberth",
+    "Voz"
+  ],
+  "ignorePaths": [
+    "vendor/**",
+    "node_modules/**",
+    "storage/**",
+    "bootstrap/cache/**",
+    "public/build/**"
+  ]
+}

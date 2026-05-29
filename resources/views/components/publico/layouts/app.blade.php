@@ -499,7 +499,7 @@
     </style>
     @stack('styles')
 </head>
-<body data-contrast="{{ $forcedContrast === 'high' ? 'high' : 'normal' }}">
+<body data-contrast="{{ $forcedContrast === 'high' ? 'high' : 'normal' }}" data-forced-contrast="{{ $forcedContrast }}">
     {{ $slot }}
 
     <script>
@@ -509,7 +509,7 @@
             const contrastToggle = document.querySelector('[data-contrast-toggle]');
             const storageKey = 'vozecifra-public-contrast';
             const body = document.body;
-            const forcedContrast = @json($forcedContrast);
+            const forcedContrast = body.dataset.forcedContrast || null;
 
             const aplicarContraste = (modo) => {
                 body.dataset.contrast = modo === 'high' ? 'high' : 'normal';

@@ -409,10 +409,11 @@
                                     <div class="mb-4 flex flex-wrap gap-2" data-repertorio-acordes></div>
                                     <div
                                         data-repertorio-cifra
-                                        data-texto-cifra='@json($textoCifra, JSON_UNESCAPED_UNICODE | JSON_HEX_APOS)'
+                                        data-texto-cifra-id="repertorio-cifra-texto-{{ $item->id }}"
                                         data-tom-base="{{ $item->tom_exibicao ?: $item->versaoMusical?->tom_musical }}"
                                         class="space-y-2 text-base"
                                     ></div>
+                                    <script type="application/json" id="repertorio-cifra-texto-{{ $item->id }}">{!! json_encode($textoCifra, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}</script>
                                 </div>
                             @else
                                 <div class="border-t border-gray-100 bg-gray-50 px-5 py-5 text-sm text-gray-500">
@@ -459,9 +460,23 @@
                     2: 1.16,
                     3: 1.32,
                 };
+                const lerJson = (id, fallback = '') => {
+                    const fonte = document.getElementById(id);
+
+                    if (!fonte) {
+                        return fallback;
+                    }
+
+                    try {
+                        return JSON.parse(fonte.textContent || 'null') ?? fallback;
+                    } catch (error) {
+                        console.error(error);
+                        return fallback;
+                    }
+                };
 
                 const renderizarItem = (container) => {
-                    const texto = container.dataset.textoCifra || '';
+                    const texto = lerJson(container.dataset.textoCifraId, '');
                     const tomBase = container.dataset.tomBase || '';
                     const palco = container.closest('.cifra-palco');
                     const listaAcordes = palco?.querySelector('[data-repertorio-acordes]');
