@@ -523,6 +523,28 @@
             display: none;
         }
 
+        .public-song-tools {
+            position: sticky;
+            top: 6px;
+            z-index: 20;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 14px 0;
+            padding: 10px;
+            border: 1px solid rgba(227, 190, 132, 0.12);
+            border-radius: 18px;
+            background: rgba(13, 8, 8, 0.88);
+            backdrop-filter: blur(10px);
+        }
+
+        .public-song-tools__status {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            width: 100%;
+        }
+
         .public-tool-button {
             flex: 0 0 auto;
             display: inline-flex;
@@ -546,6 +568,13 @@
             background: #f97316;
             border-color: #fb923c;
             color: white;
+        }
+
+        .public-tool-button--ghost {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text);
+            border-color: rgba(227, 190, 132, 0.16);
+            box-shadow: none;
         }
 
         .public-tool-popover {
@@ -604,6 +633,16 @@
             color: #065f46;
         }
 
+        .public-capo-panel {
+            width: 100%;
+            border-top: 1px solid rgba(227, 190, 132, 0.12);
+            padding-top: 10px;
+        }
+
+        .public-capo-panel[hidden] {
+            display: none;
+        }
+
         .public-chord-drawer {
             position: fixed;
             inset: 0 0 0 auto;
@@ -649,6 +688,76 @@
             width: 100%;
             height: auto;
             max-width: 150px;
+        }
+
+        .public-history-quick {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            align-items: center;
+            gap: 8px;
+            max-width: 420px;
+            margin-top: 12px;
+            padding: 8px;
+            border: 1px solid rgba(227, 190, 132, 0.16);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .public-history-quick__button {
+            display: inline-flex;
+            width: 42px;
+            height: 42px;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(227, 190, 132, 0.18);
+            border-radius: 999px;
+            background: rgba(227, 190, 132, 0.12);
+            color: var(--accent);
+            cursor: pointer;
+        }
+
+        .public-history-quick input {
+            width: 100%;
+            min-height: 42px;
+            border: 0;
+            background: transparent;
+            color: var(--text);
+            font: inherit;
+            outline: none;
+        }
+
+        .public-scroll-dock {
+            position: fixed;
+            left: 50%;
+            bottom: 14px;
+            z-index: 82;
+            display: grid;
+            grid-template-columns: auto auto minmax(7rem, 12rem) auto;
+            align-items: center;
+            gap: 10px;
+            width: min(42rem, calc(100vw - 1.5rem));
+            transform: translateX(-50%);
+            border: 1px solid rgba(227, 190, 132, 0.24);
+            border-radius: 999px;
+            background: rgba(255, 250, 242, 0.96);
+            color: #3b2a20;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
+            padding: 8px;
+        }
+
+        .public-scroll-dock[hidden] {
+            display: none;
+        }
+
+        .public-scroll-dock input[type="range"] {
+            width: 100%;
+            accent-color: #047857;
+        }
+
+        .public-scroll-dock__speed {
+            font-size: 13px;
+            font-weight: 900;
+            white-space: nowrap;
         }
 
         .history-list--compact {
@@ -1052,6 +1161,42 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        @media (max-width: 719px) {
+            .celebration-list {
+                display: grid;
+                grid-auto-columns: minmax(88vw, 92vw);
+                grid-auto-flow: column;
+                overflow-x: auto;
+                overscroll-behavior-x: contain;
+                scroll-snap-type: x mandatory;
+                scrollbar-width: none;
+                padding: 2px 2px 12px;
+            }
+
+            .celebration-list::-webkit-scrollbar {
+                display: none;
+            }
+
+            .celebration-item {
+                scroll-snap-align: start;
+                min-width: 0;
+            }
+
+            .public-scroll-dock {
+                grid-template-columns: 1fr auto;
+                border-radius: 22px;
+            }
+
+            .public-scroll-dock label,
+            .public-scroll-dock input[type="range"] {
+                grid-column: 1 / -1;
+            }
+
+            .public-song-tools {
+                position: static;
+            }
+        }
     </style>
 </head>
 <body data-contrast="high" data-public-mode="{{ $modoPublico ?? 'fieis' }}">
@@ -1198,16 +1343,19 @@
                                 {{ $missaPublica->data_missa->format('d/m/Y') }} • {{ substr((string) $missaPublica->hora_inicio, 0, 5) }}
                             </p>
                             @if (($modoPublico ?? 'fieis') === 'musicos')
+                                @php($historicoBaseUrlTopo = route('igrejas.public.musicos.show', ['slug' => $igreja->slug]))
+                                <form method="GET" action="{{ $historicoBaseUrlTopo }}" class="public-history-quick" data-history-form-top data-history-base-url="{{ $historicoBaseUrlTopo }}" aria-label="Buscar repertorio no historico">
+                                    <button type="submit" class="public-history-quick__button" aria-label="Buscar no historico">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                                            <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"></circle>
+                                            <path d="M16.5 16.5 21 21" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"></path>
+                                        </svg>
+                                    </button>
+                                    <input type="text" name="historico" value="{{ $historicoBusca }}" placeholder="Buscar missa anterior" autocomplete="off" data-history-input-top>
+                                </form>
                                 <div class="celebration-meta" style="margin-top: 12px;">
-                                    <span class="badge" data-public-capo-summary>Sem capotraste</span>
-                                    <span class="badge" data-public-font-summary>Fonte normal</span>
-                                </div>
-                                <div class="public-reader-tools" aria-label="Ferramentas de leitura">
-                                    <button type="button" class="public-tool-button public-tool-button--primary" data-public-auto-scroll>Auto rolagem</button>
-                                    <button type="button" class="public-tool-button" data-public-font="-1">A- Texto</button>
-                                    <button type="button" class="public-tool-button" data-public-font="1">A+ Texto</button>
-                                    <button type="button" class="public-tool-button" data-public-capo-open>Capotraste</button>
-                                    <button type="button" class="public-tool-button" data-public-chords-open>Acordes</button>
+                                    <span class="badge">Controles por musica</span>
+                                    <span class="badge">Auto rolagem no rodape</span>
                                 </div>
                             @endif
                         </div>
