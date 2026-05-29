@@ -105,6 +105,35 @@ class RepertorioMudancaTomTest extends TestCase
         ]);
     }
 
+    public function test_coordenador_aprova_pedido_pelo_fluxo_de_notificacao(): void
+    {
+        [$igreja, , $musico, $item] = $this->montarRepertorio();
+        $coordenador = Usuario::factory()->create([
+            'primeiro_acesso' => false,
+        ]);
+        $coordenador->adicionarPapel(PapelIgreja::COORDENADOR, $igreja);
+
+        $solicitacao = SolicitacaoMudancaTom::query()->create([
+            'missa_musica_id' => $item->id,
+            'missa_id' => $item->missa_id,
+            'igreja_id' => $item->missa->igreja_id,
+            'usuario_id' => $musico->id,
+            'tom_atual' => 'D',
+            'tom_sugerido' => 'G',
+            'status' => SolicitacaoMudancaTom::STATUS_PENDENTE,
+        ]);
+
+        $this
+            ->actingAs($coordenador->fresh())
+            ->post(route('notificacoes.repertorio.tom.aprovar', $solicitacao), [
+                'voltar_para' => 'back',
+            ])
+            ->assertRedirect();
+
+        $this->assertSame('G', $item->fresh()->tom_usado);
+        $this->assertSame(SolicitacaoMudancaTom::STATUS_APROVADA, $solicitacao->fresh()->status);
+    }
+
     private function montarRepertorio(): array
     {
         $igreja = Igreja::factory()->create();

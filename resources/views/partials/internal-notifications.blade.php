@@ -69,6 +69,17 @@
 
                 <div class="max-h-96 overflow-y-auto p-2">
                     @forelse ($notificacoesHeader as $notificacao)
+                        @php
+                            $dadosNotificacao = $notificacao->dados ?? [];
+                            $solicitacaoTom = null;
+
+                            if (($notificacao->tipo ?? null) === 'pedido_mudanca_tom' && filled($dadosNotificacao['solicitacao_id'] ?? null)) {
+                                $solicitacaoTom = \App\Models\SolicitacaoMudancaTom::query()
+                                    ->whereKey($dadosNotificacao['solicitacao_id'])
+                                    ->where('status', \App\Models\SolicitacaoMudancaTom::STATUS_PENDENTE)
+                                    ->first();
+                            }
+                        @endphp
                         <form method="POST" action="{{ route('notificacoes.ler', $notificacao) }}">
                             @csrf
                             <button type="submit" class="w-full rounded-2xl px-3 py-3 text-left transition hover:bg-[#f8f1e8] {{ $notificacao->lida_em ? 'opacity-70' : 'bg-emerald-50/70' }}">
@@ -87,6 +98,31 @@
                                 </span>
                             </button>
                         </form>
+                        @if ($solicitacaoTom)
+                            <div class="-mt-1 mb-2 rounded-2xl border border-emerald-100 bg-white px-3 pb-3 pt-2">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <form method="POST" action="{{ route('notificacoes.repertorio.tom.aprovar', $solicitacaoTom) }}">
+                                        @csrf
+                                        <input type="hidden" name="voltar_para" value="back">
+                                        <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-emerald-700 px-3 py-2 text-xs font-black text-white transition hover:bg-emerald-800">
+                                            Aprovar tom
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ route('notificacoes.repertorio.tom.recusar', $solicitacaoTom) }}">
+                                        @csrf
+                                        <input type="hidden" name="voltar_para" value="back">
+                                        <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl border border-[#e7d8c6] bg-[#fff8ed] px-3 py-2 text-xs font-black text-[#6f4a2c] transition hover:bg-[#f8f1e8]">
+                                            Recusar
+                                        </button>
+                                    </form>
+                                </div>
+                                @if (filled($notificacao->url))
+                                    <a href="{{ $notificacao->url }}" class="mt-2 inline-flex w-full items-center justify-center rounded-xl border border-gray-200 px-3 py-2 text-xs font-bold text-gray-600 transition hover:bg-gray-50">
+                                        Abrir repertorio
+                                    </a>
+                                @endif
+                            </div>
+                        @endif
                     @empty
                         <div class="px-4 py-8 text-center">
                             <p class="text-sm font-bold text-[#4b3426]">Tudo limpo por aqui.</p>

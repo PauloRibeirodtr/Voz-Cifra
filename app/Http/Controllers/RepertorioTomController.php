@@ -116,9 +116,9 @@ class RepertorioTomController extends Controller
         return back()->with('success', 'Pedido de mudanca de tom enviado para a equipe da igreja.');
     }
 
-    public function aprovar(SolicitacaoMudancaTom $solicitacao): RedirectResponse
+    public function aprovar(Request $request, SolicitacaoMudancaTom $solicitacao): RedirectResponse
     {
-        return $this->revisar($solicitacao, SolicitacaoMudancaTom::STATUS_APROVADA);
+        return $this->revisar($solicitacao, SolicitacaoMudancaTom::STATUS_APROVADA, null, $request->input('voltar_para'));
     }
 
     public function recusar(Request $request, SolicitacaoMudancaTom $solicitacao): RedirectResponse
@@ -127,10 +127,10 @@ class RepertorioTomController extends Controller
             'resposta' => ['nullable', 'string', 'max:500'],
         ]);
 
-        return $this->revisar($solicitacao, SolicitacaoMudancaTom::STATUS_RECUSADA, $dados['resposta'] ?? null);
+        return $this->revisar($solicitacao, SolicitacaoMudancaTom::STATUS_RECUSADA, $dados['resposta'] ?? null, $request->input('voltar_para'));
     }
 
-    private function revisar(SolicitacaoMudancaTom $solicitacao, string $status, ?string $resposta = null): RedirectResponse
+    private function revisar(SolicitacaoMudancaTom $solicitacao, string $status, ?string $resposta = null, ?string $voltarPara = null): RedirectResponse
     {
         $usuario = Auth::user();
         abort_unless($usuario, 403);
@@ -145,7 +145,12 @@ class RepertorioTomController extends Controller
             $ehAdminMaster || (int) ($usuario->igrejaAtivaId() ?? $usuario->igreja_id) === (int) $igreja->id,
             403
         );
-        abort_unless($ehAdminMaster || $usuario->temPapelNaIgreja(PapelIgreja::ADMIN_LOCAL, $igreja->id), 403);
+        abort_unless(
+            $ehAdminMaster
+            || $usuario->temPapelNaIgreja(PapelIgreja::ADMIN_LOCAL, $igreja->id)
+            || $usuario->temPapelNaIgreja(PapelIgreja::COORDENADOR, $igreja->id),
+            403
+        );
         abort_unless($solicitacao->estaPendente(), 422);
 
         DB::transaction(function () use ($solicitacao, $status, $resposta, $usuario, $missaMusica): void {
@@ -188,10 +193,16 @@ class RepertorioTomController extends Controller
             ]
         );
 
+        $mensagem = $status === SolicitacaoMudancaTom::STATUS_APROVADA
+            ? 'Pedido aprovado. O tom da missa foi atualizado.'
+            : 'Pedido recusado e musico notificado.';
+
+        if ($voltarPara === 'back') {
+            return back()->with('success', $mensagem);
+        }
+
         return redirect()
             ->to(route('local-admin.missas.show', $solicitacao->missa_id) . '#repertorio-item-' . $solicitacao->missa_musica_id)
-            ->with('success', $status === SolicitacaoMudancaTom::STATUS_APROVADA
-                ? 'Pedido aprovado. O tom da missa foi atualizado.'
-                : 'Pedido recusado e musico notificado.');
+            ->with('success', $mensagem);
     }
 }

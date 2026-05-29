@@ -56,6 +56,8 @@ Route::middleware(['auth', 'verified_custom', 'primeiro_acesso'])
     ->name('notificacoes.')
     ->group(function () {
         Route::post('/ler-todas', [NotificacaoInternaController::class, 'marcarTodasComoLidas'])->name('ler-todas');
+        Route::post('/repertorio/tom/{solicitacao}/aprovar', [RepertorioTomController::class, 'aprovar'])->name('repertorio.tom.aprovar');
+        Route::post('/repertorio/tom/{solicitacao}/recusar', [RepertorioTomController::class, 'recusar'])->name('repertorio.tom.recusar');
         Route::post('/{notificacao}/ler', [NotificacaoInternaController::class, 'marcarComoLida'])->name('ler');
     });
 
