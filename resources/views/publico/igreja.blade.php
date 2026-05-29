@@ -1365,7 +1365,8 @@
                     @if ($itensPublicos->isNotEmpty())
                         <div class="celebration-list">
                             @foreach ($itensPublicos as $item)
-                                <article class="celebration-item">
+                                @php($itemIndicePublico = $loop->index)
+                                <article class="celebration-item" @if (($modoPublico ?? 'fieis') === 'musicos') data-public-song data-public-song-id="{{ $itemIndicePublico }}" @endif>
                                     <div class="celebration-meta">
                                         <span class="badge">Ordem {{ $item['ordem'] }}</span>
                                         @if (!empty($item['momento']))
@@ -1378,7 +1379,31 @@
                                     </div>
                                     <h3 class="card-title">{{ $item['titulo'] }}</h3>
                                     @if (($modoPublico ?? 'fieis') === 'musicos')
-                                        <div class="lyrics" data-public-musician-lyrics data-base-tom="{{ $item['tom'] ?? '' }}" data-lyrics="{{ e($item['letra_publica'] ?? '') }}">{!! $item['letra_publica_html'] ?? nl2br(e($item['letra_publica'] ?? ''), false) !!}</div>
+                                        <div class="public-song-tools" aria-label="Ferramentas desta musica">
+                                            <div class="public-song-tools__status">
+                                                <span class="badge" data-public-song-capo-summary>Sem capotraste</span>
+                                                <span class="badge" data-public-song-font-summary>Fonte normal</span>
+                                            </div>
+                                            <button type="button" class="public-tool-button" data-public-song-font="-1">A- Texto</button>
+                                            <button type="button" class="public-tool-button" data-public-song-font="1">A+ Texto</button>
+                                            <button type="button" class="public-tool-button" data-public-song-capo-toggle>Capotraste</button>
+                                            <button type="button" class="public-tool-button" data-public-chords-open>Acordes</button>
+                                            <div class="public-capo-panel" data-public-song-capo-panel hidden>
+                                                <div class="public-capo-grid" role="radiogroup" aria-label="Casa do capotraste desta musica">
+                                                    <label class="public-capo-choice">
+                                                        <input type="radio" name="public_capo_visual_{{ $itemIndicePublico }}" value="0" data-public-song-capo checked>
+                                                        <span>Sem</span>
+                                                    </label>
+                                                    @for ($casaCapotraste = 1; $casaCapotraste <= 11; $casaCapotraste++)
+                                                        <label class="public-capo-choice">
+                                                            <input type="radio" name="public_capo_visual_{{ $itemIndicePublico }}" value="{{ $casaCapotraste }}" data-public-song-capo>
+                                                            <span>{{ $casaCapotraste }} casa</span>
+                                                        </label>
+                                                    @endfor
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="lyrics" data-public-musician-lyrics data-public-song-lyrics data-base-tom="{{ $item['tom'] ?? '' }}" data-lyrics="{{ e($item['letra_publica'] ?? '') }}">{!! $item['letra_publica_html'] ?? nl2br(e($item['letra_publica'] ?? ''), false) !!}</div>
                                     @else
                                         <div class="lyrics">{!! $item['letra_publica'] !== '' ? ($item['letra_publica_html'] ?? nl2br(e($item['letra_publica']), false)) : 'A letra deste canto ainda não foi preparada para exibição pública.' !!}</div>
                                     @endif
@@ -1492,28 +1517,6 @@
         </div>
 
         @if (($modoPublico ?? 'fieis') === 'musicos')
-            <div class="public-tool-popover" data-public-capo-popover hidden>
-                <div class="history-top">
-                    <div>
-                        <p class="history-section-title">Capotraste</p>
-                        <p class="history-search-hint" data-public-capo-summary-popover>Sem capotraste</p>
-                    </div>
-                    <button type="button" class="public-tool-button" data-public-capo-close aria-label="Fechar capotraste">x</button>
-                </div>
-                <div class="public-capo-grid" role="radiogroup" aria-label="Casa do capotraste">
-                    <label class="public-capo-choice">
-                        <input type="radio" name="public_capo_visual" value="0" data-public-capo checked>
-                        <span>Sem</span>
-                    </label>
-                    @for ($casaCapotraste = 1; $casaCapotraste <= 11; $casaCapotraste++)
-                        <label class="public-capo-choice">
-                            <input type="radio" name="public_capo_visual" value="{{ $casaCapotraste }}" data-public-capo>
-                            <span>{{ $casaCapotraste }} casa</span>
-                        </label>
-                    @endfor
-                </div>
-            </div>
-
             <div class="public-drawer-backdrop" data-public-chords-backdrop hidden></div>
             <aside class="public-chord-drawer" data-public-chords-drawer hidden aria-label="Acordes do repertorio">
                 <div class="history-top">
@@ -1529,6 +1532,13 @@
             <div class="public-chord-tooltip" data-public-chord-tooltip hidden>
                 <p class="public-chord-tooltip__name" data-public-chord-tooltip-name></p>
                 <div data-public-chord-tooltip-diagram></div>
+            </div>
+
+            <div class="public-scroll-dock" data-public-scroll-dock>
+                <button type="button" class="public-tool-button public-tool-button--primary" data-public-auto-scroll>Iniciar rolagem</button>
+                <label for="public_scroll_speed" class="public-scroll-dock__speed">Velocidade</label>
+                <input id="public_scroll_speed" type="range" min="1" max="5" value="2" step="1" data-public-scroll-speed aria-label="Velocidade da auto rolagem">
+                <button type="button" class="public-tool-button" data-public-scroll-top>Topo</button>
             </div>
         @endif
     </main>
