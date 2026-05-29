@@ -5,27 +5,6 @@
 
 @push('styles')
     @include('partials.cifra-viewer-styles')
-    <style>
-        .apresentacao-cifra-box {
-            border-radius: 1.5rem;
-            border: 1px solid rgba(140, 105, 51, 0.16);
-            background: linear-gradient(180deg, #fffdfa 0%, #f7efe3 100%);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
-        }
-
-        .apresentacao-cifra-box .cifra-acordes {
-            color: #c56a1a;
-        }
-
-        .apresentacao-cifra-box .cifra-letra {
-            color: #1f2937;
-        }
-
-        .apresentacao-cifra-box .cifra-marcacao {
-            background: rgba(140, 105, 51, 0.1);
-            color: #6c4a21;
-        }
-    </style>
 @endpush
 
 @section('content')

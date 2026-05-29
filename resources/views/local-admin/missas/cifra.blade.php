@@ -5,20 +5,6 @@
 
 @push('styles')
     @include('partials.cifra-viewer-styles')
-    <style>
-        .leitura-clara .cifra-acordes {
-            color: #c56a1a;
-        }
-
-        .leitura-clara .cifra-letra {
-            color: #1f2937;
-        }
-
-        .leitura-clara .cifra-marcacao {
-            background: rgba(140, 105, 51, 0.1);
-            color: #6c4a21;
-        }
-    </style>
 @endpush
 
 @section('content')
