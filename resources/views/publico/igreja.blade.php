@@ -1703,6 +1703,25 @@
             };
 
             historyInput?.addEventListener('input', renderizarHistoricoAoDigitar);
+            const historyInputTop = document.querySelector('[data-history-input-top]');
+            const historyFormTop = document.querySelector('[data-history-form-top]');
+            historyInputTop?.addEventListener('input', () => {
+                if (!historyInput) {
+                    return;
+                }
+
+                historyInput.value = historyInputTop.value;
+                document.getElementById('historico-publico')?.setAttribute('open', 'open');
+                renderizarHistoricoAoDigitar();
+            });
+            historyFormTop?.addEventListener('submit', (event) => {
+                if (!historyInputTop || historyInputTop.value.trim() !== '') {
+                    return;
+                }
+
+                event.preventDefault();
+                document.getElementById('historico-publico')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
 
             if (document.body.dataset.publicMode === 'musicos') {
                 const helper = window.VozECifraChord;
@@ -1711,21 +1730,16 @@
                 const tooltipAcorde = document.querySelector('[data-public-chord-tooltip]');
                 const tooltipNome = document.querySelector('[data-public-chord-tooltip-name]');
                 const tooltipDiagrama = document.querySelector('[data-public-chord-tooltip-diagram]');
-                const controlesCapotraste = Array.from(document.querySelectorAll('[data-public-capo]'));
-                const resumosCapotraste = Array.from(document.querySelectorAll('[data-public-capo-summary], [data-public-capo-summary-popover]'));
-                const resumoFonte = document.querySelector('[data-public-font-summary]');
                 const botaoAutoRolagem = document.querySelector('[data-public-auto-scroll]');
-                const botoesFonte = Array.from(document.querySelectorAll('[data-public-font]'));
-                const botaoCapoAbrir = document.querySelector('[data-public-capo-open]');
-                const botaoCapoFechar = document.querySelector('[data-public-capo-close]');
-                const popoverCapo = document.querySelector('[data-public-capo-popover]');
-                const botaoAcordesAbrir = document.querySelector('[data-public-chords-open]');
+                const controleVelocidadeRolagem = document.querySelector('[data-public-scroll-speed]');
+                const botaoVoltarTopo = document.querySelector('[data-public-scroll-top]');
                 const botaoAcordesFechar = document.querySelector('[data-public-chords-close]');
                 const drawerAcordes = document.querySelector('[data-public-chords-drawer]');
                 const drawerAcordesBackdrop = document.querySelector('[data-public-chords-backdrop]');
                 const gradeAcordes = document.querySelector('[data-public-chords-grid]');
-                let capotrasteAtual = 0;
-                let publicFontLevel = 1;
+                const musicasPublicas = Array.from(document.querySelectorAll('[data-public-song]'));
+                const estadoMusicas = new Map();
+                let musicaSelecionada = musicasPublicas[0] || null;
                 let publicAutoScrollActive = false;
                 let publicAutoScrollInterval = null;
                 const renderizarDiagrama = (shape) => {
@@ -1820,37 +1834,63 @@
                     tooltipAcorde.style.top = `${Math.max(y - 220, 12)}px`;
                 };
 
-                const renderizarCifrasPublicas = () => {
+                const obterEstadoMusica = (musica) => {
+                    if (!musica) {
+                        return { capo: 0, fontLevel: 1 };
+                    }
+
+                    const id = musica.dataset.publicSongId || '0';
+                    if (!estadoMusicas.has(id)) {
+                        estadoMusicas.set(id, { capo: 0, fontLevel: 1 });
+                    }
+
+                    return estadoMusicas.get(id);
+                };
+
+                const resumoCapotraste = (capo) => capo > 0 ? `Capo ${capo}` : 'Sem capotraste';
+                const escalaFonte = (nivel) => [0.92, 1, 1.14, 1.28][nivel] || 1;
+                const resumoFontePorNivel = (nivel) => `Fonte ${['menor', 'normal', 'maior', 'grande'][nivel] || 'normal'}`;
+
+                const renderizarMusicaPublica = (musica) => {
                     if (!helper) {
                         return;
                     }
 
-                    document.querySelectorAll('[data-public-musician-lyrics]').forEach((lyrics) => {
-                        const textoComCapo = helper.transposeBracketedText(lyrics.dataset.lyrics || '', -capotrasteAtual);
-                        lyrics.innerHTML = helper.renderChordSheetHtml(textoComCapo, { chordAttribute: 'data-acorde-hover' });
-                    });
+                    const lyrics = musica?.querySelector('[data-public-song-lyrics]');
+                    if (!musica || !lyrics) {
+                        return;
+                    }
 
-                    document.querySelectorAll('[data-public-capo-item]').forEach((badge) => {
+                    const estado = obterEstadoMusica(musica);
+                    const textoComCapo = helper.transposeBracketedText(lyrics.dataset.lyrics || '', -estado.capo);
+                    lyrics.innerHTML = helper.renderChordSheetHtml(textoComCapo, { chordAttribute: 'data-acorde-hover' });
+                    lyrics.style.setProperty('--celebration-font-scale', String(escalaFonte(estado.fontLevel)));
+
+                    musica.querySelectorAll('[data-public-capo-item]').forEach((badge) => {
                         const tomBase = badge.dataset.baseTom || '';
-                        if (capotrasteAtual <= 0 || !helper.isChord(tomBase)) {
+                        if (estado.capo <= 0 || !helper.isChord(tomBase)) {
                             badge.hidden = true;
                             badge.textContent = '';
                             return;
                         }
 
                         badge.hidden = false;
-                        badge.textContent = `Capo ${capotrasteAtual} / tocar como ${helper.transposeChord(tomBase, -capotrasteAtual)}`;
+                        badge.textContent = `Capo ${estado.capo} / tocar como ${helper.transposeChord(tomBase, -estado.capo)}`;
                     });
 
-                    const textoCapo = capotrasteAtual > 0
-                        ? `Capotraste ${capotrasteAtual} casa`
-                        : 'Sem capotraste';
-                    resumosCapotraste.forEach((resumo) => {
-                        resumo.textContent = textoCapo;
+                    musica.querySelectorAll('[data-public-song-capo-summary]').forEach((resumo) => {
+                        resumo.textContent = resumoCapotraste(estado.capo);
                     });
-                    controlesCapotraste.forEach((controle) => {
-                        controle.checked = Number(controle.value || 0) === capotrasteAtual;
+                    musica.querySelectorAll('[data-public-song-font-summary]').forEach((resumo) => {
+                        resumo.textContent = resumoFontePorNivel(estado.fontLevel);
                     });
+                    musica.querySelectorAll('[data-public-song-capo]').forEach((controle) => {
+                        controle.checked = Number(controle.value || 0) === estado.capo;
+                    });
+                };
+
+                const renderizarCifrasPublicas = () => {
+                    musicasPublicas.forEach((musica) => renderizarMusicaPublica(musica));
                 };
 
                 const renderizarGradeAcordes = () => {
@@ -1859,10 +1899,14 @@
                     }
 
                     const acordes = new Set();
-                    document.querySelectorAll('[data-public-musician-lyrics]').forEach((lyrics) => {
-                        helper.extractChordsFromBracketedText(helper.transposeBracketedText(lyrics.dataset.lyrics || '', -capotrasteAtual))
+                    const musica = musicaSelecionada || musicasPublicas[0] || null;
+                    const lyrics = musica?.querySelector('[data-public-song-lyrics]');
+                    const estado = obterEstadoMusica(musica);
+
+                    if (lyrics) {
+                        helper.extractChordsFromBracketedText(helper.transposeBracketedText(lyrics.dataset.lyrics || '', -estado.capo))
                             .forEach((acorde) => acordes.add(acorde));
-                    });
+                    }
 
                     gradeAcordes.innerHTML = Array.from(acordes).map((nome) => {
                         const acorde = helper.getChordMatches(gruposAcorde, nome)[0] || null;
@@ -1870,21 +1914,48 @@
                     }).join('');
                 };
 
-                controlesCapotraste.forEach((controle) => {
-                    controle.addEventListener('change', () => {
-                        capotrasteAtual = Math.max(0, Math.min(11, Number(controle.value || 0)));
-                        renderizarCifrasPublicas();
-                        renderizarGradeAcordes();
+                musicasPublicas.forEach((musica) => {
+                    musica.addEventListener('focusin', () => {
+                        musicaSelecionada = musica;
                     });
-                });
 
-                botoesFonte.forEach((botao) => {
-                    botao.addEventListener('click', () => {
-                        publicFontLevel = Math.max(0, Math.min(3, publicFontLevel + Number(botao.dataset.publicFont || 0)));
-                        const escala = [0.92, 1, 1.14, 1.28][publicFontLevel] || 1;
-                        document.documentElement.style.setProperty('--celebration-font-scale', String(escala));
-                        if (resumoFonte) {
-                            resumoFonte.textContent = `Fonte ${['menor', 'normal', 'maior', 'grande'][publicFontLevel]}`;
+                    musica.querySelectorAll('[data-public-song-font]').forEach((botao) => {
+                        botao.addEventListener('click', () => {
+                            musicaSelecionada = musica;
+                            const estado = obterEstadoMusica(musica);
+                            estado.fontLevel = Math.max(0, Math.min(3, estado.fontLevel + Number(botao.dataset.publicSongFont || 0)));
+                            renderizarMusicaPublica(musica);
+                        });
+                    });
+
+                    musica.querySelector('[data-public-song-capo-toggle]')?.addEventListener('click', () => {
+                        musicaSelecionada = musica;
+                        const painel = musica.querySelector('[data-public-song-capo-panel]');
+                        if (painel) {
+                            painel.hidden = !painel.hidden;
+                        }
+                    });
+
+                    musica.querySelectorAll('[data-public-song-capo]').forEach((controle) => {
+                        controle.addEventListener('change', () => {
+                            musicaSelecionada = musica;
+                            const estado = obterEstadoMusica(musica);
+                            estado.capo = Math.max(0, Math.min(11, Number(controle.value || 0)));
+                            renderizarMusicaPublica(musica);
+                            renderizarGradeAcordes();
+                        });
+                    });
+
+                    musica.querySelector('[data-public-chords-open]')?.addEventListener('click', () => {
+                        musicaSelecionada = musica;
+                        renderizarGradeAcordes();
+                        if (drawerAcordes) drawerAcordes.hidden = false;
+                        if (drawerAcordesBackdrop) drawerAcordesBackdrop.hidden = false;
+                    });
+
+                    musica.addEventListener('click', (event) => {
+                        if (event.target.closest('[data-acorde-hover]')) {
+                            musicaSelecionada = musica;
                         }
                     });
                 });
@@ -1894,7 +1965,7 @@
                         window.clearInterval(publicAutoScrollInterval);
                         publicAutoScrollInterval = null;
                         publicAutoScrollActive = false;
-                        botaoAutoRolagem.textContent = 'Auto rolagem';
+                        botaoAutoRolagem.textContent = 'Iniciar rolagem';
                         return;
                     }
 
@@ -1906,21 +1977,15 @@
                             botaoAutoRolagem.click();
                             return;
                         }
-                        window.scrollBy({ top: 1.7, left: 0, behavior: 'auto' });
+                        const velocidade = Math.max(1, Math.min(5, Number(controleVelocidadeRolagem?.value || 2)));
+                        window.scrollBy({ top: 0.85 + (velocidade * 0.7), left: 0, behavior: 'auto' });
                     }, 34);
                 });
 
-                botaoCapoAbrir?.addEventListener('click', () => {
-                    if (popoverCapo) popoverCapo.hidden = false;
+                botaoVoltarTopo?.addEventListener('click', () => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 });
-                botaoCapoFechar?.addEventListener('click', () => {
-                    if (popoverCapo) popoverCapo.hidden = true;
-                });
-                botaoAcordesAbrir?.addEventListener('click', () => {
-                    renderizarGradeAcordes();
-                    if (drawerAcordes) drawerAcordes.hidden = false;
-                    if (drawerAcordesBackdrop) drawerAcordesBackdrop.hidden = false;
-                });
+
                 const fecharDrawerAcordes = () => {
                     if (drawerAcordes) drawerAcordes.hidden = true;
                     if (drawerAcordesBackdrop) drawerAcordesBackdrop.hidden = true;
