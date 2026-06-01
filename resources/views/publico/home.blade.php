@@ -9,7 +9,7 @@
                 <img src="{{ asset('logo/final.png') }}" alt="Logo Voz & Cifra">
                 <div>
                     <p class="brand__eyebrow">Voz &amp; Cifra</p>
-                    <p class="brand__name">Missas e celebrações da comunidade</p>
+                    <p class="brand__name">Missas e celebrações </p>
                 </div>
             </a>
 
@@ -134,7 +134,7 @@
             <div>
                 <h3 class="site-footer__title">Voz &amp; Cifra</h3>
                 <p class="site-footer__text">
-                    Plataforma pública pensada para acompanhar missas com leitura clara, identidade reverente e acesso simples.
+                    Plataforma pública pensada para acompanhar as músicas das missas com leitura clara, identidade reverente e acesso simples.
                 </p>
             </div>
 
@@ -157,7 +157,7 @@
             </div>
         </div>
         <div class="site-footer__bottom">
-            <p>&copy; {{ date('Y') }} Voz &amp; Cifra. Um acesso simples para consultar missas e páginas públicas das comunidades.</p>
+            <p>&copy; {{ date('Y') }} Voz &amp; Cifra. Um acesso simples para consultar músicas das missas da sua igreja .</p>
         </div>
     </footer>
 

@@ -59,6 +59,10 @@
     color: #172033;
 }
 
+.cifra-palco .cifra-linha {
+    background: transparent;
+}
+
 .cifra-palco .cifra-acordes {
     color: #ea580c;
     font-size: calc(1rem * var(--escala-fonte, 1));
@@ -83,6 +87,7 @@
 
 .cifra-palco .cifra-linha--refrao .cifra-letra {
     color: #172033;
+    font-weight: 800;
 }
 
 .cifra-palco .cifra-marcacao {
@@ -195,6 +200,40 @@
     background: rgba(255, 253, 249, 0.94);
     box-shadow: 0 18px 44px rgba(15, 23, 42, 0.2);
     backdrop-filter: blur(14px);
+}
+
+@media (max-width: 640px) {
+    .cifra-palco .cifra-linha {
+        gap: 0.12rem;
+    }
+
+    .cifra-palco .cifra-letra {
+        color: #172033;
+        line-height: 1.9rem;
+        overflow-wrap: normal;
+        word-break: normal;
+    }
+
+    .cifra-palco .cifra-acordes {
+        color: #ea580c;
+    }
+
+    .repertorio-controls {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.45rem;
+    }
+
+    .repertorio-controls > span,
+    .repertorio-controls > label {
+        grid-column: 1 / -1;
+    }
+
+    .repertorio-control-btn,
+    .repertorio-control-select {
+        min-height: 2.6rem;
+        width: 100%;
+    }
 }
 
 @media (min-width: 1024px) {

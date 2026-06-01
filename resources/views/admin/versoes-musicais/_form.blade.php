@@ -30,8 +30,14 @@
         .cifra-mini-tool { border-radius: 9999px; border: 1px solid #ead6b3; background: #fffdf8; padding: 0.55rem 0.85rem; color: #6c4a21; font-size: 0.75rem; font-weight: 900; }
         .cifra-mini-tool:hover { background: #fff7ed; border-color: #d6ad6c; }
         @media (max-width: 767px) {
-            .editor-cifra-preview .cifra-linha { display: block; margin-bottom: 0.8rem; }
-            .editor-cifra-preview .cifra-segmento { display: inline-flex; min-height: 2.25rem; max-width: 100%; }
+            .preview-cifra-sticky { padding: 1rem; }
+            .editor-cifra-preview { padding: 0.95rem; overflow-x: auto; }
+            .editor-cifra-preview [data-preview-line],
+            .editor-cifra-preview .cifra-linha,
+            .editor-cifra-preview .cifra-linha--acordes { min-width: 34rem; }
+            .editor-cifra-preview .cifra-linha { flex-wrap: nowrap; margin-bottom: 0.75rem; }
+            .editor-cifra-preview .cifra-segmento { min-height: 2.35rem; flex: 0 0 auto; }
+            .editor-cifra-preview .cifra-letra { white-space: pre; }
         }
 
         @media (min-width: 1280px) {

@@ -20,29 +20,29 @@
     z-index: 10;
 }
 
-.chord:hover { 
-    color: #c2410c; 
-    transform: translateY(-2px); 
+.chord:hover {
+    color: #c2410c;
+    transform: translateY(-2px);
     z-index: 50;
 }
 
-/* O BALÃOZINHO (TOOLTIP) - Exatamente como no seu código */
+/* O BALÃOZINHO (TOOLTIP) */
 .chord-tooltip {
-    opacity: 0; 
+    opacity: 0;
     visibility: hidden;
     position: absolute;
     bottom: 110%; /* Fica acima do acorde */
     left: 50%;
     transform: translateX(-50%) translateY(10px); /* Efeito de subida */
-    
+
     background: white;
     border: 1px solid #e5e7eb;
     padding: 12px;
     border-radius: 12px;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-    
+
     z-index: 100;
-    width: 130px; /* LARGURA FIXA QUE VOCÊ QUERIA */
+    width: 130px;
     text-align: center;
     transition: all 0.2s ease-in-out;
     pointer-events: none;
@@ -61,9 +61,9 @@
 }
 
 /* MOSTRAR AO PASSAR O MOUSE */
-.chord:hover .chord-tooltip { 
-    opacity: 1; 
-    visibility: visible; 
+.chord:hover .chord-tooltip {
+    opacity: 1;
+    visibility: visible;
     transform: translateX(-50%) translateY(0);
 }
 

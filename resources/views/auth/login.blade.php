@@ -77,9 +77,18 @@
                                 type="password"
                                 name="password"
                                 required
-                                class="w-full rounded-2xl border border-[#e8dcc8]/70 bg-[#f4efe6] py-4 pl-12 pr-4 text-lg text-[#241616] placeholder:text-[#8f7a62] focus:border-[#f4ddb4]/70 focus:outline-none focus:ring-4 focus:ring-[#c9a15f]/10"
+                                class="w-full rounded-2xl border border-[#e8dcc8]/70 bg-[#f4efe6] py-4 pl-12 pr-14 text-lg text-[#241616] placeholder:text-[#8f7a62] focus:border-[#f4ddb4]/70 focus:outline-none focus:ring-4 focus:ring-[#c9a15f]/10"
                                 placeholder="Digite sua senha"
                             >
+                            <button
+                                type="button"
+                                class="absolute right-3 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-[#6c4a21] transition hover:bg-[#ead6b3]/45 focus:outline-none focus:ring-2 focus:ring-[#c9a15f]/40"
+                                data-password-toggle="password"
+                                aria-label="Mostrar senha"
+                                aria-pressed="false"
+                            >
+                                <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -105,5 +114,24 @@
             </div>
         </div>
     </div>
+    <script>
+        document.querySelectorAll('[data-password-toggle]').forEach((button) => {
+            const input = document.getElementById(button.dataset.passwordToggle || '');
+            const icon = button.querySelector('i');
+
+            if (!input) {
+                return;
+            }
+
+            button.addEventListener('click', () => {
+                const mostrar = input.type === 'password';
+                input.type = mostrar ? 'text' : 'password';
+                button.setAttribute('aria-pressed', mostrar ? 'true' : 'false');
+                button.setAttribute('aria-label', mostrar ? 'Ocultar senha' : 'Mostrar senha');
+                icon?.classList.toggle('fa-eye', !mostrar);
+                icon?.classList.toggle('fa-eye-slash', mostrar);
+            });
+        });
+    </script>
 </body>
 </html>
