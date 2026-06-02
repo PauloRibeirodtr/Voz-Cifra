@@ -17,10 +17,9 @@ class RepertorioMusicoService
             return null;
         }
 
-        $hoje = CarbonImmutable::now('America/Cuiaba')->toDateString();
+        $agora = CarbonImmutable::now('America/Cuiaba');
 
-        /** @var Missa|null $missa */
-        $missa = Missa::query()
+        $missas = Missa::query()
             ->with([
                 'tempoLiturgico',
                 'missaMusicas' => fn ($query) => $query
@@ -28,14 +27,29 @@ class RepertorioMusicoService
                     ->orderBy('ordem'),
             ])
             ->where('igreja_id', $igrejaId)
+            ->where('publica_para_musicos', true)
             ->whereHas('missaMusicas')
-            ->where(function ($query) use ($hoje): void {
-                $query->where('ativo', true)
-                    ->orWhereDate('data_missa', '>=', $hoje);
+            ->orderByDesc('data_missa')
+            ->orderByDesc('hora_inicio')
+            ->limit(30)
+            ->get();
+
+        /** @var Missa|null $missa */
+        $missa = $missas
+            ->sortBy(function (Missa $missa) use ($agora): array {
+                $fim = $missa->dataHoraFim('America/Cuiaba');
+                $inicio = $missa->dataHoraInicio('America/Cuiaba');
+
+                if ($missa->ativo && $fim->greaterThanOrEqualTo($agora)) {
+                    return [0, $inicio->getTimestamp()];
+                }
+
+                if ($fim->greaterThanOrEqualTo($agora)) {
+                    return [1, $inicio->getTimestamp()];
+                }
+
+                return [2, -$fim->getTimestamp()];
             })
-            ->orderByRaw('case when ativo then 0 else 1 end')
-            ->orderBy('data_missa')
-            ->orderBy('hora_inicio')
             ->first();
 
         return $missa;
@@ -49,10 +63,9 @@ class RepertorioMusicoService
             return null;
         }
 
-        $hoje = CarbonImmutable::now('America/Cuiaba')->toDateString();
+        $agora = CarbonImmutable::now('America/Cuiaba');
 
-        /** @var Missa|null $missa */
-        $missa = Missa::query()
+        $missas = Missa::query()
             ->with([
                 'missaMusicas' => fn ($query) => $query
                     ->where('versao_musical_id', $versaoMusical->id)
@@ -60,14 +73,29 @@ class RepertorioMusicoService
                     ->orderBy('ordem'),
             ])
             ->where('igreja_id', $igrejaId)
+            ->where('publica_para_musicos', true)
             ->whereHas('missaMusicas', fn ($query) => $query->where('versao_musical_id', $versaoMusical->id))
-            ->where(function ($query) use ($hoje): void {
-                $query->where('ativo', true)
-                    ->orWhereDate('data_missa', '>=', $hoje);
+            ->orderByDesc('data_missa')
+            ->orderByDesc('hora_inicio')
+            ->limit(30)
+            ->get();
+
+        /** @var Missa|null $missa */
+        $missa = $missas
+            ->sortBy(function (Missa $missa) use ($agora): array {
+                $fim = $missa->dataHoraFim('America/Cuiaba');
+                $inicio = $missa->dataHoraInicio('America/Cuiaba');
+
+                if ($missa->ativo && $fim->greaterThanOrEqualTo($agora)) {
+                    return [0, $inicio->getTimestamp()];
+                }
+
+                if ($fim->greaterThanOrEqualTo($agora)) {
+                    return [1, $inicio->getTimestamp()];
+                }
+
+                return [2, -$fim->getTimestamp()];
             })
-            ->orderByRaw('case when ativo then 0 else 1 end')
-            ->orderBy('data_missa')
-            ->orderBy('hora_inicio')
             ->first();
 
         return $missa;

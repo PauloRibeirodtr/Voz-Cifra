@@ -293,6 +293,58 @@
             <a href="{{ route('local-admin.missas.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 font-semibold text-gray-700 transition hover:bg-gray-50 sm:col-span-2">
                 Voltar para as missas
             </a>
+            @php
+                $igrejasParaDuplicar = collect($igrejasAdministradas ?? [])
+                    ->reject(fn ($igrejaDuplicacao) => (bool) ($igrejaDuplicacao->eh_ativa ?? false))
+                    ->values();
+                $dataMinimaDuplicacao = now('America/Cuiaba')->toDateString();
+                $dataMaximaDuplicacao = now('America/Cuiaba')->addMonths(3)->toDateString();
+            @endphp
+            @if ($igrejasParaDuplicar->isNotEmpty())
+                <details class="rounded-2xl border border-[#ead6b3] bg-[#fff8ed] p-4 sm:col-span-2">
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-black text-[#5b3d1a] [&::-webkit-details-marker]:hidden">
+                        <span>Duplicar para outra igreja</span>
+                        <span class="rounded-full bg-white px-3 py-1 text-xs text-[#6c4a21]">Abrir</span>
+                    </summary>
+
+                    <form action="{{ route('local-admin.missas.duplicar', $missa) }}" method="POST" class="mt-4 grid grid-cols-1 gap-3">
+                        @csrf
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-wider text-[#7c5628]">Igreja de destino</label>
+                            <select name="igreja_destino_id" class="mt-1 w-full rounded-xl border border-[#ead6b3] bg-white px-3 py-2 text-sm font-bold text-gray-900" required>
+                                <option value="">Escolha uma igreja</option>
+                                @foreach ($igrejasParaDuplicar as $igrejaDestino)
+                                    <option value="{{ $igrejaDestino->id }}">{{ $igrejaDestino->nome }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-wider text-[#7c5628]">Titulo da nova missa</label>
+                            <input name="titulo" value="{{ $missa->titulo }}" maxlength="255" class="mt-1 w-full rounded-xl border border-[#ead6b3] bg-white px-3 py-2 text-sm text-gray-900">
+                        </div>
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                            <div>
+                                <label class="block text-xs font-black uppercase tracking-wider text-[#7c5628]">Data</label>
+                                <input type="date" name="data_missa" min="{{ $dataMinimaDuplicacao }}" max="{{ $dataMaximaDuplicacao }}" class="mt-1 w-full rounded-xl border border-[#ead6b3] bg-white px-3 py-2 text-sm text-gray-900" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black uppercase tracking-wider text-[#7c5628]">Inicio</label>
+                                <input type="time" name="hora_inicio" value="{{ substr((string) $missa->hora_inicio, 0, 5) }}" class="mt-1 w-full rounded-xl border border-[#ead6b3] bg-white px-3 py-2 text-sm text-gray-900" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black uppercase tracking-wider text-[#7c5628]">Termino</label>
+                                <input type="time" name="hora_fim" value="{{ substr((string) $missa->hora_fim, 0, 5) }}" class="mt-1 w-full rounded-xl border border-[#ead6b3] bg-white px-3 py-2 text-sm text-gray-900" required>
+                            </div>
+                        </div>
+                        <p class="text-xs font-semibold text-[#7c5628]">
+                            A copia nasce fechada para publicacao. Revise dados, repertorio e links antes de liberar para fieis ou musicos.
+                        </p>
+                        <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-[#6c4a21] px-4 py-3 text-sm font-black text-white transition hover:bg-[#5b3d1a]">
+                            Criar copia para revisar
+                        </button>
+                    </form>
+                </details>
+            @endif
         </div>
     </div>
 

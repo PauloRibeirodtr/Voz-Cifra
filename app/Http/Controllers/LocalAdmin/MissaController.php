@@ -14,6 +14,7 @@ use App\Models\Usuario;
 use App\Models\VersaoMusical;
 use App\Services\AuditoriaOperacionalService;
 use App\Services\FolhaVersaoMusicalService;
+use App\Services\IgrejaAtivaService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use App\Services\RenderizadorCifrasHtmlService;
@@ -182,6 +183,7 @@ class MissaController extends Controller
         return view('local-admin.missas.show', [
             'igreja' => $this->adicionarDadosPublicos($igreja),
             'missa' => $missa,
+            'igrejasAdministradas' => $this->obterIgrejasAdministradas($this->obterUsuario(), $igreja),
             'musicas' => $musicas,
             'versoesMusicais' => VersaoMusical::with('musica')
                 ->where('ativo', true)
@@ -719,6 +721,112 @@ class MissaController extends Controller
         ])->setPaper('a4', 'portrait');
 
         return $pdf->download('missa-' . $missa->id . '.pdf');
+    }
+
+    public function duplicarParaIgreja(Request $request, Missa $missa): RedirectResponse
+    {
+        $this->garantirMissaDaIgreja($missa);
+
+        $usuario = $this->obterUsuario();
+        $igrejaOrigem = $this->obterIgreja();
+        $igrejasDestino = $usuario->igrejasDisponiveisPorPapel(PapelIgreja::ADMIN_LOCAL)
+            ->filter(fn (Igreja $igreja): bool => (int) $igreja->id !== (int) $igrejaOrigem->id)
+            ->filter(fn (Igreja $igreja): bool => $igreja->estaOperacional())
+            ->values();
+
+        $hoje = CarbonImmutable::now('America/Cuiaba')->startOfDay();
+        $dados = $request->validate([
+            'igreja_destino_id' => [
+                'required',
+                'integer',
+                Rule::in($igrejasDestino->pluck('id')->map(fn ($id) => (string) $id)->all()),
+            ],
+            'titulo' => ['nullable', 'string', 'max:255'],
+            'data_missa' => ['required', 'date', 'after_or_equal:' . $hoje->toDateString(), 'before_or_equal:' . $hoje->addMonths(3)->toDateString()],
+            'hora_inicio' => ['required', 'date_format:H:i'],
+            'hora_fim' => ['required', 'date_format:H:i'],
+        ], [
+            'igreja_destino_id.required' => 'Escolha para qual igreja a missa sera duplicada.',
+            'igreja_destino_id.in' => 'Voce so pode duplicar para uma igreja onde possui papel de admin local ativo.',
+            'data_missa.required' => 'Informe a data da nova missa.',
+            'data_missa.after_or_equal' => 'A nova missa precisa ser criada para hoje ou uma data futura.',
+            'data_missa.before_or_equal' => 'A nova missa nao pode ser posterior a 3 meses a frente.',
+            'hora_inicio.required' => 'Informe o horario de inicio da nova missa.',
+            'hora_fim.required' => 'Informe o horario de termino da nova missa.',
+            'hora_inicio.date_format' => 'Informe o horario de inicio no formato HH:MM.',
+            'hora_fim.date_format' => 'Informe o horario de termino no formato HH:MM.',
+        ]);
+
+        if ($dados['hora_inicio'] === $dados['hora_fim']) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'hora_fim' => 'O horario de termino deve ser diferente do horario de inicio.',
+            ]);
+        }
+
+        if ($this->celebranteTemConflitoHorario(
+            celebranteId: $missa->celebrante_usuario_id ? (int) $missa->celebrante_usuario_id : null,
+            dataMissa: (string) $dados['data_missa'],
+            horaInicio: (string) $dados['hora_inicio'],
+            horaFim: (string) $dados['hora_fim'],
+        )) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'hora_inicio' => 'O celebrante desta missa ja esta vinculado a outra missa no mesmo horario.',
+            ]);
+        }
+
+        $igrejaDestino = $igrejasDestino->firstWhere('id', (int) $dados['igreja_destino_id']);
+        abort_unless($igrejaDestino instanceof Igreja, 403);
+
+        $missa->load(['missaMusicas' => fn ($query) => $query->orderBy('ordem')]);
+
+        $novaMissa = DB::transaction(function () use ($missa, $dados, $igrejaDestino): Missa {
+            $novaMissa = Missa::create([
+                'igreja_id' => $igrejaDestino->id,
+                'celebrante_usuario_id' => $missa->celebrante_usuario_id,
+                'tempo_liturgico_id' => $missa->tempo_liturgico_id,
+                'titulo' => trim((string) ($dados['titulo'] ?? '')) !== '' ? $dados['titulo'] : $missa->titulo,
+                'data_missa' => $dados['data_missa'],
+                'hora_inicio' => $dados['hora_inicio'],
+                'hora_fim' => $dados['hora_fim'],
+                'observacoes' => $missa->observacoes,
+                'publica_para_fieis' => false,
+                'publica_para_musicos' => false,
+                'ativo' => false,
+            ]);
+
+            foreach ($missa->missaMusicas as $itemOrigem) {
+                MissaMusica::create([
+                    'missa_id' => $novaMissa->id,
+                    'musica_id' => $itemOrigem->musica_id,
+                    'versao_musical_id' => $itemOrigem->versao_musical_id,
+                    'tom_usado' => $itemOrigem->tom_usado,
+                    'momento_liturgico_id' => $itemOrigem->momento_liturgico_id,
+                    'ordem' => $itemOrigem->ordem,
+                ]);
+            }
+
+            return $novaMissa;
+        });
+
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'missa_duplicada',
+            ator: $usuario,
+            igreja: $igrejaDestino,
+            contexto: [
+                'origem' => 'local_admin_missas_duplicar',
+                'origem_id' => $missa->id,
+                'destino_id' => $novaMissa->id,
+                'igreja_origem_id' => $igrejaOrigem->id,
+                'igreja_destino_id' => $igrejaDestino->id,
+                'resumo' => 'Missa duplicada para outra igreja vinculada ao administrador local, aguardando revisao e publicacao.',
+            ]
+        );
+
+        app(IgrejaAtivaService::class)->set($igrejaDestino);
+
+        return redirect()
+            ->route('local-admin.missas.show', $novaMissa)
+            ->with('success', 'Missa duplicada para ' . $igrejaDestino->nome . '. Revise os dados, ajuste o repertorio se precisar e publique quando estiver pronta.');
     }
 
     private function validarDadosMissa(Request $request): array
