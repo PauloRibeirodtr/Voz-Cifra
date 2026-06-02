@@ -1,0 +1,39 @@
+.editor-cifra-preview .cifra-linha { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.18rem; margin-bottom: 0.72rem; }
+        .editor-cifra-preview .cifra-linha--refrao { border-left: 3px solid #d6ad6c; background: linear-gradient(90deg, rgba(214, 173, 108, 0.1), rgba(255, 255, 255, 0)); margin: 0.18rem 0 0.74rem; padding: 0.35rem 0 0.35rem 0.75rem; }
+        .editor-cifra-preview .cifra-segmento { display: inline-flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; min-height: 2.85rem; }
+        .editor-cifra-preview .cifra-acordes { min-height: 1.1rem; margin-bottom: 0.02rem; color: #d97706; font-weight: 900; font-size: 0.95rem; line-height: 1rem; white-space: pre; }
+        .editor-cifra-preview .cifra-letra { color: #172033; font-size: 1.06rem; line-height: 1.9rem; white-space: pre-wrap; }
+        .editor-cifra-preview .cifra-marcacao { display: inline-flex; align-items: center; border-radius: 9999px; background: #eef2f7; color: #334155; font-size: 0.78rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 0.85rem; margin: 1rem 0 0.75rem; }
+        .editor-cifra-preview .cifra-marcacao--refrao { background: #f7ead4; color: #6c4a21; }
+        .editor-cifra-preview .cifra-linha--acordes { display: block; padding-left: var(--cifra-indent, 0); margin: 0.05rem 0 0.75rem; }
+        .editor-cifra-preview .cifra-linha--acordes .cifra-acordes { display: inline-flex; flex-wrap: wrap; gap: 0.75rem; min-height: auto; line-height: 1.35; }
+        .editor-cifra-preview [data-preview-line] { scroll-margin: 1rem; transition: background-color 0.18s ease, box-shadow 0.18s ease; }
+        .editor-cifra-preview [data-preview-line].is-current-line { border-radius: 0.85rem; background: rgba(255, 247, 237, 0.84); box-shadow: inset 3px 0 0 rgba(217, 119, 6, 0.62); }
+        .cifra-toolbar { display: grid; gap: 0.75rem; }
+        .cifra-toolbar-main { display: flex; flex-wrap: wrap; gap: 0.65rem; align-items: center; }
+        .cifra-action-primary { display: inline-flex; align-items: center; justify-content: center; border-radius: 9999px; border: 1px solid #15803d; background: #15803d; padding: 0.78rem 1.25rem; color: #ffffff; font-size: 0.82rem; font-weight: 950; box-shadow: 0 10px 22px rgba(21, 128, 61, 0.18); }
+        .cifra-action-primary:hover { background: #166534; }
+        .cifra-action-secondary { display: inline-flex; align-items: center; justify-content: center; border-radius: 9999px; border: 1px solid #bae6fd; background: #f0f9ff; padding: 0.72rem 1rem; color: #075985; font-size: 0.8rem; font-weight: 900; }
+        .cifra-action-secondary:hover { background: #e0f2fe; }
+        .cifra-more-tools { border: 1px solid #e5e7eb; border-radius: 1rem; background: #ffffff; }
+        .cifra-more-tools summary { cursor: pointer; list-style: none; padding: 0.85rem 1rem; color: #374151; font-size: 0.82rem; font-weight: 900; }
+        .cifra-more-tools summary::-webkit-details-marker { display: none; }
+        .cifra-more-tools[open] summary { border-bottom: 1px solid #f3f4f6; }
+        .cifra-more-tools-panel { display: flex; flex-wrap: wrap; gap: 0.55rem; padding: 0.85rem 1rem 1rem; }
+        .cifra-mini-tool { border-radius: 9999px; border: 1px solid #ead6b3; background: #fffdf8; padding: 0.55rem 0.85rem; color: #6c4a21; font-size: 0.75rem; font-weight: 900; }
+        .cifra-mini-tool:hover { background: #fff7ed; border-color: #d6ad6c; }
+        @media (max-width: 767px) {
+            .preview-cifra-sticky { padding: 1rem; }
+            .editor-cifra-preview { padding: 0.95rem; overflow-x: auto; }
+            .editor-cifra-preview [data-preview-line],
+            .editor-cifra-preview .cifra-linha,
+            .editor-cifra-preview .cifra-linha--acordes { min-width: 34rem; }
+            .editor-cifra-preview .cifra-linha { flex-wrap: nowrap; margin-bottom: 0.75rem; }
+            .editor-cifra-preview .cifra-segmento { min-height: 2.35rem; flex: 0 0 auto; }
+            .editor-cifra-preview .cifra-letra { white-space: pre; }
+        }
+
+        @media (min-width: 1280px) {
+            .preview-cifra-sticky { position: sticky; top: 1rem; }
+        }
+
