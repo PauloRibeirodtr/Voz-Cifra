@@ -42,16 +42,10 @@
                             <summary>Ajustes avançados</summary>
                             <div class="cifra-more-tools-panel">
                                 <button type="button" class="cifra-mini-tool" data-inserir-marcacao="Refrão:\n">
-                                    Inserir seção: refrão
-                                </button>
-                                <button type="button" class="cifra-mini-tool" data-marcar-linha="Refrão:">
-                                    Transformar linha em refrão
+                                    Inserir refrão
                                 </button>
                                 <button type="button" class="cifra-mini-tool" data-inserir-marcacao="[Primeira parte]\n">
-                                    Inserir seção: parte
-                                </button>
-                                <button type="button" class="cifra-mini-tool" data-marcar-linha="[Primeira parte]">
-                                    Transformar linha em parte
+                                    Inserir parte
                                 </button>
                                 <button type="button" class="cifra-mini-tool" data-inserir-marcacao="[D] [C]\n">
                                     Inserir linha de acordes

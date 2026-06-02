@@ -701,12 +701,7 @@
                 return;
             }
 
-            let ultimaChaveEstado = [
-                statusSync.dataset.state || '',
-                statusSync.dataset.target || '',
-                window.location.pathname,
-                window.location.search,
-            ].join('|');
+            let ultimaChaveEstado = null;
 
             window.setInterval(async () => {
                 try {
@@ -727,6 +722,11 @@
                         payload.countdown_iso || '',
                         String(payload.missa_ref || ''),
                     ].join('|');
+
+                    if (ultimaChaveEstado === null) {
+                        ultimaChaveEstado = novaChaveEstado;
+                        return;
+                    }
 
                     if (novaChaveEstado !== ultimaChaveEstado) {
                         guardarPosicao();

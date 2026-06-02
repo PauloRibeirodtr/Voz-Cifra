@@ -122,7 +122,7 @@ class IgrejaPublicaController extends Controller
         $agora = CarbonImmutable::now($timezone);
         $hoje = $agora->toDateString();
 
-        $missasOrdenadas = $this->queryMissasPublicas($igreja, $audiencia)
+        $missasOrdenadas = $this->queryMissasPublicas($igreja, $audiencia, $agora)
             ->with($this->publicMissaRelations())
             ->orderBy('data_missa')
             ->orderBy('hora_inicio')
@@ -277,7 +277,9 @@ class IgrejaPublicaController extends Controller
             return collect();
         }
 
-        return $this->queryMissasPublicas($igreja, $audiencia)
+        $agora = CarbonImmutable::now($timezone);
+
+        return $this->queryMissasPublicas($igreja, $audiencia, $agora)
             ->with(['tempoLiturgico'])
             ->orderByDesc('data_missa')
             ->orderByDesc('hora_inicio')
@@ -297,7 +299,9 @@ class IgrejaPublicaController extends Controller
 
     private function buscarHistoricoSugestoes(Igreja $igreja, string $timezone, string $audiencia): Collection
     {
-        return $this->queryMissasPublicas($igreja, $audiencia)
+        $agora = CarbonImmutable::now($timezone);
+
+        return $this->queryMissasPublicas($igreja, $audiencia, $agora)
             ->with(['tempoLiturgico'])
             ->orderByDesc('data_missa')
             ->orderByDesc('hora_inicio')
@@ -311,7 +315,7 @@ class IgrejaPublicaController extends Controller
     {
         $agora = CarbonImmutable::now($timezone);
 
-        return $this->queryMissasPublicas($igreja, $audiencia)
+        return $this->queryMissasPublicas($igreja, $audiencia, $agora)
             ->with(['tempoLiturgico'])
             ->whereDate('data_missa', '<=', $agora->toDateString())
             ->orderByDesc('data_missa')
@@ -341,12 +345,31 @@ class IgrejaPublicaController extends Controller
             || ($digitosBusca !== '' && str_contains($dataNumerica, $digitosBusca));
     }
 
-    private function queryMissasPublicas(Igreja $igreja, string $audiencia)
+    private function queryMissasPublicas(Igreja $igreja, string $audiencia, ?CarbonImmutable $agora = null)
     {
-        return Missa::query()
+        $query = Missa::query()
             ->where('igreja_id', $igreja->id)
-            ->where('ativo', true)
             ->where($this->colunaPublicacaoPorAudiencia($audiencia), true);
+
+        if ($agora instanceof CarbonImmutable) {
+            $query->where(function ($subquery) use ($agora): void {
+                $subquery
+                    ->where('ativo', true)
+                    ->orWhere(function ($historico) use ($agora): void {
+                        $historico
+                            ->whereDate('data_missa', '<', $agora->toDateString())
+                            ->orWhere(function ($mesmoDia) use ($agora): void {
+                                $mesmoDia
+                                    ->whereDate('data_missa', $agora->toDateString())
+                                    ->where('hora_fim', '<', $agora->format('H:i:s'));
+                            });
+                    });
+            });
+        } else {
+            $query->where('ativo', true);
+        }
+
+        return $query;
     }
 
     private function colunaPublicacaoPorAudiencia(string $audiencia): string

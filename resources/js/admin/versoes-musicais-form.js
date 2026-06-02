@@ -10,7 +10,6 @@
         const botoesExemplo = document.querySelectorAll('[data-exemplo-toggle]');
         const paineisExemplo = document.querySelectorAll('[data-exemplo-painel]');
         const botoesMarcacao = document.querySelectorAll('[data-inserir-marcacao]');
-        const botoesMarcarLinha = document.querySelectorAll('[data-marcar-linha]');
         const botaoOrganizarCifra = document.querySelector('[data-organizar-cifra-visual]');
         const botaoCifraClub = document.querySelector('[data-cifra-club-mode]');
         let previewSyncTimer = null;
@@ -371,7 +370,12 @@
         const removerCifras = (texto) => {
             return texto.replace(/\[([^\[\]\r\n]+)\]/g, (trechoCompleto, interno) => {
                 return ehAcorde(interno) ? '' : trechoCompleto;
-            }).replace(/\n{3,}/g, '\n\n').trim();
+            })
+                .split('\n')
+                .filter((linha) => !ehLinhaApenasAcordes(linha))
+                .join('\n')
+                .replace(/\n{3,}/g, '\n\n')
+                .trim();
         };
 
         const escaparHtml = (texto) => {
@@ -381,6 +385,33 @@
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
+        };
+
+        const renderizarTokensDeAcordes = (linha, destacarAcordesSoltos = false) => {
+            let html = '';
+            let posicaoAtual = 0;
+            const matches = Array.from(String(linha || '').matchAll(/\S+/g));
+
+            matches.forEach((match) => {
+                const token = match[0];
+                const indice = match.index || 0;
+                const acordeComColchetes = token.match(/^\[([^\[\]\r\n]+)\]$/);
+                const acorde = acordeComColchetes ? acordeComColchetes[1] : token;
+
+                html += escaparHtml(linha.slice(posicaoAtual, indice));
+
+                if (acordeComColchetes || (destacarAcordesSoltos && ehAcorde(acorde))) {
+                    html += `<span class="cifra-token-acorde">${escaparHtml(token)}</span>`;
+                } else {
+                    html += escaparHtml(token);
+                }
+
+                posicaoAtual = indice + token.length;
+            });
+
+            html += escaparHtml(linha.slice(posicaoAtual));
+
+            return html;
         };
 
         const classeMarcacao = (texto, base = 'bg-slate-700/80 text-slate-100') => {
@@ -394,14 +425,14 @@
             const linhaLimpa = linha.trim();
 
             if (!linhaLimpa) {
-                return '<div class="h-5"></div>';
+                return '<div class="cifra-preview-line cifra-preview-line--empty">&nbsp;</div>';
             }
 
             const acordesLinha = acordesDeLinhaComColchetes(linhaLimpa);
             if (acordesLinha) {
-                const acordes = acordesLinha.map((acorde) => `<span>${escaparHtml(acorde)}</span>`).join(' ');
-                const indentacao = linha.match(/^\s*/)?.[0]?.length || 0;
-                return `<div class="cifra-linha cifra-linha--acordes" style="--cifra-indent:${indentacao}ch"><span class="cifra-acordes">${acordes}</span></div>`;
+                const indentacao = linha.match(/^\s*/)?.[0] || '';
+                const acordes = acordesLinha.map((acorde) => `[${acorde}]`).join(' ');
+                return `<div class="cifra-preview-line cifra-preview-line--chords">${escaparHtml(indentacao)}${renderizarTokensDeAcordes(acordes, true)}</div>`;
             }
 
             const marcacao = linhaLimpa.match(/^\[([^\[\]\r\n]+)\]$/);
@@ -413,52 +444,9 @@
                 return `<div class="cifra-marcacao ${normalizarMarcacao(linhaLimpa).startsWith('refrao') ? 'cifra-marcacao--refrao' : ''}">${escaparHtml(linhaLimpa)}</div>`;
             }
 
-            const segmentos = [];
-            let acordesPendentes = [];
-            let posicaoAtual = 0;
-            const matches = Array.from(linha.matchAll(/\[([^\[\]\r\n]+)\]/g));
+            const classeAcordes = ehLinhaApenasAcordes(linhaLimpa) ? ' cifra-preview-line--chords' : '';
 
-            matches.forEach((match) => {
-                const textoAntes = linha.slice(posicaoAtual, match.index);
-
-                if (textoAntes !== '') {
-                    segmentos.push({
-                        acordes: acordesPendentes,
-                        texto: textoAntes,
-                    });
-                    acordesPendentes = [];
-                }
-
-                const conteudo = String(match[1] || '').trim();
-
-                if (ehAcorde(conteudo)) {
-                    acordesPendentes.push(conteudo);
-                } else {
-                    segmentos.push({
-                        acordes: [],
-                        texto: match[0],
-                    });
-                }
-
-                posicaoAtual = (match.index || 0) + match[0].length;
-            });
-
-            const textoFinal = linha.slice(posicaoAtual);
-
-            if (textoFinal !== '' || acordesPendentes.length > 0) {
-                segmentos.push({
-                    acordes: acordesPendentes,
-                    texto: textoFinal || ' ',
-                });
-            }
-
-            const html = segmentos.map((segmento) => {
-                const acordes = segmento.acordes.map((acorde) => `<span>${escaparHtml(acorde)}</span>`).join(' ');
-
-                return `<span class="cifra-segmento"><span class="cifra-acordes">${acordes}</span><span class="cifra-letra">${escaparHtml(segmento.texto)}</span></span>`;
-            }).join('');
-
-            return `<div class="cifra-linha">${html}</div>`;
+            return `<div class="cifra-preview-line${classeAcordes}">${renderizarTokensDeAcordes(linha, Boolean(classeAcordes))}</div>`;
         };
 
         const renderizarComCifras = (texto) => {
@@ -496,7 +484,7 @@
                 return `<div data-preview-line="${indiceLinha}" class="${classeRefrao}">${renderizarLinhaComCifras(linha)}</div>`;
             }).join('');
 
-            return html || '<p class="text-sm text-slate-400">A previa com cifra aparecera aqui.</p>';
+            return html || '<p class="text-sm text-slate-400">A prévia com cifra aparecerá aqui.</p>';
         };
 
         const renderizarSemCifras = (texto) => {
@@ -561,7 +549,7 @@
                 blocos.push(`<div ${atributoLinha} class="mb-3 rounded-xl border px-4 py-3 ${classeBloco}"><p class="whitespace-pre-wrap break-words text-[1.02rem] leading-8">${escaparHtml(linhaLimpa)}</p></div>`);
             });
 
-            return blocos.join('') || '<p class="text-sm text-gray-500">A previa sem cifra aparecera aqui.</p>';
+            return blocos.join('') || '<p class="text-sm text-gray-500">A prévia sem cifra aparecerá aqui.</p>';
         };
 
         const obterLinhaAtualTextarea = () => {
@@ -619,8 +607,8 @@
             const resultado = normalizarFormato(valor);
 
             previewPadraoInterno.textContent = resultado.textoNormalizado;
-            previewComCifras.innerHTML = renderizarComCifras(resultado.textoNormalizado);
-            previewSemCifras.innerHTML = renderizarSemCifras(resultado.textoNormalizado);
+            previewComCifras.innerHTML = renderizarComCifras(valor);
+            previewSemCifras.innerHTML = renderizarSemCifras(valor);
 
             sincronizarPreviewComCursor(false);
         };
@@ -634,22 +622,6 @@
             textarea.focus();
 
             const novaPosicao = inicio + texto.length;
-            textarea.setSelectionRange(novaPosicao, novaPosicao);
-            atualizarPreview();
-        };
-
-        const substituirLinhaAtual = (texto) => {
-            const inicioSelecao = textarea.selectionStart ?? 0;
-            const fimSelecao = textarea.selectionEnd ?? inicioSelecao;
-            const valor = textarea.value;
-            const inicioLinha = valor.lastIndexOf('\n', Math.max(0, inicioSelecao - 1)) + 1;
-            const fimLinhaEncontrado = valor.indexOf('\n', fimSelecao);
-            const fimLinha = fimLinhaEncontrado === -1 ? valor.length : fimLinhaEncontrado;
-            const textoComQuebra = texto.endsWith('\n') ? texto : `${texto}\n`;
-
-            textarea.value = `${valor.slice(0, inicioLinha)}${textoComQuebra}${valor.slice(fimLinha + (fimLinhaEncontrado === -1 ? 0 : 1))}`;
-            textarea.focus();
-            const novaPosicao = inicioLinha + textoComQuebra.length;
             textarea.setSelectionRange(novaPosicao, novaPosicao);
             atualizarPreview();
         };
@@ -677,12 +649,6 @@
         botoesMarcacao.forEach((botao) => {
             botao.addEventListener('click', () => {
                 inserirNoCursor(String(botao.dataset.inserirMarcacao || '').replace(/\\n/g, '\n'));
-            });
-        });
-
-        botoesMarcarLinha.forEach((botao) => {
-            botao.addEventListener('click', () => {
-                substituirLinhaAtual(String(botao.dataset.marcarLinha || ''));
             });
         });
 
