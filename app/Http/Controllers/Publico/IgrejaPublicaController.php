@@ -331,6 +331,7 @@ class IgrejaPublicaController extends Controller
             $missa['titulo'],
             $missa['data'],
             $missa['dia_semana'],
+            $missa['mes'] ?? '',
             $missa['horario'],
             $missa['tempo_liturgico'] ?? '',
         ])));
@@ -422,7 +423,20 @@ class IgrejaPublicaController extends Controller
     {
         $textoNormalizado = $this->normalizarLetraMusico($texto);
         $textoEscapado = e($textoNormalizado);
-        $textoComCifras = preg_replace('/\[(.*?)\]/', '<span class="chord-mark">[$1]</span>', $textoEscapado) ?? $textoEscapado;
+        $textoComCifras = preg_replace_callback('/\[([^\[\]\r\n]+)\]/u', function (array $matches): string {
+            $conteudo = trim(html_entity_decode((string) $matches[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+            $conteudoEscapado = e($conteudo);
+
+            if ($this->ehAcordePublico($conteudo)) {
+                return '<span class="chord-mark" data-acorde-hover="' . $conteudoEscapado . '">[' . $conteudoEscapado . ']</span>';
+            }
+
+            if ($this->ehMarcacaoSecaoPublica($conteudo)) {
+                return '<span class="' . $this->classeMarcacaoSecaoPublica($conteudo) . '">' . $conteudoEscapado . '</span>';
+            }
+
+            return '[' . $conteudoEscapado . ']';
+        }, $textoEscapado) ?? $textoEscapado;
 
         return nl2br($textoComCifras, false);
     }

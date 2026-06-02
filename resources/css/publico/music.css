@@ -229,7 +229,9 @@
         }
 
         .card-link:hover,
-        .card-link:focus-visible {
+        .card-link:focus-visible,
+        .card-link[data-schedule-focus],
+        .card-link[data-selected="true"] {
             border-color: rgba(227, 190, 132, 0.38);
             background: rgba(62, 33, 28, 0.98);
             outline: none;
@@ -724,23 +726,22 @@
             bottom: 14px;
             z-index: 82;
             display: grid;
-            grid-template-columns: auto auto minmax(7rem, 12rem) auto;
+            grid-template-columns: auto auto minmax(6rem, 10rem) auto;
             align-items: center;
-            gap: 10px;
-            width: min(42rem, calc(100vw - 1.5rem));
+            gap: 8px;
+            width: min(34rem, calc(100vw - 1.5rem));
             transform: translateX(-50%);
             border: 1px solid rgba(227, 190, 132, 0.24);
             border-radius: 999px;
             background: rgba(255, 250, 242, 0.96);
             color: #3b2a20;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
-            padding: 8px;
+            padding: 6px;
             transition: width 0.2s ease, padding 0.2s ease, border-radius 0.2s ease;
         }
 
         .public-scroll-dock.is-running {
-            width: min(34rem, calc(100vw - 1.5rem));
-            padding: 6px;
+            width: min(30rem, calc(100vw - 1.5rem));
         }
 
         .public-scroll-dock[hidden] {
@@ -1692,9 +1693,9 @@ body[data-public-mode='musicos'] .public-chord-tooltip svg {
 }
 
 body[data-public-mode='musicos'] .public-scroll-dock {
-    grid-template-columns: minmax(8.5rem, 1fr) minmax(6rem, 10rem) auto;
-    width: min(36rem, calc(100vw - 1.25rem));
-    max-width: 36rem;
+    grid-template-columns: minmax(7.75rem, 1fr) minmax(5.5rem, 8rem) auto;
+    width: min(30rem, calc(100vw - 1.25rem));
+    max-width: 30rem;
 }
 
 @media (max-width: 719px) {
@@ -1775,12 +1776,12 @@ body[data-public-mode='musicos'] .public-scroll-dock {
     }
 
     body[data-public-mode='musicos'] .public-scroll-dock {
-        grid-template-columns: minmax(8.25rem, 1fr) minmax(4.75rem, 6.5rem) auto;
-        width: min(23rem, calc(100vw - 1rem));
+        grid-template-columns: minmax(7.4rem, 1fr) minmax(4rem, 5.5rem) auto;
+        width: min(21rem, calc(100vw - .65rem));
         bottom: 8px;
-        gap: 6px;
-        padding: 6px;
-        border-radius: 18px;
+        gap: 5px;
+        padding: 5px;
+        border-radius: 16px;
     }
 
     body[data-public-mode='musicos'] .public-scroll-dock label {

@@ -84,7 +84,7 @@
                 carousel.addEventListener('scroll', atualizarBotoes, { passive: true });
                 window.addEventListener('resize', atualizarBotoes);
                 requestAnimationFrame(() => {
-                    const itemFoco = carousel.querySelector('[data-selected="true"]');
+                    const itemFoco = carousel.querySelector('[data-selected="true"], [data-schedule-focus]');
                     if (itemFoco) {
                         itemFoco.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'start' });
                     }
@@ -341,7 +341,7 @@
                     }
 
                     const velocidade = Math.max(1, Math.min(5, Number(controleVelocidadeRolagem?.value || 1)));
-                    const passos = [0.08, 0.16, 0.28, 0.44, 0.64];
+                    const passos = [0.035, 0.075, 0.14, 0.24, 0.38];
                     window.scrollBy({ top: passos[velocidade - 1] || passos[0], left: 0, behavior: 'auto' });
                 };
                 const renderizarDiagrama = (shape) => {

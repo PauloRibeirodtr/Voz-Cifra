@@ -13,11 +13,29 @@
         $celebracaoFoiEscolhida = $celebracaoSelecionadaParam > 0 && $missaPublica;
         $cidadeEstadoLinha = trim(($igreja->cidade ?? '') . ' - ' . ($igreja->estado ?? ''), ' -');
         $historicoBaseUrl = route('igrejas.public.musicos.show', ['slug' => $igreja->slug]);
-        $programacaoMusico = collect($missasMusicos ?? [])->values();
+        $programacaoMusico = collect($historicoUltimasMissas ?? [])
+            ->take(5)
+            ->map(fn ($missa) => array_merge($missa, [
+                'url' => route('igrejas.public.musicos.show', ['slug' => $igreja->slug, 'celebracao' => $missa['id']]) . '#celebracao-publica',
+            ]))
+            ->merge(collect($missasHoje ?? [])->map(fn ($missa) => array_merge($missa, [
+                'url' => route('igrejas.public.musicos.show', ['slug' => $igreja->slug, 'celebracao' => $missa['id']]) . '#celebracao-publica',
+            ])))
+            ->merge(collect($proximasMissas ?? [])->map(fn ($missa) => array_merge($missa, [
+                'url' => route('igrejas.public.musicos.show', ['slug' => $igreja->slug, 'celebracao' => $missa['id']]) . '#celebracao-publica',
+            ])))
+            ->unique('id')
+            ->values();
         $historicoParaBusca = $programacaoMusico
             ->merge(collect($historicoSugestoes ?? []))
             ->unique('id')
             ->values();
+        $programacaoFocoId = (int) (
+            collect($missasHoje ?? [])->first()['id']
+            ?? collect($proximasMissas ?? [])->first()['id']
+            ?? $programacaoMusico->first()['id']
+            ?? 0
+        );
     @endphp
 
     <main class="page">
@@ -103,14 +121,15 @@
                                 @foreach ($programacaoMusico as $missaMusico)
                                     @php($missaMusicoSelecionada = (int) $missaMusico['id'] === (int) ($celebracaoSelecionadaId ?? 0))
                                     <a
-                                        href="{{ route('igrejas.public.musicos.show', ['slug' => $igreja->slug, 'celebracao' => $missaMusico['id']]) }}#celebracao-publica"
+                                        href="{{ $missaMusico['url'] }}"
                                         class="card card-link"
                                         data-selected="{{ $missaMusicoSelecionada ? 'true' : 'false' }}"
+                                        @if ((int) $missaMusico['id'] === $programacaoFocoId) data-schedule-focus @endif
                                     >
                                         <div class="card-main">
                                             <div class="schedule-date-row">
-                                                <span class="card-hour">{{ $missaMusico['horario'] }}</span>
                                                 <span class="schedule-date">{{ $missaMusico['data'] }}</span>
+                                                <span class="card-hour">{{ $missaMusico['horario'] }}</span>
                                                 @if (!empty($missaMusico['em_andamento']))
                                                     <span class="badge">Agora</span>
                                                 @endif
