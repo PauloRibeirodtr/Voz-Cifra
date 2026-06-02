@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 String(window.scrollY)
             );
         } catch (error) {
-            // A pagina segue normalmente se o navegador bloquear sessionStorage.
+            // A página segue normalmente se o navegador bloquear sessionStorage.
         }
     };
 
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
             requestAnimationFrame(() => window.scrollTo({ top: scrollSalvo, behavior: 'auto' }));
         }
     } catch (error) {
-        // Sem persistencia local.
+        // Sem persistência local.
     }
 
     window.addEventListener('pagehide', guardarPosicao);
@@ -56,7 +56,16 @@ document.addEventListener('DOMContentLoaded', () => {
         next?.addEventListener('click', () => mover(1));
         carousel.addEventListener('scroll', atualizarBotoes, { passive: true });
         window.addEventListener('resize', atualizarBotoes);
-        atualizarBotoes();
+
+        requestAnimationFrame(() => {
+            const itemFoco = carousel.querySelector('[data-selected="true"], [data-schedule-focus]');
+
+            if (itemFoco) {
+                itemFoco.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'start' });
+            }
+
+            atualizarBotoes();
+        });
     });
 
     const historyInput = document.querySelector('[data-history-input-top]');

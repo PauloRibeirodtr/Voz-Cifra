@@ -376,6 +376,7 @@ a {
 
 .celebration-section {
     position: relative;
+    min-height: calc(100vh - 28px);
 }
 
 .celebration-header {
@@ -398,6 +399,10 @@ a {
 }
 
 .celebration-header__right {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 75;
     flex-direction: column;
     align-items: flex-end;
 }
@@ -462,7 +467,7 @@ a {
 .reading-settings__panel {
     position: absolute;
     right: 0;
-    top: calc(100% + 8px);
+    bottom: calc(100% + 8px);
     z-index: 20;
     display: flex;
     gap: 8px;
@@ -476,9 +481,15 @@ a {
 
 .celebration-nav {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     gap: 8px;
-    margin: 18px 0 10px;
+    position: sticky;
+    top: 46vh;
+    z-index: 45;
+    width: 100%;
+    margin: 0 0 -46px;
+    padding: 0 4px;
+    pointer-events: none;
 }
 
 .celebration-nav button {
@@ -490,6 +501,8 @@ a {
     color: var(--accent);
     font-size: 24px;
     border-radius: 999px;
+    pointer-events: auto;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.34);
 }
 
 .celebration-nav button:disabled {
@@ -734,6 +747,23 @@ a {
         margin-bottom: 12px;
     }
 
+    .celebration-header__left {
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .celebration-back {
+        width: 44px;
+        min-width: 44px;
+        padding: 0;
+        margin-top: 4px;
+    }
+
+    .celebration-header__right {
+        right: 14px;
+        bottom: 14px;
+    }
+
     .celebration-title {
         font-size: 30px;
     }
@@ -753,8 +783,8 @@ a {
     }
 
     .reading-settings__panel {
-        right: auto;
-        left: 0;
+        right: 0;
+        left: auto;
     }
 
     .home-floating__text {

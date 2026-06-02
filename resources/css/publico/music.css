@@ -1351,7 +1351,7 @@
             }
         }
 
-/* Ajustes especificos extraidos antes da organizacao dos assets. */
+/* Ajustes específicos extraídos antes da organização dos assets. */
 body[data-public-mode='musicos'] .public-song-tools {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1520,6 +1520,271 @@ body[data-public-mode='musicos'] .public-history-quick-results .card-title {
     body[data-public-mode='musicos'] .public-scroll-dock input[type='range'] {
         grid-column: auto;
         width: 100%;
+    }
+}
+
+/* Leitura focada da página pública dos músicos. */
+body[data-public-mode='musicos'] .schedule-date-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+body[data-public-mode='musicos'] .schedule-date-row .badge {
+    white-space: nowrap;
+}
+
+body[data-public-mode='musicos'] .celebration-section {
+    min-height: calc(100vh - 28px);
+    padding-bottom: 7rem;
+}
+
+body[data-public-mode='musicos'] .celebration-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+body[data-public-mode='musicos'] .celebration-header__left {
+    display: flex;
+    align-items: flex-start;
+    gap: .9rem;
+    min-width: 0;
+}
+
+body[data-public-mode='musicos'] .celebration-back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    min-width: 46px;
+    min-height: 46px;
+    padding: 0;
+    border-radius: 999px;
+}
+
+body[data-public-mode='musicos'] .reading-settings {
+    position: fixed;
+    right: 18px;
+    bottom: 88px;
+    z-index: 86;
+}
+
+body[data-public-mode='musicos'] .reading-settings > summary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    min-height: 48px;
+    padding: 0;
+    border: 1px solid rgba(113, 82, 56, .38);
+    border-radius: 999px;
+    background: #fffaf2;
+    color: #2b1710;
+    box-shadow: 0 14px 34px rgba(20, 11, 8, .22);
+    cursor: pointer;
+}
+
+body[data-public-mode='musicos'] .reading-settings__panel {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 8px);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    width: min(14rem, calc(100vw - 1.25rem));
+    padding: 10px;
+    border: 1px solid rgba(113, 82, 56, .28);
+    border-radius: 18px;
+    background: #fffaf2;
+    box-shadow: 0 16px 44px rgba(20, 11, 8, .2);
+}
+
+body[data-public-mode='musicos'] .reading-settings__panel .public-tool-button {
+    min-height: 42px;
+    box-shadow: none;
+}
+
+body[data-public-mode='musicos'] .celebration-list {
+    display: grid !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: 100% !important;
+    grid-template-columns: none !important;
+    gap: 16px;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    scroll-snap-type: x mandatory !important;
+    scrollbar-width: none;
+    padding-inline: 0;
+}
+
+body[data-public-mode='musicos'] .celebration-list::-webkit-scrollbar {
+    display: none;
+}
+
+body[data-public-mode='musicos'] .celebration-item {
+    width: 100%;
+    min-width: 0;
+    scroll-snap-align: start;
+    overflow: visible;
+}
+
+body[data-public-mode='musicos'] .celebration-item.is-selected {
+    outline: 1px solid rgba(227, 190, 132, .3);
+    outline-offset: 4px;
+}
+
+body[data-public-mode='musicos'] .celebration-nav {
+    position: sticky;
+    top: 46vh;
+    z-index: 45;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 0 0 -54px;
+    opacity: .32;
+    pointer-events: none;
+    transition: opacity .18s ease;
+}
+
+body[data-public-mode='musicos'] .celebration-nav.is-visible,
+body[data-public-mode='musicos'] .celebration-nav:focus-within {
+    opacity: 1;
+}
+
+body[data-public-mode='musicos'] .celebration-nav button {
+    pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    min-height: 48px;
+    border: 1px solid rgba(227, 190, 132, .42);
+    border-radius: 999px;
+    background: rgba(28, 17, 12, .84);
+    color: #ffd99d;
+    font-size: 22px;
+    font-weight: 900;
+}
+
+body[data-public-mode='musicos'] .celebration-nav button:disabled {
+    opacity: .28;
+}
+
+body[data-public-mode='musicos'] .public-song-tools,
+body[data-public-mode='musicos'] .public-chord-drawer,
+body[data-public-mode='musicos'] .public-drawer-backdrop {
+    display: none !important;
+}
+
+body[data-public-mode='musicos'] .public-chord-tooltip {
+    width: min(14.5rem, calc(100vw - 1.5rem));
+    border-color: rgba(227, 190, 132, .28);
+    background: rgba(16, 9, 7, .98);
+    color: #fffaf2;
+}
+
+body[data-public-mode='musicos'] .public-chord-tooltip svg {
+    width: 100%;
+    max-height: 15rem;
+}
+
+body[data-public-mode='musicos'] .public-scroll-dock {
+    grid-template-columns: minmax(8.5rem, 1fr) minmax(6rem, 10rem) auto;
+    width: min(36rem, calc(100vw - 1.25rem));
+    max-width: 36rem;
+}
+
+@media (max-width: 719px) {
+    body[data-public-mode='musicos'] .page {
+        padding-bottom: 112px;
+    }
+
+    body[data-public-mode='musicos'] .hero {
+        grid-template-columns: 86px 1fr;
+        padding: 16px;
+    }
+
+    body[data-public-mode='musicos'] .brand {
+        width: 86px;
+        height: 86px;
+        border-radius: 22px;
+    }
+
+    body[data-public-mode='musicos'] .brand img {
+        width: 86px;
+        height: 86px;
+        object-fit: cover;
+    }
+
+    body[data-public-mode='musicos'] .hero-title,
+    body[data-public-mode='musicos'] .section-title {
+        font-size: clamp(26px, 8.5vw, 34px);
+        line-height: .98;
+    }
+
+    body[data-public-mode='musicos'] .celebration-section {
+        padding: 18px 12px 7rem;
+    }
+
+    body[data-public-mode='musicos'] .celebration-title {
+        font-size: clamp(26px, 8vw, 34px);
+        line-height: .98;
+    }
+
+    body[data-public-mode='musicos'] .celebration-header__left {
+        gap: .65rem;
+    }
+
+    body[data-public-mode='musicos'] .celebration-back {
+        width: 42px;
+        min-width: 42px;
+        min-height: 42px;
+    }
+
+    body[data-public-mode='musicos'] .reading-settings {
+        right: 14px;
+        bottom: 82px;
+    }
+
+    body[data-public-mode='musicos'] .reading-settings > summary {
+        width: 46px;
+        min-height: 46px;
+    }
+
+    body[data-public-mode='musicos'] .public-swipe-hint {
+        display: flex;
+        font-size: 11px;
+    }
+
+    body[data-public-mode='musicos'] .celebration-nav {
+        top: 42vh;
+        margin-bottom: -48px;
+    }
+
+    body[data-public-mode='musicos'] .celebration-nav button {
+        width: 44px;
+        min-height: 44px;
+    }
+
+    body[data-public-mode='musicos'] .lyrics {
+        font-size: calc(16px * var(--celebration-font-scale, 1));
+        line-height: 1.8;
+    }
+
+    body[data-public-mode='musicos'] .public-scroll-dock {
+        grid-template-columns: minmax(8.25rem, 1fr) minmax(4.75rem, 6.5rem) auto;
+        width: min(23rem, calc(100vw - 1rem));
+        bottom: 8px;
+        gap: 6px;
+        padding: 6px;
+        border-radius: 18px;
+    }
+
+    body[data-public-mode='musicos'] .public-scroll-dock label {
+        display: none;
     }
 }
 
