@@ -74,7 +74,7 @@
             </summary>
 
             <div class="border-t border-[#8c6933]/10 bg-white p-4 sm:p-6">
-                <div class="mb-5 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm text-amber-900">
+                <div class="repertorio-sequence-note mb-5 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm text-amber-900">
                     <strong>Sequencia da celebracao:</strong> as musicas aparecem na ordem da missa. Toque em uma musica para abrir ou fechar a cifra.
                 </div>
 
@@ -213,7 +213,7 @@
                                         @endif
                                     </details>
 
-                                    <div class="mb-4 flex flex-wrap gap-2" data-repertorio-acordes></div>
+                                    <div class="mb-3 flex flex-wrap gap-2" data-repertorio-acordes></div>
                                     <div
                                         data-repertorio-cifra
                                         data-texto-cifra-id="repertorio-cifra-texto-{{ $item->id }}"

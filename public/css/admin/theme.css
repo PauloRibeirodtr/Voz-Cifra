@@ -1108,6 +1108,85 @@ body.theme-dark .admin-sidebar-link:hover {
     background: rgba(255, 255, 255, 0.05);
 }
 
+body.theme-dark .text-amber-800,
+body.theme-dark .text-amber-900,
+body.theme-dark .text-yellow-800,
+body.theme-dark .text-yellow-900 {
+    color: #fde68a !important;
+}
+
+body.theme-dark .text-blue-800,
+body.theme-dark .text-blue-900,
+body.theme-dark .text-sky-800,
+body.theme-dark .text-sky-900,
+body.theme-dark .text-indigo-800,
+body.theme-dark .text-indigo-900 {
+    color: #bfdbfe !important;
+}
+
+body.theme-dark .text-emerald-800,
+body.theme-dark .text-emerald-900,
+body.theme-dark .text-green-800,
+body.theme-dark .text-green-900 {
+    color: #bbf7d0 !important;
+}
+
+body.theme-dark .text-red-800,
+body.theme-dark .text-red-900,
+body.theme-dark .text-rose-800,
+body.theme-dark .text-rose-900 {
+    color: #fecaca !important;
+}
+
+body.theme-dark .bg-yellow-50,
+body.theme-dark .bg-yellow-100,
+body.theme-dark .bg-orange-50,
+body.theme-dark .bg-orange-100 {
+    background: rgba(120, 53, 15, 0.24) !important;
+    border-color: rgba(251, 191, 36, 0.34) !important;
+}
+
+body.theme-dark .bg-sky-50,
+body.theme-dark .bg-sky-100,
+body.theme-dark .bg-cyan-50,
+body.theme-dark .bg-cyan-100 {
+    background: rgba(14, 116, 144, 0.2) !important;
+    border-color: rgba(125, 211, 252, 0.32) !important;
+}
+
+body.theme-dark .bg-rose-50,
+body.theme-dark .bg-rose-100 {
+    background: rgba(127, 29, 29, 0.22) !important;
+    border-color: rgba(251, 113, 133, 0.34) !important;
+}
+
+body.theme-dark .missa-support-panel,
+body.theme-dark .repertorio-item-card,
+body.theme-dark details,
+body.theme-dark summary {
+    border-color: var(--admin-border) !important;
+    color: var(--admin-text) !important;
+}
+
+body.theme-dark .missa-support-panel,
+body.theme-dark .repertorio-item-card {
+    background: var(--admin-surface-strong) !important;
+}
+
+body.theme-dark summary:hover,
+body.theme-dark .admin-user-link:hover {
+    background: rgba(232, 190, 132, 0.08) !important;
+}
+
+body.theme-dark option {
+    background: #211514;
+    color: #f8fafc;
+}
+
+body.theme-dark a:not(.admin-sidebar-link):not(.admin-btn-primary):not(.admin-btn-secondary):not(.admin-btn-danger) {
+    color: #f3dfbd;
+}
+
 @media (min-width: 640px) {
     .admin-page-actions {
         width: auto;

@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         intervalo = window.setInterval(() => {
             const fator = Number.parseFloat(velocidade?.value || '1');
-            window.scrollBy({ top: Math.max(0.35, fator * 1.25), left: 0, behavior: 'auto' });
+            window.scrollBy({ top: Math.max(0.12, fator * 0.7), left: 0, behavior: 'auto' });
 
             if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight - 4) {
                 parar();

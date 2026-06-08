@@ -242,6 +242,75 @@
             border-radius: 0.85rem;
             transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
         }
+
+        @media (max-width: 640px) {
+            .missa-page-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .missa-page-actions a,
+            .missa-page-actions button {
+                min-height: 3rem;
+                padding-block: 0.75rem;
+            }
+
+            .missa-support-panel {
+                padding: 1rem !important;
+            }
+
+            .missa-support-panel summary {
+                gap: 0.75rem;
+            }
+
+            .missa-support-panel summary span:first-child span:first-child,
+            .missa-support-panel summary h2 {
+                font-size: 1rem;
+                line-height: 1.25;
+            }
+
+            .missa-support-panel summary span:first-child span:last-child,
+            .missa-support-panel summary p {
+                font-size: 0.78rem;
+                line-height: 1.35;
+            }
+
+            .missa-step,
+            .repertorio-status-card {
+                padding: 0.8rem;
+            }
+
+            .missa-step-number {
+                width: 1.75rem;
+                height: 1.75rem;
+            }
+
+            .repertorio-sequence {
+                padding: 0.8rem;
+            }
+
+            .repertorio-sequence-list {
+                display: flex;
+                gap: 0.7rem;
+                overflow-x: auto;
+                padding-bottom: 0.35rem;
+                scroll-snap-type: x proximity;
+            }
+
+            .repertorio-sequence-item {
+                min-width: 14rem;
+                padding: 0.75rem;
+                scroll-snap-align: start;
+            }
+
+            .repertorio-item-card {
+                padding: 0.9rem !important;
+            }
+
+            .repertorio-action {
+                width: 2.45rem;
+                height: 2.45rem;
+            }
+        }
     </style>
 @endpush
 
@@ -268,7 +337,7 @@
             @endif
         </div>
 
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:min-w-[23rem]">
+        <div class="missa-page-actions grid grid-cols-1 gap-3 sm:grid-cols-2 xl:min-w-[23rem]" data-guide-target="missa-acoes">
             <a href="{{ route('local-admin.missas.edit', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-[#ead6b3] bg-[#fff8ed] px-4 py-3 font-semibold text-[#6c4a21] transition hover:bg-[#f8ecd7]">
                 Editar missa
             </a>
@@ -364,7 +433,7 @@
         </div>
     @endif
 
-    <details class="mb-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+    <details class="missa-support-panel mb-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm" data-guide-target="missa-conferencia">
         <summary class="flex cursor-pointer list-none flex-col gap-3 text-gray-900 sm:flex-row sm:items-center sm:justify-between [&::-webkit-details-marker]:hidden">
             <span>
                 <span class="block text-lg font-bold">Confer&ecirc;ncia e pend&ecirc;ncias</span>
@@ -432,7 +501,7 @@
         </div>
     </details>
 
-    <details class="mb-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+    <details class="missa-support-panel mb-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm" data-guide-target="missa-checklist">
         <summary class="flex cursor-pointer list-none flex-col gap-3 text-gray-900 lg:flex-row lg:items-center lg:justify-between [&::-webkit-details-marker]:hidden">
             <div>
                 <h2 class="text-lg font-bold text-gray-900">Checklist da montagem</h2>
@@ -491,13 +560,16 @@
         </div>
     </details>
 
-    <section class="mb-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-        <div class="mb-4">
-            <h2 class="text-lg font-bold text-gray-900">Montar por momentos</h2>
-            <p class="mt-1 text-sm text-gray-500">Clique em um momento para escolher a musica certa sem precisar procurar na tabela inteira.</p>
-        </div>
+    <details class="missa-support-panel mb-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm" data-guide-target="missa-momentos">
+        <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-gray-900 [&::-webkit-details-marker]:hidden">
+            <span>
+                <span class="block text-lg font-bold">Montar por momentos</span>
+                <span class="mt-1 block text-sm text-gray-500">Opcional: use quando quiser escolher a musica pela etapa da missa.</span>
+            </span>
+            <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-700">Abrir</span>
+        </summary>
 
-        <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
             @foreach ($momentosLiturgicos as $momentoLiturgico)
                 @php
                     $itensDoMomento = $missa->missaMusicas->filter(fn ($item) => (int) $item->momento_liturgico_id === (int) $momentoLiturgico->id);
@@ -535,11 +607,11 @@
                 </div>
             @endforeach
         </div>
-    </section>
+    </details>
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div class="space-y-6 xl:col-span-2">
-            <section id="missa-repertorio" class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+            <section id="missa-repertorio" class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm" data-guide-target="missa-repertorio-add">
                 <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                         <h2 class="text-lg font-bold text-gray-900">Adicionar m&uacute;sica ao repert&oacute;rio</h2>
@@ -635,7 +707,7 @@
                         Ainda n&atilde;o existe m&uacute;sica cadastrada no repert&oacute;rio desta missa.
                     </div>
                 @else
-                    <div class="repertorio-sequence mb-5">
+                    <div class="repertorio-sequence mb-5" data-guide-target="missa-sequencia">
                         <div class="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                             <div>
                                 <h3 class="text-base font-black text-gray-900">Sequencia da celebracao</h3>

@@ -102,6 +102,17 @@
             ['alvo' => '[data-guide-target="missa-salvar"]', 'titulo' => 'Salve e monte o repertorio', 'texto' => 'Depois de revisar, cadastre a missa. Em seguida voce podera adicionar as musicas na ordem correta.'],
         ],
     ];
+    $guiaMontarRepertorioAjuda = [
+        'id' => 'montar-repertorio-missa',
+        'rota' => 'local-admin.missas.show',
+        'passos' => [
+            ['alvo' => '[data-guide-target="missa-repertorio-add"]', 'foco' => '#busca_musica', 'titulo' => 'Adicione a musica', 'texto' => 'Busque pelo nome, artista ou trecho. Escolha a musica, confirme momento, cifra e tom somente se precisar.'],
+            ['alvo' => '[data-guide-target="missa-sequencia"]', 'titulo' => 'Confira a sequencia', 'texto' => 'Depois de adicionar, use esta linha para ver a ordem dos cantos e abrir o item certo rapidamente.'],
+            ['alvo' => '.repertorio-item-card:first-of-type', 'titulo' => 'Ajuste um item', 'texto' => 'Em cada musica voce pode subir, descer, visualizar a cifra ou abrir os ajustes de momento, cifra e tom.'],
+            ['alvo' => '[data-guide-target="missa-conferencia"]', 'titulo' => 'Revise pendencias', 'texto' => 'Abra esta area apenas quando quiser checar status, musicas sem cifra, momentos pendentes ou duplicidades.'],
+            ['alvo' => '[data-guide-target="missa-acoes"]', 'titulo' => 'Publique com calma', 'texto' => 'Use os botoes para ver como fiel, ver como musico, gerar PDF ou duplicar para outra igreja permitida.'],
+        ],
+    ];
 
     $acoesAjuda = [];
     $adicionarAcaoAjuda = static function (string $perfil, string $titulo, string $url, string $icone, array $termos = [], ?array $guia = null, string $descricao = '') use (&$acoesAjuda): void {
@@ -195,6 +206,9 @@
         ], 'Adicione musicos apenas na igreja ativa do admin local.');
         $adicionarAcaoAjuda('Admin local', 'Gerenciar equipe musical', $urlAjuda('local-admin.musicos.index') ?? '', 'fa-users', ['musicos', 'coordenadores'], null, 'Veja musicos da igreja, edite dados e envie acesso quando necessario.');
         $adicionarAcaoAjuda('Admin local', 'Montar uma missa', $urlAjuda('local-admin.missas.create') ?? '', 'fa-calendar-plus', ['celebracao', 'repertorio'], $guiaCadastrarMissaAjuda, 'Crie a celebracao e depois monte o repertorio com as musicas corretas.');
+        if ($rotaAtualAjuda === 'local-admin.missas.show') {
+            $adicionarAcaoAjuda('Admin local', 'Montar repertorio desta missa', $urlAtualAjuda, 'fa-list-check', ['missa', 'repertorio', 'musicas'], $guiaMontarRepertorioAjuda, 'Adicione musicas, confira a ordem e publique somente quando estiver pronto.');
+        }
         $adicionarAcaoAjuda('Admin local', 'Ver missas cadastradas', $urlAjuda('local-admin.missas.index') ?? '', 'fa-calendar-check', ['repertorio', 'publicar'], null, 'Acompanhe missas, edite repertorios e publique quando estiver pronto.');
         $adicionarAcaoAjuda('Admin local', 'Atualizar dados e links da igreja', $urlAjuda('local-admin.church') ?? '', 'fa-link', ['qr', 'publico'], null, 'Atualize informacoes publicas, links e dados exibidos para a comunidade.');
     }
@@ -234,6 +248,9 @@
         $adicionarAcaoAjuda('Coordenador', 'Consultar biblioteca', $urlAjuda('coordenador.musicas.index') ?? '', 'fa-magnifying-glass', ['musicas', 'cifras', 'tom'], null, 'Pesquise e edite musicas, cifras e versoes cadastradas.');
         $adicionarAcaoAjuda('Coordenador', 'Organizar tempos liturgicos', $urlAjuda('coordenador.tempos-liturgicos.index') ?? '', 'fa-calendar-days', ['liturgia', 'tempo'], $guiaTemposLiturgicosAjuda('coordenador.tempos-liturgicos.index'), 'Mantenha tempos liturgicos organizados para classificar repertorios.');
         $adicionarAcaoAjuda('Coordenador', 'Organizar momentos liturgicos', $urlAjuda('coordenador.momentos-liturgicos.index') ?? '', 'fa-list-ol', ['entrada', 'comunhao', 'final'], $guiaMomentosLiturgicosAjuda('coordenador.momentos-liturgicos.index'), 'Defina momentos da missa para orientar a montagem do repertorio.');
+        if ($rotaAtualAjuda === 'local-admin.missas.show') {
+            $adicionarAcaoAjuda('Coordenador', 'Montar repertorio desta missa', $urlAtualAjuda, 'fa-list-check', ['missa', 'repertorio', 'musicas'], $guiaMontarRepertorioAjuda, 'Adicione musicas, confira a ordem e publique somente quando estiver pronto.');
+        }
         $adicionarAcaoAjuda('Coordenador', 'Ver chamados abertos', ($urlAjuda('coordenador.chamados.index') ?? '') . '?visao=atendimento', 'fa-headset', ['suporte', 'atendimento'], null, 'Atenda pedidos ligados a musicos e rotina da coordenacao.');
         $adicionarAcaoAjuda('Coordenador', 'Ver chamados encerrados', ($urlAjuda('coordenador.chamados.index') ?? '') . '?visao=encerrados', 'fa-box-archive', ['resolvidos', 'fechados'], null, 'Consulte chamados ja resolvidos para historico e acompanhamento.');
     }

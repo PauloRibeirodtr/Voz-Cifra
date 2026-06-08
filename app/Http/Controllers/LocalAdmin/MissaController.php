@@ -59,24 +59,21 @@ class MissaController extends Controller
     public function create(): View
     {
         $igreja = $this->obterIgreja();
+        $usuario = $this->obterUsuario();
+        $igrejasAdministradas = $this->obterIgrejasAdministradas($usuario, $igreja);
         $this->sincronizarMissasEncerradas($igreja);
 
         return view('local-admin.missas.create', [
             'igreja' => $this->adicionarDadosPublicos($igreja),
             'missa' => new Missa(),
-            'igrejasAdministradas' => $this->obterIgrejasAdministradas($this->obterUsuario(), $igreja),
+            'igrejasAdministradas' => $igrejasAdministradas,
             'temposLiturgicos' => TempoLiturgico::where('ativo', true)->orderBy('nome')->get(),
             'padres' => Usuario::query()
                 ->where('eh_padre', true)
                 ->where('ativo', true)
                 ->orderBy('nome')
                 ->get(),
-            'missasAnteriores' => Missa::query()
-                ->with(['tempoLiturgico', 'celebrante', 'missaMusicas.musica'])
-                ->where('igreja_id', $igreja->id)
-                ->orderByDesc('data_missa')
-                ->orderByDesc('hora_inicio')
-                ->get(),
+            'missasAnteriores' => $this->obterMissasParaReaproveitar($igrejasAdministradas),
         ]);
     }
 
@@ -86,7 +83,12 @@ class MissaController extends Controller
         $igreja = $this->obterIgreja();
         $usuario = $this->obterUsuario();
 
-        $missa = DB::transaction(function () use ($dados, $igreja): Missa {
+        $igrejasPermitidasParaReaproveitar = collect($this->obterIgrejasAdministradas($usuario, $igreja))
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        $missa = DB::transaction(function () use ($dados, $igreja, $igrejasPermitidasParaReaproveitar): Missa {
             if (($dados['ativo'] ?? false) === true) {
                 Missa::where('igreja_id', $igreja->id)->update(['ativo' => false]);
             }
@@ -107,8 +109,9 @@ class MissaController extends Controller
 
             if (!empty($dados['reaproveitar_repertorio']) && !empty($dados['missa_origem_id'])) {
                 $missaOrigem = Missa::query()
-                    ->where('igreja_id', $igreja->id)
+                    ->whereIn('igreja_id', $igrejasPermitidasParaReaproveitar)
                     ->whereKey($dados['missa_origem_id'])
+                    ->whereHas('missaMusicas')
                     ->with(['missaMusicas' => fn ($query) => $query->orderBy('ordem')])
                     ->first();
 
@@ -961,6 +964,28 @@ class MissaController extends Controller
             })
             ->values()
             ->all();
+    }
+
+    private function obterMissasParaReaproveitar(array $igrejasAdministradas)
+    {
+        $idsIgrejas = collect($igrejasAdministradas)
+            ->pluck('id')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->values();
+
+        if ($idsIgrejas->isEmpty()) {
+            return collect();
+        }
+
+        return Missa::query()
+            ->with(['igreja', 'tempoLiturgico', 'celebrante', 'missaMusicas.musica'])
+            ->whereIn('igreja_id', $idsIgrejas)
+            ->whereHas('missaMusicas')
+            ->orderByDesc('data_missa')
+            ->orderByDesc('hora_inicio')
+            ->limit(30)
+            ->get();
     }
 
     private function obterIgreja(): Igreja

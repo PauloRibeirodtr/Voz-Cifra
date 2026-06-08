@@ -71,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         resumo.textContent = [
             `Missa: ${missa.titulo}`,
+            `Igreja: ${missa.igreja_nome || 'Igreja atual'}`,
             `Data e horario: ${missa.data_missa || 'Sem data'} - ${missa.hora_inicio || '--:--'} as ${missa.hora_fim || '--:--'}`,
             `Tempo liturgico: ${missa.tempo_liturgico_nome}`,
             `Celebrante: ${missa.celebrante_nome}`,

@@ -61,13 +61,13 @@
 
 .cifra-palco .cifra-linha {
     background: transparent;
-    margin-bottom: 0.12rem;
+    margin-bottom: 0.04rem;
 }
 
 .cifra-palco .cifra-acordes {
     color: #ea580c;
     font-size: calc(1rem * var(--escala-fonte, 1));
-    line-height: 1.15;
+    line-height: 1.08;
 }
 
 .cifra-palco .cifra-acorde {
@@ -79,7 +79,7 @@
 .cifra-palco .cifra-letra {
     color: #172033;
     font-size: calc(1rem * var(--escala-fonte, 1));
-    line-height: 1.72rem;
+    line-height: 1.5rem;
 }
 
 .cifra-palco .cifra-linha--refrao {
@@ -100,20 +100,21 @@
 .cifra-palco .cifra-marcacao--refrao {
     background: #fef3c7;
     color: #92400e;
-    font-size: 0.82rem;
+    font-size: 0.9rem;
     font-weight: 950;
+    letter-spacing: 0.08em;
     box-shadow: inset 0 0 0 1px rgba(217, 119, 6, 0.22);
 }
 
 .acorde-chip {
     display: inline-flex;
     align-items: center;
-    min-height: 2rem;
+    min-height: 1.75rem;
     border-radius: 9999px;
     border: 1px solid rgba(245, 158, 11, 0.28);
     background: #fff7ed;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.78rem;
+    padding: 0.18rem 0.62rem;
+    font-size: 0.73rem;
     font-weight: 800;
     color: #9a3412;
 }
@@ -199,7 +200,7 @@
 
 .repertorio-flow {
     display: grid;
-    gap: 0.75rem;
+    gap: 0.55rem;
 }
 
 .repertorio-flow-item {
@@ -210,7 +211,7 @@
     border-radius: 1rem;
     border: 1px solid rgba(226, 232, 240, 0.96);
     background: #ffffff;
-    padding: 0.85rem;
+    padding: 0.72rem;
     color: #111827;
     transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
 }
@@ -240,7 +241,7 @@
     left: 50%;
     bottom: max(0.4rem, env(safe-area-inset-bottom));
     z-index: 45;
-    width: min(calc(100vw - 1rem), 34rem);
+    width: min(calc(100vw - 1rem), 30rem);
     transform: translateX(-50%);
     border: 1px solid rgba(140, 105, 51, 0.24);
     border-radius: 999px;
@@ -251,6 +252,11 @@
 
 .scroll-dock.p-3 {
     padding: 0.45rem !important;
+}
+
+.repertorio-sequence-note {
+    padding-block: 0.75rem !important;
+    transition: opacity 0.18s ease;
 }
 
 body:has([data-scroll-dock]) .help-actions-launcher {
@@ -272,13 +278,32 @@ body:has([data-help-panel]:not(.hidden)) .scroll-dock {
 }
 
 @media (max-width: 640px) {
+    .repertorio-sequence-note {
+        display: none;
+    }
+
+    .missa-card summary,
+    .musica-item summary {
+        padding: 0.85rem !important;
+    }
+
+    .musica-item summary h3 {
+        margin-top: 0.55rem;
+        font-size: 1.08rem;
+        line-height: 1.25;
+    }
+
+    .cifra-palco {
+        padding: 0.9rem !important;
+    }
+
     .cifra-palco .cifra-linha {
-        gap: 0.12rem;
+        gap: 0.05rem;
     }
 
     .cifra-palco .cifra-letra {
         color: #172033;
-        line-height: 1.62rem;
+        line-height: 1.48rem;
         overflow-wrap: normal;
         word-break: normal;
     }
@@ -310,28 +335,28 @@ body:has([data-help-panel]:not(.hidden)) .scroll-dock {
     }
 
     .scroll-dock {
-        bottom: max(0.35rem, env(safe-area-inset-bottom));
-        width: min(calc(100vw - 0.8rem), 22.5rem);
+        bottom: max(0.25rem, env(safe-area-inset-bottom));
+        width: min(calc(100vw - 0.65rem), 20.5rem);
     }
 
     .scroll-dock > div {
         display: grid;
-        grid-template-columns: minmax(6.25rem, 1fr) minmax(4.75rem, 7rem) 2.7rem;
+        grid-template-columns: minmax(5.8rem, 1fr) minmax(4.25rem, 6.5rem) 2.55rem;
         align-items: center;
-        gap: 0.35rem;
+        gap: 0.28rem;
     }
 
     .scroll-dock [data-scroll-toggle] {
-        min-height: 2.45rem;
-        padding: 0.55rem 0.8rem;
-        font-size: 0.78rem;
+        min-height: 2.28rem;
+        padding: 0.45rem 0.65rem;
+        font-size: 0.74rem;
         border-radius: 999px;
     }
 
     .scroll-dock [data-scroll-top] {
-        min-height: 2.45rem;
-        min-width: 2.7rem;
-        padding: 0.55rem 0.7rem;
+        min-height: 2.28rem;
+        min-width: 2.55rem;
+        padding: 0.45rem 0.6rem;
         border-radius: 999px;
         font-size: 1rem;
     }
@@ -347,7 +372,7 @@ body:has([data-help-panel]:not(.hidden)) .scroll-dock {
 
     body:has([data-scroll-dock]) .help-actions-launcher {
         right: 0.65rem;
-        bottom: max(4.35rem, calc(env(safe-area-inset-bottom) + 4.35rem));
+        bottom: max(3.85rem, calc(env(safe-area-inset-bottom) + 3.85rem));
     }
 }
 

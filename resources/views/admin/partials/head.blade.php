@@ -22,10 +22,18 @@
         const preference = @json(auth()->user()->theme_preference ?? 'system');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const resolved = preference === 'system' ? (prefersDark ? 'dark' : 'light') : preference;
-        document.documentElement.classList.toggle('theme-dark', resolved === 'dark');
-        document.documentElement.classList.toggle('theme-light', resolved !== 'dark');
-        document.body?.classList?.toggle('theme-dark', resolved === 'dark');
-        document.body?.classList?.toggle('theme-light', resolved !== 'dark');
+        const applyTheme = () => {
+            document.documentElement.classList.toggle('theme-dark', resolved === 'dark');
+            document.documentElement.classList.toggle('theme-light', resolved !== 'dark');
+            document.body?.classList?.toggle('theme-dark', resolved === 'dark');
+            document.body?.classList?.toggle('theme-light', resolved !== 'dark');
+        };
+
+        applyTheme();
+
+        if (!document.body) {
+            document.addEventListener('DOMContentLoaded', applyTheme, { once: true });
+        }
     })();
 </script>
 @stack('styles')

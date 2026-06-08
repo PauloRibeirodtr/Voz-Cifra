@@ -32,14 +32,14 @@
                     <div class="mt-4" id="bloco_reaproveitar_repertorio">
                         <label class="block text-sm font-medium text-gray-700">Missa anterior</label>
                         <select name="missa_origem_id" class="{{ $classeInput }}">
-                            <option value="">Selecione uma missa da mesma igreja</option>
+                            <option value="">Selecione uma missa disponivel</option>
                             @foreach (($missasAnteriores ?? collect()) as $missaAnterior)
                                 <option value="{{ $missaAnterior->id }}" @selected((string) old('missa_origem_id') === (string) $missaAnterior->id)>
-                                    {{ $missaAnterior->titulo }} &bull; {{ optional($missaAnterior->data_missa)->format('d/m/Y') }} &bull; {{ substr((string) $missaAnterior->hora_inicio, 0, 5) }} - {{ substr((string) $missaAnterior->hora_fim, 0, 5) }}
+                                    {{ $missaAnterior->titulo }} &bull; {{ $missaAnterior->igreja?->nome }} &bull; {{ optional($missaAnterior->data_missa)->format('d/m/Y') }} &bull; {{ substr((string) $missaAnterior->hora_inicio, 0, 5) }} - {{ substr((string) $missaAnterior->hora_fim, 0, 5) }}
                                 </option>
                             @endforeach
                         </select>
-                        <p class="mt-2 text-xs text-gray-500">Ao selecionar, o formulario tambem usa titulo, data, horarios, tempo liturgico, celebrante e observacoes como ponto de partida.</p>
+                        <p class="mt-2 text-xs text-gray-500">Ao selecionar, o formulario usa titulo, data, horarios, tempo liturgico, celebrante, observacoes e repertorio como ponto de partida.</p>
                         <div id="resumo_missa_origem" class="mt-3 hidden whitespace-pre-line rounded-xl border border-[#ead6b3] bg-white px-4 py-3 text-xs leading-relaxed text-[#5b3d1a]"></div>
                     </div>
                 </div>
@@ -142,6 +142,7 @@
                 return [
                     'id' => (string) $missaAnterior->id,
                     'titulo' => (string) $missaAnterior->titulo,
+                    'igreja_nome' => (string) ($missaAnterior->igreja?->nome ?? ''),
                     'data_missa' => optional($missaAnterior->data_missa)->format('Y-m-d'),
                     'tempo_liturgico_id' => $missaAnterior->tempo_liturgico_id ? (string) $missaAnterior->tempo_liturgico_id : '',
                     'padre_id' => $missaAnterior->celebrante_usuario_id ? (string) $missaAnterior->celebrante_usuario_id : '',
