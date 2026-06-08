@@ -152,18 +152,27 @@
             }).join(' ');
         };
 
-        const normalizarMarcacao = (texto) => String(texto || '')
+        const extrairMarcacaoIsolada = (texto) => {
+            const linha = String(texto || '').trim();
+            const marcacao = linha.match(/^\[([^\[\]\r\n]+)\]$/) || linha.match(/^\(([^\(\)\r\n]+)\)$/);
+
+            return marcacao && !ehAcorde(marcacao[1]) ? marcacao[1].trim() : null;
+        };
+
+        const normalizarMarcacao = (texto) => String(extrairMarcacaoIsolada(texto) || texto || '')
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '')
             .toLowerCase()
             .trim();
 
+        const ehMarcacaoRefrao = (texto) => /^(refrao|refr\.?|ref)(?::|\s|$)/.test(normalizarMarcacao(texto));
+
         const normalizarMarcacaoLinha = (linha) => {
             let texto = String(linha || '').trim();
-            const marcacao = texto.match(/^\[(.+)\]$/);
+            const marcacao = extrairMarcacaoIsolada(texto);
 
-            if (marcacao && !ehAcorde(marcacao[1])) {
-                texto = marcacao[1].trim();
+            if (marcacao) {
+                texto = marcacao;
             }
 
             const normalizada = normalizarMarcacao(texto);
@@ -177,10 +186,9 @@
 
         const ehMarcacaoSecao = (texto) => {
             const linhaLimpa = String(texto || '').trim();
-            const marcacao = linhaLimpa.match(/^\[(.+)\]$/);
-            const textoMarcacao = marcacao && !ehAcorde(marcacao[1]) ? marcacao[1] : linhaLimpa;
+            const textoMarcacao = extrairMarcacaoIsolada(linhaLimpa) || linhaLimpa;
             const normalizada = normalizarMarcacao(textoMarcacao);
-            return normalizada.length <= 32 && /^(intro|refrao:?|pre[-\s]?refrao:?|refr\.?|ref:|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(?:\s|$)/.test(normalizada);
+            return normalizada.length <= 32 && /^(intro|refrao|pre[-\s]?refrao|refr\.?|ref|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(?::|\s|$)/.test(normalizada);
         };
 
         const separarMarcacaoEAcordes = (linha) => {
@@ -416,7 +424,7 @@
 
         const classeMarcacao = (texto, base = 'bg-slate-700/80 text-slate-100') => {
             const normalizada = normalizarMarcacao(texto);
-            return /^(refrao:?|refr\.?|ref:)(?:\s|$)/.test(normalizada)
+            return ehMarcacaoRefrao(texto)
                 ? 'bg-amber-200 text-slate-950 font-black'
                 : base;
         };
@@ -435,13 +443,13 @@
                 return `<div class="cifra-preview-line cifra-preview-line--chords">${escaparHtml(indentacao)}${renderizarTokensDeAcordes(acordes, true)}</div>`;
             }
 
-            const marcacao = linhaLimpa.match(/^\[([^\[\]\r\n]+)\]$/);
-            if (marcacao && !ehAcorde(marcacao[1])) {
-                return `<div class="cifra-marcacao ${normalizarMarcacao(marcacao[1]).startsWith('refrao') ? 'cifra-marcacao--refrao' : ''}">${escaparHtml(marcacao[1])}</div>`;
+            const marcacao = extrairMarcacaoIsolada(linhaLimpa);
+            if (marcacao) {
+                return `<div class="cifra-marcacao ${ehMarcacaoRefrao(marcacao) ? 'cifra-marcacao--refrao' : ''}">${escaparHtml(marcacao)}</div>`;
             }
 
             if (ehMarcacaoSecao(linhaLimpa)) {
-                return `<div class="cifra-marcacao ${normalizarMarcacao(linhaLimpa).startsWith('refrao') ? 'cifra-marcacao--refrao' : ''}">${escaparHtml(linhaLimpa)}</div>`;
+                return `<div class="cifra-marcacao ${ehMarcacaoRefrao(linhaLimpa) ? 'cifra-marcacao--refrao' : ''}">${escaparHtml(linhaLimpa)}</div>`;
             }
 
             const classeAcordes = ehLinhaApenasAcordes(linhaLimpa) ? ' cifra-preview-line--chords' : '';
@@ -463,14 +471,11 @@
                     return `${abrirLinha}${renderizarLinhaComCifras(linha)}${fecharLinha}`;
                 }
 
-                const marcacao = linhaLimpa.match(/^\[(.+)\]$/);
-                const textoMarcacao = marcacao && !ehAcorde(marcacao[1])
-                    ? marcacao[1]
-                    : (ehMarcacaoSecao(linhaLimpa) ? linhaLimpa : null);
+                const textoMarcacao = extrairMarcacaoIsolada(linhaLimpa) || (ehMarcacaoSecao(linhaLimpa) ? linhaLimpa : null);
 
                 if (textoMarcacao) {
                     blocoAtualRefrao = false;
-                    proximaLinhaRefrao = normalizarMarcacao(textoMarcacao).startsWith('refrao') || normalizarMarcacao(textoMarcacao).startsWith('ref:');
+                    proximaLinhaRefrao = ehMarcacaoRefrao(textoMarcacao);
                     return `${abrirLinha}${renderizarLinhaComCifras(linha)}${fecharLinha}`;
                 }
 
@@ -507,19 +512,19 @@
                     return;
                 }
 
-                const marcacao = linhaLimpa.match(/^\[(.+)\]$/);
-                if (marcacao && !ehAcorde(marcacao[1])) {
-                    if (ehMarcacaoInstrumental(marcacao[1])) {
+                const marcacao = extrairMarcacaoIsolada(linhaLimpa);
+                if (marcacao) {
+                    if (ehMarcacaoInstrumental(marcacao)) {
                         blocoAtualRefrao = false;
                         proximoBlocoRefrao = false;
                         return;
                     }
 
-                    const classe = normalizarMarcacao(marcacao[1]).startsWith('refrao')
+                    const classe = ehMarcacaoRefrao(marcacao)
                         ? 'bg-[#f7ead4] text-[#6c4a21] font-black'
                         : 'bg-gray-100 text-gray-700';
-                    blocos.push(`<div ${atributoLinha} class="my-4 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] ${classe}">${escaparHtml(marcacao[1])}</div>`);
-                    proximoBlocoRefrao = normalizarMarcacao(marcacao[1]).startsWith('refrao') || normalizarMarcacao(marcacao[1]).startsWith('ref:');
+                    blocos.push(`<div ${atributoLinha} class="my-4 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] ${classe}">${escaparHtml(marcacao)}</div>`);
+                    proximoBlocoRefrao = ehMarcacaoRefrao(marcacao);
                     return;
                 }
 
@@ -530,11 +535,11 @@
                         return;
                     }
 
-                    const classe = normalizarMarcacao(linhaLimpa).startsWith('refrao')
+                    const classe = ehMarcacaoRefrao(linhaLimpa)
                         ? 'bg-[#f7ead4] text-[#6c4a21] font-black'
                         : 'bg-gray-100 text-gray-700';
                     blocos.push(`<div ${atributoLinha} class="my-4 inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] ${classe}">${escaparHtml(linhaLimpa)}</div>`);
-                    proximoBlocoRefrao = normalizarMarcacao(linhaLimpa).startsWith('refrao') || normalizarMarcacao(linhaLimpa).startsWith('ref:');
+                    proximoBlocoRefrao = ehMarcacaoRefrao(linhaLimpa);
                     return;
                 }
 

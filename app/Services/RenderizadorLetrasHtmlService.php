@@ -98,6 +98,10 @@ class RenderizadorLetrasHtmlService
             return trim((string) $matches[1]);
         }
 
+        if (preg_match('/^\((.+)\)$/u', $linha, $matches) === 1 && !$this->pareceAcorde((string) $matches[1])) {
+            return trim((string) $matches[1]);
+        }
+
         return $this->ehMarcacaoSecao($linha) ? $linha : null;
     }
 
@@ -106,7 +110,7 @@ class RenderizadorLetrasHtmlService
         $normalizado = $this->normalizarMarcacao($valor);
 
         return strlen($normalizado) <= 32
-            && preg_match('/^(intro|refrao:?|pre[-\s]?refrao:?|refr\.?|ref:|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(?:\s|$)/', $normalizado) === 1;
+            && preg_match('/^(intro|refrao|refr\.?|ref|pre[-\s]?refrao|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(?::|\s|$)/', $normalizado) === 1;
     }
 
     private function classeMarcacao(string $valor): string
@@ -118,7 +122,7 @@ class RenderizadorLetrasHtmlService
 
     private function ehMarcacaoRefrao(string $valor): bool
     {
-        return preg_match('/^(refrao:?|refr\.?|ref:)(?:\s|$)/', $this->normalizarMarcacao($valor)) === 1;
+        return preg_match('/^(refrao|refr\.?|ref)(?::|\s|$)/', $this->normalizarMarcacao($valor)) === 1;
     }
 
     private function normalizarMarcacao(string $valor): string

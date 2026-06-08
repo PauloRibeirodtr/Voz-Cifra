@@ -23,7 +23,14 @@ class RepertorioMusicoService
             ->with([
                 'tempoLiturgico',
                 'missaMusicas' => fn ($query) => $query
-                    ->with(['musica', 'versaoMusical', 'momentoLiturgico', 'solicitacoesMudancaTom'])
+                    ->with([
+                        'musica.versoesMusicais' => fn ($versoes) => $versoes
+                            ->where('ativo', true)
+                            ->orderByDesc('id'),
+                        'versaoMusical',
+                        'momentoLiturgico',
+                        'solicitacoesMudancaTom',
+                    ])
                     ->orderBy('ordem'),
             ])
             ->where('igreja_id', $igrejaId)

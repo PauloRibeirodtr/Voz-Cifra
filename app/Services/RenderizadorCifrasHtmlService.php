@@ -35,7 +35,7 @@ class RenderizadorCifrasHtmlService
                 return '<div class="cifra-linha cifra-linha--acordes' . ($blocoAtualRefrao ? ' cifra-linha--refrao' : '') . '" style="--cifra-indent:' . $indentacao . 'ch"><span class="cifra-acordes">' . $this->renderizarAcordesInline($acordesComColchetes) . '</span></div>';
             }
 
-            if (preg_match('/^\[([^\[\]\r\n]+)\]$/u', $linhaLimpa, $matches) === 1 && !$this->ehAcorde($matches[1])) {
+            if ($this->extrairMarcacaoIsolada($linhaLimpa, $matches) && ! $this->ehAcorde($matches[1])) {
                 $blocoAtualRefrao = false;
                 $proximaLinhaRefrao = $this->ehMarcacaoRefrao((string) $matches[1]);
 
@@ -183,7 +183,7 @@ class RenderizadorCifrasHtmlService
         $normalizado = $this->normalizarMarcacao($valor);
 
         return strlen($normalizado) <= 32
-            && preg_match('/^(intro|refrao|pre[-\s]?refrao|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(\b|$)/', $normalizado) === 1;
+            && preg_match('/^(intro|refrao|pre[-\s]?refrao|refr\.?|ref|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(:|\s|$)/', $normalizado) === 1;
     }
 
     private function classeMarcacaoSecao(string $valor): string
@@ -197,13 +197,28 @@ class RenderizadorCifrasHtmlService
     {
         $normalizado = $this->normalizarMarcacao($valor);
 
-        return str_starts_with($normalizado, 'refrao') || str_starts_with($normalizado, 'ref:');
+        return preg_match('/^(refrao|refr\.?|ref)(:|\s|$)/', $normalizado) === 1;
     }
 
     private function normalizarMarcacao(string $valor): string
     {
+        $valor = trim($valor);
+
+        if (preg_match('/^[\[\(]([^\[\]\(\)\r\n]+)[\]\)]$/u', $valor, $matches) === 1) {
+            $valor = trim($matches[1]);
+        }
+
         $semAcentos = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $valor);
 
         return strtolower(trim($semAcentos !== false ? $semAcentos : $valor));
+    }
+
+    private function extrairMarcacaoIsolada(string $valor, ?array &$matches = null): bool
+    {
+        if (preg_match('/^\[([^\[\]\r\n]+)\]$/u', $valor, $matches) === 1) {
+            return true;
+        }
+
+        return preg_match('/^\(([^\(\)\r\n]+)\)$/u', $valor, $matches) === 1;
     }
 }

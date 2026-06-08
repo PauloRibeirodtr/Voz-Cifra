@@ -22,12 +22,12 @@
             'id' => 'editar-cifra',
             'rota' => $rotaAtual,
             'passos' => [
-                ['alvo' => '[data-guide-target="cifra-editor"]', 'foco' => '#letra_com_cifras', 'titulo' => 'Cole ou edite a cifra', 'texto' => 'Cole a cifra inteira aqui. Pode vir com acordes em cima da letra, entre colchetes ou no formato do Cifra Club.'],
-                ['alvo' => '[data-guide-target="cifra-organizar"]', 'titulo' => 'Arrume automaticamente', 'texto' => 'Use este botao como primeiro passo depois de colar a cifra. Ele separa partes, acordes soltos e linhas no padrao de leitura.'],
-                ['alvo' => '[data-guide-target="cifra-preview"]', 'titulo' => 'Confira a previa', 'texto' => 'Acompanhe do lado como o musico vai ler. Se algo ficar fora do lugar, ajuste no editor e confira novamente.'],
-                ['alvo' => '[data-guide-target="cifra-ferramentas"]', 'titulo' => 'Use ajustes extras so quando precisar', 'texto' => 'Aqui ficam atalhos para inserir refrao, parte ou linha instrumental sem encher a tela principal.'],
-                ['alvo' => '[data-guide-target="cifra-tom-bpm"]', 'titulo' => 'Defina tom e BPM', 'texto' => 'Informe o tom original e o BPM quando souber. Isso ajuda o musico no estudo e na missa.'],
-                ['alvo' => '[data-guide-target="cifra-youtube"]', 'titulo' => 'Adicione video se tiver', 'texto' => 'Cole o ID ou link do YouTube para facilitar o estudo da equipe.'],
+                ['alvo' => '[data-guide-target="cifra-editor"]', 'foco' => '#letra_com_cifras', 'titulo' => 'Letra com cifra', 'texto' => 'Cole a cifra inteira aqui. A letra deve continuar sendo a parte mais facil de revisar.'],
+                ['alvo' => '[data-guide-target="cifra-organizar"]', 'titulo' => 'Arrumar cifra', 'texto' => 'Depois de colar, use este botao para organizar acordes, partes e refroes.'],
+                ['alvo' => '[data-guide-target="cifra-preview"]', 'titulo' => 'Previa de leitura', 'texto' => 'Confira se a letra ficou clara para o musico antes de salvar.'],
+                ['alvo' => '[data-guide-target="cifra-ferramentas"]', 'titulo' => 'Ajustes extras', 'texto' => 'Use apenas quando precisar inserir refrao, parte ou linha de acordes.'],
+                ['alvo' => '[data-guide-target="cifra-tom-bpm"]', 'titulo' => 'Tom e BPM', 'texto' => 'Informe quando souber. Se nao souber, a cifra ainda pode ser salva.'],
+                ['alvo' => '[data-guide-target="cifra-youtube"]', 'titulo' => 'Video de apoio', 'texto' => 'Opcional. Ajuda o musico a estudar a mesma versao.'],
             ],
         ];
     };

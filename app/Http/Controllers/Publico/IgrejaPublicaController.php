@@ -389,7 +389,13 @@ class IgrejaPublicaController extends Controller
             'tempoLiturgico',
             'padre',
             'missaMusicas' => fn ($query) => $query
-                ->with(['musica', 'versaoMusical', 'momentoLiturgico'])
+                ->with([
+                    'musica.versoesMusicais' => fn ($versoes) => $versoes
+                        ->where('ativo', true)
+                        ->orderByDesc('id'),
+                    'versaoMusical',
+                    'momentoLiturgico',
+                ])
                 ->orderBy('ordem'),
         ];
     }
@@ -401,7 +407,17 @@ class IgrejaPublicaController extends Controller
         }
 
         $itens = $missa->missaMusicas->map(function ($item) use ($exibirCifras) {
-            $letraBase = $item->versaoMusical?->letra_com_cifras ?: $item->musica?->letra ?: '';
+            $versaoPublica = $item->versaoMusical;
+
+            if ($exibirCifras && (! $versaoPublica || trim((string) $versaoPublica->letra_com_cifras) === '')) {
+                $versaoPublica = $item->musica?->versoesMusicais
+                    ?->first(fn ($versao) => trim((string) $versao->letra_com_cifras) !== '');
+            }
+
+            $temVersaoVinculada = $versaoPublica !== null && trim((string) $versaoPublica->letra_com_cifras) !== '';
+            $letraBase = $exibirCifras && $temVersaoVinculada
+                ? (string) $versaoPublica->letra_com_cifras
+                : (string) ($item->musica?->letra ?: '');
             $letraPublica = $exibirCifras
                 ? $this->normalizarLetraMusico($letraBase)
                 : $this->limparLetraPublica($letraBase);
@@ -411,6 +427,7 @@ class IgrejaPublicaController extends Controller
                 'titulo' => $item->musica?->titulo ?: 'Canto sem titulo',
                 'momento' => $item->momentoLiturgico?->nome,
                 'tom' => $item->tomExibicao,
+                'tem_versao_vinculada' => $temVersaoVinculada,
                 'letra_publica' => $letraPublica,
                 'letra_publica_html' => $exibirCifras
                     ? $this->formatarLetraMusicoParaHtml($letraBase)
@@ -474,14 +491,14 @@ class IgrejaPublicaController extends Controller
         $normalizado = Str::of($valor)->ascii()->lower()->trim()->toString();
 
         return strlen($normalizado) <= 32
-            && preg_match('/^(intro|refrao|pre[-\s]?refrao|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(\b|$)/', $normalizado) === 1;
+            && preg_match('/^(intro|refrao|refr\.?|ref|pre[-\s]?refrao|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(:|\b|$)/', $normalizado) === 1;
     }
 
     private function classeMarcacaoSecaoPublica(string $valor): string
     {
         $normalizado = Str::of($valor)->ascii()->lower()->trim()->toString();
 
-        return str_starts_with($normalizado, 'refrao')
+        return preg_match('/^(refrao|refr\.?|ref)(:|\b|$)/', $normalizado) === 1
             ? 'lyrics-section-label lyrics-section-label--refrao'
             : 'lyrics-section-label';
     }

@@ -202,8 +202,14 @@
                                             @if (!empty($item['tom']))
                                                 <span class="badge">Tom {{ $item['tom'] }}</span>
                                             @endif
+                                            @if (empty($item['tem_versao_vinculada']))
+                                                <span class="badge badge--warning">Sem cifra</span>
+                                            @endif
                                         </div>
                                         <h3 class="card-title">{{ $item['titulo'] }}</h3>
+                                        @if (empty($item['tem_versao_vinculada']))
+                                            <p class="public-version-warning">Esta música ainda não tem cifra vinculada. Exibindo somente a letra.</p>
+                                        @endif
                                         <div class="lyrics" data-public-musician-lyrics data-public-song-lyrics data-base-tom="{{ $item['tom'] ?? '' }}" data-lyrics="{{ e($item['letra_publica'] ?? '') }}">{!! $item['letra_publica_html'] ?? nl2br(e($item['letra_publica'] ?? ''), false) !!}</div>
                                     </article>
                                 @endforeach

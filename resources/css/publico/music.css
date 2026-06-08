@@ -927,7 +927,9 @@
             background: rgba(255, 217, 157, 0.18);
             border-color: rgba(255, 217, 157, 0.34);
             color: #fff3d7;
+            font-size: 0.86rem;
             font-weight: 950;
+            letter-spacing: 0.1em;
         }
 
         body[data-public-mode='musicos'] .lyrics {
@@ -1672,6 +1674,25 @@ body[data-public-mode='musicos'] .celebration-nav button {
 
 body[data-public-mode='musicos'] .celebration-nav button:disabled {
     opacity: .28;
+}
+
+body[data-public-mode='musicos'] .badge--warning {
+    border-color: rgba(255, 193, 7, .42);
+    background: rgba(255, 193, 7, .14);
+    color: #ffe3a5;
+}
+
+body[data-public-mode='musicos'] .public-version-warning {
+    width: fit-content;
+    max-width: 100%;
+    margin: 8px 0 18px;
+    padding: 9px 12px;
+    border: 1px solid rgba(255, 193, 7, .26);
+    border-radius: 14px;
+    background: rgba(255, 193, 7, .1);
+    color: rgba(255, 248, 229, .86);
+    font-size: .88rem;
+    line-height: 1.35;
 }
 
 body[data-public-mode='musicos'] .public-song-tools,

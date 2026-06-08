@@ -45,18 +45,27 @@
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
 
-    const normalizeSectionLabel = (value) => String(value || '')
+    const unwrapSectionLabel = (value) => {
+        const label = String(value || '').trim();
+        const wrapped = label.match(/^\[([^\[\]\r\n]+)\]$/u) || label.match(/^\(([^\(\)\r\n]+)\)$/u);
+
+        return wrapped ? String(wrapped[1] || '').trim() : label;
+    };
+
+    const normalizeSectionLabel = (value) => unwrapSectionLabel(value)
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .toLowerCase()
         .trim();
 
+    const isChorusLabel = (value) => /^(refrao|refr\.?|ref)(?::|\s|$)/.test(normalizeSectionLabel(value));
+
     const isSectionLabel = (value) => {
         const label = normalizeSectionLabel(value);
-        return label.length <= 32 && /^(intro|refrao:?|pre[-\s]?refrao:?|refr\.?|ref:|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(?:\s|$)/.test(label);
+        return label.length <= 32 && /^(intro|refrao|pre[-\s]?refrao|refr\.?|ref|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(?::|\s|$)/.test(label);
     };
 
-    const sectionLabelClass = (value) => (/^(refrao:?|refr\.?|ref:)(?:\s|$)/.test(normalizeSectionLabel(value))
+    const sectionLabelClass = (value) => (isChorusLabel(value)
         ? 'cifra-marcacao cifra-marcacao--refrao'
         : 'cifra-marcacao');
 
@@ -228,7 +237,7 @@
                 return `<div class="cifra-linha cifra-linha--acordes${currentBlockIsChorus ? ' cifra-linha--refrao' : ''}" style="--cifra-indent:${indent}ch"><span class="cifra-acordes">${chordsHtml}</span></div>`;
             }
 
-            const labelMatch = trimmed.match(/^\[([^\[\]\r\n]+)\]$/u);
+            const labelMatch = trimmed.match(/^\[([^\[\]\r\n]+)\]$/u) || trimmed.match(/^\(([^\(\)\r\n]+)\)$/u);
             if (labelMatch && !isChord(labelMatch[1])) {
                 currentBlockIsChorus = false;
                 nextLineIsChorus = sectionLabelClass(labelMatch[1]).includes('--refrao');

@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (toggle) {
-            toggle.textContent = 'Iniciar rolagem';
+            toggle.textContent = 'Rolagem';
             toggle.classList.remove('bg-amber-600', 'hover:bg-amber-700');
             toggle.classList.add('bg-emerald-700', 'hover:bg-emerald-800');
         }
@@ -144,14 +144,14 @@ document.addEventListener('DOMContentLoaded', () => {
         parar();
 
         if (toggle) {
-            toggle.textContent = 'Pausar rolagem';
+            toggle.textContent = 'Pausar';
             toggle.classList.remove('bg-emerald-700', 'hover:bg-emerald-800');
             toggle.classList.add('bg-amber-600', 'hover:bg-amber-700');
         }
 
         intervalo = window.setInterval(() => {
             const fator = Number.parseFloat(velocidade?.value || '1');
-            window.scrollBy({ top: Math.max(1, fator * 1.6), left: 0, behavior: 'auto' });
+            window.scrollBy({ top: Math.max(0.35, fator * 1.25), left: 0, behavior: 'auto' });
 
             if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight - 4) {
                 parar();

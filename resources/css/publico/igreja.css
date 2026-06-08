@@ -285,12 +285,17 @@ a {
 }
 
 .card[data-selected="true"],
+.card[data-schedule-focus],
 .card:hover,
 .card:focus-visible {
     border-color: rgba(255, 217, 157, 0.44);
     background: var(--panel-strong);
     outline: none;
     transform: translateY(-1px);
+}
+
+.card[data-schedule-focus] {
+    box-shadow: 0 0 0 1px rgba(255, 217, 157, 0.14), 0 18px 42px rgba(0, 0, 0, 0.24);
 }
 
 .schedule-date-row {
@@ -489,7 +494,16 @@ a {
     width: 100%;
     margin: 0 0 -46px;
     padding: 0 4px;
+    opacity: 0;
     pointer-events: none;
+    transform: translateY(6px);
+    transition: opacity .18s ease, transform .18s ease;
+}
+
+.celebration-nav.is-visible,
+.celebration-nav:focus-within {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .celebration-nav button {
@@ -610,6 +624,41 @@ a {
     text-transform: uppercase;
 }
 
+.lyrics .lyrics-section-label {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    min-height: 34px;
+    margin: 1.15em 0 .7em;
+    border-radius: 999px;
+    background: rgba(255, 217, 157, 0.12);
+    color: var(--accent);
+    padding: 0 14px;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: calc(13px * var(--public-font-scale));
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.lyrics .lyrics-section-label--refrao {
+    min-height: 42px;
+    background: rgba(255, 217, 157, 0.22);
+    color: #fff2cc;
+    font-size: calc(16px * var(--public-font-scale));
+    letter-spacing: 0.1em;
+}
+
+.lyrics .lyrics-stanza--refrao {
+    margin: .45em 0 1.1em;
+    border-left: 4px solid rgba(255, 217, 157, 0.62);
+    border-radius: 0 16px 16px 0;
+    background: rgba(255, 217, 157, 0.07);
+    padding: .65em .8em;
+    font-weight: 780;
+}
+
 .lyrics .cifra-acordes,
 .lyrics .cifra-acorde,
 .lyrics .chord-mark {
@@ -726,6 +775,21 @@ a {
 
     .schedule-carousel {
         grid-auto-columns: 88%;
+    }
+
+    .schedule-nav {
+        width: 38px;
+        height: 38px;
+        background: rgba(18, 9, 9, 0.82);
+        opacity: .82;
+    }
+
+    .schedule-nav--prev {
+        left: 4px;
+    }
+
+    .schedule-nav--next {
+        right: 4px;
     }
 
     .card {

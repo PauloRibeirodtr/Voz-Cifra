@@ -100,7 +100,14 @@
                 <div class="space-y-4" data-musicas-lista>
                     @forelse ($missa->missaMusicas as $item)
                         @php
-                            $textoCifra = (string) ($item->versaoMusical?->letra_com_cifras ?? '');
+                            $versaoRepertorio = $item->versaoMusical;
+
+                            if (! $versaoRepertorio || trim((string) $versaoRepertorio->letra_com_cifras) === '') {
+                                $versaoRepertorio = $item->musica?->versoesMusicais
+                                    ?->first(fn ($versao) => trim((string) $versao->letra_com_cifras) !== '');
+                            }
+
+                            $textoCifra = (string) ($versaoRepertorio?->letra_com_cifras ?? '');
                             $pedidoTomPendente = $item->solicitacoesMudancaTom
                                 ->where('usuario_id', auth()->id())
                                 ->where('status', \App\Models\SolicitacaoMudancaTom::STATUS_PENDENTE)
@@ -116,8 +123,8 @@
                                             @if ($item->momentoLiturgico)
                                                 <span class="rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-700">{{ $item->momentoLiturgico->nome }}</span>
                                             @endif
-                                            @if ($item->versaoMusical?->bpm)
-                                                <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">BPM {{ $item->versaoMusical->bpm }}</span>
+                                            @if ($versaoRepertorio?->bpm)
+                                                <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">BPM {{ $versaoRepertorio->bpm }}</span>
                                             @endif
                                         </div>
                                         <h3 class="mt-3 text-xl font-black text-gray-900">{{ $item->musica->titulo }}</h3>
@@ -138,38 +145,44 @@
                                 </div>
                             </summary>
 
-                            @if ($item->versaoMusical)
+                            @if ($versaoRepertorio)
                                 <div class="cifra-palco p-4 sm:p-6">
                                     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
                                         <div>
                                             <p class="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-700">Cifra da missa</p>
-                                            <p class="mt-1 text-sm text-gray-600">{{ $item->versaoMusical->titulo ?: 'Versao principal' }}</p>
+                                            <p class="mt-1 text-sm text-gray-600">{{ $versaoRepertorio->titulo ?: 'Versao principal' }}</p>
                                         </div>
-                                        <a href="{{ route('member.versoes.show', [$item->musica, $item->versaoMusical]) }}" class="inline-flex rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                                        <a href="{{ route('member.versoes.show', [$item->musica, $versaoRepertorio]) }}" class="inline-flex rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
                                             Modo estudo
                                         </a>
                                     </div>
 
-                                    <div class="repertorio-controls mb-4" data-repertorio-controls>
-                                        <span class="rounded-full bg-amber-50 px-3 py-2 text-xs font-black text-amber-800" data-item-tom-label>Tom {{ $item->tom_exibicao ?: ($item->versaoMusical?->tom_musical ?: 'nao informado') }}</span>
-                                        <button type="button" class="repertorio-control-btn" data-item-transpose="-1">- Tom</button>
-                                        <button type="button" class="repertorio-control-btn" data-item-transpose-reset>Original</button>
-                                        <button type="button" class="repertorio-control-btn" data-item-transpose="1">+ Tom</button>
-                                        <label class="inline-flex items-center gap-2 text-xs font-black text-gray-500">
-                                            Capotraste
-                                            <select class="repertorio-control-select" data-item-capo>
-                                                <option value="0">Sem capo</option>
-                                                @for ($casaCapotraste = 1; $casaCapotraste <= 11; $casaCapotraste++)
-                                                    <option value="{{ $casaCapotraste }}">{{ $casaCapotraste }} casa</option>
-                                                @endfor
-                                            </select>
-                                        </label>
-                                        <button type="button" class="repertorio-control-btn" data-item-font="-1">A-</button>
-                                        <button type="button" class="repertorio-control-btn" data-item-font-reset>Padrao</button>
-                                        <button type="button" class="repertorio-control-btn" data-item-font="1">A+</button>
-                                    </div>
+                                    <details class="repertorio-adjustments mb-4">
+                                        <summary>
+                                            <span>Ajustes da cifra</span>
+                                            <span data-item-tom-label>Tom {{ $item->tom_exibicao ?: ($versaoRepertorio?->tom_musical ?: 'nao informado') }}</span>
+                                        </summary>
 
-                                    <details class="mb-4 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                                        <div class="repertorio-controls" data-repertorio-controls>
+                                            <button type="button" class="repertorio-control-btn" data-item-transpose="-1">- Tom</button>
+                                            <button type="button" class="repertorio-control-btn" data-item-transpose-reset>Original</button>
+                                            <button type="button" class="repertorio-control-btn" data-item-transpose="1">+ Tom</button>
+                                            <label class="inline-flex items-center gap-2 text-xs font-black text-gray-500">
+                                                Capotraste
+                                                <select class="repertorio-control-select" data-item-capo>
+                                                    <option value="0">Sem capo</option>
+                                                    @for ($casaCapotraste = 1; $casaCapotraste <= 11; $casaCapotraste++)
+                                                        <option value="{{ $casaCapotraste }}">{{ $casaCapotraste }} casa</option>
+                                                    @endfor
+                                                </select>
+                                            </label>
+                                            <button type="button" class="repertorio-control-btn" data-item-font="-1">A-</button>
+                                            <button type="button" class="repertorio-control-btn" data-item-font-reset>Padrao</button>
+                                            <button type="button" class="repertorio-control-btn" data-item-font="1">A+</button>
+                                        </div>
+                                    </details>
+
+                                    <details class="tom-request-box mb-4">
                                         <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-black text-gray-900 [&::-webkit-details-marker]:hidden">
                                             <span>{{ $pedidoTomPendente ? 'Pedido de tom em analise' : 'Sugerir mudanca de tom' }}</span>
                                             <span class="rounded-full bg-white px-3 py-1 text-xs text-gray-600">{{ $pedidoTomPendente ? $pedidoTomPendente->tom_sugerido : 'Abrir' }}</span>
@@ -204,7 +217,7 @@
                                     <div
                                         data-repertorio-cifra
                                         data-texto-cifra-id="repertorio-cifra-texto-{{ $item->id }}"
-                                        data-tom-base="{{ $item->tom_exibicao ?: $item->versaoMusical?->tom_musical }}"
+                                        data-tom-base="{{ $item->tom_exibicao ?: $versaoRepertorio?->tom_musical }}"
                                         class="space-y-2 text-base"
                                     ></div>
                                     <script type="application/json" id="repertorio-cifra-texto-{{ $item->id }}">{!! json_encode($textoCifra, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}</script>
@@ -225,15 +238,15 @@
         <div class="scroll-dock p-3" data-scroll-dock>
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <button type="button" class="rounded-xl bg-emerald-700 px-4 py-3 text-sm font-black text-white hover:bg-emerald-800" data-scroll-toggle>
-                    Iniciar rolagem
+                    Rolagem
                 </button>
                 <div class="flex flex-1 items-center gap-3">
                     <span class="text-xs font-bold text-gray-600">Velocidade</span>
-                    <input type="range" min="0.4" max="2.4" step="0.2" value="1" class="w-full accent-emerald-700" data-scroll-speed>
+                    <input type="range" min="0.2" max="2.4" step="0.2" value="1" class="w-full accent-emerald-700" data-scroll-speed>
                     <span class="min-w-12 text-sm font-black text-gray-800" data-scroll-speed-label>1.0x</span>
                 </div>
-                <button type="button" class="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50" data-scroll-top>
-                    Topo
+                <button type="button" class="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50" data-scroll-top aria-label="Voltar ao topo" title="Voltar ao topo">
+                    <i class="fa-solid fa-arrow-up"></i>
                 </button>
             </div>
         </div>
