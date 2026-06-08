@@ -1,7 +1,7 @@
 @extends('local-admin.layouts.admin')
 
-@section('title', 'Visualiza&ccedil;&atilde;o da missa | Voz & Cifra')
-@section('mobile_title', 'Visualiza&ccedil;&atilde;o')
+@section('title', 'Visualização da missa | Voz & Cifra')
+@section('mobile_title', 'Visualização')
 
 @push('styles')
     @include('partials.cifra-viewer-styles')
@@ -11,7 +11,7 @@
     <div class="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
             <div class="flex flex-wrap items-center gap-2">
-                <h1 class="text-2xl font-black text-gray-900 sm:text-3xl">Visualiza&ccedil;&atilde;o da missa</h1>
+                <h1 class="text-2xl font-black text-gray-900 sm:text-3xl">Visualização da missa</h1>
                 <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $missa->ativo ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-700' }}">
                     {{ $missa->ativo ? 'Ativa' : 'Inativa' }}
                 </span>
@@ -19,7 +19,7 @@
             <p class="mt-2 text-sm text-gray-500">
                 {{ $missa->titulo }} &bull; {{ optional($missa->data_missa)->format('d/m/Y') }} &bull; {{ substr((string) $missa->hora_inicio, 0, 5) }}
             </p>
-            <p class="mt-2 max-w-2xl text-sm text-gray-600">Esta tela funciona como uma pr&eacute;via de leitura para fi&eacute;is e m&uacute;sicos, com foco em clareza, espa&ccedil;amento e acompanhamento da celebra&ccedil;&atilde;o.</p>
+            <p class="mt-2 max-w-2xl text-sm text-gray-600">Esta tela funciona como uma prévia de leitura para fiéis e músicos, com foco em clareza, espaçamento e acompanhamento da celebração.</p>
         </div>
 
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:flex xl:flex-wrap">
@@ -34,14 +34,14 @@
 
     @if ($itensApresentacao->isEmpty())
         <div class="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center shadow-sm">
-            <h2 class="text-lg font-bold text-gray-900">Nenhuma cifra pronta para visualiza&ccedil;&atilde;o</h2>
-            <p class="mt-2 text-sm text-gray-500">Vincule vers&otilde;es musicais aos itens do repert&oacute;rio para usar este modo cont&iacute;nuo da missa.</p>
+            <h2 class="text-lg font-bold text-gray-900">Nenhuma cifra pronta para visualização</h2>
+            <p class="mt-2 text-sm text-gray-500">Vincule versões musicais aos itens do repertório para usar este modo contínuo da missa.</p>
         </div>
     @else
         <div class="grid grid-cols-1 gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
             <aside class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-                <h2 class="text-lg font-bold text-gray-900">Sequ&ecirc;ncia da missa</h2>
-                <p class="mt-1 text-sm text-gray-500">Avance pela celebra&ccedil;&atilde;o sem perder a ordem dos cantos.</p>
+                <h2 class="text-lg font-bold text-gray-900">Sequência da missa</h2>
+                <p class="mt-1 text-sm text-gray-500">Avance pela celebração sem perder a ordem dos cantos.</p>
 
                 <div class="mt-4 space-y-2">
                     @foreach ($itensApresentacao as $indice => $item)
@@ -52,7 +52,7 @@
                         >
                             <span class="text-xs font-black uppercase tracking-wider text-gray-400">Ordem {{ $item['ordem'] }}</span>
                             <span class="mt-1 text-sm font-bold text-gray-900">{{ $item['titulo'] }}</span>
-                            <span class="mt-1 text-xs text-gray-500">{{ $item['momento'] ?: 'Momento ainda n&atilde;o definido' }}</span>
+                            <span class="mt-1 text-xs text-gray-500">{{ $item['momento'] ?: 'Momento ainda não definido' }}</span>
                         </button>
                     @endforeach
                 </div>
@@ -81,7 +81,7 @@
                             <div class="flex items-center gap-2">
                                 <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Fonte</span>
                                 <button type="button" data-font="-1" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-sm font-bold text-gray-700 hover:bg-gray-100">A-</button>
-                                <button type="button" data-font-reset class="inline-flex rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">Padr&atilde;o</button>
+                                <button type="button" data-font-reset class="inline-flex rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">Padrão</button>
                                 <button type="button" data-font="1" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-sm font-bold text-gray-700 hover:bg-gray-100">A+</button>
                             </div>
                         </div>
@@ -90,13 +90,13 @@
                     <div class="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
                         <div class="flex flex-wrap items-center gap-2">
                             <button type="button" id="apresentacao_anterior" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-100">Anterior</button>
-                            <button type="button" id="apresentacao_proxima" class="inline-flex items-center justify-center rounded-xl bg-sky-600 px-4 py-3 text-sm font-semibold text-white hover:bg-sky-700">Pr&oacute;xima</button>
+                            <button type="button" id="apresentacao_proxima" class="inline-flex items-center justify-center rounded-xl bg-sky-600 px-4 py-3 text-sm font-semibold text-white hover:bg-sky-700">Próxima</button>
                             <span id="apresentacao_tom_badge" class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">Tom</span>
                             <span id="apresentacao_bpm_badge" class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">BPM</span>
                         </div>
 
                         <div class="flex flex-wrap items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
-                            <button type="button" id="toggle_autorrolagem_apresentacao" class="rounded-lg bg-[#6c4a21] px-4 py-2 text-sm font-semibold text-white hover:bg-[#5b3d1a]">Iniciar auto rolagem</button>
+                            <button type="button" id="toggle_autorrolagem_apresentacao" class="rounded-lg bg-[#6c4a21] px-4 py-2 text-sm font-semibold text-white hover:bg-[#5b3d1a]">Iniciar auto-rolagem</button>
                             <label for="velocidade_apresentacao" class="text-sm font-medium text-gray-600">Velocidade</label>
                             <input id="velocidade_apresentacao" type="range" min="0.25" max="6" value="0.75" step="0.25" class="accent-[#8c6933]">
                             <span id="velocidade_apresentacao_valor" class="text-sm font-semibold text-gray-700">0.75</span>

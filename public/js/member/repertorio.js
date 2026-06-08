@@ -125,19 +125,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const velocidade = document.querySelector('[data-scroll-speed]');
     const velocidadeLabel = document.querySelector('[data-scroll-speed-label]');
     const topo = document.querySelector('[data-scroll-top]');
-    let intervalo = null;
+    let autoScrollFrame = null;
+    let autoScrollActive = false;
+    let autoScrollSpeed = Number.parseFloat(velocidade?.value || '1');
+
+    const scrollTarget = () => document.scrollingElement || document.documentElement;
 
     const parar = () => {
-        if (intervalo) {
-            window.clearInterval(intervalo);
-            intervalo = null;
+        if (autoScrollFrame) {
+            window.cancelAnimationFrame(autoScrollFrame);
+            autoScrollFrame = null;
         }
+
+        autoScrollActive = false;
 
         if (toggle) {
             toggle.textContent = 'Rolagem';
             toggle.classList.remove('bg-amber-600', 'hover:bg-amber-700');
             toggle.classList.add('bg-emerald-700', 'hover:bg-emerald-800');
         }
+    };
+
+    const tick = () => {
+        const alvo = scrollTarget();
+        if (!alvo) {
+            parar();
+            return;
+        }
+
+        const maxScroll = document.body.scrollHeight - window.innerHeight;
+        if (alvo.scrollTop >= maxScroll - 4) {
+            parar();
+            return;
+        }
+
+        const distance = Math.max(0.12, autoScrollSpeed * 0.7) * (16 / 45);
+        alvo.scrollBy({ top: distance, left: 0, behavior: 'auto' });
+        autoScrollFrame = window.requestAnimationFrame(tick);
     };
 
     const iniciar = () => {
@@ -149,21 +173,16 @@ document.addEventListener('DOMContentLoaded', () => {
             toggle.classList.add('bg-amber-600', 'hover:bg-amber-700');
         }
 
-        intervalo = window.setInterval(() => {
-            const fator = Number.parseFloat(velocidade?.value || '1');
-            window.scrollBy({ top: Math.max(0.12, fator * 0.7), left: 0, behavior: 'auto' });
-
-            if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight - 4) {
-                parar();
-            }
-        }, 45);
+        autoScrollActive = true;
+        autoScrollFrame = window.requestAnimationFrame(tick);
     };
 
     toggle?.addEventListener('click', () => {
-        intervalo ? parar() : iniciar();
+        autoScrollActive ? parar() : iniciar();
     });
 
     velocidade?.addEventListener('input', () => {
+        autoScrollSpeed = Number.parseFloat(velocidade.value) || 1;
         velocidadeLabel.textContent = `${Number.parseFloat(velocidade.value).toFixed(1)}x`;
     });
 

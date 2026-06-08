@@ -80,7 +80,7 @@
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">Missas da igreja</h1>
-            <p class="mt-1 text-sm text-gray-500">Organize as celebra&ccedil;&otilde;es e o repert&oacute;rio da {{ $igreja->nome }}.</p>
+            <p class="mt-1 text-sm text-gray-500">Organize as celebrações e o repertório da {{ $igreja->nome }}.</p>
         </div>
 
         <a href="{{ route('local-admin.missas.create') }}" class="inline-flex items-center justify-center rounded-xl bg-[#6c4a21] px-4 py-3 font-semibold text-white transition hover:bg-[#5b3d1a]">
@@ -109,7 +109,7 @@
     @if ($missas->isEmpty())
         <div class="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center shadow-sm">
             <h2 class="text-lg font-bold text-gray-900">Nenhuma missa cadastrada</h2>
-            <p class="mt-2 text-sm text-gray-500">Comece criando a primeira missa da igreja para depois organizar o repert&oacute;rio.</p>
+            <p class="mt-2 text-sm text-gray-500">Comece criando a primeira missa da igreja para depois organizar o repertório.</p>
             <a href="{{ route('local-admin.missas.create') }}" class="mt-5 inline-flex items-center justify-center rounded-xl bg-[#6c4a21] px-4 py-3 font-semibold text-white transition hover:bg-[#5b3d1a]">
                 Cadastrar primeira missa
             </a>
@@ -165,9 +165,9 @@
                             <div class="mt-3 flex flex-wrap gap-2">
                                 <span class="missa-meta-chip">Tempo: {{ $missa->tempoLiturgico?->nome ?: 'A definir' }}</span>
                                 <span class="missa-meta-chip">Celebrante: {{ $missa->celebrante?->nome ?: 'A definir' }}</span>
-                                <span class="missa-meta-chip">Repertorio: {{ $missa->missa_musicas_count }} item(ns)</span>
-                                <span class="missa-meta-chip {{ $missa->publica_para_fieis ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : '' }}">Fieis: {{ $missa->publica_para_fieis ? 'publicada' : 'oculta' }}</span>
-                                <span class="missa-meta-chip {{ $missa->publica_para_musicos ? 'bg-sky-50 text-sky-700 border-sky-100' : '' }}">Musicos: {{ $missa->publica_para_musicos ? 'publicada' : 'oculta' }}</span>
+                                <span class="missa-meta-chip">Repertório: {{ $missa->missa_musicas_count }} item(ns)</span>
+                                <span class="missa-meta-chip {{ $missa->publica_para_fieis ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : '' }}">Fiéis: {{ $missa->publica_para_fieis ? 'publicada' : 'oculta' }}</span>
+                                <span class="missa-meta-chip {{ $missa->publica_para_musicos ? 'bg-sky-50 text-sky-700 border-sky-100' : '' }}">Músicos: {{ $missa->publica_para_musicos ? 'publicada' : 'oculta' }}</span>
                             </div>
                         </div>
 
@@ -176,7 +176,7 @@
                                 Abrir missa
                             </a>
                             <a href="{{ route('local-admin.missas.apresentacao', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-semibold text-sky-800 transition hover:bg-sky-100">
-                                Visualiza&ccedil;&atilde;o
+                                Visualização
                             </a>
                             <a href="{{ route('local-admin.missas.edit', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-[#ead6b3] bg-[#fff8ed] px-4 py-3 text-sm font-semibold text-[#6c4a21] transition hover:bg-[#f8ecd7]">
                                 Editar missa
@@ -188,11 +188,11 @@
                                 @csrf
                                 @unless ($missa->ativo)
                                     <div class="missa-reactivate-box">
-                                        <p class="mb-3 text-sm font-semibold text-emerald-900">Escolha a nova data e horario antes de reativar.</p>
+                                        <p class="mb-3 text-sm font-semibold text-emerald-900">Escolha a nova data e horário antes de reativar.</p>
                                         <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
                                             <input type="date" name="data_missa" value="{{ old('data_missa', now('America/Cuiaba')->toDateString()) }}" class="rounded-xl border border-emerald-200 bg-white px-3 py-2 text-sm text-gray-900" aria-label="Nova data da missa">
-                                            <input type="time" name="hora_inicio" value="{{ old('hora_inicio', substr((string) $missa->hora_inicio, 0, 5)) }}" class="rounded-xl border border-emerald-200 bg-white px-3 py-2 text-sm text-gray-900" aria-label="Novo horario de inicio">
-                                            <input type="time" name="hora_fim" value="{{ old('hora_fim', substr((string) $missa->hora_fim, 0, 5)) }}" class="rounded-xl border border-emerald-200 bg-white px-3 py-2 text-sm text-gray-900" aria-label="Novo horario de termino">
+                                            <input type="time" name="hora_inicio" value="{{ old('hora_inicio', substr((string) $missa->hora_inicio, 0, 5)) }}" class="rounded-xl border border-emerald-200 bg-white px-3 py-2 text-sm text-gray-900" aria-label="Novo horário de início">
+                                            <input type="time" name="hora_fim" value="{{ old('hora_fim', substr((string) $missa->hora_fim, 0, 5)) }}" class="rounded-xl border border-emerald-200 bg-white px-3 py-2 text-sm text-gray-900" aria-label="Novo horário de término">
                                         </div>
                                     </div>
                                 @endunless

@@ -327,7 +327,7 @@
                 {{ optional($missa->data_missa)->format('d/m/Y') }} &bull; {{ substr((string) $missa->hora_inicio, 0, 5) }} - {{ substr((string) $missa->hora_fim, 0, 5) }}
             </p>
             <p class="mt-2 max-w-2xl text-sm text-gray-600">
-                Crie a missa, salve os dados principais e depois monte o repert&oacute;rio logo abaixo. Cada m&uacute;sica adicionada j&aacute; fica salva automaticamente.
+                Crie a missa, salve os dados principais e depois monte o repertório logo abaixo. Cada música adicionada já fica salva automaticamente.
             </p>
             @if ($totalPedidosTomPendentes > 0)
                 <div class="mt-4 inline-flex items-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-bold text-sky-800">
@@ -342,18 +342,23 @@
                 Editar missa
             </a>
             <a href="{{ route('local-admin.missas.apresentacao', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 font-semibold text-sky-800 transition hover:bg-sky-100">
-                Visualiza&ccedil;&atilde;o da missa
+                Visualização da missa
             </a>
             <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 font-semibold text-emerald-800 transition hover:bg-emerald-100">
                 Ver como fiel
             </a>
             <a href="{{ $igreja->link_publico_musicos }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 font-semibold text-indigo-800 transition hover:bg-indigo-100">
-                Ver como m&uacute;sico
+                Ver como músico
             </a>
             <a href="{{ route('local-admin.missas.pdf', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 font-semibold text-amber-800 transition hover:bg-amber-100">
                 Baixar PDF completo
             </a>
-            <form action="{{ route('local-admin.missas.toggle', $missa) }}" method="POST" onsubmit="return confirm('{{ $missa->ativo ? 'Deseja inativar esta missa? O repertório será preservado para consulta futura.' : 'Deseja reativar esta missa como parte do fluxo da igreja?' }}');">
+            @php
+                $confirmacaoAtivacao = $missa->ativo
+                    ? 'Deseja inativar esta missa? O repertório será preservado para consulta futura.'
+                    : 'Deseja reativar esta missa como parte do fluxo da igreja?';
+            @endphp
+            <form action="{{ route('local-admin.missas.toggle', $missa) }}" method="POST" onsubmit="return confirm('{{ $confirmacaoAtivacao }}');">
                 @csrf
                 <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl border px-4 py-3 font-semibold transition {{ $missa->ativo ? 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100' : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' }}">
                     {{ $missa->ativo ? 'Inativar missa' : 'Reativar missa' }}
@@ -406,7 +411,7 @@
                             </div>
                         </div>
                         <p class="text-xs font-semibold text-[#7c5628]">
-                            A copia nasce fechada para publicacao. Revise dados, repertorio e links antes de liberar para fieis ou musicos.
+                            A cópia nasce fechada para publicação. Revise dados, repertório e links antes de liberar para fiéis ou músicos.
                         </p>
                         <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-[#6c4a21] px-4 py-3 text-sm font-black text-white transition hover:bg-[#5b3d1a]">
                             Criar copia para revisar
@@ -436,14 +441,14 @@
     <details class="missa-support-panel mb-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm" data-guide-target="missa-conferencia">
         <summary class="flex cursor-pointer list-none flex-col gap-3 text-gray-900 sm:flex-row sm:items-center sm:justify-between [&::-webkit-details-marker]:hidden">
             <span>
-                <span class="block text-lg font-bold">Confer&ecirc;ncia e pend&ecirc;ncias</span>
+                <span class="block text-lg font-bold">Conferência e pendências</span>
                 <span class="mt-1 block text-sm text-gray-500">Abra somente quando quiser revisar status, ordem, cifras e duplicidades.</span>
             </span>
             <span class="flex flex-wrap gap-2 text-xs font-bold">
                 <span class="rounded-full {{ $repertorioCompleto ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800' }} px-3 py-1">
                     {{ $repertorioCompleto ? 'Tudo certo' : 'Pendente' }}
                 </span>
-                <span class="rounded-full bg-gray-100 px-3 py-1 text-gray-700">{{ $totalItensRepertorio }} m&uacute;sica(s)</span>
+                <span class="rounded-full bg-gray-100 px-3 py-1 text-gray-700">{{ $totalItensRepertorio }} música(s)</span>
                 @if ($itensSemVersao > 0)
                     <span class="rounded-full bg-amber-100 px-3 py-1 text-amber-800">{{ $itensSemVersao }} sem cifra</span>
                 @endif
@@ -457,7 +462,7 @@
                 <span class="missa-step-number">1</span>
                 <div>
                     <p class="text-sm font-black text-gray-900">Dados da missa</p>
-                    <p class="mt-1 text-xs text-gray-500">Data, horario, celebrante e publicacao.</p>
+                    <p class="mt-1 text-xs text-gray-500">Data, horário, celebrante e publicação.</p>
                 </div>
             </div>
         </div>
@@ -465,8 +470,8 @@
             <div class="flex items-center gap-3">
                 <span class="missa-step-number">2</span>
                 <div>
-                    <p class="text-sm font-black text-gray-900">Montagem do repertorio</p>
-                    <p class="mt-1 text-xs text-gray-500">Adicione musicas, versoes, ordem e tom usado.</p>
+                    <p class="text-sm font-black text-gray-900">Montagem do repertório</p>
+                    <p class="mt-1 text-xs text-gray-500">Adicione músicas, versões, ordem e tom usado.</p>
                 </div>
             </div>
         </div>
@@ -474,7 +479,7 @@
             <div class="flex items-center gap-3">
                 <span class="missa-step-number">3</span>
                 <div>
-                    <p class="text-sm font-black text-gray-900">Visualizacao final</p>
+                    <p class="text-sm font-black text-gray-900">Visualização final</p>
                     <p class="mt-1 text-xs text-gray-500">Confira a missa antes de apresentar ou gerar PDF.</p>
                 </div>
             </div>
@@ -483,19 +488,19 @@
 
     <section class="mb-6 grid grid-cols-1 gap-3 md:grid-cols-3">
         <div class="repertorio-status-card {{ $totalItensRepertorio > 0 ? 'repertorio-status-ok' : 'repertorio-status-warn' }}">
-            <span class="text-xs font-black uppercase tracking-wider text-gray-500">Repertorio</span>
+            <span class="text-xs font-black uppercase tracking-wider text-gray-500">Repertório</span>
             <strong>{{ $totalItensRepertorio }}</strong>
-            <p class="mt-2 text-sm text-gray-600">{{ $totalItensRepertorio === 1 ? 'musica adicionada' : 'musicas adicionadas' }}</p>
+            <p class="mt-2 text-sm text-gray-600">{{ $totalItensRepertorio === 1 ? 'música adicionada' : 'músicas adicionadas' }}</p>
         </div>
         <div class="repertorio-status-card {{ $itensSemVersao === 0 ? 'repertorio-status-ok' : 'repertorio-status-warn' }}">
             <span class="text-xs font-black uppercase tracking-wider text-gray-500">Cifras</span>
             <strong>{{ $itensSemVersao === 0 ? 'OK' : $itensSemVersao }}</strong>
-            <p class="mt-2 text-sm text-gray-600">{{ $itensSemVersao === 0 ? 'todas com versao' : 'sem versao vinculada' }}</p>
+            <p class="mt-2 text-sm text-gray-600">{{ $itensSemVersao === 0 ? 'todas com versão' : 'sem versão vinculada' }}</p>
         </div>
         <div class="repertorio-status-card {{ $repertorioCompleto ? 'repertorio-status-ok' : 'repertorio-status-warn' }}">
             <span class="text-xs font-black uppercase tracking-wider text-gray-500">Status</span>
             <strong>{{ $repertorioCompleto ? 'Completo' : 'Pendente' }}</strong>
-            <p class="mt-2 text-sm text-gray-600">{{ $repertorioCompleto ? 'pronto para revisar' : 'revise momentos e versoes' }}</p>
+            <p class="mt-2 text-sm text-gray-600">{{ $repertorioCompleto ? 'pronto para revisar' : 'revise momentos e versões' }}</p>
         </div>
     </section>
         </div>
@@ -505,7 +510,7 @@
         <summary class="flex cursor-pointer list-none flex-col gap-3 text-gray-900 lg:flex-row lg:items-center lg:justify-between [&::-webkit-details-marker]:hidden">
             <div>
                 <h2 class="text-lg font-bold text-gray-900">Checklist da montagem</h2>
-                <p class="mt-1 text-sm text-gray-500">Confer&ecirc;ncia r&aacute;pida, ordem e pend&ecirc;ncias. Abra quando precisar.</p>
+                <p class="mt-1 text-sm text-gray-500">Conferência rápida, ordem e pendências. Abra quando precisar.</p>
             </div>
             <span class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700 sm:w-auto">
                 Abrir checklist
@@ -516,30 +521,30 @@
             <div class="rounded-xl border {{ $totalItensRepertorio > 0 ? 'border-emerald-100 bg-emerald-50 text-emerald-800' : 'border-amber-100 bg-amber-50 text-amber-900' }} p-4 text-sm">
                 <strong class="flex items-center gap-2">
                     <i class="fa-solid {{ $totalItensRepertorio > 0 ? 'fa-check' : 'fa-triangle-exclamation' }}" aria-hidden="true"></i>
-                    Repertorio
+                    Repertório
                 </strong>
-                <p class="mt-2">{{ $totalItensRepertorio > 0 ? 'Ha musicas adicionadas.' : 'Adicione pelo menos uma musica.' }}</p>
+                <p class="mt-2">{{ $totalItensRepertorio > 0 ? 'Há músicas adicionadas.' : 'Adicione pelo menos uma música.' }}</p>
             </div>
             <div class="rounded-xl border {{ $itensSemMomento === 0 ? 'border-emerald-100 bg-emerald-50 text-emerald-800' : 'border-amber-100 bg-amber-50 text-amber-900' }} p-4 text-sm">
                 <strong class="flex items-center gap-2">
                     <i class="fa-solid {{ $itensSemMomento === 0 ? 'fa-check' : 'fa-triangle-exclamation' }}" aria-hidden="true"></i>
                     Momentos
                 </strong>
-                <p class="mt-2">{{ $itensSemMomento === 0 ? 'Todos os itens tem momento.' : $itensSemMomento . ' item(ns) sem momento.' }}</p>
+                <p class="mt-2">{{ $itensSemMomento === 0 ? 'Todos os itens têm momento.' : $itensSemMomento . ' item(ns) sem momento.' }}</p>
             </div>
             <div class="rounded-xl border {{ $itensSemVersao === 0 ? 'border-emerald-100 bg-emerald-50 text-emerald-800' : 'border-amber-100 bg-amber-50 text-amber-900' }} p-4 text-sm">
                 <strong class="flex items-center gap-2">
                     <i class="fa-solid {{ $itensSemVersao === 0 ? 'fa-check' : 'fa-triangle-exclamation' }}" aria-hidden="true"></i>
                     Cifras
                 </strong>
-                <p class="mt-2">{{ $itensSemVersao === 0 ? 'Tudo vinculado para os musicos.' : $itensSemVersao . ' item(ns) sem cifra.' }}</p>
+                <p class="mt-2">{{ $itensSemVersao === 0 ? 'Tudo vinculado para os músicos.' : $itensSemVersao . ' item(ns) sem cifra.' }}</p>
             </div>
             <div class="rounded-xl border {{ $musicasDuplicadas === 0 ? 'border-emerald-100 bg-emerald-50 text-emerald-800' : 'border-red-100 bg-red-50 text-red-800' }} p-4 text-sm">
                 <strong class="flex items-center gap-2">
                     <i class="fa-solid {{ $musicasDuplicadas === 0 ? 'fa-check' : 'fa-triangle-exclamation' }}" aria-hidden="true"></i>
                     Duplicidade
                 </strong>
-                <p class="mt-2">{{ $musicasDuplicadas === 0 ? 'Sem musicas repetidas.' : $musicasDuplicadas . ' musica(s) repetida(s).' }}</p>
+                <p class="mt-2">{{ $musicasDuplicadas === 0 ? 'Sem músicas repetidas.' : $musicasDuplicadas . ' música(s) repetida(s).' }}</p>
             </div>
         </div>
 
@@ -556,7 +561,7 @@
                     </span>
                 @endforeach
             </div>
-            <p class="mt-3 text-xs text-gray-500">{{ $momentosEssenciaisDefinidos }} de {{ count($momentosEssenciais) }} momentos principais ja aparecem no repertorio.</p>
+            <p class="mt-3 text-xs text-gray-500">{{ $momentosEssenciaisDefinidos }} de {{ count($momentosEssenciais) }} momentos principais já aparecem no repertório.</p>
         </div>
     </details>
 
@@ -586,7 +591,7 @@
                                         + {{ $itensDoMomento->count() - 1 }} item(ns)
                                     @endif
                                 @else
-                                    Nenhuma musica definida.
+                                    Nenhuma música definida.
                                 @endif
                             </p>
                         </div>
@@ -602,7 +607,7 @@
                         data-momento-nome="{{ $momentoLiturgico->nome }}"
                     >
                         <i class="fa-solid fa-music" aria-hidden="true"></i>
-                        Escolher musica
+                        Escolher música
                     </button>
                 </div>
             @endforeach
@@ -614,13 +619,13 @@
             <section id="missa-repertorio" class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm" data-guide-target="missa-repertorio-add">
                 <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                        <h2 class="text-lg font-bold text-gray-900">Adicionar m&uacute;sica ao repert&oacute;rio</h2>
-                        <p class="mt-1 text-sm text-gray-500">Busque por nome da m&uacute;sica, artista ou trecho da letra para localizar o canto com mais rapidez.</p>
+                        <h2 class="text-lg font-bold text-gray-900">Adicionar música ao repertório</h2>
+                        <p class="mt-1 text-sm text-gray-500">Busque por nome da música, artista ou trecho da letra para localizar o canto com mais rapidez.</p>
                     </div>
                     <form action="{{ route('local-admin.missas.concluir-montagem', $missa) }}" method="POST" class="w-full sm:w-auto">
                         @csrf
                         <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 sm:w-auto">
-                            Finalizar repert&oacute;rio
+                            Finalizar repertório
                         </button>
                     </form>
                 </div>
@@ -629,10 +634,10 @@
                     <div class="repertorio-alert mb-4 text-sm">
                         <strong class="block">Antes de concluir, revise as pendencias.</strong>
                         @if ($itensSemVersao > 0)
-                            <span>{{ $itensSemVersao }} item(ns) ainda nao tem versao/cifra vinculada.</span>
+                            <span>{{ $itensSemVersao }} item(ns) ainda não tem versão/cifra vinculada.</span>
                         @endif
                         @if ($itensSemMomento > 0)
-                            <span>{{ $itensSemMomento }} item(ns) ainda nao tem momento liturgico definido.</span>
+                            <span>{{ $itensSemMomento }} item(ns) ainda não tem momento litúrgico definido.</span>
                         @endif
                     </div>
                 @endif
@@ -641,19 +646,19 @@
                     @csrf
 
                     <div class="md:col-span-2">
-                        <label for="busca_musica" class="block text-sm font-medium text-gray-700">M&uacute;sica</label>
+                        <label for="busca_musica" class="block text-sm font-medium text-gray-700">Música</label>
                         <input type="hidden" name="musica_id" id="musica_id" value="{{ old('musica_id') }}" required>
                         <div class="mt-1 rounded-2xl border border-gray-300 bg-white shadow-sm">
                             <input
                                 type="text"
                                 id="busca_musica"
                                 class="block w-full rounded-2xl border-0 bg-transparent px-4 py-3 text-gray-800 focus:ring-2 focus:ring-[#ead6b3]"
-                                placeholder="Digite o nome da m&uacute;sica, artista ou trecho da letra"
+                                placeholder="Digite o nome da música, artista ou trecho da letra"
                                 autocomplete="off"
                             >
                             <div id="resultado_busca_musica" class="hidden border-t border-gray-100 p-2"></div>
                         </div>
-                        <p id="musica_selecionada_texto" class="mt-2 text-sm text-gray-500">Nenhuma m&uacute;sica selecionada.</p>
+                        <p id="musica_selecionada_texto" class="mt-2 text-sm text-gray-500">Nenhuma música selecionada.</p>
                     </div>
 
                     <div>
@@ -664,11 +669,11 @@
                                 <option value="{{ $momentoLiturgico->id }}" @selected(old('momento_liturgico_id') == $momentoLiturgico->id)>{{ $momentoLiturgico->nome }}</option>
                             @endforeach
                         </select>
-                        <p id="momento_liturgico_hint" class="mt-1 text-xs text-gray-500">Ao escolher a m&uacute;sica, o sistema tenta preencher este campo. Voc&ecirc; pode trocar se precisar.</p>
+                        <p id="momento_liturgico_hint" class="mt-1 text-xs text-gray-500">Ao escolher a música, o sistema tenta preencher este campo. Você pode trocar se precisar.</p>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Cifra / vers&atilde;o</label>
+                        <label class="block text-sm font-medium text-gray-700">Cifra / versão</label>
                         <select name="versao_musical_id" id="versao_musical_id" class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-[#8c6933] focus:ring-2 focus:ring-[#ead6b3]" disabled>
                             <option value="">Escolher depois</option>
                         </select>
@@ -677,17 +682,17 @@
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700">Tom para tocar</label>
                         <select name="tom_usado" id="tom_usado" class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-[#8c6933] focus:ring-2 focus:ring-[#ead6b3]">
-                            <option value="">Usar o tom original da vers&atilde;o</option>
+                            <option value="">Usar o tom original da versão</option>
                             @foreach ($tonsMusicais as $tomMusical)
                                 <option value="{{ $tomMusical }}" @selected(old('tom_usado') === $tomMusical)>{{ $tomMusical }}</option>
                             @endforeach
                         </select>
-                        <p id="tom_usado_hint" class="mt-1 text-xs text-gray-500">Selecione um tom apenas se a igreja for tocar em um tom diferente da vers&atilde;o original.</p>
+                        <p id="tom_usado_hint" class="mt-1 text-xs text-gray-500">Selecione um tom apenas se a igreja for tocar em um tom diferente da versão original.</p>
                     </div>
 
                     <div class="md:col-span-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-[#6c4a21] px-5 py-3 font-semibold text-white transition hover:bg-[#5b3d1a]">
-                            Adicionar m&uacute;sica
+                            Adicionar música
                         </button>
                         <a href="#missa-resumo" class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 font-semibold text-gray-700 transition hover:bg-gray-50">
                             Revisar dados da missa
@@ -698,13 +703,13 @@
 
             <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
                 <div class="mb-4">
-                    <h2 class="text-lg font-bold text-gray-900">Repert&oacute;rio da missa</h2>
-                    <p class="mt-1 text-sm text-gray-500">Organize a ordem dos cantos, defina o momento lit&uacute;rgico e ajuste a vers&atilde;o usada em cada item.</p>
+                    <h2 class="text-lg font-bold text-gray-900">Repertório da missa</h2>
+                    <p class="mt-1 text-sm text-gray-500">Organize a ordem dos cantos, defina o momento litúrgico e ajuste a versão usada em cada item.</p>
                 </div>
 
                 @if ($missa->missaMusicas->isEmpty())
                     <div class="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-6 text-sm text-gray-500">
-                        Ainda n&atilde;o existe m&uacute;sica cadastrada no repert&oacute;rio desta missa.
+                        Ainda não existe música cadastrada no repertório desta missa.
                     </div>
                 @else
                     <div class="repertorio-sequence mb-5" data-guide-target="missa-sequencia">
@@ -778,9 +783,9 @@
                                             @endif
                                         </div>
                                         <h3 class="mt-3 text-lg font-bold text-gray-900">{{ $item->musica->titulo }}</h3>
-                                        <p class="mt-1 text-sm text-gray-500">{{ $item->musica->artista ?: 'Artista nao informado' }}</p>
+                                        <p class="mt-1 text-sm text-gray-500">{{ $item->musica->artista ?: 'Artista não informado' }}</p>
                                         <p class="mt-2 text-sm text-gray-600">
-                                            Vers&atilde;o: {{ $item->versaoMusical?->titulo ?: 'Ainda nao vinculada' }}
+                                            Versão: {{ $item->versaoMusical?->titulo ?: 'Ainda não vinculada' }}
                                             @if ($item->tom_exibicao)
                                                 &bull; Tom da missa {{ $item->tom_exibicao }}
                                             @endif
@@ -811,7 +816,7 @@
                                                 <i class="fa-solid fa-eye" aria-hidden="true"></i>
                                             </a>
                                         @endif
-                                        <form action="{{ route('local-admin.repertorio.destroy', [$missa, $item]) }}" method="POST" onsubmit="return confirm('Deseja remover esta m&uacute;sica do repert&oacute;rio da missa?');">
+                                        <form action="{{ route('local-admin.repertorio.destroy', [$missa, $item]) }}" method="POST" onsubmit="return confirm('Deseja remover esta música do repertório da missa?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="repertorio-action border border-red-200 bg-red-50 text-red-700 hover:bg-red-100" title="Remover item" aria-label="Remover item">
@@ -825,7 +830,7 @@
                                     <div class="mt-4 rounded-2xl border border-sky-200 bg-sky-50 p-4">
                                         <div class="mb-3">
                                             <h4 class="text-sm font-black text-sky-950">Pedidos de mudanca de tom</h4>
-                                            <p class="mt-1 text-xs text-sky-800">Aprove somente se esse tom realmente deve valer para todos os musicos desta missa.</p>
+                                            <p class="mt-1 text-xs text-sky-800">Aprove somente se esse tom realmente deve valer para todos os músicos desta missa.</p>
                                         </div>
 
                                         <div class="space-y-3">
@@ -834,10 +839,10 @@
                                                     <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                                                         <div class="min-w-0">
                                                             <p class="text-sm font-bold text-gray-900">
-                                                                {{ $pedidoTom->usuario?->nome ?: 'Musico' }} pediu tom {{ $pedidoTom->tom_sugerido }}
+                                                                {{ $pedidoTom->usuario?->nome ?: 'Músico' }} pediu tom {{ $pedidoTom->tom_sugerido }}
                                                             </p>
                                                             <p class="mt-1 text-xs text-gray-500">
-                                                                Atual: {{ $pedidoTom->tom_atual ?: 'nao informado' }} &bull; {{ $pedidoTom->created_at?->diffForHumans() }}
+                                                                Atual: {{ $pedidoTom->tom_atual ?: 'não informado' }} &bull; {{ $pedidoTom->created_at?->diffForHumans() }}
                                                             </p>
                                                             @if ($pedidoTom->observacao)
                                                                 <p class="mt-2 text-sm text-gray-600">{{ $pedidoTom->observacao }}</p>
@@ -889,12 +894,12 @@
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400">Cifra / vers&atilde;o</label>
+                                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400">Cifra / versão</label>
                                         <select name="versao_musical_id" class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-[#8c6933] focus:ring-2 focus:ring-[#ead6b3]">
                                             <option value="">Escolher depois</option>
                                             @foreach ($item->musica->versoesMusicais as $versaoMusical)
                                                 <option value="{{ $versaoMusical->id }}" @selected((string) $item->versao_musical_id === (string) $versaoMusical->id)>
-                                                    {{ $versaoMusical->titulo ?: 'Vers&atilde;o principal' }}
+                                                    {{ $versaoMusical->titulo ?: 'Versão principal' }}
                                                     @if ($versaoMusical->tom_musical)
                                                         &bull; Tom {{ $versaoMusical->tom_musical }}
                                                     @endif
@@ -909,7 +914,7 @@
                                     <div>
                                         <label class="block text-xs font-bold uppercase tracking-wider text-gray-400">Tom para tocar</label>
                                         <select name="tom_usado" class="mt-1 block w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-[#8c6933] focus:ring-2 focus:ring-[#ead6b3]">
-                                            <option value="">Usar o tom original da vers&atilde;o</option>
+                                            <option value="">Usar o tom original da versão</option>
                                             @foreach ($tonsMusicais as $tomMusical)
                                                 <option value="{{ $tomMusical }}" @selected((string) old('tom_usado', $item->tom_usado) === (string) $tomMusical)>{{ $tomMusical }}</option>
                                             @endforeach
@@ -934,27 +939,27 @@
             <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
                 <h2 class="text-lg font-bold text-gray-900">Dados da missa</h2>
                 <div class="mt-4 space-y-4 text-sm text-gray-600">
-                    <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Tempo lit&uacute;rgico</span><span>{{ $missa->tempoLiturgico?->nome ?: 'Ainda n&atilde;o definido' }}</span></div>
-                    <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Celebrante</span><span>{{ $missa->celebrante?->nome ?: 'Ainda n&atilde;o vinculado' }}</span></div>
-                    <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Publica&ccedil;&atilde;o para fi&eacute;is</span><span>{{ $missa->publica_para_fieis ? 'Ativa' : 'N&atilde;o publicada' }}</span></div>
-                    <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Publica&ccedil;&atilde;o para m&uacute;sicos</span><span>{{ $missa->publica_para_musicos ? 'Ativa' : 'N&atilde;o publicada' }}</span></div>
-                    <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Observa&ccedil;&otilde;es</span><span>{{ $missa->observacoes ?: 'Nenhuma observa&ccedil;&atilde;o informada.' }}</span></div>
+                    <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Tempo litúrgico</span><span>{{ $missa->tempoLiturgico?->nome ?: 'Ainda não definido' }}</span></div>
+                    <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Celebrante</span><span>{{ $missa->celebrante?->nome ?: 'Ainda não vinculado' }}</span></div>
+                    <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Publicação para fiéis</span><span>{{ $missa->publica_para_fieis ? 'Ativa' : 'Não publicada' }}</span></div>
+                    <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Publicação para músicos</span><span>{{ $missa->publica_para_musicos ? 'Ativa' : 'Não publicada' }}</span></div>
+                    <div><span class="block text-xs font-black uppercase tracking-wider text-gray-400">Observações</span><span>{{ $missa->observacoes ?: 'Nenhuma observação informada.' }}</span></div>
                 </div>
             </section>
 
             <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
                 <h2 class="text-lg font-bold text-gray-900">Links da igreja</h2>
-                <p class="mt-2 text-sm text-gray-500">Use a p&aacute;gina p&uacute;blica da igreja como refer&ecirc;ncia para o acesso dos fi&eacute;is e dos m&uacute;sicos.</p>
+                <p class="mt-2 text-sm text-gray-500">Use a página pública da igreja como referência para o acesso dos fiéis e dos músicos.</p>
                 <div class="mt-4 space-y-4">
                     <div>
-                        <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Link dos fi&eacute;is</span>
+                        <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Link dos fiéis</span>
                         <a href="{{ $igreja->link_publico }}" target="_blank" rel="noopener noreferrer" class="mt-1 block break-all text-sm font-semibold text-[#8c6933] hover:underline">
                             {{ $igreja->link_publico }}
                         </a>
                     </div>
 
                     <div>
-                        <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Link dos m&uacute;sicos</span>
+                        <span class="block text-xs font-black uppercase tracking-wider text-gray-400">Link dos músicos</span>
                         <a href="{{ $igreja->link_publico_musicos }}" target="_blank" rel="noopener noreferrer" class="mt-1 block break-all text-sm font-semibold text-sky-800 hover:underline">
                             {{ $igreja->link_publico_musicos }}
                         </a>
@@ -991,7 +996,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const musicas = @json($musicasParaBusca, JSON_UNESCAPED_UNICODE);
+            const musicas = JSON.parse("@json($musicasParaBusca, JSON_UNESCAPED_UNICODE)");
             const inputBusca = document.getElementById('busca_musica');
             const resultadoBusca = document.getElementById('resultado_busca_musica');
             const musicaId = document.getElementById('musica_id');
@@ -1001,8 +1006,8 @@
             const momentoHint = document.getElementById('momento_liturgico_hint');
             const campoTomUsado = document.getElementById('tom_usado');
             const tomUsadoHint = document.getElementById('tom_usado_hint');
-            const oldVersaoId = @json(old('versao_musical_id'));
-            const oldMomentoId = @json(old('momento_liturgico_id'));
+            const oldVersaoId = JSON.parse("@json(old('versao_musical_id'))");
+            const oldMomentoId = JSON.parse("@json(old('momento_liturgico_id'))");
             const formularioAdicionar = musicaId.form;
             let momentoAlteradoManualmente = Boolean(oldMomentoId);
             let momentoGuiaId = oldMomentoId ? String(oldMomentoId) : '';
@@ -1095,7 +1100,7 @@
                 if (momentoHint) {
                     momentoHint.textContent = momentoId
                         ? 'Momento sugerido pela musica: ' + (musicaSelecionada.momento_liturgico_nome || 'momento cadastrado') + '. Voce pode trocar se precisar.'
-                        : 'Esta musica ainda nao tem momento cadastrado. Escolha manualmente ou deixe para definir depois.';
+                        : 'Esta música ainda não tem momento cadastrado. Escolha manualmente ou deixe para definir depois.';
                     momentoHint.classList.toggle('text-emerald-700', Boolean(momentoId));
                     momentoHint.classList.toggle('font-semibold', Boolean(momentoId));
                 }

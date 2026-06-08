@@ -851,8 +851,96 @@ body.theme-dark .bg-slate-50 {
     background-color: var(--admin-surface-muted) !important;
 }
 
-body.theme-dark .bg-gray-100 {
-    background-color: #2a1b19 !important;
+body.theme-dark .bg-gray-100,
+body.theme-dark .bg-slate-100,
+body.theme-dark .bg-\[\#f8f1e8\],
+body.theme-dark .bg-\[\#f8f1e7\],
+body.theme-dark .bg-\[\#efe2cf\],
+body.theme-dark .bg-\[\#fff8ed\],
+body.theme-dark .bg-\[\#fffdf9\],
+body.theme-dark .bg-\[\#f5eee6\],
+body.theme-dark .bg-\[\#f8ecd7\] {
+    background-color: var(--admin-surface-muted) !important;
+}
+
+body.theme-dark .hover\:bg-\[\#efe2cf\]:hover,
+body.theme-dark .hover\:bg-gray-50:hover {
+    background-color: var(--admin-surface) !important;
+}
+
+body.theme-dark .admin-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+}
+
+body.theme-dark .admin-btn-warm {
+    background: linear-gradient(135deg, #9f713f, #7d552d) !important;
+    color: #fffaf4 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.theme-dark .admin-btn-warm:hover {
+    background: linear-gradient(135deg, #7a4c26, #5b3a1d) !important;
+}
+
+body.theme-dark .admin-btn-primary:hover {
+    background: linear-gradient(135deg, #1d7f45, #14512e) !important;
+}
+
+body.theme-dark .border-\[\#ead6b3\],
+body.theme-dark .border-\[\#8c6933\]\/20 {
+    border-color: var(--admin-border) !important;
+}
+
+body.theme-dark .hover\:bg-\[\#f8f1e7\]:hover,
+body.theme-dark .hover\:bg-\[\#f8ecd7\]:hover {
+    background-color: var(--admin-surface) !important;
+}
+
+body.theme-dark .bg-emerald-50,
+body.theme-dark .bg-sky-50,
+body.theme-dark .bg-amber-50,
+body.theme-dark .bg-indigo-100,
+body.theme-dark .bg-blue-100 {
+    background-color: var(--admin-surface) !important;
+}
+
+body.theme-dark .bg-emerald-100,
+body.theme-dark .bg-amber-100 {
+    background-color: var(--admin-surface) !important;
+}
+
+body.theme-dark .border-emerald-200,
+body.theme-dark .border-sky-200,
+body.theme-dark .border-amber-100,
+body.theme-dark .border-indigo-100,
+body.theme-dark .border-blue-100 {
+    border-color: var(--admin-border) !important;
+}
+
+body.theme-dark .border-emerald-100 {
+    border-color: var(--admin-border) !important;
+}
+
+body.theme-dark .user-row {
+    background: transparent !important;
+}
+
+body.theme-dark .user-row:hover {
+    background: rgba(255, 255, 255, 0.04) !important;
+    box-shadow: inset 4px 0 0 rgba(52, 211, 153, 0.35) !important;
+}
+
+body.theme-dark .user-row-main-link:hover h3 {
+    color: #bbf7d0 !important;
+}
+
+body.theme-dark .user-metric-link:hover {
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.18) !important;
+}
+
+body.theme-dark .user-metric-link::after {
+    color: #d1d5db !important;
 }
 
 body.theme-dark .bg-slate-900,
@@ -867,10 +955,12 @@ body.theme-dark .bg-green-950\/50 {
 body.theme-dark .border-gray-100,
 body.theme-dark .border-gray-200,
 body.theme-dark .border-gray-300,
+body.theme-dark .border-slate-300,
 body.theme-dark .border-slate-700,
 body.theme-dark .border-green-800,
 body.theme-dark .border-green-700,
-body.theme-dark .border-slate-200 {
+body.theme-dark .border-slate-200,
+body.theme-dark .border-\[\#6c4a21\]\/20 {
     border-color: var(--admin-border) !important;
 }
 
@@ -878,7 +968,11 @@ body.theme-dark .text-gray-900,
 body.theme-dark .text-gray-800,
 body.theme-dark .text-slate-900,
 body.theme-dark .text-slate-800,
-body.theme-dark .text-gray-700 {
+body.theme-dark .text-gray-700,
+body.theme-dark .text-slate-700,
+body.theme-dark .text-\[\#6c4a21\],
+body.theme-dark .text-\[\#6f4a2c\],
+body.theme-dark .text-\[\#5a3a1d\] {
     color: var(--admin-text) !important;
 }
 
@@ -977,9 +1071,19 @@ body.theme-dark .settings-option,
 body.theme-dark .bg-\[\#f8f1e8\],
 body.theme-dark .bg-\[\#f8f1e7\],
 body.theme-dark .bg-\[\#fff8ed\],
-body.theme-dark .bg-\[\#f5eee6\] {
+body.theme-dark .bg-\[\#f5eee6\],
+body.theme-dark .bg-\[\#fffdf9\],
+body.theme-dark .bg-\[\#f8ecd7\] {
     background: #241716 !important;
     border-color: var(--admin-border) !important;
+    color: var(--admin-text) !important;
+}
+
+body.theme-dark :not(input):not(textarea):not(select).text-\[\#6c4a21\],
+body.theme-dark .text-\[\#5b3d1a\],
+body.theme-dark .text-\[\#8c6933\],
+body.theme-dark .text-\[\#d6ad6c\],
+body.theme-dark .text-\[\#f3dfbd\] {
     color: var(--admin-text) !important;
 }
 
@@ -1171,6 +1275,27 @@ body.theme-dark summary {
 body.theme-dark .missa-support-panel,
 body.theme-dark .repertorio-item-card {
     background: var(--admin-surface-strong) !important;
+}
+
+body.theme-dark .missa-card,
+body.theme-dark .musica-item,
+body.theme-dark .cifra-palco,
+body.theme-dark .repertorio-controls,
+body.theme-dark .repertorio-sequence-note,
+body.theme-dark .repertorio-flow-item,
+body.theme-dark .tom-request-box,
+body.theme-dark .scroll-dock {
+    background: var(--admin-surface-strong) !important;
+}
+
+body.theme-dark .repertorio-flow-item {
+    border-color: var(--admin-border) !important;
+}
+
+body.theme-dark .repertorio-sequence-note,
+body.theme-dark .repertorio-controls,
+body.theme-dark .tom-request-box {
+    border-color: var(--admin-border) !important;
 }
 
 body.theme-dark summary:hover,
