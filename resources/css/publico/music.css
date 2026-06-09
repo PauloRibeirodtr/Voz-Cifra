@@ -1810,3 +1810,58 @@ body[data-public-mode='musicos'] .public-scroll-dock {
     }
 }
 
+body[data-public-mode='musicos'] .public-scroll-dock {
+    grid-template-columns: minmax(6.5rem, 8.5rem) minmax(5rem, 9rem);
+    width: min(22rem, calc(100vw - 1rem));
+    max-width: 22rem;
+    gap: 8px;
+    padding: 6px;
+    bottom: 10px;
+    border-radius: 999px;
+}
+
+body[data-public-mode='musicos'] .public-scroll-dock .public-tool-button {
+    min-height: 38px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    box-shadow: none;
+    font-size: 12px;
+}
+
+body[data-public-mode='musicos'] .public-scroll-dock__speed {
+    display: none;
+}
+
+body[data-public-mode='musicos'] .public-scroll-dock input[type='range'] {
+    width: 100%;
+    min-width: 0;
+}
+
+body[data-public-mode='musicos'] .public-scroll-dock.is-running {
+    width: min(19rem, calc(100vw - 1rem));
+    max-width: 19rem;
+}
+
+@media (max-width: 719px) {
+    body[data-public-mode='musicos'] .page {
+        padding-bottom: 92px;
+    }
+
+    body[data-public-mode='musicos'] .celebration-section {
+        padding-bottom: 5.75rem;
+    }
+
+    body[data-public-mode='musicos'] .public-scroll-dock {
+        grid-template-columns: minmax(6.25rem, 8rem) minmax(4.5rem, 1fr);
+        width: min(19rem, calc(100vw - .9rem));
+        bottom: 8px;
+        gap: 7px;
+        padding: 5px;
+    }
+
+    body[data-public-mode='musicos'] .public-scroll-dock .public-tool-button {
+        min-height: 36px;
+        padding: 7px 12px;
+    }
+}
+

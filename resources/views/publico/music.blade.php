@@ -242,10 +242,9 @@
             </div>
 
             <div class="public-scroll-dock" data-public-scroll-dock>
-                <button type="button" class="public-tool-button public-tool-button--primary" data-public-auto-scroll>Iniciar rolagem</button>
+                <button type="button" class="public-tool-button public-tool-button--primary" data-public-auto-scroll>Rolagem</button>
                 <label for="public_scroll_speed" class="public-scroll-dock__speed">Velocidade</label>
                 <input id="public_scroll_speed" type="range" min="1" max="5" value="1" step="1" data-public-scroll-speed aria-label="Velocidade da auto rolagem">
-                <button type="button" class="public-tool-button" data-public-scroll-top>Topo</button>
             </div>
         @endif
     </main>

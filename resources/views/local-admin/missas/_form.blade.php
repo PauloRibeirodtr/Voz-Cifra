@@ -32,14 +32,14 @@
                     <div class="mt-4" id="bloco_reaproveitar_repertorio">
                         <label class="block text-sm font-medium text-gray-700">Missa anterior</label>
                         <select name="missa_origem_id" class="{{ $classeInput }}">
-                            <option value="">Selecione uma missa disponivel</option>
+                            <option value="">Selecione uma missa dispon&iacute;vel</option>
                             @foreach (($missasAnteriores ?? collect()) as $missaAnterior)
                                 <option value="{{ $missaAnterior->id }}" @selected((string) old('missa_origem_id') === (string) $missaAnterior->id)>
                                     {{ $missaAnterior->titulo }} &bull; {{ $missaAnterior->igreja?->nome }} &bull; {{ optional($missaAnterior->data_missa)->format('d/m/Y') }} &bull; {{ substr((string) $missaAnterior->hora_inicio, 0, 5) }} - {{ substr((string) $missaAnterior->hora_fim, 0, 5) }}
                                 </option>
                             @endforeach
                         </select>
-                        <p class="mt-2 text-xs text-gray-500">Ao selecionar, o formulario usa titulo, data, horarios, tempo liturgico, celebrante, observacoes e repertorio como ponto de partida.</p>
+                        <p class="mt-2 text-xs text-gray-500">Ao selecionar, o formul&aacute;rio usa t&iacute;tulo, data, hor&aacute;rios, tempo lit&uacute;rgico, celebrante, observa&ccedil;&otilde;es e repert&oacute;rio como ponto de partida.</p>
                         <div id="resumo_missa_origem" class="mt-3 hidden whitespace-pre-line rounded-xl border border-[#ead6b3] bg-white px-4 py-3 text-xs leading-relaxed text-[#5b3d1a]"></div>
                     </div>
                 </div>
@@ -125,7 +125,7 @@
 
         <div class="mt-6 space-y-3" data-guide-target="missa-salvar">
             <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-[#6c4a21] px-5 py-3 font-semibold text-white transition hover:bg-[#5b3d1a]">
-                {{ $missa->exists ? 'Salvar alterações' : 'Cadastrar missa e abrir repertório' }}
+                {!! $missa->exists ? 'Salvar altera&ccedil;&otilde;es' : 'Cadastrar missa e abrir repert&oacute;rio' !!}
             </button>
 
             <a href="{{ route('local-admin.missas.index') }}" class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 font-semibold text-gray-700 transition hover:bg-gray-50">
@@ -149,11 +149,11 @@
                     'hora_inicio' => $missaAnterior->hora_inicio ? substr((string) $missaAnterior->hora_inicio, 0, 5) : '',
                     'hora_fim' => $missaAnterior->hora_fim ? substr((string) $missaAnterior->hora_fim, 0, 5) : '',
                     'observacoes' => (string) ($missaAnterior->observacoes ?? ''),
-                    'tempo_liturgico_nome' => (string) ($missaAnterior->tempoLiturgico?->nome ?? 'Sem tempo liturgico'),
+                    'tempo_liturgico_nome' => (string) ($missaAnterior->tempoLiturgico?->nome ?? 'Sem tempo litúrgico'),
                     'celebrante_nome' => (string) ($missaAnterior->celebrante?->nome ?? 'Sem celebrante'),
                     'musicas' => $missaAnterior->missaMusicas
                         ->sortBy('ordem')
-                        ->map(fn ($item) => (string) ($item->musica?->titulo ?? 'Musica sem titulo'))
+                        ->map(fn ($item) => (string) ($item->musica?->titulo ?? 'Música sem título'))
                         ->values()
                         ->all(),
                 ];

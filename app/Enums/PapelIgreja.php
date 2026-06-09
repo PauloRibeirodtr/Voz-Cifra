@@ -39,7 +39,7 @@ enum PapelIgreja: string
         return match ($this) {
             self::ADMIN_LOCAL => 'Admin local',
             self::COORDENADOR => 'Coordenador',
-            self::MUSICO => 'Musico',
+            self::MUSICO => 'Músico',
         };
     }
 }

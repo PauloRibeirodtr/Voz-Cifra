@@ -321,7 +321,7 @@ class MissaController extends Controller
 
         if ($totalItens === 0) {
             return redirect()
-                ->route('local-admin.missas.index')
+                ->to(route('local-admin.missas.show', $missa) . '#missa-repertorio')
                 ->withErrors([
                     'missa' => 'Montagem nao concluida: adicione pelo menos uma musica ao repertorio de ' . $missa->titulo . '.',
                 ]);
@@ -330,18 +330,39 @@ class MissaController extends Controller
         $itensSemVersao = $missa->missaMusicas()
             ->whereNull('versao_musical_id')
             ->count();
+        $itensSemMomento = $missa->missaMusicas()
+            ->whereNull('momento_liturgico_id')
+            ->count();
+        $musicasDuplicadas = $missa->missaMusicas()
+            ->select('musica_id')
+            ->groupBy('musica_id')
+            ->havingRaw('COUNT(*) > 1')
+            ->count();
 
-        if ($itensSemVersao > 0) {
+        if ($itensSemVersao > 0 || $itensSemMomento > 0 || $musicasDuplicadas > 0) {
+            $pendencias = [];
+
+            if ($itensSemVersao > 0) {
+                $pendencias[] = $itensSemVersao . ' item(ns) sem cifra/versao para os musicos.';
+            }
+
+            if ($itensSemMomento > 0) {
+                $pendencias[] = $itensSemMomento . ' item(ns) sem momento liturgico.';
+            }
+
+            if ($musicasDuplicadas > 0) {
+                $pendencias[] = $musicasDuplicadas . ' musica(s) repetida(s).';
+            }
+
             return redirect()
                 ->to(route('local-admin.missas.show', $missa) . '#missa-repertorio')
-                ->withErrors([
-                    'missa' => 'Montagem ainda pendente: vincule uma versao/cifra nos ' . $itensSemVersao . ' item(ns) sem cifra antes de concluir.',
-                ]);
+                ->with('warning', 'Repertorio salvo com pendencias. Voce pode revisar agora ou publicar depois que estiver tudo pronto.')
+                ->with('missa_pendencias', $pendencias);
         }
 
         return redirect()
-            ->route('local-admin.missas.index')
-            ->with('success', 'Montagem da missa "' . $missa->titulo . '" concluida com ' . $totalItens . ' item(ns) no repertorio.');
+            ->to(route('local-admin.missas.show', $missa) . '#missa-repertorio')
+            ->with('success', 'Tudo certo: repertorio da missa "' . $missa->titulo . '" conferido com ' . $totalItens . ' item(ns).');
     }
 
     public function corrigirOrdemRepertorio(Missa $missa): RedirectResponse

@@ -25,10 +25,10 @@ class AjudaGuiadaTest extends TestCase
             ->withSession(['igreja_ativa_id' => $igreja->id])
             ->get(route('member.dashboard'))
             ->assertOk()
-            ->assertSee('O que voce quer fazer?')
-            ->assertSee('Musico')
-            ->assertSee('Ver repertorio')
-            ->assertSee('Abrir chamado de suporte')
+            ->assertSee('O que voc&ecirc; quer fazer?', false)
+            ->assertSeeText('Músico')
+            ->assertSeeText('Ver repertório')
+            ->assertSeeText('Abrir chamado de suporte')
             ->assertDontSee('Admin master');
     }
 
@@ -47,13 +47,13 @@ class AjudaGuiadaTest extends TestCase
             ->withSession(['igreja_ativa_id' => $igreja->id])
             ->get(route('local-admin.dashboard'))
             ->assertOk()
-            ->assertSee('Admin local')
-            ->assertSee('Coordenador')
-            ->assertSee('Musico')
-            ->assertSee('Cadastrar musico')
-            ->assertSee('Montar uma missa')
-            ->assertSee('Cadastrar musica ou cifra')
-            ->assertSee('Ver repertorio');
+            ->assertSeeText('Admin local')
+            ->assertSeeText('Coordenador')
+            ->assertSeeText('Músico')
+            ->assertSeeText('Cadastrar músico')
+            ->assertSeeText('Montar uma missa')
+            ->assertSeeText('Cadastrar música ou cifra')
+            ->assertSeeText('Ver repertório');
     }
 
     public function test_admin_master_recebe_guia_visual_para_cadastrar_usuario(): void
@@ -65,12 +65,12 @@ class AjudaGuiadaTest extends TestCase
             ->actingAs($adminMaster)
             ->get(route('admin.usuarios.create'))
             ->assertOk()
-            ->assertSee('Cadastrar usuario')
+            ->assertSeeText('Cadastrar usuário')
             ->assertSee('data-guide-id="cadastro-usuario"', false)
             ->assertSee('data-guide-target="usuario-tipo"', false)
-            ->assertSee('Escolha o perfil permitido')
+            ->assertSeeText('Escolha o perfil permitido')
             ->assertSee('data-guide-target="usuario-telefone"', false)
-            ->assertSee('Conclua o cadastro');
+            ->assertSeeText('Conclua o cadastro');
     }
 
     public function test_admin_local_recebe_guia_de_cadastro_de_musico(): void
@@ -88,7 +88,7 @@ class AjudaGuiadaTest extends TestCase
             ->assertOk()
             ->assertSee('data-guide-id="cadastro-musico-local"', false)
             ->assertSee('data-guide-target="musico-nome"', false)
-            ->assertSee('Admin local cadastra apenas musicos da igreja ativa');
+            ->assertSeeText('Admin local cadastra apenas músicos da igreja ativa');
     }
 
     public function test_coordenador_recebe_acao_e_guia_para_cadastrar_admin_local(): void
@@ -104,7 +104,7 @@ class AjudaGuiadaTest extends TestCase
             ->withSession(['igreja_ativa_id' => $igreja->id])
             ->get(route('coordenador.dashboard'))
             ->assertOk()
-            ->assertSee('Cadastrar admin local')
+            ->assertSeeText('Cadastrar admin local')
             ->assertSee('data-guide-id="cadastro-admin-local-coordenador"', false)
             ->assertSee('data-guide-target="admin-local-form"', false)
             ->assertSee(route('coordenador.igreja.admins-locais.store'), false);

@@ -67,15 +67,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const musicas = missa.musicas.length > 0
             ? missa.musicas.slice(0, 6).join(', ') + (missa.musicas.length > 6 ? '...' : '')
-            : 'Nenhuma musica no repertorio anterior.';
+            : 'Nenhuma música no repertório anterior.';
 
         resumo.textContent = [
             `Missa: ${missa.titulo}`,
             `Igreja: ${missa.igreja_nome || 'Igreja atual'}`,
-            `Data e horario: ${missa.data_missa || 'Sem data'} - ${missa.hora_inicio || '--:--'} as ${missa.hora_fim || '--:--'}`,
-            `Tempo liturgico: ${missa.tempo_liturgico_nome}`,
+            `Data e horário: ${missa.data_missa || 'Sem data'} - ${missa.hora_inicio || '--:--'} às ${missa.hora_fim || '--:--'}`,
+            `Tempo litúrgico: ${missa.tempo_liturgico_nome}`,
             `Celebrante: ${missa.celebrante_nome}`,
-            `Musicas copiadas: ${musicas}`,
+            `Músicas copiadas: ${musicas}`,
         ].join('\n');
         resumo.classList.remove('hidden');
     };

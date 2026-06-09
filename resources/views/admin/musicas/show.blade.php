@@ -5,6 +5,11 @@
 @section('title', 'Visualizar musica | Voz & Cifra')
 @section('mobile_title', 'Musica')
 
+@php
+    $routePrefix = str_starts_with(Route::currentRouteName() ?? '', 'coordenador.') ? 'coordenador' : 'admin';
+    $podeInativarVersoes = $routePrefix === 'admin';
+@endphp
+
 @push('styles')
     <style>
         .lyrics {
@@ -71,13 +76,13 @@
         </div>
 
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:flex xl:flex-wrap xl:justify-end">
-            <a href="{{ route('admin.versoes-musicais.create', $musica) }}" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800">
+            <a href="{{ route($routePrefix . '.versoes-musicais.create', $musica) }}" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800">
                 Cadastrar cifra
             </a>
-            <a href="{{ route('admin.musicas.edit', $musica) }}" class="inline-flex items-center justify-center rounded-xl border border-[#ead6b3] bg-[#fff8ed] px-4 py-3 text-[#6c4a21] font-medium hover:bg-[#f8ecd7]">
+            <a href="{{ route($routePrefix . '.musicas.edit', $musica) }}" class="inline-flex items-center justify-center rounded-xl border border-[#ead6b3] bg-[#fff8ed] px-4 py-3 text-[#6c4a21] font-medium hover:bg-[#f8ecd7]">
                 <i class="fa-solid fa-pen mr-2"></i> Editar
             </a>
-            <a href="{{ route('admin.musicas.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-700 font-medium hover:bg-gray-50 sm:col-span-2 xl:col-span-1">
+            <a href="{{ route($routePrefix . '.musicas.index') }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-700 font-medium hover:bg-gray-50 sm:col-span-2 xl:col-span-1">
                 Voltar p/ Lista de Musicas
             </a>
         </div>
@@ -91,7 +96,7 @@
                     <p class="mt-1 text-sm text-green-800">{{ session('success') }}</p>
                 </div>
 
-                <a href="{{ route('admin.versoes-musicais.create', $musica) }}" class="inline-flex items-center justify-center rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800">
+                <a href="{{ route($routePrefix . '.versoes-musicais.create', $musica) }}" class="inline-flex items-center justify-center rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800">
                     Cadastrar cifra
                 </a>
             </div>
@@ -144,7 +149,7 @@
                 <p class="text-sm text-gray-500">Aqui ficam tom, bpm, video e letra com cifras.</p>
             </div>
 
-            <a href="{{ route('admin.versoes-musicais.create', $musica) }}" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800">
+            <a href="{{ route($routePrefix . '.versoes-musicais.create', $musica) }}" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800">
                 Cadastrar cifra
             </a>
         </div>
@@ -181,13 +186,13 @@
                                 </td>
                                 <td class="px-4 py-3">
                                     <div class="flex items-center justify-end gap-2">
-                                        <a href="{{ route('admin.versoes-musicais.show', [$musica, $versaoMusical]) }}" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100" title="Ver versao" aria-label="Ver versao {{ $versaoMusical->titulo ?: 'principal' }}">
+                                        <a href="{{ route($routePrefix . '.versoes-musicais.show', [$musica, $versaoMusical]) }}" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100" title="Ver versao" aria-label="Ver versao {{ $versaoMusical->titulo ?: 'principal' }}">
                                             <i class="fa-solid fa-eye"></i>
                                         </a>
-                                        <a href="{{ route('admin.versoes-musicais.edit', [$musica, $versaoMusical]) }}" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#ead6b3] bg-[#fff8ed] text-[#6c4a21] hover:bg-[#f8ecd7]" title="Editar versao" aria-label="Editar versao {{ $versaoMusical->titulo ?: 'principal' }}">
+                                        <a href="{{ route($routePrefix . '.versoes-musicais.edit', [$musica, $versaoMusical]) }}" class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#ead6b3] bg-[#fff8ed] text-[#6c4a21] hover:bg-[#f8ecd7]" title="Editar versao" aria-label="Editar versao {{ $versaoMusical->titulo ?: 'principal' }}">
                                             <i class="fa-solid fa-pen"></i>
                                         </a>
-                                        @if ($versaoMusical->ativo)
+                                        @if ($podeInativarVersoes && $versaoMusical->ativo)
                                             <form action="{{ route('admin.versoes-musicais.destroy', [$musica, $versaoMusical]) }}" method="POST" onsubmit="return confirm('Deseja inativar esta versao musical? Ela sera preservada no banco.');">
                                                 @csrf
                                                 @method('DELETE')
@@ -228,13 +233,13 @@
                         </div>
 
                         <div class="mt-4 flex flex-wrap gap-2">
-                            <a href="{{ route('admin.versoes-musicais.show', [$musica, $versaoMusical]) }}" class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100" title="Ver versao" aria-label="Ver versao {{ $versaoMusical->titulo ?: 'principal' }}">
+                            <a href="{{ route($routePrefix . '.versoes-musicais.show', [$musica, $versaoMusical]) }}" class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100" title="Ver versao" aria-label="Ver versao {{ $versaoMusical->titulo ?: 'principal' }}">
                                 <i class="fa-solid fa-eye"></i>
                             </a>
-                            <a href="{{ route('admin.versoes-musicais.edit', [$musica, $versaoMusical]) }}" class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[#ead6b3] bg-[#fff8ed] text-[#6c4a21] hover:bg-[#f8ecd7]" title="Editar versao" aria-label="Editar versao {{ $versaoMusical->titulo ?: 'principal' }}">
+                            <a href="{{ route($routePrefix . '.versoes-musicais.edit', [$musica, $versaoMusical]) }}" class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[#ead6b3] bg-[#fff8ed] text-[#6c4a21] hover:bg-[#f8ecd7]" title="Editar versao" aria-label="Editar versao {{ $versaoMusical->titulo ?: 'principal' }}">
                                 <i class="fa-solid fa-pen"></i>
                             </a>
-                            @if ($versaoMusical->ativo)
+                            @if ($podeInativarVersoes && $versaoMusical->ativo)
                                 <form action="{{ route('admin.versoes-musicais.destroy', [$musica, $versaoMusical]) }}" method="POST" onsubmit="return confirm('Deseja inativar esta versao musical? Ela sera preservada no banco.');">
                                     @csrf
                                     @method('DELETE')

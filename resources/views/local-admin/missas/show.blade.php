@@ -374,7 +374,7 @@
                 $dataMinimaDuplicacao = now('America/Cuiaba')->toDateString();
                 $dataMaximaDuplicacao = now('America/Cuiaba')->addMonths(3)->toDateString();
             @endphp
-            @if ($igrejasParaDuplicar->isNotEmpty())
+            @if ($igrejasParaDuplicar->isNotEmpty() && $totalItensRepertorio > 0)
                 <details class="rounded-2xl border border-[#ead6b3] bg-[#fff8ed] p-4 sm:col-span-2">
                     <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-black text-[#5b3d1a] [&::-webkit-details-marker]:hidden">
                         <span>Duplicar para outra igreja</span>
@@ -425,6 +425,19 @@
     @if (session('success'))
         <div class="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800">
             {{ session('success') }}
+        </div>
+    @endif
+
+    @if (session('warning'))
+        <div class="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900">
+            <strong class="block">{{ session('warning') }}</strong>
+            @if (session('missa_pendencias'))
+                <ul class="mt-2 list-disc pl-5">
+                    @foreach (session('missa_pendencias') as $pendencia)
+                        <li>{{ $pendencia }}</li>
+                    @endforeach
+                </ul>
+            @endif
         </div>
     @endif
 

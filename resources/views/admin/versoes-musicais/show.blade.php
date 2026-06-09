@@ -3,6 +3,11 @@
 @section('title', 'Visualizar versao musical | Voz & Cifra')
 @section('mobile_title', 'Versao musical')
 
+@php
+    $routePrefix = str_starts_with(Route::currentRouteName() ?? '', 'coordenador.') ? 'coordenador' : 'admin';
+    $podeInativarVersao = $routePrefix === 'admin';
+@endphp
+
 @push('styles')
     <style>
         .abas-modo { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
@@ -181,10 +186,10 @@
         </div>
 
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:flex lg:flex-wrap lg:justify-end">
-            <a href="{{ route('admin.versoes-musicais.edit', [$musica, $versaoMusical]) }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-700 font-medium hover:bg-gray-50">
+            <a href="{{ route($routePrefix . '.versoes-musicais.edit', [$musica, $versaoMusical]) }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-700 font-medium hover:bg-gray-50">
                 Editar
             </a>
-            <a href="{{ route('admin.musicas.show', $musica) }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-700 font-medium hover:bg-gray-50">
+            <a href="{{ route($routePrefix . '.musicas.show', $musica) }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-700 font-medium hover:bg-gray-50">
                 Voltar para a musica
             </a>
         </div>
@@ -363,15 +368,17 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <h2 class="text-lg font-bold text-gray-800 mb-4">Acoes</h2>
                 <div class="space-y-3">
-                    <a href="{{ route('admin.versoes-musicais.edit', [$musica, $versaoMusical]) }}" class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800">
+                    <a href="{{ route($routePrefix . '.versoes-musicais.edit', [$musica, $versaoMusical]) }}" class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800">
                         <i class="fa-solid fa-pen"></i>
                         Editar versao
                     </a>
-                    <form action="{{ route('admin.versoes-musicais.destroy', [$musica, $versaoMusical]) }}" method="POST" onsubmit="return confirm('Deseja inativar esta versao musical? Ela sera preservada no banco.');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="w-full px-4 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700">Inativar versao</button>
-                    </form>
+                    @if ($podeInativarVersao)
+                        <form action="{{ route('admin.versoes-musicais.destroy', [$musica, $versaoMusical]) }}" method="POST" onsubmit="return confirm('Deseja inativar esta versao musical? Ela sera preservada no banco.');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="w-full px-4 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700">Inativar versao</button>
+                        </form>
+                    @endif
                 </div>
             </div>
         </div>

@@ -322,7 +322,6 @@
                 const botaoAutoRolagem = document.querySelector('[data-public-auto-scroll]');
                 const controleVelocidadeRolagem = document.querySelector('[data-public-scroll-speed]');
                 const dockRolagem = document.querySelector('[data-public-scroll-dock]');
-                const botaoVoltarTopo = document.querySelector('[data-public-scroll-top]');
                 const botaoAcordesFechar = document.querySelector('[data-public-chords-close]');
                 const drawerAcordes = document.querySelector('[data-public-chords-drawer]');
                 const drawerAcordesBackdrop = document.querySelector('[data-public-chords-backdrop]');
@@ -332,17 +331,39 @@
                 const estadoMusicas = new Map();
                 let musicaSelecionada = musicasPublicas[0] || null;
                 let publicAutoScrollActive = false;
-                let publicAutoScrollInterval = null;
-                const executarPassoRolagem = () => {
+                let publicAutoScrollFrame = null;
+                let ultimoTempoRolagem = null;
+                const pararRolagemPublica = () => {
+                    if (publicAutoScrollFrame) {
+                        window.cancelAnimationFrame(publicAutoScrollFrame);
+                        publicAutoScrollFrame = null;
+                    }
+
+                    ultimoTempoRolagem = null;
+                    publicAutoScrollActive = false;
+                    if (botaoAutoRolagem) botaoAutoRolagem.textContent = 'Rolagem';
+                    dockRolagem?.classList.remove('is-running');
+                };
+                const executarPassoRolagem = (timestamp) => {
+                    if (!publicAutoScrollActive) return;
+
                     const fim = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 8;
                     if (fim) {
-                        botaoAutoRolagem?.click();
+                        pararRolagemPublica();
                         return;
                     }
 
                     const velocidade = Math.max(1, Math.min(5, Number(controleVelocidadeRolagem?.value || 1)));
-                    const passos = [0.035, 0.075, 0.14, 0.24, 0.38];
-                    window.scrollBy({ top: passos[velocidade - 1] || passos[0], left: 0, behavior: 'auto' });
+                    const pixelsPorSegundo = [5, 9, 15, 24, 36];
+                    const delta = ultimoTempoRolagem ? Math.min(80, timestamp - ultimoTempoRolagem) : 16;
+                    ultimoTempoRolagem = timestamp;
+
+                    window.scrollBy({
+                        top: ((pixelsPorSegundo[velocidade - 1] || pixelsPorSegundo[0]) * delta) / 1000,
+                        left: 0,
+                        behavior: 'auto',
+                    });
+                    publicAutoScrollFrame = window.requestAnimationFrame(executarPassoRolagem);
                 };
                 const renderizarDiagrama = (shape) => {
                     if (!shape) {
@@ -623,23 +644,14 @@
 
                 botaoAutoRolagem?.addEventListener('click', () => {
                     if (publicAutoScrollActive) {
-                        window.clearInterval(publicAutoScrollInterval);
-                        publicAutoScrollInterval = null;
-                        publicAutoScrollActive = false;
-                        botaoAutoRolagem.textContent = 'Iniciar rolagem';
-                        dockRolagem?.classList.remove('is-running');
+                        pararRolagemPublica();
                         return;
                     }
 
                     publicAutoScrollActive = true;
-                    botaoAutoRolagem.textContent = 'Pausar rolagem';
+                    botaoAutoRolagem.textContent = 'Pausar';
                     dockRolagem?.classList.add('is-running');
-                    executarPassoRolagem();
-                    publicAutoScrollInterval = window.setInterval(executarPassoRolagem, 50);
-                });
-
-                botaoVoltarTopo?.addEventListener('click', () => {
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    publicAutoScrollFrame = window.requestAnimationFrame(executarPassoRolagem);
                 });
 
                 const fecharDrawerAcordes = () => {
