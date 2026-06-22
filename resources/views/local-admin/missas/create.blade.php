@@ -11,8 +11,9 @@
 
     @include('local-admin.partials.church-switcher')
 
-    <form action="{{ route('local-admin.missas.store') }}" method="POST" data-guide-target="missa-form">
+    <form action="{{ route('local-admin.missas.store') }}" method="POST" data-guide-target="missa-form" data-draft-form="missa-create">
         @csrf
+        @include('partials.submission-token')
         @include('local-admin.missas._form', ['modoCriacao' => true])
     </form>
 @endsection

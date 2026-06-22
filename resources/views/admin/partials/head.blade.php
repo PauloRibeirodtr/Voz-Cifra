@@ -19,7 +19,12 @@
 </style>
 <script>
     (() => {
-        const preference = @json(auth()->user()->theme_preference ?? 'system');
+        const storedPreference = (() => {
+            try { return localStorage.getItem('voz-cifra-theme'); } catch (error) { return null; }
+        })();
+        const allowedThemes = ['system', 'light', 'dark'];
+        const candidate = storedPreference || @json(auth()->user()->theme_preference ?? 'system');
+        const preference = allowedThemes.includes(candidate) ? candidate : 'system';
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const resolved = preference === 'system' ? (prefersDark ? 'dark' : 'light') : preference;
         const applyTheme = () => {

@@ -86,7 +86,7 @@
 
         .repertorio-sequence-item {
             display: grid;
-            grid-template-columns: auto minmax(0, 1fr);
+            grid-template-columns: auto minmax(0, 1fr) auto;
             gap: 0.75rem;
             align-items: flex-start;
             border: 1px solid #e5e7eb;
@@ -96,7 +96,12 @@
             color: #111827;
             text-decoration: none;
             transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+            cursor: grab;
         }
+
+        .repertorio-sequence-item.is-dragging { opacity: 0.45; cursor: grabbing; }
+        .repertorio-sequence-item.is-saving { pointer-events: none; }
+        .repertorio-drag-handle { color: #94a3b8; align-self: center; }
 
         .repertorio-sequence-item:hover,
         .repertorio-sequence-item:focus,
@@ -662,6 +667,7 @@
 
                 <form action="{{ route('local-admin.repertorio.store', $missa) }}" method="POST" class="grid grid-cols-1 gap-4 md:grid-cols-2">
                     @csrf
+                    @include('partials.submission-token')
 
                     <div class="md:col-span-2">
                         <label for="busca_musica" class="block text-sm font-medium text-gray-700">Música</label>
@@ -734,7 +740,8 @@
                         <div class="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                             <div>
                                 <h3 class="text-base font-black text-gray-900">Sequencia da celebracao</h3>
-                                <p class="mt-1 text-sm text-gray-500">Use esta linha para conferir a ordem sem abrir todos os cards.</p>
+                                <p class="mt-1 text-sm text-gray-500">No computador, arraste os cantos para mudar a ordem. No celular, use as setas dos cards.</p>
+                                <p class="mt-2 hidden text-xs font-bold text-emerald-700" data-reorder-status role="status"></p>
                             </div>
                             <form action="{{ route('local-admin.missas.repertorio.corrigir-ordem', $missa) }}" method="POST" class="w-full sm:w-auto">
                                 @csrf
@@ -745,14 +752,14 @@
                             </form>
                         </div>
 
-                        <nav class="repertorio-sequence-list" aria-label="Sequencia do repertorio da missa">
+                        <nav class="repertorio-sequence-list" aria-label="Sequencia do repertorio da missa" data-sortable-repertorio data-reorder-url="{{ route('local-admin.repertorio.reordenar', $missa) }}" data-csrf-token="{{ csrf_token() }}">
                             @foreach ($missa->missaMusicas as $itemSequencia)
                                 @php
                                     $pedidosTomSequencia = $itemSequencia->solicitacoesMudancaTom
                                         ->where('status', \App\Models\SolicitacaoMudancaTom::STATUS_PENDENTE)
                                         ->count();
                                 @endphp
-                                <a href="#repertorio-item-{{ $itemSequencia->id }}" class="repertorio-sequence-item" data-repertorio-sequence-link="{{ $itemSequencia->id }}">
+                                <a href="#repertorio-item-{{ $itemSequencia->id }}" class="repertorio-sequence-item" draggable="true" data-sortable-item="{{ $itemSequencia->id }}" data-repertorio-sequence-link="{{ $itemSequencia->id }}">
                                     <span class="repertorio-sequence-number">{{ $loop->iteration }}</span>
                                     <span class="min-w-0">
                                         <strong class="block truncate text-sm font-black text-gray-900">{{ $itemSequencia->musica->titulo }}</strong>
@@ -772,6 +779,7 @@
                                             @endif
                                         </span>
                                     </span>
+                                    <i class="fa-solid fa-grip-vertical repertorio-drag-handle" aria-hidden="true"></i>
                                 </a>
                             @endforeach
                         </nav>
@@ -787,7 +795,7 @@
                                 <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                                     <div class="min-w-0">
                                         <div class="flex flex-wrap items-center gap-2">
-                                            <span class="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">Ordem {{ $item->ordem }}</span>
+                                            <span class="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700" data-item-order-badge>Ordem {{ $item->ordem }}</span>
                                             @if ($item->momentoLiturgico)
                                                 <span class="inline-flex rounded-full bg-sky-100 px-3 py-1 text-xs font-bold text-sky-700">{{ $item->momentoLiturgico->nome }}</span>
                                             @else
@@ -1330,4 +1338,5 @@
             });
         });
     </script>
+    <script src="{{ asset('js/local-admin/missa-show.js') }}"></script>
 @endpush

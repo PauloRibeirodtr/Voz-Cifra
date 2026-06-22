@@ -110,6 +110,35 @@ class DuplicidadeInativacaoTest extends TestCase
         $this->assertSame(2, Musica::query()->where('titulo', 'Vem Espirito Santo')->count());
     }
 
+    public function test_duplo_envio_da_mesma_musica_e_processado_uma_unica_vez(): void
+    {
+        $adminMaster = Usuario::factory()->adminMaster()->create([
+            'primeiro_acesso' => false,
+        ]);
+        $token = 'submission-1234567890-abcdef';
+        $dados = [
+            '_submission_token' => $token,
+            'titulo' => 'Canto enviado duas vezes',
+            'artista' => 'Equipe de canto',
+            'letra' => 'Uma única música deve ser criada',
+            'ativo' => '1',
+        ];
+
+        $primeiraResposta = $this
+            ->actingAs($adminMaster)
+            ->post(route('admin.musicas.store'), $dados);
+
+        $primeiraResposta->assertRedirect();
+
+        $this
+            ->actingAs($adminMaster)
+            ->post(route('admin.musicas.store'), $dados)
+            ->assertRedirect($primeiraResposta->headers->get('Location'))
+            ->assertSessionHas('info', 'Este envio já havia sido processado. A segunda tentativa foi ignorada.');
+
+        $this->assertSame(1, Musica::query()->where('titulo', 'Canto enviado duas vezes')->count());
+    }
+
     public function test_destroy_de_musica_inativa_sem_excluir_do_banco(): void
     {
         $adminMaster = Usuario::factory()->adminMaster()->create([

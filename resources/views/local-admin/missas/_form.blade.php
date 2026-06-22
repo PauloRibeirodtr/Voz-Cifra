@@ -39,7 +39,7 @@
                                 </option>
                             @endforeach
                         </select>
-                        <p class="mt-2 text-xs text-gray-500">Ao selecionar, o formul&aacute;rio usa t&iacute;tulo, data, hor&aacute;rios, tempo lit&uacute;rgico, celebrante, observa&ccedil;&otilde;es e repert&oacute;rio como ponto de partida.</p>
+                        <p class="mt-2 text-xs text-gray-500">Ao selecionar, o sistema copia repert&oacute;rio, hor&aacute;rios, tempo lit&uacute;rgico e celebrante. A data da nova missa permanece sob seu controle para evitar criar uma celebra&ccedil;&atilde;o no dia errado.</p>
                         <div id="resumo_missa_origem" class="mt-3 hidden whitespace-pre-line rounded-xl border border-[#ead6b3] bg-white px-4 py-3 text-xs leading-relaxed text-[#5b3d1a]"></div>
                     </div>
                 </div>

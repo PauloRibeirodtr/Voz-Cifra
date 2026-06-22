@@ -33,6 +33,7 @@
                     </div>
 
                     <div class="flex items-center gap-2">
+                        @include('partials.theme-toggle')
                         @include('partials.internal-notifications', ['tone' => 'dark'])
 
                         <button
@@ -59,6 +60,7 @@
 
                         <div class="flex items-center gap-3">
                             @yield('header_actions')
+                            @include('partials.theme-toggle')
 
                             @auth
                                 @include('partials.internal-notifications')

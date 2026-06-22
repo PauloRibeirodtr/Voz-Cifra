@@ -1,0 +1,12 @@
+{
+  "name": "Voz & Cifra",
+  "short_name": "Voz & Cifra",
+  "description": "Repertórios e letras para celebrações.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#140c0c",
+  "theme_color": "#4a2b22",
+  "icons": [
+    { "src": "/logo/final.png", "sizes": "any", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

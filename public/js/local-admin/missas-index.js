@@ -39,4 +39,24 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     campoBusca.addEventListener('input', aplicarBusca);
+
+    const menusAcoes = Array.from(document.querySelectorAll('.missa-more-actions'));
+    menusAcoes.forEach((menu) => {
+        menu.addEventListener('toggle', () => {
+            if (!menu.open) return;
+            menusAcoes.forEach((outroMenu) => {
+                if (outroMenu !== menu) outroMenu.open = false;
+            });
+        });
+    });
+
+    document.addEventListener('click', (event) => {
+        if (event.target.closest('.missa-more-actions')) return;
+        menusAcoes.forEach((menu) => { menu.open = false; });
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape') return;
+        menusAcoes.forEach((menu) => { menu.open = false; });
+    });
 });

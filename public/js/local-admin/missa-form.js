@@ -43,13 +43,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (campos.titulo) campos.titulo.value = missa.titulo || '';
-        if (campos.dataMissa) campos.dataMissa.value = missa.data_missa || '';
+        if (campos.titulo && !campos.titulo.value.trim()) campos.titulo.value = missa.titulo || '';
         if (campos.tempoLiturgico) campos.tempoLiturgico.value = missa.tempo_liturgico_id || '';
         if (campos.horaInicio) campos.horaInicio.value = missa.hora_inicio || '';
         if (campos.horaFim) campos.horaFim.value = missa.hora_fim || '';
         if (campos.padre) campos.padre.value = missa.padre_id || '';
-        if (campos.observacoes) campos.observacoes.value = missa.observacoes || '';
+        if (campos.observacoes && !campos.observacoes.value.trim()) campos.observacoes.value = missa.observacoes || '';
+
+        campos.dataMissa?.focus();
     };
 
     const atualizarResumo = () => {

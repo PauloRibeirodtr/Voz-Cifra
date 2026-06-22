@@ -35,43 +35,62 @@ document.addEventListener('DOMContentLoaded', () => {
     let transposicaoAtual = 0;
     let fonteAtual = 18;
     let rolagemAtiva = false;
-    let intervaloRolagem = null;
+    let rolagemFrame = null;
+    let ultimoTempoRolagem = null;
+    let restoRolagem = 0;
 
     if (!helper || !letra || !container || itens.length === 0) {
         return;
     }
 
     const pararRolagem = () => {
-        if (intervaloRolagem) {
-            window.clearInterval(intervaloRolagem);
-            intervaloRolagem = null;
+        if (rolagemFrame) {
+            window.cancelAnimationFrame(rolagemFrame);
+            rolagemFrame = null;
         }
 
         rolagemAtiva = false;
+        ultimoTempoRolagem = null;
+        restoRolagem = 0;
 
         if (botaoRolagem) {
             botaoRolagem.textContent = 'Iniciar auto rolagem';
         }
     };
 
-    const iniciarRolagem = () => {
-        if (!controleVelocidade) {
+    const executarRolagem = (timestamp) => {
+        if (!rolagemAtiva || !controleVelocidade) {
             return;
         }
 
-        const velocidade = Number(controleVelocidade.value || 0.75);
+        const velocidade = Math.max(0.25, Math.min(3, Number(controleVelocidade.value || 0.75)));
 
         if (valorVelocidade) {
             valorVelocidade.textContent = velocidade.toFixed(2);
         }
 
-        intervaloRolagem = window.setInterval(() => {
-            container.scrollTop += velocidade * 0.18;
+        const delta = ultimoTempoRolagem ? Math.min(80, timestamp - ultimoTempoRolagem) : 16;
+        ultimoTempoRolagem = timestamp;
+        restoRolagem += (velocidade * 32 * delta) / 1000;
+        const passo = Math.floor(restoRolagem);
 
-            if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
-                pararRolagem();
-            }
-        }, 70);
+        if (passo > 0) {
+            restoRolagem -= passo;
+            container.scrollTop += passo;
+        }
+
+        if (container.scrollTop + container.clientHeight >= container.scrollHeight - 2) {
+            pararRolagem();
+            return;
+        }
+
+        rolagemFrame = window.requestAnimationFrame(executarRolagem);
+    };
+
+    const iniciarRolagem = () => {
+        ultimoTempoRolagem = null;
+        restoRolagem = 0;
+        rolagemFrame = window.requestAnimationFrame(executarRolagem);
     };
 
     const renderizar = () => {
@@ -183,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (rolagemAtiva) {
-            window.clearInterval(intervaloRolagem);
+            if (rolagemFrame) window.cancelAnimationFrame(rolagemFrame);
             iniciarRolagem();
         }
     });

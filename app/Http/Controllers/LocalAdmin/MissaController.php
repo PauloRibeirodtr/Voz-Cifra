@@ -21,6 +21,7 @@ use Carbon\CarbonImmutable;
 use App\Services\RenderizadorCifrasHtmlService;
 use App\Services\TranspositorCifrasService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -566,6 +567,68 @@ class MissaController extends Controller
         return redirect()
             ->to(route('local-admin.missas.show', $missa) . '#repertorio-item-' . $missaMusica->id)
             ->with('success', 'Item movido para cima.');
+    }
+
+    public function reordenarRepertorio(Request $request, Missa $missa): JsonResponse|RedirectResponse
+    {
+        $this->garantirMissaDaIgreja($missa);
+        $dados = $request->validate([
+            'itens' => ['required', 'array', 'min:1'],
+            'itens.*' => ['required', 'integer', 'distinct'],
+        ]);
+
+        $idsInformados = collect($dados['itens'])->map(fn ($id) => (int) $id)->values();
+        $itens = $missa->missaMusicas()->whereIn('id', $idsInformados)->get()->keyBy('id');
+        $idsAtuais = $missa->missaMusicas()->pluck('id')->map(fn ($id) => (int) $id)->sort()->values();
+
+        abort_unless(
+            $idsInformados->count() === $idsAtuais->count()
+            && $idsInformados->sort()->values()->all() === $idsAtuais->all()
+            && $itens->count() === $idsAtuais->count(),
+            422,
+            'A lista de músicas não corresponde ao repertório atual.'
+        );
+
+        $ordemAnterior = $missa->missaMusicas()
+            ->orderBy('ordem')
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
+
+        DB::transaction(function () use ($idsInformados, $itens): void {
+            $idsInformados->each(function (int $id, int $indice) use ($itens): void {
+                $itens->get($id)->update(['ordem' => -($indice + 1)]);
+            });
+            $idsInformados->each(function (int $id, int $indice) use ($itens): void {
+                $itens->get($id)->update(['ordem' => $indice + 1]);
+            });
+        });
+
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'repertorio_reordenado',
+            ator: $this->obterUsuario(),
+            igreja: $this->obterIgreja(),
+            contexto: [
+                'origem' => 'local_admin_repertorio_drag_drop',
+                'missa_id' => $missa->id,
+                'missa_titulo' => $missa->titulo,
+                'antes' => ['itens' => $ordemAnterior],
+                'depois' => ['itens' => $idsInformados->all()],
+                'resumo' => 'Ordem do repertório alterada manualmente.',
+            ]
+        );
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Ordem salva com sucesso.',
+                'itens' => $idsInformados->all(),
+            ]);
+        }
+
+        return redirect()
+            ->to(route('local-admin.missas.show', $missa) . '#missa-repertorio')
+            ->with('success', 'Ordem do repertório atualizada.');
     }
 
     public function descerRepertorio(Missa $missa, MissaMusica $missaMusica): RedirectResponse

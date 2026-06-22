@@ -1,3 +1,5 @@
+@import "./theme.css";
+
         :root {
             color-scheme: dark;
             --bg-1: #160c0d;

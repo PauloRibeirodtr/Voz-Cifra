@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $igreja->nome }} | Voz &amp; Cifra</title>
     <link rel="icon" type="image/png" href="{{ asset('logo/final.png') }}">
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
+    <meta name="theme-color" content="#4a2b22">
     @vite(['resources/css/publico/igreja.css', 'resources/js/publico/igreja.js'])
 </head>
 <body data-contrast="high" data-public-mode="fieis">

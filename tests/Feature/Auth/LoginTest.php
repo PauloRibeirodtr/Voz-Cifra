@@ -195,4 +195,29 @@ class LoginTest extends TestCase
 
         $this->assertGuest();
     }
+
+    public function test_login_bloqueia_apos_cinco_tentativas_invalidas(): void
+    {
+        for ($tentativa = 1; $tentativa <= 4; $tentativa++) {
+            $this->post(route('login.attempt'), [
+                'email' => 'limitado@example.com',
+                'password' => 'senha-incorreta',
+            ])->assertSessionHasErrors('email');
+        }
+
+        $this->post(route('login.attempt'), [
+            'email' => 'limitado@example.com',
+            'password' => 'senha-incorreta',
+        ])->assertSessionHasErrors([
+            'email' => 'Muitas tentativas de login. Tente novamente em 5 minuto(s).',
+        ]);
+    }
+
+    public function test_cookie_de_sessao_usa_protecoes_basicas(): void
+    {
+        $this->assertTrue((bool) config('session.http_only'));
+        $this->assertSame('lax', config('session.same_site'));
+        $this->assertSame('/', config('session.path'));
+        $this->assertNotEmpty(config('session.cookie'));
+    }
 }

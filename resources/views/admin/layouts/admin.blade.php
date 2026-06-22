@@ -25,6 +25,7 @@
                     </div>
 
                     <div class="flex items-center gap-2">
+                        @include('partials.theme-toggle')
                         @include('partials.internal-notifications', ['tone' => 'dark'])
 
                         <button
@@ -51,6 +52,7 @@
 
                         @auth
                             <div class="flex items-center gap-3">
+                                @include('partials.theme-toggle')
                                 @include('partials.internal-notifications')
 
                                 <a href="{{ route('admin.profile') }}" class="admin-user-chip admin-user-link" aria-label="Abrir meu perfil">

@@ -29,8 +29,9 @@
         </div>
     @endif
 
-    <form action="{{ route($routePrefix . '.versoes-musicais.store', $musica) }}" method="POST" class="space-y-6">
+    <form action="{{ route($routePrefix . '.versoes-musicais.store', $musica) }}" method="POST" class="space-y-6" data-draft-form="versao-musical-create">
         @csrf
+        @include('partials.submission-token')
         @include('admin.versoes-musicais._form', ['versaoMusical' => null])
 
         <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">

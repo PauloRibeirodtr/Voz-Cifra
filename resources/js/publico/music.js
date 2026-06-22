@@ -1,4 +1,7 @@
-        document.addEventListener('DOMContentLoaded', () => {
+import './offline';
+import './theme';
+
+document.addEventListener('DOMContentLoaded', () => {
             const statusSync = document.querySelector('[data-public-status-sync]');
             const guardarPosicao = () => {
                 try {

@@ -407,6 +407,54 @@ class MissasRepertorioTest extends TestCase
         ]);
     }
 
+    public function test_admin_local_reordena_repertorio_por_arrastar_e_soltar(): void
+    {
+        /** @var Igreja $igreja */
+        $igreja = Igreja::factory()->create(['status_operacional' => 'operacional']);
+        /** @var Usuario $adminLocal */
+        $adminLocal = Usuario::factory()->create();
+        $adminLocal->adicionarPapel(PapelIgreja::ADMIN_LOCAL, $igreja);
+        $missa = Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa ordenável',
+            'data_missa' => now('America/Cuiaba')->addDay()->toDateString(),
+            'hora_inicio' => '19:00',
+            'hora_fim' => '20:00',
+            'ativo' => true,
+        ]);
+
+        $itens = collect(['Entrada', 'Comunhão', 'Final'])->map(function (string $titulo, int $indice) use ($adminLocal, $missa) {
+            $musica = Musica::query()->create([
+                'titulo' => $titulo,
+                'letra' => 'Letra ' . $titulo,
+                'criado_por' => $adminLocal->id,
+                'ativo' => true,
+            ]);
+
+            return $missa->missaMusicas()->create([
+                'musica_id' => $musica->id,
+                'ordem' => $indice + 1,
+            ]);
+        });
+        $novaOrdem = [$itens[2]->id, $itens[0]->id, $itens[1]->id];
+
+        $this
+            ->actingAs($adminLocal)
+            ->withSession(['igreja_ativa_id' => $igreja->id])
+            ->postJson(route('local-admin.repertorio.reordenar', $missa), ['itens' => $novaOrdem])
+            ->assertOk()
+            ->assertJsonPath('itens', $novaOrdem);
+
+        $this->assertSame(
+            $novaOrdem,
+            $missa->missaMusicas()->orderBy('ordem')->pluck('id')->map(fn ($id) => (int) $id)->all()
+        );
+        $this->assertDatabaseHas('auditoria_eventos', [
+            'evento' => 'repertorio_reordenado',
+            'igreja_id' => $igreja->id,
+        ]);
+    }
+
     public function test_tela_da_missa_mostra_textos_de_fallback_sem_entidade_html_quebrada(): void
     {
         /** @var Igreja $igreja */

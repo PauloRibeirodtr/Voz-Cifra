@@ -61,6 +61,123 @@
             background: #f0fdf4;
             padding: 0.85rem;
         }
+
+        .missa-card-actions {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 0.55rem;
+            width: 100%;
+        }
+
+        .missa-card-actions > form,
+        .missa-card-actions > .missa-reactivate-details { grid-column: 1 / -1; }
+
+        .missa-more-actions,
+        .missa-reactivate-details { position: relative; }
+
+        .missa-more-actions summary,
+        .missa-reactivate-details summary {
+            display: inline-flex;
+            width: 100%;
+            min-height: 2.85rem;
+            align-items: center;
+            justify-content: center;
+            gap: 0.55rem;
+            border: 1px solid #d7c0a0;
+            border-radius: 0.75rem;
+            background: #fff8ed;
+            color: #6c4a21;
+            padding: 0.7rem 0.9rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 750;
+            list-style: none;
+        }
+
+        .missa-more-actions summary::-webkit-details-marker,
+        .missa-reactivate-details summary::-webkit-details-marker { display: none; }
+
+        .missa-more-actions summary::after,
+        .missa-reactivate-details summary::after {
+            content: "⌄";
+            font-size: 1rem;
+            transition: transform 0.18s ease;
+        }
+
+        .missa-more-actions[open] summary::after,
+        .missa-reactivate-details[open] summary::after { transform: rotate(180deg); }
+
+        .missa-more-actions__panel {
+            position: absolute;
+            z-index: 35;
+            top: calc(100% + 0.45rem);
+            right: 0;
+            width: min(19rem, calc(100vw - 2rem));
+            display: grid;
+            gap: 0.4rem;
+            border: 1px solid #e7d8c6;
+            border-radius: 0.9rem;
+            background: #fffdf9;
+            padding: 0.45rem;
+            box-shadow: 0 18px 40px rgba(28, 18, 12, 0.18);
+        }
+
+        .missa-more-actions__panel a {
+            display: flex;
+            min-height: 2.65rem;
+            align-items: center;
+            gap: 0.7rem;
+            border-radius: 0.65rem;
+            padding: 0.65rem 0.75rem;
+            color: #4b3426;
+            font-size: 0.875rem;
+            font-weight: 750;
+        }
+
+        .missa-more-actions__panel a:hover,
+        .missa-more-actions__panel a:focus-visible { background: #f5efe6; }
+
+        .missa-reactivate-details[open] summary { margin-bottom: 0.55rem; }
+
+        body.theme-dark .missa-group-title { color: #f8fafc !important; }
+        body.theme-dark .missa-meta-chip {
+            border-color: #475569 !important;
+            background: #263244 !important;
+            color: #e2e8f0 !important;
+        }
+        body.theme-dark .missa-reactivate-box {
+            border-color: rgba(52, 211, 153, 0.42) !important;
+            background: rgba(6, 78, 59, 0.35) !important;
+            color: #d1fae5 !important;
+        }
+        body.theme-dark .missa-reactivate-box p { color: #d1fae5 !important; }
+        body.theme-dark .missa-more-actions summary,
+        body.theme-dark .missa-reactivate-details summary {
+            border-color: #614735 !important;
+            background: #281b17 !important;
+            color: #fed7aa !important;
+        }
+        body.theme-dark .missa-more-actions__panel {
+            border-color: #614735 !important;
+            background: #211612 !important;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.42);
+        }
+        body.theme-dark .missa-more-actions__panel a { color: #f5e7d7 !important; }
+        body.theme-dark .missa-more-actions__panel a:hover,
+        body.theme-dark .missa-more-actions__panel a:focus-visible { background: #38251f !important; }
+
+        @media (max-width: 639px) {
+            .missa-card-actions { grid-template-columns: 1fr; }
+            .missa-card-actions > * { grid-column: 1 !important; }
+            .missa-more-actions__panel { position: static; width: 100%; margin-top: 0.45rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .missa-list-card,
+            .missa-more-actions summary::after,
+            .missa-reactivate-details summary::after { transition: none; }
+            .missa-list-card:hover { transform: none; }
+        }
     </style>
 @endpush
 
@@ -115,7 +232,7 @@
             </a>
         </div>
     @else
-        <div class="mb-5 rounded-2xl border border-[#ead6b3] bg-[#fff8ed] p-4">
+        <div class="missa-search-panel mb-5 rounded-2xl border border-[#ead6b3] bg-[#fff8ed] p-4">
             <label for="buscar_missa" class="mb-2 block text-sm font-black uppercase tracking-[0.14em] text-[#8a5a23]">Buscar missa</label>
             <div class="missa-search-field">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -171,22 +288,33 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:w-[380px]">
+                        <div class="missa-card-actions lg:w-[380px]">
                             <a href="{{ route('local-admin.missas.show', $missa) }}" class="inline-flex items-center justify-center rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800">
+                                <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
                                 Abrir missa
                             </a>
-                            <a href="{{ route('local-admin.missas.apresentacao', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-semibold text-sky-800 transition hover:bg-sky-100">
-                                Visualização
-                            </a>
-                            <a href="{{ route('local-admin.missas.edit', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-[#ead6b3] bg-[#fff8ed] px-4 py-3 text-sm font-semibold text-[#6c4a21] transition hover:bg-[#f8ecd7]">
-                                Editar missa
-                            </a>
-                            <a href="{{ route('local-admin.missas.pdf', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800 transition hover:bg-amber-100">
-                                Baixar PDF
-                            </a>
-                            <form action="{{ route('local-admin.missas.toggle', $missa) }}" method="POST" class="sm:col-span-2 space-y-3">
-                                @csrf
-                                @unless ($missa->ativo)
+
+                            <details class="missa-more-actions">
+                                <summary><i class="fa-solid fa-ellipsis" aria-hidden="true"></i> Mais ações</summary>
+                                <div class="missa-more-actions__panel">
+                                    <a href="{{ route('local-admin.missas.apresentacao', $missa) }}"><i class="fa-solid fa-display" aria-hidden="true"></i> Visualização</a>
+                                    <a href="{{ route('local-admin.missas.edit', $missa) }}"><i class="fa-solid fa-pen" aria-hidden="true"></i> Editar missa</a>
+                                    <a href="{{ route('local-admin.missas.pdf', $missa) }}"><i class="fa-solid fa-file-pdf" aria-hidden="true"></i> Baixar PDF</a>
+                                </div>
+                            </details>
+
+                            @if ($missa->ativo)
+                                <form action="{{ route('local-admin.missas.toggle', $missa) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-100">
+                                        Inativar missa
+                                    </button>
+                                </form>
+                            @else
+                                <details class="missa-reactivate-details">
+                                    <summary><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Reativar missa</summary>
+                                    <form action="{{ route('local-admin.missas.toggle', $missa) }}" method="POST" class="space-y-3">
+                                        @csrf
                                     <div class="missa-reactivate-box">
                                         <p class="mb-3 text-sm font-semibold text-emerald-900">Escolha a nova data e horário antes de reativar.</p>
                                         <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -195,11 +323,10 @@
                                             <input type="time" name="hora_fim" value="{{ old('hora_fim', substr((string) $missa->hora_fim, 0, 5)) }}" class="rounded-xl border border-emerald-200 bg-white px-3 py-2 text-sm text-gray-900" aria-label="Novo horário de término">
                                         </div>
                                     </div>
-                                @endunless
-                                <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl border px-4 py-3 text-sm font-semibold transition {{ $missa->ativo ? 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100' : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' }}">
-                                    {{ $missa->ativo ? 'Inativar missa' : 'Reativar missa' }}
-                                </button>
-                            </form>
+                                        <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800">Confirmar reativação</button>
+                                    </form>
+                                </details>
+                            @endif
                         </div>
                     </div>
                 </article>

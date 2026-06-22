@@ -139,14 +139,14 @@ Route::middleware(['auth', 'verified_custom', 'super.admin', 'primeiro_acesso'])
 
         Route::get('/musicas', [MusicaController::class, 'index'])->name('musicas.index');
         Route::get('/musicas/criar', [MusicaController::class, 'create'])->name('musicas.create');
-        Route::post('/musicas', [MusicaController::class, 'store'])->name('musicas.store');
+        Route::post('/musicas', [MusicaController::class, 'store'])->middleware('unique.submission')->name('musicas.store');
         Route::get('/musicas/{musica}', [MusicaController::class, 'show'])->name('musicas.show');
         Route::get('/musicas/{musica}/editar', [MusicaController::class, 'edit'])->name('musicas.edit');
         Route::put('/musicas/{musica}', [MusicaController::class, 'update'])->name('musicas.update');
         Route::delete('/musicas/{musica}', [MusicaController::class, 'destroy'])->name('musicas.destroy');
 
         Route::get('/musicas/{musica}/versoes/criar', [VersaoMusicalController::class, 'create'])->name('versoes-musicais.create');
-        Route::post('/musicas/{musica}/versoes', [VersaoMusicalController::class, 'store'])->name('versoes-musicais.store');
+        Route::post('/musicas/{musica}/versoes', [VersaoMusicalController::class, 'store'])->middleware('unique.submission')->name('versoes-musicais.store');
         Route::get('/musicas/{musica}/versoes/{versaoMusical}', [VersaoMusicalController::class, 'show'])->name('versoes-musicais.show');
         Route::get('/musicas/{musica}/versoes/{versaoMusical}/editar', [VersaoMusicalController::class, 'edit'])->name('versoes-musicais.edit');
         Route::put('/musicas/{musica}/versoes/{versaoMusical}', [VersaoMusicalController::class, 'update'])->name('versoes-musicais.update');
@@ -187,7 +187,7 @@ Route::middleware(['auth', 'verified_custom', 'role:admin_local', 'primeiro_aces
 
         Route::get('/missas', [LocalAdminMissaController::class, 'index'])->name('missas.index');
         Route::get('/missas/criar', [LocalAdminMissaController::class, 'create'])->name('missas.create');
-        Route::post('/missas', [LocalAdminMissaController::class, 'store'])->name('missas.store');
+        Route::post('/missas', [LocalAdminMissaController::class, 'store'])->middleware('unique.submission')->name('missas.store');
         Route::get('/missas/{missa}/apresentacao', [LocalAdminMissaController::class, 'apresentacao'])->name('missas.apresentacao');
         Route::get('/missas/{missa}', [LocalAdminMissaController::class, 'show'])->name('missas.show');
         Route::get('/missas/{missa}/editar', [LocalAdminMissaController::class, 'edit'])->name('missas.edit');
@@ -199,7 +199,8 @@ Route::middleware(['auth', 'verified_custom', 'role:admin_local', 'primeiro_aces
         Route::post('/missas/{missa}/corrigir-ordem-repertorio', [LocalAdminMissaController::class, 'corrigirOrdemRepertorio'])->name('missas.repertorio.corrigir-ordem');
         Route::get('/missas/{missa}/pdf', [LocalAdminMissaController::class, 'pdf'])->name('missas.pdf');
 
-        Route::post('/missas/{missa}/repertorio', [LocalAdminMissaController::class, 'storeRepertorio'])->name('repertorio.store');
+        Route::post('/missas/{missa}/repertorio', [LocalAdminMissaController::class, 'storeRepertorio'])->middleware('unique.submission')->name('repertorio.store');
+        Route::post('/missas/{missa}/repertorio/reordenar', [LocalAdminMissaController::class, 'reordenarRepertorio'])->name('repertorio.reordenar');
         Route::put('/missas/{missa}/repertorio/{missaMusica}', [LocalAdminMissaController::class, 'updateRepertorio'])->name('repertorio.update');
         Route::post('/missas/{missa}/repertorio/{missaMusica}/subir', [LocalAdminMissaController::class, 'subirRepertorio'])->name('repertorio.up');
         Route::post('/missas/{missa}/repertorio/{missaMusica}/descer', [LocalAdminMissaController::class, 'descerRepertorio'])->name('repertorio.down');
@@ -231,7 +232,7 @@ Route::middleware(['auth', 'verified_custom', 'role:coordenador', 'primeiro_aces
 
         Route::get('/musicas', [MusicaController::class, 'index'])->name('musicas.index');
         Route::get('/musicas/criar', [MusicaController::class, 'create'])->name('musicas.create');
-        Route::post('/musicas', [MusicaController::class, 'store'])->name('musicas.store');
+        Route::post('/musicas', [MusicaController::class, 'store'])->middleware('unique.submission')->name('musicas.store');
         Route::get('/musicas/{musica}', [MusicaController::class, 'show'])->name('musicas.show');
         Route::get('/musicas/{musica}/editar', [MusicaController::class, 'edit'])->name('musicas.edit');
         Route::put('/musicas/{musica}', [MusicaController::class, 'update'])->name('musicas.update');
@@ -259,7 +260,7 @@ Route::middleware(['auth', 'verified_custom', 'role:coordenador', 'primeiro_aces
         Route::post('/chamados/{chamado}/pedir-mais-dados', [AdminChamadoController::class, 'pedirMaisDados'])->name('chamados.pedir-mais-dados');
 
         Route::get('/musicas/{musica}/versoes/criar', [VersaoMusicalController::class, 'create'])->name('versoes-musicais.create');
-        Route::post('/musicas/{musica}/versoes', [VersaoMusicalController::class, 'store'])->name('versoes-musicais.store');
+        Route::post('/musicas/{musica}/versoes', [VersaoMusicalController::class, 'store'])->middleware('unique.submission')->name('versoes-musicais.store');
         Route::get('/musicas/{musica}/versoes/{versaoMusical}', [VersaoMusicalController::class, 'show'])->name('versoes-musicais.show');
         Route::get('/musicas/{musica}/versoes/{versaoMusical}/editar', [VersaoMusicalController::class, 'edit'])->name('versoes-musicais.edit');
         Route::put('/musicas/{musica}/versoes/{versaoMusical}', [VersaoMusicalController::class, 'update'])->name('versoes-musicais.update');
@@ -294,26 +295,32 @@ Route::middleware(['auth', 'verified_custom', 'role:member', 'primeiro_acesso'])
 
 
 Route::get('/publico/igrejas/{slug}/status', [IgrejaPublicaController::class, 'status'])
+    ->middleware('throttle:30,1')
     ->where('slug', '[A-Za-z0-9\-]+')
     ->name('igrejas.public.status.legacy');
 
 Route::get('/publico/musicos/{slug}/status', [IgrejaPublicaController::class, 'statusMusicos'])
+    ->middleware('throttle:30,1')
     ->where('slug', '[A-Za-z0-9\-]+')
     ->name('igrejas.public.musicos.status.legacy');
 
 Route::get('/publico/musicos/{slug}', [IgrejaPublicaController::class, 'showMusicos'])
+    ->middleware('throttle:120,1')
     ->where('slug', '[A-Za-z0-9\-]+')
     ->name('igrejas.public.musicos.show.legacy');
 
 Route::get('/{slug}/status', [IgrejaPublicaController::class, 'status'])
+    ->middleware('throttle:30,1')
     ->where('slug', '[A-Za-z0-9\-]+')
     ->name('igrejas.public.status');
 
 Route::get('/{slug}/musicos/status', [IgrejaPublicaController::class, 'statusMusicos'])
+    ->middleware('throttle:30,1')
     ->where('slug', '[A-Za-z0-9\-]+')
     ->name('igrejas.public.musicos.status');
 
 Route::get('/{slug}/musicos', [IgrejaPublicaController::class, 'showMusicos'])
+    ->middleware('throttle:120,1')
     ->where('slug', '[A-Za-z0-9\-]+')
     ->name('igrejas.public.musicos.show');
 
@@ -322,6 +329,7 @@ Route::get('/media/public/{path}', [PublicStorageController::class, 'show'])
     ->name('media.public.show');
 
 Route::get('/{slug}', [IgrejaPublicaController::class, 'show'])
+    ->middleware('throttle:120,1')
     ->where('slug', '[A-Za-z0-9\-]+')
     ->name('igrejas.public.show');
 

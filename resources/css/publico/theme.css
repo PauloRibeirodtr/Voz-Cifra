@@ -1,0 +1,131 @@
+.public-theme-toggle {
+    position: fixed;
+    right: 1rem;
+    top: 1rem;
+    z-index: 80;
+    display: inline-flex;
+    width: 2.75rem;
+    height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(86, 58, 35, 0.18);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.94);
+    color: #4a2b22;
+    box-shadow: 0 12px 30px rgba(45, 28, 20, 0.16);
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+html:not(.public-theme-dark) { color-scheme: light; background: #f4eee7; }
+body:not(.public-theme-dark) {
+    background: radial-gradient(circle at top, rgba(140, 105, 51, 0.12), transparent 28rem), #f4eee7 !important;
+    color: #1f2937 !important;
+}
+
+body:not(.public-theme-dark) .section,
+body:not(.public-theme-dark) .card,
+body:not(.public-theme-dark) .celebration-item,
+body:not(.public-theme-dark) .celebration-shell,
+body:not(.public-theme-dark) .program-section,
+body:not(.public-theme-dark) .empty-state,
+body:not(.public-theme-dark) .reading-settings__panel,
+body:not(.public-theme-dark) .public-scroll-dock,
+body:not(.public-theme-dark) .public-history-quick,
+body:not(.public-theme-dark) .public-chord-drawer {
+    background: #fffdf9 !important;
+    border-color: rgba(108, 74, 33, 0.18) !important;
+    color: #1f2937 !important;
+}
+
+body:not(.public-theme-dark) .hero-church,
+body:not(.public-theme-dark) .section-title,
+body:not(.public-theme-dark) .card-title,
+body:not(.public-theme-dark) .celebration-title,
+body:not(.public-theme-dark) .empty-title,
+body:not(.public-theme-dark) .lyrics,
+body:not(.public-theme-dark) .cifra-letra {
+    color: #1f2937 !important;
+}
+
+body:not(.public-theme-dark) .hero-city,
+body:not(.public-theme-dark) .card-meta,
+body:not(.public-theme-dark) .empty-copy,
+body:not(.public-theme-dark) .celebration-meta-text {
+    color: #6b7280 !important;
+}
+
+body:not(.public-theme-dark) input,
+body:not(.public-theme-dark) select {
+    background: #ffffff !important;
+    border-color: rgba(108, 74, 33, 0.22) !important;
+    color: #1f2937 !important;
+}
+
+html.public-theme-dark { color-scheme: dark; background: #0f0909; }
+body.public-theme-dark {
+    background: radial-gradient(circle at top, rgba(180, 125, 65, 0.1), transparent 28rem), #0f0909 !important;
+    color: #f8fafc !important;
+}
+
+body.public-theme-dark .section,
+body.public-theme-dark .card,
+body.public-theme-dark .celebration-item,
+body.public-theme-dark .celebration-shell,
+body.public-theme-dark .program-section,
+body.public-theme-dark .empty-state,
+body.public-theme-dark .reading-settings__panel,
+body.public-theme-dark .public-scroll-dock,
+body.public-theme-dark .public-history-quick,
+body.public-theme-dark .public-chord-drawer {
+    background: #211514 !important;
+    border-color: rgba(232, 190, 132, 0.22) !important;
+    color: #f8fafc !important;
+}
+
+body.public-theme-dark .hero-church,
+body.public-theme-dark .section-title,
+body.public-theme-dark .card-title,
+body.public-theme-dark .celebration-title,
+body.public-theme-dark .empty-title,
+body.public-theme-dark .lyrics,
+body.public-theme-dark .cifra-letra {
+    color: #f8fafc !important;
+}
+
+body.public-theme-dark .hero-city,
+body.public-theme-dark .card-meta,
+body.public-theme-dark .empty-copy,
+body.public-theme-dark .celebration-meta-text {
+    color: #d8c4a6 !important;
+}
+
+body.public-theme-dark input,
+body.public-theme-dark select {
+    background: #2a1b19 !important;
+    border-color: rgba(232, 190, 132, 0.3) !important;
+    color: #f8fafc !important;
+}
+
+body.public-theme-dark .public-tool-button,
+body.public-theme-dark .schedule-nav,
+body.public-theme-dark .public-history-quick__button {
+    background: #30201e !important;
+    border-color: rgba(232, 190, 132, 0.28) !important;
+    color: #f3dfbd !important;
+}
+
+body.public-theme-dark .badge {
+    background: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+body.public-theme-dark .public-theme-toggle {
+    background: #2a1b19;
+    border-color: rgba(232, 190, 132, 0.32);
+    color: #fde68a;
+}
+
+@media (max-width: 640px) {
+    .public-theme-toggle { top: .75rem; right: .75rem; width: 2.5rem; height: 2.5rem; }
+}

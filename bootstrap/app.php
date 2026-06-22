@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\CheckRole::class,
             'verified_custom' => \App\Http\Middleware\EnsureUserIsVerified::class,
             'primeiro_acesso' => \App\Http\Middleware\GarantirTrocaSenhaPrimeiroAcesso::class,
+            'unique.submission' => \App\Http\Middleware\PreventDuplicateSubmission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
