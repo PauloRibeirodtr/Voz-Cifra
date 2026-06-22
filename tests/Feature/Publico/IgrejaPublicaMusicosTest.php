@@ -91,7 +91,7 @@ class IgrejaPublicaMusicosTest extends TestCase
         $response->assertSee('Tom Am');
         $response->assertSee('data-public-musician-lyrics', false);
         $response->assertDontSee('data-public-scroll-toggle', false);
-        $response->assertSee('window.VozECifraChord', false);
+        $response->assertSee('js/cifra/chord-transposer.js', false);
         $response->assertDontSee('Favoritar');
         $response->assertDontSee('Salvar');
         $response->assertDontSee('Criar coleção');

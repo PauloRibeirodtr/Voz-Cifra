@@ -350,9 +350,14 @@
             <a href="{{ $igreja->link_publico_musicos }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 font-semibold text-indigo-800 transition hover:bg-indigo-100">
                 Ver como músico
             </a>
-            <a href="{{ route('local-admin.missas.pdf', $missa) }}" class="inline-flex items-center justify-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 font-semibold text-amber-800 transition hover:bg-amber-100">
-                Baixar PDF completo
-            </a>
+            <div class="rounded-xl border border-amber-200 bg-amber-50 p-3 sm:col-span-2">
+                <p class="mb-2 text-sm font-bold text-amber-900">Exportar repertório em PDF</p>
+                <div class="grid gap-2 sm:grid-cols-3">
+                    <a href="{{ route('local-admin.missas.pdf', ['missa' => $missa, 'formato' => 'letra']) }}" class="inline-flex items-center justify-center rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-100">Somente letra</a>
+                    <a href="{{ route('local-admin.missas.pdf', ['missa' => $missa, 'formato' => 'cifra']) }}" class="inline-flex items-center justify-center rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-100">Letra com cifra</a>
+                    <a href="{{ route('local-admin.missas.pdf', ['missa' => $missa, 'formato' => 'cifra_diagramas']) }}" class="inline-flex items-center justify-center rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-100">Cifra + acordes</a>
+                </div>
+            </div>
             @php
                 $confirmacaoAtivacao = $missa->ativo
                     ? 'Deseja inativar esta missa? O repertório será preservado para consulta futura.'
@@ -1009,7 +1014,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const musicas = JSON.parse("@json($musicasParaBusca, JSON_UNESCAPED_UNICODE)");
+            const musicas = {{ Illuminate\Support\Js::from($musicasParaBusca) }};
             const inputBusca = document.getElementById('busca_musica');
             const resultadoBusca = document.getElementById('resultado_busca_musica');
             const musicaId = document.getElementById('musica_id');
@@ -1019,8 +1024,8 @@
             const momentoHint = document.getElementById('momento_liturgico_hint');
             const campoTomUsado = document.getElementById('tom_usado');
             const tomUsadoHint = document.getElementById('tom_usado_hint');
-            const oldVersaoId = JSON.parse("@json(old('versao_musical_id'))");
-            const oldMomentoId = JSON.parse("@json(old('momento_liturgico_id'))");
+            const oldVersaoId = {{ Illuminate\Support\Js::from(old('versao_musical_id')) }};
+            const oldMomentoId = {{ Illuminate\Support\Js::from(old('momento_liturgico_id')) }};
             const formularioAdicionar = musicaId.form;
             let momentoAlteradoManualmente = Boolean(oldMomentoId);
             let momentoGuiaId = oldMomentoId ? String(oldMomentoId) : '';

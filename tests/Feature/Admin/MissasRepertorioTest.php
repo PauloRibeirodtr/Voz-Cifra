@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Enums\PapelIgreja;
+use App\Models\AuditoriaEvento;
 use App\Models\Igreja;
 use App\Models\Missa;
 use App\Models\MomentoLiturgico;
@@ -48,6 +49,126 @@ class MissasRepertorioTest extends TestCase
         ]);
 
         $this->assertSame($dataMissa, Missa::query()->where('titulo', 'Missa de Domingo')->firstOrFail()->data_missa->toDateString());
+    }
+
+    public function test_tela_da_missa_gera_catalogo_javascript_valido_para_autocomplete(): void
+    {
+        /** @var Igreja $igreja */
+        $igreja = Igreja::factory()->create(['status_operacional' => 'operacional']);
+        /** @var Usuario $adminLocal */
+        $adminLocal = Usuario::factory()->create();
+        $adminLocal->adicionarPapel(PapelIgreja::ADMIN_LOCAL, $igreja);
+
+        $missa = Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa de Domingo',
+            'data_missa' => now('America/Cuiaba')->addDay()->toDateString(),
+            'hora_inicio' => '19:00',
+            'hora_fim' => '20:00',
+            'ativo' => true,
+        ]);
+
+        Musica::query()->create([
+            'titulo' => 'D\'Ele, o "Canto"',
+            'artista' => 'Comunidade Esperanca',
+            'letra' => 'Cantemos com alegria',
+            'criado_por' => $adminLocal->id,
+            'ativo' => true,
+        ]);
+
+        $this
+            ->actingAs($adminLocal)
+            ->withSession(['igreja_ativa_id' => $igreja->id])
+            ->get(route('local-admin.missas.show', $missa))
+            ->assertOk()
+            ->assertSee("const musicas = JSON.parse('", false)
+            ->assertDontSee('const musicas = JSON.parse("[{', false);
+    }
+
+    public function test_admin_local_exporta_missa_nos_tres_formatos_de_pdf(): void
+    {
+        /** @var Igreja $igreja */
+        $igreja = Igreja::factory()->create(['status_operacional' => 'operacional']);
+        /** @var Usuario $adminLocal */
+        $adminLocal = Usuario::factory()->create();
+        $adminLocal->adicionarPapel(PapelIgreja::ADMIN_LOCAL, $igreja);
+
+        $missa = Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa de Domingo',
+            'data_missa' => now('America/Cuiaba')->addDay()->toDateString(),
+            'hora_inicio' => '19:00',
+            'hora_fim' => '20:00',
+            'ativo' => true,
+        ]);
+        $musica = Musica::query()->create([
+            'titulo' => 'Canto de Entrada',
+            'letra' => "Senhor, estamos aqui",
+            'criado_por' => $adminLocal->id,
+            'ativo' => true,
+        ]);
+        $versao = VersaoMusical::query()->create([
+            'musica_id' => $musica->id,
+            'titulo' => 'Versao principal',
+            'tom_musical' => 'C',
+            'letra_com_cifras' => "[C]Senhor, estamos aqui",
+            'criado_por' => $adminLocal->id,
+            'ativo' => true,
+        ]);
+        $missa->missaMusicas()->create([
+            'musica_id' => $musica->id,
+            'versao_musical_id' => $versao->id,
+            'tom_usado' => 'C',
+            'ordem' => 1,
+        ]);
+
+        foreach (['letra', 'cifra', 'cifra_diagramas'] as $formato) {
+            $this
+                ->actingAs($adminLocal)
+                ->withSession(['igreja_ativa_id' => $igreja->id])
+                ->get(route('local-admin.missas.pdf', ['missa' => $missa, 'formato' => $formato]))
+                ->assertOk()
+                ->assertDownload('missa-' . $missa->id . '-' . str_replace('_', '-', $formato) . '.pdf');
+        }
+    }
+
+    public function test_edicao_da_missa_registra_estado_anterior_e_posterior_na_auditoria(): void
+    {
+        /** @var Igreja $igreja */
+        $igreja = Igreja::factory()->create(['status_operacional' => 'operacional']);
+        /** @var Usuario $adminLocal */
+        $adminLocal = Usuario::factory()->create();
+        $adminLocal->adicionarPapel(PapelIgreja::ADMIN_LOCAL, $igreja);
+
+        $missa = Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Titulo anterior',
+            'data_missa' => now('America/Cuiaba')->addDay()->toDateString(),
+            'hora_inicio' => '19:00',
+            'hora_fim' => '20:00',
+            'ativo' => true,
+        ]);
+
+        $this
+            ->actingAs($adminLocal)
+            ->withSession(['igreja_ativa_id' => $igreja->id])
+            ->put(route('local-admin.missas.update', $missa), [
+                'titulo' => 'Titulo atualizado',
+                'data_missa' => $missa->data_missa->toDateString(),
+                'hora_inicio' => '19:00',
+                'hora_fim' => '20:30',
+                'ativo' => '1',
+            ])
+            ->assertRedirect(route('local-admin.missas.show', $missa));
+
+        $auditoria = AuditoriaEvento::query()
+            ->where('evento', 'missa_editada')
+            ->latest('id')
+            ->firstOrFail();
+
+        $this->assertSame('Titulo anterior', data_get($auditoria->contexto, 'antes.titulo'));
+        $this->assertSame('Titulo atualizado', data_get($auditoria->contexto, 'depois.titulo'));
+        $this->assertSame('20:30', data_get($auditoria->contexto, 'depois.hora_fim'));
     }
 
     public function test_adicionar_musica_reorganiza_repertorio_pela_ordem_do_momento(): void
@@ -173,6 +294,45 @@ class MissasRepertorioTest extends TestCase
             ->assertSessionHasErrors('musica_id');
 
         $this->assertSame(1, (int) $missa->missaMusicas()->where('musica_id', $musica->id)->count());
+    }
+
+    public function test_nao_permite_adicionar_musica_inativa_ao_repertorio(): void
+    {
+        /** @var Igreja $igreja */
+        $igreja = Igreja::factory()->create(['status_operacional' => 'operacional']);
+        /** @var Usuario $adminLocal */
+        $adminLocal = Usuario::factory()->create();
+        $adminLocal->adicionarPapel(PapelIgreja::ADMIN_LOCAL, $igreja);
+
+        $missa = Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa de Domingo',
+            'data_missa' => now('America/Cuiaba')->addDay()->toDateString(),
+            'hora_inicio' => '19:00',
+            'hora_fim' => '20:00',
+            'ativo' => true,
+        ]);
+        $musica = Musica::query()->create([
+            'titulo' => 'Musica arquivada',
+            'letra' => 'Conteudo arquivado',
+            'criado_por' => $adminLocal->id,
+            'ativo' => false,
+        ]);
+
+        $this
+            ->actingAs($adminLocal)
+            ->withSession(['igreja_ativa_id' => $igreja->id])
+            ->from(route('local-admin.missas.show', $missa))
+            ->post(route('local-admin.repertorio.store', $missa), [
+                'musica_id' => $musica->id,
+            ])
+            ->assertRedirect(route('local-admin.missas.show', $missa))
+            ->assertSessionHasErrors('musica_id');
+
+        $this->assertDatabaseMissing('missa_musicas', [
+            'missa_id' => $missa->id,
+            'musica_id' => $musica->id,
+        ]);
     }
 
     public function test_corrigir_ordem_do_repertorio_reorganiza_itens_existentes(): void

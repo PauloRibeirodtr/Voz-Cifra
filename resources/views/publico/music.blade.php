@@ -11,6 +11,7 @@
     @php
         $celebracaoSelecionadaParam = (int) ($celebracaoSelecionadaIdParam ?? 0);
         $celebracaoFoiEscolhida = $celebracaoSelecionadaParam > 0 && $missaPublica;
+        $exibirCelebracao = (bool) $missaPublica;
         $cidadeEstadoLinha = trim(($igreja->cidade ?? '') . ' - ' . ($igreja->estado ?? ''), ' -');
         $historicoBaseUrl = route('igrejas.public.musicos.show', ['slug' => $igreja->slug]);
         $programacaoMusico = collect($historicoUltimasMissas ?? [])
@@ -103,6 +104,7 @@
                                                 </div>
                                                 <h3 class="card-title">{{ $missaHistorica['titulo'] }}</h3>
                                                 <p class="card-meta">{{ $missaHistorica['dia_semana'] }} @if (!empty($missaHistorica['tempo_liturgico'])) • {{ $missaHistorica['tempo_liturgico'] }} @endif</p>
+                                                <span class="card-action">Abrir repertório</span>
                                             </div>
                                         </a>
                                     @endforeach
@@ -136,6 +138,7 @@
                                             </div>
                                             <h3 class="card-title">{{ $missaMusico['titulo'] }}</h3>
                                             <p class="card-meta">{{ $missaMusico['dia_semana'] }} @if (!empty($missaMusico['tempo_liturgico'])) • {{ $missaMusico['tempo_liturgico'] }} @endif</p>
+                                            <span class="card-action">Abrir repertório</span>
                                         </div>
                                     </a>
                                 @endforeach
@@ -146,12 +149,13 @@
                         <div class="empty-state">
                             <h3 class="empty-title">Ainda não há missas publicadas para ensaio.</h3>
                             <p class="empty-copy">Este link será atualizado quando a equipe publicar um repertório.</p>
+                            <p class="empty-copy">Acesso público em modo somente leitura.</p>
                         </div>
                     @endif
                 </section>
             @endunless
 
-            @if ($missaPublica && $celebracaoFoiEscolhida)
+            @if ($exibirCelebracao)
                 @php($itensPublicos = collect($missaPublica->itens_publicos ?? []))
 
                 <section class="section celebration-section" id="celebracao-publica" data-celebration-section>
@@ -235,7 +239,7 @@
             </div>
         @endunless
 
-        @if ($celebracaoFoiEscolhida)
+        @if ($exibirCelebracao)
             <div class="public-chord-tooltip" data-public-chord-tooltip hidden>
                 <p class="public-chord-tooltip__name" data-public-chord-tooltip-name></p>
                 <div data-public-chord-tooltip-diagram></div>
@@ -249,7 +253,7 @@
         @endif
     </main>
 
-    @if ($celebracaoFoiEscolhida)
+    @if ($exibirCelebracao)
         @include('partials.chord-transposer-script')
         <script type="application/json" data-public-chord-library>@json($bibliotecaAcordes ?? [], JSON_UNESCAPED_UNICODE)</script>
     @endif

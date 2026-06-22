@@ -281,6 +281,7 @@ class IgrejaPublicaController extends Controller
 
         return $this->queryMissasPublicas($igreja, $audiencia, $agora)
             ->with(['tempoLiturgico'])
+            ->whereDate('data_missa', '<=', $agora->addMonths(3)->toDateString())
             ->orderByDesc('data_missa')
             ->orderByDesc('hora_inicio')
             ->get()
@@ -303,6 +304,7 @@ class IgrejaPublicaController extends Controller
 
         return $this->queryMissasPublicas($igreja, $audiencia, $agora)
             ->with(['tempoLiturgico'])
+            ->whereDate('data_missa', '<=', $agora->addMonths(3)->toDateString())
             ->orderByDesc('data_missa')
             ->orderByDesc('hora_inicio')
             ->limit(max(self::HISTORICO_SUGESTOES_LIMITE * 3, self::HISTORICO_SUGESTOES_LIMITE))

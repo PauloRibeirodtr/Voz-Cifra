@@ -11,6 +11,7 @@
     @php
         $celebracaoSelecionadaParam = (int) ($celebracaoSelecionadaIdParam ?? 0);
         $celebracaoFoiEscolhida = $celebracaoSelecionadaParam > 0 && $missaPublica;
+        $exibirCelebracao = (bool) $missaPublica;
         $cidadeEstadoLinha = trim(($igreja->cidade ?? '') . ' - ' . ($igreja->estado ?? ''), ' -');
 
         $programacaoPublica = collect($historicoUltimasMissas ?? [])
@@ -79,6 +80,7 @@
                     </summary>
 
                     <div class="program-body">
+                        <h2 class="section-title">Celebrações publicadas</h2>
                         @php($historicoBaseUrlTopo = route('igrejas.public.show', ['slug' => $igreja->slug]))
                         <form method="GET" action="{{ $historicoBaseUrlTopo }}" class="public-history-quick" data-history-form-top data-history-base-url="{{ $historicoBaseUrlTopo }}" aria-label="Buscar celebração">
                             <button type="submit" class="public-history-quick__button" aria-label="Buscar celebração">
@@ -92,6 +94,13 @@
 
                         <div class="history-live-results public-history-quick-results" data-history-live-results-top hidden></div>
                         <div class="history-empty public-history-quick-empty" data-history-live-empty-top hidden>Nenhum resultado encontrado.</div>
+
+                        @if (collect($missasHoje ?? [])->isEmpty())
+                            <div class="empty-state empty-state--compact">
+                                <h3 class="empty-title empty-title--small">Ainda não há missas para hoje.</h3>
+                                <a href="#programacao-publica" class="public-tool-button public-tool-button--ghost">Consultar histórico</a>
+                            </div>
+                        @endif
 
                         @if (($historicoBusca ?? '') !== '')
                             @if ($historicoMissas->isNotEmpty())
@@ -107,6 +116,7 @@
                                                 </div>
                                                 <h3 class="card-title">{{ $missaHistorica['titulo'] }}</h3>
                                                 <p class="card-meta">{{ $missaHistorica['dia_semana'] }} @if (!empty($missaHistorica['tempo_liturgico'])) • {{ $missaHistorica['tempo_liturgico'] }} @endif</p>
+                                                <span class="card-action">Abrir celebração</span>
                                             </a>
                                         @endforeach
                                     </div>
@@ -131,6 +141,7 @@
                                             </div>
                                             <h3 class="card-title">{{ $missaProgramada['titulo'] }}</h3>
                                             <p class="card-meta">{{ $missaProgramada['dia_semana'] }} @if (!empty($missaProgramada['tempo_liturgico'])) • {{ $missaProgramada['tempo_liturgico'] }} @endif</p>
+                                            <span class="card-action">Abrir celebração</span>
                                         </a>
                                     @endforeach
                                 </div>
@@ -146,7 +157,7 @@
                 </details>
             @endunless
 
-            @if ($missaPublica && $celebracaoFoiEscolhida)
+            @if ($exibirCelebracao)
                 @php($itensPublicos = collect($missaPublica->itens_publicos ?? []))
 
                 <section class="section celebration-section" id="celebracao-publica" data-celebration-section>

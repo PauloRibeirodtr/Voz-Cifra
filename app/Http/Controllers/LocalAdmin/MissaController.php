@@ -15,6 +15,7 @@ use App\Models\VersaoMusical;
 use App\Services\AuditoriaOperacionalService;
 use App\Services\FolhaVersaoMusicalService;
 use App\Services\IgrejaAtivaService;
+use App\Services\RenderizadorLetrasHtmlService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use App\Services\RenderizadorCifrasHtmlService;
@@ -33,6 +34,7 @@ class MissaController extends Controller
         private readonly AuditoriaOperacionalService $auditoriaOperacionalService,
         private readonly TranspositorCifrasService $transpositorCifrasService,
         private readonly RenderizadorCifrasHtmlService $renderizadorCifrasHtmlService,
+        private readonly RenderizadorLetrasHtmlService $renderizadorLetrasHtmlService,
         private readonly FolhaVersaoMusicalService $folhaVersaoMusicalService
     ) {
     }
@@ -218,6 +220,7 @@ class MissaController extends Controller
     public function update(Request $request, Missa $missa): RedirectResponse
     {
         $this->garantirMissaDaIgreja($missa);
+        $estadoAnterior = $this->snapshotMissa($missa);
         $dados = $this->validarDadosMissa($request);
         $igreja = $this->obterIgreja();
         $usuario = $this->obterUsuario();
@@ -242,6 +245,7 @@ class MissaController extends Controller
                 'ativo' => (bool) ($dados['ativo'] ?? false),
             ]);
         });
+        $missa->refresh();
 
         $this->auditoriaOperacionalService->registrar(
             evento: 'missa_editada',
@@ -253,6 +257,8 @@ class MissaController extends Controller
                 'titulo' => $missa->titulo,
                 'publica_para_fieis' => (bool) ($dados['publica_para_fieis'] ?? false),
                 'publica_para_musicos' => (bool) ($dados['publica_para_musicos'] ?? false),
+                'antes' => $estadoAnterior,
+                'depois' => $this->snapshotMissa($missa),
                 'resumo' => 'Missa atualizada com ajustes de publicação e dados litúrgicos.',
             ]
         );
@@ -276,6 +282,7 @@ class MissaController extends Controller
         $this->garantirMissaDaIgreja($missa);
         $igreja = $this->obterIgreja();
         $usuario = $this->obterUsuario();
+        $estadoAnterior = $this->snapshotMissa($missa);
         $novoStatus = !$missa->ativo;
         $dadosReativacao = $novoStatus ? $this->validarDadosReativacao($request, $missa) : [];
 
@@ -289,6 +296,7 @@ class MissaController extends Controller
 
             $missa->update(array_merge(['ativo' => $novoStatus], $dadosReativacao));
         });
+        $missa->refresh();
 
         $this->auditoriaOperacionalService->registrar(
             evento: 'missa_editada',
@@ -302,6 +310,8 @@ class MissaController extends Controller
                 'data_missa' => $dadosReativacao['data_missa'] ?? optional($missa->data_missa)->toDateString(),
                 'hora_inicio' => $dadosReativacao['hora_inicio'] ?? $missa->hora_inicio,
                 'hora_fim' => $dadosReativacao['hora_fim'] ?? $missa->hora_fim,
+                'antes' => $estadoAnterior,
+                'depois' => $this->snapshotMissa($missa),
                 'resumo' => $novoStatus
                     ? 'Missa reativada com nova data e horario no fluxo operacional da igreja.'
                     : 'Missa inativada para preservar o histórico sem excluir o repertório.',
@@ -391,8 +401,14 @@ class MissaController extends Controller
         $usuario = $this->obterUsuario();
 
         $dados = $request->validate([
-            'musica_id' => ['required', 'exists:musicas,id'],
-            'versao_musical_id' => ['nullable', 'exists:versoes_musicais,id'],
+            'musica_id' => [
+                'required',
+                Rule::exists('musicas', 'id')->where(fn ($query) => $query->where('ativo', true)),
+            ],
+            'versao_musical_id' => [
+                'nullable',
+                Rule::exists('versoes_musicais', 'id')->where(fn ($query) => $query->where('ativo', true)),
+            ],
             'tom_usado' => ['nullable', Rule::in(config('musical.tons', []))],
             'momento_liturgico_id' => ['nullable', Rule::exists('classificacoes_liturgicas', 'id')->where(fn ($query) => $query->where('tipo', 'momento'))],
         ], [
@@ -466,9 +482,13 @@ class MissaController extends Controller
         $this->garantirItemDaMissa($missa, $missaMusica);
         $igreja = $this->obterIgreja();
         $usuario = $this->obterUsuario();
+        $estadoAnterior = $this->snapshotItemRepertorio($missaMusica);
 
         $dados = $request->validate([
-            'versao_musical_id' => ['nullable', 'exists:versoes_musicais,id'],
+            'versao_musical_id' => [
+                'nullable',
+                Rule::exists('versoes_musicais', 'id')->where(fn ($query) => $query->where('ativo', true)),
+            ],
             'tom_usado' => ['nullable', Rule::in(config('musical.tons', []))],
             'momento_liturgico_id' => ['nullable', Rule::exists('classificacoes_liturgicas', 'id')->where(fn ($query) => $query->where('tipo', 'momento'))],
         ], [
@@ -506,6 +526,8 @@ class MissaController extends Controller
                 'titulo' => $missaMusica->musica?->titulo,
                 'versao_id' => $missaMusica->versao_musical_id,
                 'momento_liturgico_id' => $missaMusica->momento_liturgico_id,
+                'antes' => $estadoAnterior,
+                'depois' => $this->snapshotItemRepertorio($missaMusica),
                 'resumo' => 'Item do repertório atualizado.',
             ]
         );
@@ -584,6 +606,7 @@ class MissaController extends Controller
         $igreja = $this->obterIgreja();
         $usuario = $this->obterUsuario();
         $missaMusica->loadMissing(['musica', 'versaoMusical', 'momentoLiturgico']);
+        $estadoAnterior = $this->snapshotItemRepertorio($missaMusica);
 
         $missaMusica->delete();
 
@@ -607,6 +630,8 @@ class MissaController extends Controller
                 'musica_id' => $missaMusica->musica_id,
                 'titulo' => $missaMusica->musica?->titulo,
                 'versao_id' => $missaMusica->versao_musical_id,
+                'antes' => $estadoAnterior,
+                'depois' => null,
                 'resumo' => 'Item removido do repertório da missa.',
             ]
         );
@@ -708,9 +733,15 @@ class MissaController extends Controller
         ]);
     }
 
-    public function pdf(Missa $missa)
+    public function pdf(Request $request, Missa $missa)
     {
         $this->garantirMissaDaIgreja($missa);
+        $formato = (string) $request->input('formato', 'cifra');
+
+        Validator::make(['formato' => $formato], [
+            'formato' => ['required', Rule::in(['letra', 'cifra', 'cifra_diagramas'])],
+        ])->validate();
+
         $igreja = $this->obterIgreja();
         $this->sincronizarMissasEncerradas($igreja);
         $missa->refresh();
@@ -724,8 +755,30 @@ class MissaController extends Controller
                 ->orderBy('ordem'),
         ]);
 
-        $itensPdf = $missa->missaMusicas->map(function (MissaMusica $item): array {
-            $texto = $item->versaoMusical ? $this->obterTextoCifraExibicao($item) : '';
+        $itensPdf = $missa->missaMusicas->map(function (MissaMusica $item) use ($formato): array {
+            $textoCifrado = $item->versaoMusical ? $this->obterTextoCifraExibicao($item) : '';
+            $textoBase = $textoCifrado !== '' ? $textoCifrado : (string) ($item->musica?->letra ?? '');
+            $acordes = [];
+
+            if ($formato === 'letra') {
+                $textoSemCifras = $this->renderizadorLetrasHtmlService->removerCifras($textoBase);
+                $htmlConteudo = $textoSemCifras !== ''
+                    ? $this->renderizadorLetrasHtmlService->renderizarSemCifras($textoSemCifras)
+                    : null;
+            } else {
+                $htmlConteudo = $textoBase !== ''
+                    ? $this->renderizadorCifrasHtmlService->renderizar($textoBase)
+                    : null;
+
+                if ($formato === 'cifra_diagramas' && $item->versaoMusical && $textoCifrado !== '') {
+                    $folha = $this->folhaVersaoMusicalService->montar(
+                        $item->versaoMusical,
+                        $textoCifrado,
+                        $item->tom_exibicao
+                    );
+                    $acordes = $folha['acordes'] ?? [];
+                }
+            }
 
             return [
                 'ordem' => $item->ordem,
@@ -735,16 +788,18 @@ class MissaController extends Controller
                 'tom_original' => $item->versaoMusical?->tom_musical,
                 'tom_exibicao' => $item->tom_exibicao,
                 'bpm' => $item->versaoMusical?->bpm,
-                'html_cifra' => $texto !== '' ? $this->renderizadorCifrasHtmlService->renderizar($texto) : null,
+                'html_conteudo' => $htmlConteudo,
+                'acordes' => $acordes,
             ];
         });
 
         $pdf = Pdf::loadView('local-admin.missas.pdf', [
             'missa' => $missa,
             'itensPdf' => $itensPdf,
+            'formato' => $formato,
         ])->setPaper('a4', 'portrait');
 
-        return $pdf->download('missa-' . $missa->id . '.pdf');
+        return $pdf->download('missa-' . $missa->id . '-' . str_replace('_', '-', $formato) . '.pdf');
     }
 
     public function duplicarParaIgreja(Request $request, Missa $missa): RedirectResponse
@@ -1069,6 +1124,47 @@ class MissaController extends Controller
         Missa::query()
             ->whereKey($idsEncerrados)
             ->update(['ativo' => false]);
+
+        $usuario = Auth::user();
+        $this->auditoriaOperacionalService->registrar(
+            evento: 'missas_encerradas_automaticamente',
+            ator: $usuario instanceof Usuario ? $usuario : null,
+            igreja: $igreja,
+            contexto: [
+                'origem' => 'sincronizacao_automatica_missas',
+                'missa_ids' => $idsEncerrados->map(fn ($id) => (int) $id)->values()->all(),
+                'quantidade' => $idsEncerrados->count(),
+                'antes' => ['ativo' => true],
+                'depois' => ['ativo' => false],
+                'resumo' => 'Missas encerradas foram inativadas automaticamente pelo horario final.',
+            ]
+        );
+    }
+
+    private function snapshotMissa(Missa $missa): array
+    {
+        return [
+            'titulo' => $missa->titulo,
+            'data_missa' => optional($missa->data_missa)->toDateString(),
+            'hora_inicio' => substr((string) $missa->hora_inicio, 0, 5),
+            'hora_fim' => substr((string) $missa->hora_fim, 0, 5),
+            'tempo_liturgico_id' => $missa->tempo_liturgico_id,
+            'celebrante_usuario_id' => $missa->celebrante_usuario_id,
+            'publica_para_fieis' => (bool) $missa->publica_para_fieis,
+            'publica_para_musicos' => (bool) $missa->publica_para_musicos,
+            'ativo' => (bool) $missa->ativo,
+        ];
+    }
+
+    private function snapshotItemRepertorio(MissaMusica $item): array
+    {
+        return [
+            'musica_id' => $item->musica_id,
+            'versao_musical_id' => $item->versao_musical_id,
+            'tom_usado' => $item->tom_usado,
+            'momento_liturgico_id' => $item->momento_liturgico_id,
+            'ordem' => $item->ordem,
+        ];
     }
 
     private function missaJaEncerrada(Missa $missa): bool

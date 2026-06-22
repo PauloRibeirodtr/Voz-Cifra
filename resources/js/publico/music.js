@@ -333,6 +333,8 @@
                 let publicAutoScrollActive = false;
                 let publicAutoScrollFrame = null;
                 let ultimoTempoRolagem = null;
+                let restoRolagem = 0;
+                const obterAlvoRolagemPublica = () => document.scrollingElement || document.documentElement || document.body;
                 const pararRolagemPublica = () => {
                     if (publicAutoScrollFrame) {
                         window.cancelAnimationFrame(publicAutoScrollFrame);
@@ -340,6 +342,7 @@
                     }
 
                     ultimoTempoRolagem = null;
+                    restoRolagem = 0;
                     publicAutoScrollActive = false;
                     if (botaoAutoRolagem) botaoAutoRolagem.textContent = 'Rolagem';
                     dockRolagem?.classList.remove('is-running');
@@ -347,22 +350,27 @@
                 const executarPassoRolagem = (timestamp) => {
                     if (!publicAutoScrollActive) return;
 
-                    const fim = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 8;
+                    const alvoRolagem = obterAlvoRolagemPublica();
+                    const topoAtual = alvoRolagem.scrollTop || window.scrollY || 0;
+                    const fim = topoAtual + window.innerHeight >= alvoRolagem.scrollHeight - 8;
                     if (fim) {
                         pararRolagemPublica();
                         return;
                     }
 
                     const velocidade = Math.max(1, Math.min(5, Number(controleVelocidadeRolagem?.value || 1)));
-                    const pixelsPorSegundo = [5, 9, 15, 24, 36];
+                    const pixelsPorSegundo = [18, 32, 52, 78, 112];
                     const delta = ultimoTempoRolagem ? Math.min(80, timestamp - ultimoTempoRolagem) : 16;
                     ultimoTempoRolagem = timestamp;
+                    const deslocamento = ((pixelsPorSegundo[velocidade - 1] || pixelsPorSegundo[0]) * delta) / 1000;
+                    restoRolagem += deslocamento;
+                    const passo = Math.floor(restoRolagem);
 
-                    window.scrollBy({
-                        top: ((pixelsPorSegundo[velocidade - 1] || pixelsPorSegundo[0]) * delta) / 1000,
-                        left: 0,
-                        behavior: 'auto',
-                    });
+                    if (passo >= 1) {
+                        restoRolagem -= passo;
+                        alvoRolagem.scrollTop = topoAtual + passo;
+                    }
+
                     publicAutoScrollFrame = window.requestAnimationFrame(executarPassoRolagem);
                 };
                 const renderizarDiagrama = (shape) => {

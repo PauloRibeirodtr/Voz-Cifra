@@ -22,6 +22,13 @@
         .cifra-letra { display: block; color: #111827; font-size: 11px; line-height: 1.7; white-space: pre-wrap; }
         .cifra-marcacao { display: inline-block; margin: 10px 0 8px; padding: 4px 10px; border-radius: 999px; background: #e5e7eb; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.08em; }
         .cifra-espaco { height: 10px; }
+        .lyrics-stanza { margin-bottom: 10px; line-height: 1.7; }
+        .lyrics-stanza p { margin: 0; }
+        .lyrics-section-label { display: inline-block; margin: 10px 0 8px; padding: 4px 10px; border-radius: 999px; background: #e5e7eb; font-size: 10px; font-weight: bold; text-transform: uppercase; }
+        .lyrics-space { height: 10px; }
+        .acordes-tabela { width: 100%; margin-top: 14px; border-collapse: separate; border-spacing: 6px; page-break-inside: avoid; }
+        .acorde-card { width: 25%; border: 1px solid #d1d5db; padding: 8px; text-align: center; vertical-align: top; }
+        .acorde-card svg { width: 100%; max-width: 105px; height: auto; }
     </style>
 </head>
 <body>
@@ -49,7 +56,7 @@
         </table>
     </div>
 
-    <h3>Repert&oacute;rio e folhas da missa</h3>
+    <h3>Repert&oacute;rio e folhas da missa &mdash; {{ $formato === 'letra' ? 'somente letra' : ($formato === 'cifra_diagramas' ? 'cifra com diagramas' : 'cifra') }}</h3>
     <table class="repertorio">
         <thead>
             <tr>
@@ -87,7 +94,7 @@
     @endif
 
     @foreach ($itensPdf as $item)
-        @if ($item['html_cifra'])
+        @if ($item['html_conteudo'])
             <div class="cifra-bloco">
                 <h3>{{ $item['ordem'] }}. {{ $item['musica'] }}</h3>
                 <p class="muted" style="margin-top: 6px;">
@@ -103,8 +110,25 @@
                     @endif
                 </p>
                 <div style="margin-top: 12px;">
-                    {!! $item['html_cifra'] !!}
+                    {!! $item['html_conteudo'] !!}
                 </div>
+                @if ($formato === 'cifra_diagramas' && !empty($item['acordes']))
+                    <table class="acordes-tabela">
+                        @foreach (array_chunk($item['acordes'], 4) as $linhaAcordes)
+                            <tr>
+                                @foreach ($linhaAcordes as $acorde)
+                                    <td class="acorde-card">
+                                        <strong>{{ $acorde['nome'] }}</strong>
+                                        <div>{!! $acorde['svg'] !!}</div>
+                                    </td>
+                                @endforeach
+                                @for ($i = count($linhaAcordes); $i < 4; $i++)
+                                    <td width="25%"></td>
+                                @endfor
+                            </tr>
+                        @endforeach
+                    </table>
+                @endif
             </div>
         @endif
     @endforeach
