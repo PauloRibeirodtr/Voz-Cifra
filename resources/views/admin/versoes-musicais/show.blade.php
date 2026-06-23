@@ -63,6 +63,11 @@
         .admin-musico-speed { margin-top: .55rem; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: .5rem; }
         .admin-musico-speed input { width: 100%; accent-color: #059669; }
         .admin-musico-speed span { min-width: 3.25rem; border-radius: 999px; background: #ecfdf5; color: #047857; padding: .25rem .45rem; text-align: center; font-size: .72rem; font-weight: 950; }
+        .admin-musico-video-panel { display: none; overflow: hidden; border: 1px solid #fed7aa; border-radius: 1.15rem; background: #fff7ed; box-shadow: 0 14px 34px rgba(120, 53, 15, .08); }
+        .admin-musico-video-panel.is-open { display: block; }
+        .admin-musico-video-head { display: flex; align-items: center; justify-content: space-between; gap: .8rem; border-bottom: 1px solid rgba(251, 146, 60, .28); padding: .85rem 1rem; }
+        .admin-musico-video-frame { aspect-ratio: 16 / 9; background: #111827; }
+        .admin-musico-video-frame iframe { display: block; width: 100%; height: 100%; border: 0; }
         .admin-musico-cifra { max-height: 68vh; min-height: 56vh; overflow-y: auto; border: 1px solid #ead6b3; border-radius: 1.15rem; background: #ffffff !important; padding: 1.15rem; color: #172033; scroll-behavior: smooth; }
         .admin-musico-cifra .cifra-linha { margin-bottom: .72rem; }
         .admin-musico-cifra .cifra-linha--refrao { border-left: 3px solid #f59e0b; border-radius: .65rem; background: linear-gradient(90deg, #fff7ed 0%, #ffffff 74%) !important; margin: .12rem 0 .72rem; padding: .35rem 0 .35rem .8rem; }
@@ -101,6 +106,17 @@
 
 @section('content')
     @php
+        $youtubeValor = trim((string) $versaoMusical->youtube_video_id);
+        $youtubeVideoId = null;
+
+        if ($youtubeValor !== '') {
+            if (preg_match('/^[A-Za-z0-9_-]{11}$/', $youtubeValor) === 1) {
+                $youtubeVideoId = $youtubeValor;
+            } elseif (preg_match('/(?:youtube\.com\/watch\?v=|youtube\.com\/embed\/|youtu\.be\/)([A-Za-z0-9_-]{11})/', $youtubeValor, $youtubeMatches) === 1) {
+                $youtubeVideoId = $youtubeMatches[1];
+            }
+        }
+
         $linhasSemCifra = preg_split('/\r\n|\r|\n/', $letraSemCifras) ?: [];
         $blocosSemCifra = [];
         $paragrafoAtual = [];
@@ -262,11 +278,11 @@
 
                     <div class="admin-musico-reader">
                         <nav class="admin-musico-rail" aria-label="Ferramentas da previa do musico">
-                            @if ($versaoMusical->youtube_video_id)
-                                <a href="https://www.youtube.com/watch?v={{ $versaoMusical->youtube_video_id }}" target="_blank" rel="noopener" class="admin-musico-tool admin-musico-tool--primary">
+                            @if ($youtubeVideoId)
+                                <button type="button" class="admin-musico-tool admin-musico-tool--primary" data-toggle-video aria-controls="video_apoio_admin" aria-expanded="false">
                                     <i class="fa-solid fa-play"></i>
                                     Video
-                                </a>
+                                </button>
                             @endif
                             <div class="admin-musico-autoscroll" aria-label="Auto rolagem">
                                 <button type="button" id="toggle_autorrolagem" aria-pressed="false">
@@ -285,6 +301,29 @@
                         </nav>
 
                         <div class="admin-musico-cifra" id="preview_musico_container">
+                            @if ($youtubeVideoId)
+                                <div id="video_apoio_admin" class="admin-musico-video-panel mb-4" data-video-panel>
+                                    <div class="admin-musico-video-head">
+                                        <div>
+                                            <p class="text-xs font-black uppercase tracking-[0.18em] text-orange-700">Video de apoio</p>
+                                            <p class="mt-1 text-sm font-bold text-gray-900">{{ $musica->titulo }}</p>
+                                        </div>
+                                        <a href="https://www.youtube.com/watch?v={{ $youtubeVideoId }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-white px-3 py-1.5 text-xs font-black text-orange-700 transition hover:bg-orange-50">
+                                            Abrir no YouTube
+                                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                                        </a>
+                                    </div>
+                                    <div class="admin-musico-video-frame">
+                                        <iframe
+                                            src="https://www.youtube-nocookie.com/embed/{{ $youtubeVideoId }}"
+                                            title="Video de apoio da musica {{ $musica->titulo }}"
+                                            loading="lazy"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                            allowfullscreen
+                                        ></iframe>
+                                    </div>
+                                </div>
+                            @endif
                             <div id="preview_musico_render" class="space-y-1"></div>
                         </div>
                     </div>
@@ -408,6 +447,8 @@
             const botaoRolagem = document.getElementById('toggle_autorrolagem');
             const controleVelocidade = document.getElementById('velocidade_rolagem');
             const valorVelocidade = document.getElementById('valor_velocidade');
+            const botaoVideo = document.querySelector('[data-toggle-video]');
+            const painelVideo = document.querySelector('[data-video-panel]');
             let rolagemAtiva = false;
             let intervaloRolagem = null;
             let fonteAtual = 18;
@@ -440,6 +481,17 @@
             };
 
             abas.forEach((aba) => aba.addEventListener('click', () => ativarModo(aba.dataset.modo)));
+
+            if (botaoVideo && painelVideo) {
+                botaoVideo.addEventListener('click', () => {
+                    const aberto = painelVideo.classList.toggle('is-open');
+                    botaoVideo.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+
+                    if (aberto) {
+                        painelVideo.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                });
+            }
 
             const renderizarPreviewMusico = () => {
                 const textoTransposto = helper.transposeBracketedText(textoComCifras || '', transposicaoAtual);
