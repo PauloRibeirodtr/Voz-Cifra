@@ -7,6 +7,7 @@ use App\Models\Missa;
 use App\Models\MissaMusica;
 use App\Models\Musica;
 use App\Models\Usuario;
+use App\Models\VersaoMusical;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -95,6 +96,64 @@ class IgrejaPublicaMusicosTest extends TestCase
         $response->assertDontSee('Favoritar');
         $response->assertDontSee('Salvar');
         $response->assertDontSee('Criar coleção');
+    }
+
+    public function test_link_publico_do_musico_usa_versao_vinculada_e_reconhece_refrao_flexivel(): void
+    {
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-04-27 18:00:00', 'America/Cuiaba'));
+
+        $igreja = Igreja::factory()->create([
+            'slug' => 'paroquia-refrao-musico',
+            'slug_publico_musicos' => 'paroquia-refrao-musico-musicos',
+            'ativo' => true,
+        ]);
+
+        $usuario = Usuario::factory()->create();
+
+        $missa = Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa dos Musicos',
+            'data_missa' => '2026-04-27',
+            'hora_inicio' => '19:00:00',
+            'hora_fim' => '20:30:00',
+            'publica_para_fieis' => false,
+            'publica_para_musicos' => true,
+            'ativo' => true,
+        ]);
+
+        $musica = Musica::query()->create([
+            'titulo' => 'Canto com Versao',
+            'artista' => null,
+            'letra' => "[C]Texto da letra base",
+            'criado_por' => $usuario->id,
+            'ativo' => true,
+        ]);
+
+        $versao = VersaoMusical::query()->create([
+            'musica_id' => $musica->id,
+            'titulo' => 'Tom do ensaio',
+            'tom_musical' => 'D',
+            'letra_com_cifras' => "[Ref ,]\n[D]Refrão da versão musical",
+            'criado_por' => $usuario->id,
+            'ativo' => true,
+        ]);
+
+        MissaMusica::query()->create([
+            'missa_id' => $missa->id,
+            'musica_id' => $musica->id,
+            'versao_musical_id' => $versao->id,
+            'tom_usado' => 'D',
+            'momento_liturgico_id' => null,
+            'ordem' => 1,
+        ]);
+
+        $response = $this->get(route('igrejas.public.musicos.show', ['slug' => $igreja->slug]));
+
+        $response->assertOk();
+        $response->assertSee('Refrão da versão musical');
+        $response->assertSee('lyrics-section-label--refrao', false);
+        $response->assertSee('[D]', false);
+        $response->assertDontSee('Texto da letra base');
     }
 
     public function test_link_publico_do_musico_mostra_estado_vazio_quando_nao_ha_publicacao_para_ensaio(): void

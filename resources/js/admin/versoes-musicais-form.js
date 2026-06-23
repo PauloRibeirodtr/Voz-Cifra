@@ -106,6 +106,10 @@
                 return 0;
             }
 
+            if (offset >= linhaLetra.length) {
+                return linhaLetra.length;
+            }
+
             for (let i = 0; i < palavras.length; i++) {
                 const palavra = palavras[i][0];
                 const inicio = palavras[i].index ?? 0;
@@ -120,7 +124,7 @@
                 }
             }
 
-            return palavras[palavras.length - 1]?.index ?? 0;
+            return linhaLetra.length;
         };
 
         const combinarLinhaDeAcordesComLetra = (linhaAcordes, linhaLetra) => {

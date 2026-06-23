@@ -7,6 +7,7 @@ use App\Models\Missa;
 use App\Models\MissaMusica;
 use App\Models\Musica;
 use App\Models\Usuario;
+use App\Models\VersaoMusical;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -148,6 +149,65 @@ class IgrejaPublicaFieisTest extends TestCase
         $response->assertSee('Cristo, tende piedade');
         $response->assertDontSee('[Am]');
         $response->assertDontSee('[C]');
+    }
+
+    public function test_link_publico_do_fiel_usa_apenas_letra_base_e_reconhece_refrao_flexivel(): void
+    {
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-04-27 08:30:00', 'America/Cuiaba'));
+
+        $igreja = Igreja::factory()->create([
+            'slug' => 'paroquia-refrao-fiel',
+            'ativo' => true,
+        ]);
+
+        $usuario = Usuario::factory()->create();
+
+        $missa = Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa com Refrao',
+            'data_missa' => '2026-04-27',
+            'hora_inicio' => '09:00:00',
+            'hora_fim' => '10:00:00',
+            'publica_para_fieis' => true,
+            'publica_para_musicos' => false,
+            'ativo' => true,
+        ]);
+
+        $musica = Musica::query()->create([
+            'titulo' => 'Canto Base',
+            'artista' => null,
+            'letra' => "[C]Verso da letra base\nRef ,\n[G]Refrão da letra base",
+            'criado_por' => $usuario->id,
+            'ativo' => true,
+        ]);
+
+        $versao = VersaoMusical::query()->create([
+            'musica_id' => $musica->id,
+            'titulo' => 'Versao do musico',
+            'tom_musical' => 'D',
+            'letra_com_cifras' => "[D]Texto exclusivo da versao musical",
+            'criado_por' => $usuario->id,
+            'ativo' => true,
+        ]);
+
+        MissaMusica::query()->create([
+            'missa_id' => $missa->id,
+            'musica_id' => $musica->id,
+            'versao_musical_id' => $versao->id,
+            'tom_usado' => null,
+            'momento_liturgico_id' => null,
+            'ordem' => 1,
+        ]);
+
+        $response = $this->get(route('igrejas.public.show', ['slug' => $igreja->slug]));
+
+        $response->assertOk();
+        $response->assertSee('Verso da letra base');
+        $response->assertSee('Refrão da letra base');
+        $response->assertSee('lyrics-section-label--refrao', false);
+        $response->assertDontSee('Texto exclusivo da versao musical');
+        $response->assertDontSee('[C]');
+        $response->assertDontSee('[G]');
     }
 
     public function test_link_publico_do_fiel_mostra_estado_vazio_util_quando_nao_ha_missas_hoje(): void

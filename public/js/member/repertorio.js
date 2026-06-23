@@ -128,6 +128,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let autoScrollFrame = null;
     let autoScrollActive = false;
     let autoScrollSpeed = Number.parseFloat(velocidade?.value || '1');
+    let autoScrollLastTime = null;
+    let autoScrollRemainder = 0;
 
     const scrollTarget = () => document.scrollingElement || document.documentElement;
 
@@ -138,6 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         autoScrollActive = false;
+        autoScrollLastTime = null;
+        autoScrollRemainder = 0;
 
         if (toggle) {
             toggle.textContent = 'Rolagem';
@@ -146,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const tick = () => {
+    const tick = (timestamp) => {
         const alvo = scrollTarget();
         if (!alvo) {
             parar();
@@ -159,8 +163,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const distance = Math.max(0.12, autoScrollSpeed * 0.7) * (16 / 45);
-        alvo.scrollBy({ top: distance, left: 0, behavior: 'auto' });
+        const delta = autoScrollLastTime ? Math.min(80, timestamp - autoScrollLastTime) : 16;
+        autoScrollLastTime = timestamp;
+        autoScrollRemainder += (Math.max(0.2, autoScrollSpeed) * 18 * delta) / 1000;
+        const distance = Math.floor(autoScrollRemainder);
+
+        if (distance > 0) {
+            autoScrollRemainder -= distance;
+            alvo.scrollTop += distance;
+        }
         autoScrollFrame = window.requestAnimationFrame(tick);
     };
 
@@ -189,5 +200,17 @@ document.addEventListener('DOMContentLoaded', () => {
     topo?.addEventListener('click', () => {
         parar();
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    window.addEventListener('wheel', () => {
+        if (autoScrollActive) parar();
+    }, { passive: true });
+    window.addEventListener('touchstart', () => {
+        if (autoScrollActive) parar();
+    }, { passive: true });
+    window.addEventListener('keydown', (event) => {
+        if (autoScrollActive && ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(event.key)) {
+            parar();
+        }
     });
 });

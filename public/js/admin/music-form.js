@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    const regexAcorde = /^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|º|°|\+|-|[0-9#b])|\([^)]+\))*(?:\/[A-G](?:#|b)?)?$/;
+    const regexAcorde = /^[A-G](?:#|b)?(?:(?:maj|min|dim|aug|sus|add|omit|no|m|M|Âº|Â°|\+|-|[0-9#b])|\([^)]+\))*(?:\/[A-G](?:#|b)?)?$/;
 
     const linhaContemApenasAcordes = (linha) => {
         const texto = linha.trim();

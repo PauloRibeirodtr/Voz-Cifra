@@ -109,8 +109,15 @@ class RenderizadorLetrasHtmlService
     {
         $normalizado = $this->normalizarMarcacao($valor);
 
-        return strlen($normalizado) <= 32
-            && preg_match('/^(intro|refrao|refr\.?|ref|pre[-\s]?refrao|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(?::|\s|$)/', $normalizado) === 1;
+        if (strlen($normalizado) > 32) {
+            return false;
+        }
+
+        if ($this->ehMarcacaoRefraoNormalizada($normalizado)) {
+            return true;
+        }
+
+        return preg_match('/^(intro|pre[-\s]?refrao|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(?::|\s|$)/', $normalizado) === 1;
     }
 
     private function classeMarcacao(string $valor): string
@@ -122,12 +129,20 @@ class RenderizadorLetrasHtmlService
 
     private function ehMarcacaoRefrao(string $valor): bool
     {
-        return preg_match('/^(refrao|refr\.?|ref)(?::|\s|$)/', $this->normalizarMarcacao($valor)) === 1;
+        return $this->ehMarcacaoRefraoNormalizada($this->normalizarMarcacao($valor));
     }
 
     private function normalizarMarcacao(string $valor): string
     {
-        return Str::of($valor)->ascii()->lower()->trim()->toString();
+        $normalizado = Str::of($valor)->ascii()->lower()->trim()->toString();
+        $normalizado = preg_replace('/[^a-z0-9:.\-\s]/', '', $normalizado) ?? $normalizado;
+
+        return trim((string) preg_replace('/\s+/', ' ', $normalizado));
+    }
+
+    private function ehMarcacaoRefraoNormalizada(string $normalizado): bool
+    {
+        return preg_match('/^(?:ref|refr|refrao)\.?:?(?:\s+(?:[0-9]+|[ivx]+|bis|final))?$/', $normalizado) === 1;
     }
 
     private function pareceAcorde(string $valor): bool

@@ -269,7 +269,7 @@
                                 </span>
                             </div>
 
-                            <form action="{{ route('admin.igrejas.admin-local.password.reset', $igreja) }}" method="POST" class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2" onsubmit="return confirm('Confirma a redefinicao da senha de {{ $admin->nome }}?');">
+                            <form action="{{ route('admin.igrejas.admin-local.password.reset', $igreja) }}" method="POST" class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2" onsubmit="return confirm(@js('Confirma a redefinicao da senha de ' . $admin->nome . '?'));">
                                 @csrf
                                 <input type="hidden" name="origem" value="edit">
                                 <input type="hidden" name="admin_local_id" value="{{ $admin->id }}">
@@ -359,7 +359,7 @@
                                     </button>
                                 </form>
 
-                                <form action="{{ route('admin.igrejas.usuarios.papeis.destroy', [$igreja, $usuarioVinculado]) }}" method="POST" onsubmit="return confirm('Remover o papel de admin local de {{ $usuarioVinculado->nome }}?');">
+                                <form action="{{ route('admin.igrejas.usuarios.papeis.destroy', [$igreja, $usuarioVinculado]) }}" method="POST" onsubmit="return confirm(@js('Remover o papel de admin local de ' . $usuarioVinculado->nome . '?'));">
                                     @csrf
                                     <input type="hidden" name="papel" value="admin_local">
                                     <button
@@ -383,7 +383,7 @@
                                     </button>
                                 </form>
 
-                                <form action="{{ route('admin.igrejas.usuarios.papeis.destroy', [$igreja, $usuarioVinculado]) }}" method="POST" onsubmit="return confirm('Remover o papel de coordenador de {{ $usuarioVinculado->nome }}?');">
+                                <form action="{{ route('admin.igrejas.usuarios.papeis.destroy', [$igreja, $usuarioVinculado]) }}" method="POST" onsubmit="return confirm(@js('Remover o papel de coordenador de ' . $usuarioVinculado->nome . '?'));">
                                     @csrf
                                     <input type="hidden" name="papel" value="coordenador">
                                     <button
@@ -407,7 +407,7 @@
                                     </button>
                                 </form>
 
-                                <form action="{{ route('admin.igrejas.usuarios.papeis.destroy', [$igreja, $usuarioVinculado]) }}" method="POST" onsubmit="return confirm('Remover o papel de músico de {{ $usuarioVinculado->nome }}?');">
+                                <form action="{{ route('admin.igrejas.usuarios.papeis.destroy', [$igreja, $usuarioVinculado]) }}" method="POST" onsubmit="return confirm(@js('Remover o papel de músico de ' . $usuarioVinculado->nome . '?'));">
                                     @csrf
                                     <input type="hidden" name="papel" value="musico">
                                     <button
@@ -474,7 +474,7 @@
                                 method="POST"
                                 class="mt-4 hidden rounded-2xl border border-amber-100 bg-amber-50 p-4"
                                 data-reset-vinculo-panel
-                                onsubmit="return confirm('Confirma a redefinicao da senha de {{ $usuarioVinculado->nome }}?');"
+                                onsubmit="return confirm(@js('Confirma a redefinicao da senha de ' . $usuarioVinculado->nome . '?'));"
                             >
                                 @csrf
                                 <input type="hidden" name="origem" value="edit">

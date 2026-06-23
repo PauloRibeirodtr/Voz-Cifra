@@ -490,19 +490,39 @@ class IgrejaPublicaController extends Controller
 
     private function ehMarcacaoSecaoPublica(string $valor): bool
     {
-        $normalizado = Str::of($valor)->ascii()->lower()->trim()->toString();
+        $normalizado = $this->normalizarMarcacaoPublica($valor);
 
-        return strlen($normalizado) <= 32
-            && preg_match('/^(intro|refrao|refr\.?|ref|pre[-\s]?refrao|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(:|\b|$)/', $normalizado) === 1;
+        if (strlen($normalizado) > 32) {
+            return false;
+        }
+
+        if ($this->ehMarcacaoRefraoPublicaNormalizada($normalizado)) {
+            return true;
+        }
+
+        return preg_match('/^(intro|pre[-\s]?refrao|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(:|\b|$)/', $normalizado) === 1;
     }
 
     private function classeMarcacaoSecaoPublica(string $valor): string
     {
-        $normalizado = Str::of($valor)->ascii()->lower()->trim()->toString();
+        $normalizado = $this->normalizarMarcacaoPublica($valor);
 
-        return preg_match('/^(refrao|refr\.?|ref)(:|\b|$)/', $normalizado) === 1
+        return $this->ehMarcacaoRefraoPublicaNormalizada($normalizado)
             ? 'lyrics-section-label lyrics-section-label--refrao'
             : 'lyrics-section-label';
+    }
+
+    private function normalizarMarcacaoPublica(string $valor): string
+    {
+        $normalizado = Str::of($valor)->ascii()->lower()->trim()->toString();
+        $normalizado = preg_replace('/[^a-z0-9:.\-\s]/', '', $normalizado) ?? $normalizado;
+
+        return trim((string) preg_replace('/\s+/', ' ', $normalizado));
+    }
+
+    private function ehMarcacaoRefraoPublicaNormalizada(string $normalizado): bool
+    {
+        return preg_match('/^(?:ref|refr|refrao)\.?:?(?:\s+(?:[0-9]+|[ivx]+|bis|final))?$/', $normalizado) === 1;
     }
 
     private function mapearAgendaMissa(Missa $missa, string $timezone): array

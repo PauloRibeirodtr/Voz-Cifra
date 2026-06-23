@@ -182,8 +182,15 @@ class RenderizadorCifrasHtmlService
     {
         $normalizado = $this->normalizarMarcacao($valor);
 
-        return strlen($normalizado) <= 32
-            && preg_match('/^(intro|refrao|pre[-\s]?refrao|refr\.?|ref|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(:|\s|$)/', $normalizado) === 1;
+        if (strlen($normalizado) > 32) {
+            return false;
+        }
+
+        if ($this->ehMarcacaoRefraoNormalizada($normalizado)) {
+            return true;
+        }
+
+        return preg_match('/^(intro|pre[-\s]?refrao|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(:|\s|$)/', $normalizado) === 1;
     }
 
     private function classeMarcacaoSecao(string $valor): string
@@ -195,9 +202,7 @@ class RenderizadorCifrasHtmlService
 
     private function ehMarcacaoRefrao(string $valor): bool
     {
-        $normalizado = $this->normalizarMarcacao($valor);
-
-        return preg_match('/^(refrao|refr\.?|ref)(:|\s|$)/', $normalizado) === 1;
+        return $this->ehMarcacaoRefraoNormalizada($this->normalizarMarcacao($valor));
     }
 
     private function normalizarMarcacao(string $valor): string
@@ -209,8 +214,15 @@ class RenderizadorCifrasHtmlService
         }
 
         $semAcentos = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $valor);
+        $normalizado = strtolower(trim($semAcentos !== false ? $semAcentos : $valor));
+        $normalizado = preg_replace('/[^a-z0-9:.\-\s]/', '', $normalizado) ?? $normalizado;
 
-        return strtolower(trim($semAcentos !== false ? $semAcentos : $valor));
+        return trim((string) preg_replace('/\s+/', ' ', $normalizado));
+    }
+
+    private function ehMarcacaoRefraoNormalizada(string $normalizado): bool
+    {
+        return preg_match('/^(?:ref|refr|refrao)\.?:?(?:\s+(?:[0-9]+|[ivx]+|bis|final))?$/', $normalizado) === 1;
     }
 
     private function extrairMarcacaoIsolada(string $valor, ?array &$matches = null): bool

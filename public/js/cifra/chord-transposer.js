@@ -56,13 +56,25 @@
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .toLowerCase()
+        .replace(/[^a-z0-9:.\-\s]/g, '')
+        .replace(/\s+/g, ' ')
         .trim();
 
-    const isChorusLabel = (value) => /^(refrao|refr\.?|ref)(?::|\s|$)/.test(normalizeSectionLabel(value));
+    const isNormalizedChorusLabel = (label) => /^(?:ref|refr|refrao)\.?:?(?:\s+(?:[0-9]+|[ivx]+|bis|final))?$/.test(label);
+
+    const isChorusLabel = (value) => isNormalizedChorusLabel(normalizeSectionLabel(value));
 
     const isSectionLabel = (value) => {
         const label = normalizeSectionLabel(value);
-        return label.length <= 32 && /^(intro|refrao|pre[-\s]?refrao|refr\.?|ref|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(?::|\s|$)/.test(label);
+        if (label.length > 32) {
+            return false;
+        }
+
+        if (isNormalizedChorusLabel(label)) {
+            return true;
+        }
+
+        return /^(intro|pre[-\s]?refrao|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(?::|\s|$)/.test(label);
     };
 
     const sectionLabelClass = (value) => (isChorusLabel(value)

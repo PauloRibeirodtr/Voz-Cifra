@@ -55,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (botaoRolagem) {
             botaoRolagem.textContent = 'Iniciar auto rolagem';
+            botaoRolagem.setAttribute('aria-pressed', 'false');
         }
     };
 
@@ -63,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const velocidade = Math.max(0.25, Math.min(3, Number(controleVelocidade.value || 0.75)));
+        const velocidade = Math.max(0.25, Math.min(6, Number(controleVelocidade.value || 0.75)));
 
         if (valorVelocidade) {
             valorVelocidade.textContent = velocidade.toFixed(2);
@@ -193,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         rolagemAtiva = true;
         botaoRolagem.textContent = 'Parar auto rolagem';
+        botaoRolagem.setAttribute('aria-pressed', 'true');
         iniciarRolagem();
     });
 
@@ -210,6 +212,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (valorVelocidade && controleVelocidade) {
         valorVelocidade.textContent = Number(controleVelocidade.value).toFixed(2);
     }
+
+    container.addEventListener('wheel', () => {
+        if (rolagemAtiva) pararRolagem();
+    }, { passive: true });
+    container.addEventListener('touchstart', () => {
+        if (rolagemAtiva) pararRolagem();
+    }, { passive: true });
+    container.addEventListener('keydown', (event) => {
+        if (rolagemAtiva && ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(event.key)) {
+            pararRolagem();
+        }
+    });
 
     renderizar();
 });

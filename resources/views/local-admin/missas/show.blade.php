@@ -368,7 +368,7 @@
                     ? 'Deseja inativar esta missa? O repertório será preservado para consulta futura.'
                     : 'Deseja reativar esta missa como parte do fluxo da igreja?';
             @endphp
-            <form action="{{ route('local-admin.missas.toggle', $missa) }}" method="POST" onsubmit="return confirm('{{ $confirmacaoAtivacao }}');">
+            <form action="{{ route('local-admin.missas.toggle', $missa) }}" method="POST" onsubmit="return confirm(@js($confirmacaoAtivacao));">
                 @csrf
                 <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl border px-4 py-3 font-semibold transition {{ $missa->ativo ? 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100' : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' }}">
                     {{ $missa->ativo ? 'Inativar missa' : 'Reativar missa' }}

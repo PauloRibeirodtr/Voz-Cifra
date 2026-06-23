@@ -96,7 +96,7 @@
                         </div>
 
                         <div class="flex flex-wrap items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
-                            <button type="button" id="toggle_autorrolagem_apresentacao" class="rounded-lg bg-[#6c4a21] px-4 py-2 text-sm font-semibold text-white hover:bg-[#5b3d1a]">Iniciar auto-rolagem</button>
+                            <button type="button" id="toggle_autorrolagem_apresentacao" class="rounded-lg bg-[#6c4a21] px-4 py-2 text-sm font-semibold text-white hover:bg-[#5b3d1a]" aria-pressed="false">Iniciar auto-rolagem</button>
                             <label for="velocidade_apresentacao" class="text-sm font-medium text-gray-600">Velocidade</label>
                             <input id="velocidade_apresentacao" type="range" min="0.25" max="6" value="0.75" step="0.25" class="accent-[#8c6933]">
                             <span id="velocidade_apresentacao_valor" class="text-sm font-semibold text-gray-700">0.75</span>

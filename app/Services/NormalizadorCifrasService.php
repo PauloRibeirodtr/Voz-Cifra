@@ -182,7 +182,9 @@ class NormalizadorCifrasService
             return 0;
         }
 
-        $ultimaPalavra = $palavras[array_key_last($palavras)] ?? null;
+        if ($offset >= strlen($linhaLetra)) {
+            return strlen($linhaLetra);
+        }
 
         foreach ($palavras as [$palavra, $inicio]) {
             $fim = $inicio + strlen($palavra);
@@ -196,7 +198,7 @@ class NormalizadorCifrasService
             }
         }
 
-        return $ultimaPalavra[1] ?? 0;
+        return strlen($linhaLetra);
     }
 
     private function ehLinhaSomenteAcordes(string $linha): bool
@@ -264,8 +266,15 @@ class NormalizadorCifrasService
 
         $normalizada = $this->normalizarTextoMarcacao($linha);
 
-        return strlen($normalizada) <= 32
-            && (bool) preg_match('/^(intro|refrao:?|pre[-\s]?refrao:?|refr\.?|ref:|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(?:\s|$)/', $normalizada);
+        if (strlen($normalizada) > 32) {
+            return false;
+        }
+
+        if ($this->ehMarcacaoRefraoNormalizada($normalizada)) {
+            return true;
+        }
+
+        return (bool) preg_match('/^(intro|pre[-\s]?refrao:?|entrada|final|ponte|estrofe|verso|primeira parte|segunda parte|terceira parte)(?:\s|$)/', $normalizada);
     }
 
     private function normalizarMarcacaoLinha(string $linha): ?string
@@ -282,11 +291,18 @@ class NormalizadorCifrasService
 
         $normalizada = $this->normalizarTextoMarcacao($linha);
 
-        if (preg_match('/^(refrao|refr\.?|ref)(?::|\s|$)/', $normalizada)) {
+        if ($this->ehMarcacaoRefraoNormalizada($normalizada)) {
             return 'Refrão:';
         }
 
         return null;
+    }
+
+    private function ehMarcacaoRefraoNormalizada(string $normalizada): bool
+    {
+        $normalizada = trim((string) preg_replace('/\s+/', ' ', $normalizada));
+
+        return (bool) preg_match('/^(?:ref|refr|refrao)\.?:?(?:\s+(?:[0-9]+|[ivx]+|bis|final))?$/', $normalizada);
     }
 
     private function normalizarTextoMarcacao(string $texto): string

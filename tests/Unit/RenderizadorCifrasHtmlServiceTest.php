@@ -19,4 +19,17 @@ class RenderizadorCifrasHtmlServiceTest extends TestCase
         $this->assertStringContainsString('>D/F#<', $html);
         $this->assertStringNotContainsString('G5] [D/F#', $html);
     }
+
+    public function test_refrao_com_parenteses_ou_abreviacao_recebe_destaque(): void
+    {
+        $servico = new RenderizadorCifrasHtmlService();
+
+        $htmlComParenteses = $servico->renderizar("(Ref)\n[D]\nLinha do canto");
+        $htmlComPonto = $servico->renderizar("ref.\n[D]\nLinha do canto");
+
+        $this->assertStringContainsString('cifra-marcacao--refrao', $htmlComParenteses);
+        $this->assertStringContainsString('cifra-linha--refrao', $htmlComParenteses);
+        $this->assertStringContainsString('cifra-marcacao--refrao', $htmlComPonto);
+        $this->assertStringContainsString('cifra-linha--refrao', $htmlComPonto);
+    }
 }

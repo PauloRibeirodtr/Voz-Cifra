@@ -54,6 +54,34 @@ class NormalizadorCifrasServiceTest extends TestCase
         $this->assertSame(['D', 'A', 'Am', 'C'], $servico->extrairAcordes($resultado));
     }
 
+    public function test_acorde_visual_depois_do_fim_da_frase_fica_no_final_da_linha(): void
+    {
+        $servico = new NormalizadorCifrasService();
+
+        $texto = implode("\n", [
+            '                                                                                Bm',
+            'Sua alma é um bem que nunca envelhecerá',
+        ]);
+
+        $resultado = $servico->normalizarFormato($texto);
+
+        $this->assertSame('Sua alma é um bem que nunca envelhecerá[Bm]', $resultado);
+    }
+
+    public function test_acorde_visual_no_inicio_e_no_fim_preserva_ponta_da_frase(): void
+    {
+        $servico = new NormalizadorCifrasService();
+
+        $texto = implode("\n", [
+            'D                                                                               Bm',
+            'Sua alma é um bem que nunca envelhecerá',
+        ]);
+
+        $resultado = $servico->normalizarFormato($texto);
+
+        $this->assertSame('[D]Sua alma é um bem que nunca envelhecerá[Bm]', $resultado);
+    }
+
     public function test_intro_com_acordes_na_mesma_linha_vira_marcacao_e_linha_instrumental(): void
     {
         $servico = new NormalizadorCifrasService();
@@ -102,5 +130,57 @@ class NormalizadorCifrasServiceTest extends TestCase
 
         $this->assertSame("Refrão:\n[D]\nPrimeira linha\n\nRefrão:\n[Dm] [G7]\nOutra linha", $resultado);
         $this->assertSame(['D', 'Dm', 'G7'], $servico->extrairAcordes($resultado));
+    }
+
+    public function test_refrao_digitado_com_abreviacoes_pontuacao_ou_parenteses_vira_marcacao_padrao(): void
+    {
+        $servico = new NormalizadorCifrasService();
+
+        $casos = [
+            'Ref',
+            'ref',
+            'ref.',
+            'Ref:',
+            'Ref ,',
+            '[Ref]',
+            '[ref]',
+            '(Ref)',
+            'Refrão',
+            '[refrão]',
+            '(Refrão)',
+            'REFRAO',
+            'refr',
+            'refr.',
+            'refrão.',
+            'Refrão final',
+            'Ref 2',
+        ];
+
+        foreach ($casos as $caso) {
+            $resultado = $servico->normalizarFormato(implode("\n", [
+                $caso,
+                'D',
+                'Primeira linha',
+            ]));
+
+            $this->assertSame(
+                "Refrão:\n[D]\nPrimeira linha",
+                $resultado,
+                "Falhou ao normalizar a marcação: {$caso}"
+            );
+        }
+    }
+
+    public function test_palavra_parecida_com_refrao_nao_vira_marcacao(): void
+    {
+        $servico = new NormalizadorCifrasService();
+
+        $resultado = $servico->normalizarFormato(implode("\n", [
+            'Refazer este trecho depois',
+            'D',
+            'Primeira linha',
+        ]));
+
+        $this->assertSame("Refazer este trecho depois\nD\nPrimeira linha", $resultado);
     }
 }

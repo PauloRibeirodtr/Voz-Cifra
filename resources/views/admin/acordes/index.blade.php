@@ -96,7 +96,7 @@
                             <a href="{{ route('admin.acordes.edit', $acorde->id) }}" class="chord-action border border-[#ead6b3] bg-[#fff8ed] text-[#6c4a21] hover:bg-[#f8ecd7]" title="Editar acorde" aria-label="Editar acorde {{ $acorde->nome }}">
                                 <i class="fa-solid fa-pen" aria-hidden="true"></i>
                             </a>
-                            <form action="{{ route('admin.acordes.destroy', $acorde->id) }}" method="POST" onsubmit="return confirm('Deseja inativar o acorde {{ $acorde->nome }}? Ele sera preservado no banco.');">
+                            <form action="{{ route('admin.acordes.destroy', $acorde->id) }}" method="POST" onsubmit="return confirm(@js('Deseja inativar o acorde ' . $acorde->nome . '? Ele sera preservado no banco.'));">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="chord-action border border-red-200 bg-red-50 text-red-700 hover:bg-red-100" title="Inativar acorde" aria-label="Inativar acorde {{ $acorde->nome }}">
