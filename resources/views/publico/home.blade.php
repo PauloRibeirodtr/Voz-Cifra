@@ -1,8 +1,25 @@
 ﻿<x-publico.layouts.app
     title="Voz & Cifra | Missas e celebrações"
     description="Acompanhe e organize as celebrações da sua comunidade com uma página pública elegante, responsiva e centrada na experiência da missa."
+    :canonical="route('root')"
+    :image="asset('logo/final.png')"
     forced-contrast="high"
 >
+    <script type="application/ld+json">
+        {!! json_encode([
+            '@context' => 'https://schema.org',
+            '@type' => 'WebSite',
+            'name' => 'Voz & Cifra',
+            'url' => route('root'),
+            'description' => 'Plataforma para igrejas publicarem missas, repertorios, letras e cifras de celebracoes.',
+            'potentialAction' => [
+                '@type' => 'SearchAction',
+                'target' => route('root') . '#igrejas',
+                'query-input' => 'required name=search_term_string',
+            ],
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+    </script>
+
     <header class="site-header">
         <div class="container site-header__inner">
             <a href="{{ route('root') }}#inicio" class="brand">

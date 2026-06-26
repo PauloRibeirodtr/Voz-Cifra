@@ -138,6 +138,25 @@
                     <input id="ativo" type="checkbox" name="ativo" value="1" {{ old('ativo', $musicaAtual->ativo ?? true) ? 'checked' : '' }} class="rounded border-gray-300 text-green-700 focus:ring-green-500" />
                     <label for="ativo" class="text-sm font-medium text-gray-700">Musica ativa</label>
                 </div>
+
+                @if ($modo === 'create' && auth()->user()?->ehAdminMaster())
+                    <div class="rounded-2xl border border-amber-100 bg-amber-50/70 p-4">
+                        <label class="flex items-start gap-3">
+                            <input type="hidden" name="notificar_equipe" value="0" />
+                            <input
+                                type="checkbox"
+                                name="notificar_equipe"
+                                value="1"
+                                @checked(old('notificar_equipe', false))
+                                class="mt-1 rounded border-amber-300 text-amber-700 focus:ring-amber-200"
+                            />
+                            <span>
+                                <span class="block text-sm font-bold text-amber-950">Avisar equipe por e-mail agora</span>
+                                <span class="mt-1 block text-xs leading-relaxed text-amber-800">Opcional. Use apenas quando essa musica ja precisa ser divulgada para a equipe operacional.</span>
+                            </span>
+                        </label>
+                    </div>
+                @endif
             </div>
         </div>
     </div>

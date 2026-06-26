@@ -9,6 +9,7 @@ use App\Models\TempoLiturgico;
 use App\Models\Usuario;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -143,6 +144,100 @@ class HomeController extends Controller
             'equipeProjeto' => $this->equipeProjeto(),
             'logoInstituicao' => asset('instituicao/ifms.png'),
         ]);
+    }
+
+    public function robots(): Response
+    {
+        $conteudo = implode("\n", [
+            'User-agent: *',
+            'Disallow: /admin',
+            'Disallow: /igreja',
+            'Disallow: /musico',
+            'Disallow: /coordenacao',
+            'Disallow: /notificacoes',
+            'Disallow: /login',
+            'Disallow: /definir-senha',
+            'Allow: /',
+            'Sitemap: ' . route('sitemap'),
+            '',
+        ]);
+
+        return response($conteudo, 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
+    }
+
+    public function sitemap(): Response
+    {
+        $urls = collect([
+            ['loc' => route('root'), 'priority' => '1.0', 'changefreq' => 'daily'],
+            ['loc' => route('developers'), 'priority' => '0.4', 'changefreq' => 'monthly'],
+        ]);
+
+        Igreja::query()
+            ->where('ativo', true)
+            ->orderBy('id')
+            ->get(['id', 'slug', 'slug_publico_musicos', 'updated_at'])
+            ->each(function (Igreja $igreja) use ($urls): void {
+                if (filled($igreja->slug)) {
+                    $urls->push([
+                        'loc' => route('igrejas.public.show', ['slug' => $igreja->slug]),
+                        'priority' => '0.9',
+                        'changefreq' => 'daily',
+                        'lastmod' => optional($igreja->updated_at)->toAtomString(),
+                    ]);
+                }
+
+                $slugMusicos = $igreja->slug_publico_musicos ?: $igreja->slug;
+
+                if (filled($slugMusicos)) {
+                    $urls->push([
+                        'loc' => route('igrejas.public.musicos.show', ['slug' => $slugMusicos]),
+                        'priority' => '0.8',
+                        'changefreq' => 'daily',
+                        'lastmod' => optional($igreja->updated_at)->toAtomString(),
+                    ]);
+                }
+            });
+
+        Missa::query()
+            ->with('igreja:id,slug,slug_publico_musicos,ativo')
+            ->where(function ($query): void {
+                $query->where('publica_para_fieis', true)
+                    ->orWhere('publica_para_musicos', true);
+            })
+            ->whereHas('igreja', fn ($query) => $query->where('ativo', true))
+            ->whereDate('data_missa', '>=', now('America/Cuiaba')->subMonths(2)->toDateString())
+            ->orderByDesc('data_missa')
+            ->limit(120)
+            ->get(['id', 'igreja_id', 'data_missa', 'publica_para_fieis', 'publica_para_musicos', 'updated_at'])
+            ->each(function (Missa $missa) use ($urls): void {
+                if ($missa->publica_para_fieis && filled($missa->igreja?->slug)) {
+                    $urls->push([
+                        'loc' => route('igrejas.public.show', ['slug' => $missa->igreja->slug, 'celebracao' => $missa->id]),
+                        'priority' => '0.7',
+                        'changefreq' => 'weekly',
+                        'lastmod' => optional($missa->updated_at)->toAtomString(),
+                    ]);
+                }
+
+                $slugMusicos = $missa->igreja?->slug_publico_musicos ?: $missa->igreja?->slug;
+
+                if ($missa->publica_para_musicos && filled($slugMusicos)) {
+                    $urls->push([
+                        'loc' => route('igrejas.public.musicos.show', ['slug' => $slugMusicos, 'celebracao' => $missa->id]),
+                        'priority' => '0.6',
+                        'changefreq' => 'weekly',
+                        'lastmod' => optional($missa->updated_at)->toAtomString(),
+                    ]);
+                }
+            });
+
+        $xml = view('publico.sitemap', [
+            'urls' => $urls
+                ->unique('loc')
+                ->values(),
+        ])->render();
+
+        return response($xml, 200, ['Content-Type' => 'application/xml; charset=UTF-8']);
     }
 
     private function equipeProjeto(): Collection

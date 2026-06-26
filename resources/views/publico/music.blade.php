@@ -1,12 +1,55 @@
+@php
+    $slugMusicosMeta = (string) (request()->route('slug') ?: ($igreja->slug_publico_musicos ?: $igreja->slug));
+    $cidadeEstadoMeta = trim(($igreja->cidade ?? '') . ' - ' . ($igreja->estado ?? ''), ' -');
+    $celebracaoMetaId = (int) ($celebracaoSelecionadaIdParam ?? 0);
+    $canonicalPublico = $celebracaoMetaId > 0
+        ? route('igrejas.public.musicos.show', ['slug' => $slugMusicosMeta, 'celebracao' => $celebracaoMetaId])
+        : route('igrejas.public.musicos.show', ['slug' => $slugMusicosMeta]);
+    $tituloPublico = $missaPublica
+        ? 'Cifras de ' . $missaPublica->titulo . ' - ' . $igreja->nome . ' | Voz & Cifra'
+        : $igreja->nome . ' | Repertório e cifras | Voz & Cifra';
+    $descricaoPublica = trim('Consulte repertórios, letras com cifras e músicas publicadas para a equipe de ' . $igreja->nome . ($cidadeEstadoMeta !== '' ? ' em ' . $cidadeEstadoMeta : '') . '.');
+    $imagemPublica = $igreja->imagemUrl();
+    $dadosEstruturados = [
+        '@context' => 'https://schema.org',
+        '@type' => 'CollectionPage',
+        'name' => $tituloPublico,
+        'url' => $canonicalPublico,
+        'description' => $descricaoPublica,
+        'isPartOf' => [
+            '@type' => 'WebSite',
+            'name' => 'Voz & Cifra',
+            'url' => route('root'),
+        ],
+        'about' => [
+            '@type' => 'Organization',
+            'name' => $igreja->nome,
+        ],
+    ];
+@endphp
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $igreja->nome }} | Voz &amp; Cifra</title>
+    <title>{{ $tituloPublico }}</title>
+    <meta name="description" content="{{ $descricaoPublica }}">
+    <link rel="canonical" href="{{ $canonicalPublico }}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ $tituloPublico }}">
+    <meta property="og:description" content="{{ $descricaoPublica }}">
+    <meta property="og:url" content="{{ $canonicalPublico }}">
+    <meta property="og:image" content="{{ $imagemPublica }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $tituloPublico }}">
+    <meta name="twitter:description" content="{{ $descricaoPublica }}">
+    <meta name="twitter:image" content="{{ $imagemPublica }}">
     <link rel="icon" type="image/png" href="{{ asset('logo/final.png') }}">
     <link rel="manifest" href="{{ asset('site.webmanifest') }}">
     <meta name="theme-color" content="#4a2b22">
+    <script type="application/ld+json">
+        {!! json_encode($dadosEstruturados, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+    </script>
     @vite(['resources/css/publico/music.css', 'resources/js/publico/music.js'])
 </head>
 <body data-contrast="high" data-public-mode="musicos">
@@ -39,6 +82,9 @@
             ?? $programacaoMusico->first()['id']
             ?? 0
         );
+        $urlCompartilhamento = $missaPublica
+            ? route('igrejas.public.musicos.show', ['slug' => $slugMusicosMeta, 'celebracao' => $missaPublica->id]) . '#celebracao-publica'
+            : route('igrejas.public.musicos.show', ['slug' => $slugMusicosMeta]);
     @endphp
 
     <main class="page">
@@ -170,6 +216,11 @@
                                 <p class="celebration-meta-text">
                                     {{ $missaPublica->data_missa->format('d/m/Y') }} • {{ substr((string) $missaPublica->hora_inicio, 0, 5) }}
                                 </p>
+                                @include('publico.partials.share-tools', [
+                                    'url' => $urlCompartilhamento,
+                                    'title' => 'Repertório - ' . $missaPublica->titulo . ' | ' . $igreja->nome,
+                                    'text' => 'Acompanhe o repertório da celebração ' . $missaPublica->titulo . ' no Voz & Cifra:',
+                                ])
                             </div>
                         </div>
                         <details class="reading-settings">

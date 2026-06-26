@@ -94,6 +94,30 @@ class NotificacoesInternasTest extends TestCase
         $this->assertNotNull($outraNotificacao->fresh()->lida_em);
     }
 
+    public function test_notificacao_com_destino_indisponivel_redireciona_para_rota_segura(): void
+    {
+        $igreja = Igreja::factory()->create();
+        $usuario = Usuario::factory()->create([
+            'primeiro_acesso' => false,
+        ]);
+        $usuario->adicionarPapel(PapelIgreja::ADMIN_LOCAL, $igreja);
+
+        $notificacao = $usuario->notificacoesInternas()->create([
+            'tipo' => 'pedido_mudanca_tom',
+            'titulo' => 'Pedido antigo',
+            'mensagem' => 'Este item ja nao existe.',
+            'url' => '/igreja/missas/999999#repertorio-item-888888',
+        ]);
+
+        $this
+            ->actingAs($usuario->fresh())
+            ->post(route('notificacoes.ler', $notificacao))
+            ->assertRedirect(route('local-admin.dashboard'))
+            ->assertSessionHas('warning');
+
+        $this->assertNotNull($notificacao->fresh()->lida_em);
+    }
+
     public function test_alteracao_de_status_gera_notificacao_interna_direcional(): void
     {
         Mail::fake();

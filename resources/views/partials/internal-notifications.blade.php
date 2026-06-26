@@ -117,9 +117,12 @@
                                     </form>
                                 </div>
                                 @if (filled($notificacao->url))
-                                    <a href="{{ $notificacao->url }}" class="mt-2 inline-flex w-full items-center justify-center rounded-xl border border-gray-200 px-3 py-2 text-xs font-bold text-gray-600 transition hover:bg-gray-50">
-                                        Abrir repertorio
-                                    </a>
+                                    <form method="POST" action="{{ route('notificacoes.ler', $notificacao) }}" class="mt-2">
+                                        @csrf
+                                        <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 px-3 py-2 text-xs font-bold text-gray-600 transition hover:bg-gray-50">
+                                            Abrir repertorio
+                                        </button>
+                                    </form>
                                 @endif
                             </div>
                         @endif

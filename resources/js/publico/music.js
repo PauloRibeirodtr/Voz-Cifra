@@ -2,6 +2,102 @@ import './offline';
 import './theme';
 
 document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('[data-public-share-tools]').forEach((shareBox) => {
+                const trigger = shareBox.querySelector('[data-public-share-trigger]');
+                const menu = shareBox.querySelector('[data-public-share-menu]');
+                const copyButton = shareBox.querySelector('[data-public-copy-link]');
+                const shareButton = shareBox.querySelector('[data-public-native-share]');
+                const feedback = shareBox.querySelector('[data-public-share-feedback]');
+                const shareUrl = shareBox.dataset.shareUrl || window.location.href;
+                const shareTitle = shareBox.dataset.shareTitle || document.title;
+                const shareText = shareBox.dataset.shareText || 'Acompanhe no Voz & Cifra.';
+                const isNativeDetails = shareBox.tagName.toLowerCase() === 'details';
+                let feedbackTimer = null;
+
+                const mostrarFeedback = (mensagem = 'Link copiado.') => {
+                    if (!feedback) {
+                        return;
+                    }
+
+                    feedback.textContent = mensagem;
+                    feedback.hidden = false;
+                    window.clearTimeout(feedbackTimer);
+                    feedbackTimer = window.setTimeout(() => {
+                        feedback.hidden = true;
+                    }, 2200);
+                };
+
+                const fecharMenu = () => {
+                    if (!menu || !trigger) {
+                        return;
+                    }
+
+                    if (isNativeDetails) {
+                        shareBox.removeAttribute('open');
+                    } else {
+                        menu.hidden = true;
+                    }
+
+                    trigger.setAttribute('aria-expanded', 'false');
+                };
+
+                trigger?.addEventListener('click', (event) => {
+                    event.stopPropagation();
+
+                    if (!menu) {
+                        return;
+                    }
+
+                    if (isNativeDetails) {
+                        window.setTimeout(() => {
+                            trigger.setAttribute('aria-expanded', shareBox.open ? 'true' : 'false');
+                        }, 0);
+
+                        return;
+                    }
+
+                    menu.hidden = !menu.hidden;
+                    trigger.setAttribute('aria-expanded', menu.hidden ? 'false' : 'true');
+                });
+
+                copyButton?.addEventListener('click', async () => {
+                    try {
+                        await navigator.clipboard.writeText(shareUrl);
+                        mostrarFeedback('Link copiado.');
+                        fecharMenu();
+                    } catch (error) {
+                        mostrarFeedback('Copie pela barra do navegador.');
+                    }
+                });
+
+                if (!navigator.share) {
+                    shareButton?.setAttribute('hidden', 'hidden');
+                }
+
+                shareButton?.addEventListener('click', async () => {
+                    if (!navigator.share) {
+                        return;
+                    }
+
+                    try {
+                        await navigator.share({
+                            title: shareTitle,
+                            text: shareText,
+                            url: shareUrl,
+                        });
+                        fecharMenu();
+                    } catch (error) {
+                        // Usuario cancelou ou o navegador recusou o compartilhamento.
+                    }
+                });
+
+                document.addEventListener('click', (event) => {
+                    if (!shareBox.contains(event.target)) {
+                        fecharMenu();
+                    }
+                });
+            });
+
             const statusSync = document.querySelector('[data-public-status-sync]');
             const guardarPosicao = () => {
                 try {

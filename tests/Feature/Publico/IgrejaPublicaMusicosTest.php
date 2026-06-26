@@ -89,6 +89,8 @@ class IgrejaPublicaMusicosTest extends TestCase
         $response->assertSee('[F]', false);
         $response->assertSee('Entrai, cantai');
         $response->assertSee('Abrir repertório');
+        $response->assertSee('Copiar link');
+        $response->assertSee('WhatsApp');
         $response->assertSee('Tom Am');
         $response->assertSee('data-public-musician-lyrics', false);
         $response->assertDontSee('data-public-scroll-toggle', false);

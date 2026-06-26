@@ -45,6 +45,7 @@ class VersaoMusicalController extends Controller
             'youtube_video_id' => ['nullable', 'string', 'max:255'],
             'letra_com_cifras' => ['required', 'string'],
             'ativo' => ['nullable', 'boolean'],
+            'notificar_equipe' => ['nullable', 'boolean'],
         ], [
             'tom_musical.in' => 'Escolha um tom musical padronizado da lista.',
         ]);
@@ -80,20 +81,28 @@ class VersaoMusicalController extends Controller
             ]
         );
 
-        $this->notificacaoSistemaService->enviarParaUsuariosOperacionaisAtivos(
-            evento: 'versao_musical_criada',
-            ator: $usuario,
-            contexto: [
-                'origem' => 'admin_versoes_musicais_store',
-                'origem_id' => $versaoMusical->id,
-                'titulo' => $musica->titulo,
-                'nome' => $versaoMusical->titulo ?: 'Versão principal',
-            ]
-        );
-
         $redirecionamento = redirect()
             ->route($this->routeName('musicas.show'), $musica)
             ->with('success', 'Versao musical cadastrada com sucesso.');
+
+        if ($request->boolean('notificar_equipe') && $usuario->ehAdminMaster()) {
+            if (config('notificacoes.sistema_ativa', false)) {
+                $this->notificacaoSistemaService->enviarParaUsuariosOperacionaisAtivos(
+                    evento: 'aviso_admin',
+                    ator: $usuario,
+                    contexto: [
+                        'origem' => 'admin_versoes_musicais_store',
+                        'origem_id' => $versaoMusical->id,
+                        'titulo' => 'Nova cifra cadastrada: ' . $musica->titulo,
+                        'mensagem' => 'Uma nova versao musical com cifras foi adicionada ao acervo do Voz & Cifra. Confira no painel antes de montar ou estudar repertorios.',
+                    ]
+                );
+
+                $redirecionamento->with('info', 'Aviso por e-mail solicitado para a equipe.');
+            } else {
+                $redirecionamento->with('warning', 'Versao salva, mas o envio de e-mails do sistema esta desativado nas configuracoes.');
+            }
+        }
 
         if ($resultadoCifras['houve_conversao']) {
             $redirecionamento->with('info', 'O texto foi convertido automaticamente para o formato interno com colchetes.');

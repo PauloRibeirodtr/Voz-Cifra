@@ -2,11 +2,14 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Enums\PapelIgreja;
+use App\Mail\NotificacaoSistemaMail;
 use App\Models\Igreja;
 use App\Models\Musica;
 use App\Models\Usuario;
 use App\Models\VersaoMusical;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class DuplicidadeInativacaoTest extends TestCase
@@ -108,6 +111,112 @@ class DuplicidadeInativacaoTest extends TestCase
             ->assertSessionHasNoErrors();
 
         $this->assertSame(2, Musica::query()->where('titulo', 'Vem Espirito Santo')->count());
+    }
+
+    public function test_cadastro_de_musica_nao_envia_email_sem_confirmacao_manual(): void
+    {
+        config(['notificacoes.sistema_ativa' => true]);
+        Mail::fake();
+
+        $adminMaster = Usuario::factory()->adminMaster()->create([
+            'primeiro_acesso' => false,
+        ]);
+        $igreja = Igreja::factory()->create();
+        $musico = Usuario::factory()->create([
+            'primeiro_acesso' => false,
+            'receber_notificacoes_email' => true,
+        ]);
+        $musico->adicionarPapel(PapelIgreja::MUSICO, $igreja);
+
+        $this
+            ->actingAs($adminMaster)
+            ->post(route('admin.musicas.store'), [
+                'titulo' => 'Canto sem disparo automatico',
+                'artista' => 'Equipe',
+                'letra' => 'Letra limpa',
+                'ativo' => '1',
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        Mail::assertNothingSent();
+    }
+
+    public function test_admin_master_pode_avisar_equipe_ao_cadastrar_musica(): void
+    {
+        config(['notificacoes.sistema_ativa' => true]);
+        Mail::fake();
+
+        $adminMaster = Usuario::factory()->adminMaster()->create([
+            'primeiro_acesso' => false,
+        ]);
+        $igreja = Igreja::factory()->create();
+        $musico = Usuario::factory()->create([
+            'primeiro_acesso' => false,
+            'receber_notificacoes_email' => true,
+        ]);
+        $musico->adicionarPapel(PapelIgreja::MUSICO, $igreja);
+
+        $this
+            ->actingAs($adminMaster)
+            ->post(route('admin.musicas.store'), [
+                'titulo' => 'Canto com aviso manual',
+                'artista' => 'Equipe',
+                'letra' => 'Letra limpa',
+                'ativo' => '1',
+                'notificar_equipe' => '1',
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('info', 'Aviso por e-mail solicitado para a equipe.');
+
+        Mail::assertSent(
+            NotificacaoSistemaMail::class,
+            fn (NotificacaoSistemaMail $mail): bool => $mail->evento === 'aviso_admin'
+                && ($mail->contexto['titulo'] ?? '') === 'Nova musica cadastrada: Canto com aviso manual'
+        );
+    }
+
+    public function test_admin_master_pode_avisar_equipe_ao_cadastrar_versao_musical(): void
+    {
+        config(['notificacoes.sistema_ativa' => true]);
+        Mail::fake();
+
+        $adminMaster = Usuario::factory()->adminMaster()->create([
+            'primeiro_acesso' => false,
+        ]);
+        $igreja = Igreja::factory()->create();
+        $musico = Usuario::factory()->create([
+            'primeiro_acesso' => false,
+            'receber_notificacoes_email' => true,
+        ]);
+        $musico->adicionarPapel(PapelIgreja::MUSICO, $igreja);
+
+        $musica = Musica::query()->create([
+            'titulo' => 'Canto com cifra avisada',
+            'artista' => 'Equipe',
+            'letra' => 'Letra limpa',
+            'criado_por' => $adminMaster->id,
+            'ativo' => true,
+        ]);
+
+        $this
+            ->actingAs($adminMaster)
+            ->post(route('admin.versoes-musicais.store', $musica), [
+                'titulo' => 'Tom original',
+                'tom_musical' => 'D',
+                'bpm' => '72',
+                'letra_com_cifras' => '[D]Letra limpa',
+                'ativo' => '1',
+                'notificar_equipe' => '1',
+            ])
+            ->assertRedirect(route('admin.musicas.show', $musica))
+            ->assertSessionHas('info', 'Aviso por e-mail solicitado para a equipe.');
+
+        Mail::assertSent(
+            NotificacaoSistemaMail::class,
+            fn (NotificacaoSistemaMail $mail): bool => $mail->evento === 'aviso_admin'
+                && ($mail->contexto['titulo'] ?? '') === 'Nova cifra cadastrada: Canto com cifra avisada'
+        );
     }
 
     public function test_duplo_envio_da_mesma_musica_e_processado_uma_unica_vez(): void

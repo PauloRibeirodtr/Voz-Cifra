@@ -1867,3 +1867,136 @@ body[data-public-mode='musicos'] .public-scroll-dock.is-running {
     }
 }
 
+.public-share-tools {
+    position: relative;
+    z-index: 40;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: flex-start;
+    margin-top: 12px;
+}
+
+.public-share-trigger {
+    gap: 8px;
+    min-height: 42px;
+    padding-inline: 13px 15px;
+    list-style: none;
+    white-space: nowrap;
+}
+
+.public-share-trigger::-webkit-details-marker {
+    display: none;
+}
+
+.public-share-trigger__icon,
+.public-share-trigger__icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.public-share-trigger__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.public-share-trigger__icon svg {
+    fill: currentColor;
+}
+
+.public-share-menu {
+    position: absolute;
+    left: 0;
+    right: auto;
+    top: calc(100% + 8px);
+    z-index: 80;
+    display: grid;
+    min-width: 12rem;
+    overflow: hidden;
+    border: 1px solid rgba(255, 217, 157, 0.22);
+    border-radius: 18px;
+    background: rgba(18, 9, 9, 0.98);
+    box-shadow: var(--shadow);
+    padding: 6px;
+}
+
+.public-share-menu[hidden] {
+    display: none;
+}
+
+.public-share-tools:not([open]) .public-share-menu {
+    display: none;
+}
+
+.public-share-menu__item {
+    display: flex;
+    align-items: center;
+    min-height: 42px;
+    width: 100%;
+    border: 0;
+    border-radius: 13px;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 900;
+    padding: 0 12px;
+    text-align: left;
+    text-decoration: none;
+}
+
+.public-share-menu__item:hover,
+.public-share-menu__item:focus-visible {
+    background: rgba(255, 217, 157, 0.12);
+    outline: none;
+}
+
+.public-share-menu__item--whatsapp {
+    color: #bbf7d0;
+}
+
+.public-share-feedback {
+    position: absolute;
+    left: 0;
+    right: auto;
+    top: calc(100% + 8px);
+    z-index: 81;
+    border: 1px solid rgba(255, 217, 157, 0.24);
+    border-radius: 999px;
+    background: rgba(18, 9, 9, 0.96);
+    color: var(--accent);
+    box-shadow: var(--shadow);
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .public-share-tools {
+        display: flex;
+        width: 100%;
+    }
+
+    .public-share-trigger {
+        min-height: 40px;
+        padding-inline: 12px 14px;
+    }
+
+    .public-share-menu,
+    .public-share-feedback {
+        position: static;
+        margin-top: 8px;
+    }
+
+    .public-share-menu {
+        width: min(100%, 14rem);
+    }
+
+    .public-share-feedback {
+        width: fit-content;
+    }
+}
+

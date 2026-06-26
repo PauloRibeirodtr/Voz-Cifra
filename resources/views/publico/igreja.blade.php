@@ -1,12 +1,82 @@
+@php
+    $cidadeEstadoMeta = trim(($igreja->cidade ?? '') . ' - ' . ($igreja->estado ?? ''), ' -');
+    $celebracaoMetaId = (int) ($celebracaoSelecionadaIdParam ?? 0);
+    $canonicalPublico = $celebracaoMetaId > 0
+        ? route('igrejas.public.show', ['slug' => $igreja->slug, 'celebracao' => $celebracaoMetaId])
+        : route('igrejas.public.show', ['slug' => $igreja->slug]);
+    $tituloPublico = $missaPublica
+        ? $missaPublica->titulo . ' - ' . $igreja->nome . ' | Voz & Cifra'
+        : $igreja->nome . ' | Missas e repertórios | Voz & Cifra';
+    $descricaoPublica = trim('Acompanhe missas, celebrações e repertórios publicados por ' . $igreja->nome . ($cidadeEstadoMeta !== '' ? ' em ' . $cidadeEstadoMeta : '') . '.');
+    $imagemPublica = $igreja->imagemUrl();
+    $dadosEstruturados = [
+        '@context' => 'https://schema.org',
+        '@type' => 'Place',
+        'name' => $igreja->nome,
+        'url' => route('igrejas.public.show', ['slug' => $igreja->slug]),
+        'image' => $imagemPublica,
+        'address' => array_filter([
+            '@type' => 'PostalAddress',
+            'streetAddress' => trim(($igreja->endereco ?? '') . ($igreja->numero ? ', ' . $igreja->numero : ''), ' ,'),
+            'addressLocality' => $igreja->cidade,
+            'addressRegion' => $igreja->estado,
+            'addressCountry' => 'BR',
+        ]),
+        'telephone' => $igreja->telefone_secretaria,
+    ];
+
+    if ($missaPublica) {
+        $dadosEstruturados = [
+            '@context' => 'https://schema.org',
+            '@type' => 'Event',
+            'name' => $missaPublica->titulo,
+            'url' => $canonicalPublico,
+            'startDate' => $missaPublica->dataHoraInicio('America/Cuiaba')->toIso8601String(),
+            'endDate' => $missaPublica->dataHoraFim('America/Cuiaba')->toIso8601String(),
+            'eventAttendanceMode' => 'https://schema.org/OfflineEventAttendanceMode',
+            'eventStatus' => 'https://schema.org/EventScheduled',
+            'location' => [
+                '@type' => 'Place',
+                'name' => $igreja->nome,
+                'address' => array_filter([
+                    '@type' => 'PostalAddress',
+                    'streetAddress' => trim(($igreja->endereco ?? '') . ($igreja->numero ? ', ' . $igreja->numero : ''), ' ,'),
+                    'addressLocality' => $igreja->cidade,
+                    'addressRegion' => $igreja->estado,
+                    'addressCountry' => 'BR',
+                ]),
+            ],
+            'organizer' => [
+                '@type' => 'Organization',
+                'name' => $igreja->nome,
+                'url' => route('igrejas.public.show', ['slug' => $igreja->slug]),
+            ],
+        ];
+    }
+@endphp
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $igreja->nome }} | Voz &amp; Cifra</title>
+    <title>{{ $tituloPublico }}</title>
+    <meta name="description" content="{{ $descricaoPublica }}">
+    <link rel="canonical" href="{{ $canonicalPublico }}">
+    <meta property="og:type" content="{{ $missaPublica ? 'event' : 'website' }}">
+    <meta property="og:title" content="{{ $tituloPublico }}">
+    <meta property="og:description" content="{{ $descricaoPublica }}">
+    <meta property="og:url" content="{{ $canonicalPublico }}">
+    <meta property="og:image" content="{{ $imagemPublica }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $tituloPublico }}">
+    <meta name="twitter:description" content="{{ $descricaoPublica }}">
+    <meta name="twitter:image" content="{{ $imagemPublica }}">
     <link rel="icon" type="image/png" href="{{ asset('logo/final.png') }}">
     <link rel="manifest" href="{{ asset('site.webmanifest') }}">
     <meta name="theme-color" content="#4a2b22">
+    <script type="application/ld+json">
+        {!! json_encode($dadosEstruturados, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+    </script>
     @vite(['resources/css/publico/igreja.css', 'resources/js/publico/igreja.js'])
 </head>
 <body data-contrast="high" data-public-mode="fieis">
@@ -41,6 +111,9 @@
             ?? $programacaoPublica->first()['id']
             ?? 0
         );
+        $urlCompartilhamento = $missaPublica
+            ? route('igrejas.public.show', ['slug' => $igreja->slug, 'celebracao' => $missaPublica->id]) . '#celebracao-publica'
+            : route('igrejas.public.show', ['slug' => $igreja->slug]);
     @endphp
 
     <main class="page">
@@ -172,6 +245,11 @@
                                 <p class="celebration-meta-text">
                                     {{ $missaPublica->data_missa->format('d/m/Y') }} • {{ substr((string) $missaPublica->hora_inicio, 0, 5) }}
                                 </p>
+                                @include('publico.partials.share-tools', [
+                                    'url' => $urlCompartilhamento,
+                                    'title' => $missaPublica->titulo . ' | ' . $igreja->nome,
+                                    'text' => 'Acompanhe a celebração ' . $missaPublica->titulo . ' da ' . $igreja->nome . ' no Voz & Cifra:',
+                                ])
                             </div>
                         </div>
                         <div class="celebration-header__right">

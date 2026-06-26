@@ -1,6 +1,7 @@
 @php
     $classeInput = 'mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 shadow-sm focus:border-green-600 focus:ring-2 focus:ring-green-100';
     $letraInicial = old('letra_com_cifras', $versaoMusical->letra_com_cifras ?? $musica->letra ?? '');
+    $modo = $versaoMusical ? 'edit' : 'create';
 @endphp
 
 @push('styles')
@@ -102,6 +103,25 @@
                     <input id="ativo" type="checkbox" name="ativo" value="1" {{ old('ativo', $versaoMusical->ativo ?? true) ? 'checked' : '' }} class="rounded border-gray-300 text-green-700 focus:ring-green-500" />
                     <label for="ativo" class="text-sm font-medium text-gray-700">Versao ativa</label>
                 </div>
+
+                @if ($modo === 'create' && auth()->user()?->ehAdminMaster())
+                    <div class="rounded-2xl border border-amber-100 bg-amber-50/70 p-4">
+                        <label class="flex items-start gap-3">
+                            <input type="hidden" name="notificar_equipe" value="0" />
+                            <input
+                                type="checkbox"
+                                name="notificar_equipe"
+                                value="1"
+                                @checked(old('notificar_equipe', false))
+                                class="mt-1 rounded border-amber-300 text-amber-700 focus:ring-amber-200"
+                            />
+                            <span>
+                                <span class="block text-sm font-bold text-amber-950">Avisar equipe por e-mail agora</span>
+                                <span class="mt-1 block text-xs leading-relaxed text-amber-800">Opcional. Use quando essa cifra ja deve ser divulgada para estudo ou montagem de repertorio.</span>
+                            </span>
+                        </label>
+                    </div>
+                @endif
             </div>
         </div>
 

@@ -102,6 +102,59 @@ class IgrejaPublicaFieisTest extends TestCase
             ->assertDontSee($igreja->cnpj);
     }
 
+    public function test_paginas_publicas_expoem_metadados_para_busca_e_compartilhamento(): void
+    {
+        $igreja = Igreja::factory()->create([
+            'nome' => 'Paroquia Nossa Senhora das Merces',
+            'slug' => 'igreja-nossa-senhora-das-merces',
+            'cidade' => 'Ladario',
+            'estado' => 'MS',
+            'ativo' => true,
+        ]);
+
+        Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa Dominical',
+            'data_missa' => now('America/Cuiaba')->addDay()->toDateString(),
+            'hora_inicio' => '19:00:00',
+            'hora_fim' => '20:00:00',
+            'publica_para_fieis' => true,
+            'publica_para_musicos' => true,
+            'ativo' => true,
+        ]);
+
+        $this
+            ->get(route('igrejas.public.show', ['slug' => $igreja->slug]))
+            ->assertOk()
+            ->assertSee('<meta name="description"', false)
+            ->assertSee('<link rel="canonical"', false)
+            ->assertSee('property="og:title"', false)
+            ->assertSee('application/ld+json', false)
+            ->assertSee('Paroquia Nossa Senhora das Merces');
+    }
+
+    public function test_robots_e_sitemap_publicos_sao_gerados(): void
+    {
+        $igreja = Igreja::factory()->create([
+            'nome' => 'Paroquia Sao Jose',
+            'slug' => 'paroquia-sao-jose',
+            'ativo' => true,
+        ]);
+
+        $this
+            ->get(route('robots'))
+            ->assertOk()
+            ->assertSee('Disallow: /admin')
+            ->assertSee(route('sitemap'));
+
+        $this
+            ->get(route('sitemap'))
+            ->assertOk()
+            ->assertSee('<urlset', false)
+            ->assertSee(route('root'), false)
+            ->assertSee(route('igrejas.public.show', ['slug' => $igreja->slug]), false);
+    }
+
     public function test_link_publico_do_fiel_exibe_repertorio_sem_cifras(): void
     {
         CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-04-27 08:30:00', 'America/Cuiaba'));
@@ -145,6 +198,8 @@ class IgrejaPublicaFieisTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Missa com Cantos');
+        $response->assertSee('Copiar link');
+        $response->assertSee('WhatsApp');
         $response->assertSee('Senhor, tende piedade');
         $response->assertSee('Cristo, tende piedade');
         $response->assertDontSee('[Am]');

@@ -96,6 +96,7 @@
     </div>
 
     @include('partials.help-tour')
+    @include('partials.flash-toasts')
     <script src="{{ asset('js/admin/layout.js') }}"></script>
     @stack('scripts')
 </body>

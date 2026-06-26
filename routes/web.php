@@ -35,6 +35,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('root');
 Route::get('/desenvolvedores', [HomeController::class, 'desenvolvedores'])->name('developers');
+Route::get('/robots.txt', [HomeController::class, 'robots'])->name('robots');
+Route::get('/sitemap.xml', [HomeController::class, 'sitemap'])->name('sitemap');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

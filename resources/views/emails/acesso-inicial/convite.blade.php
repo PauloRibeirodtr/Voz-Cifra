@@ -68,8 +68,8 @@
                 >
                     Definir minha senha
                 </a>
-                <p style="margin:12px 0 0; word-break:break-all; color:#57534e; font-size:12px;">
-                    Link direto: <a href="{{ $definirSenhaUrl }}" style="color:#2563eb;">{{ $definirSenhaUrl }}</a>
+                <p style="margin:12px 0 0; color:#57534e; font-size:12px;">
+                    Por seguranca, este link nao aparece escrito no e-mail. Se o botao nao abrir, solicite um novo convite ao administrador.
                 </p>
             </div>
 

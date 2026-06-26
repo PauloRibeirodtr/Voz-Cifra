@@ -135,19 +135,30 @@ class MusicaController extends Controller
             ]
         );
 
-        $this->notificacaoSistemaService->enviarParaUsuariosOperacionaisAtivos(
-            evento: 'musica_cadastrada',
-            ator: $usuario,
-            contexto: [
-                'origem' => 'admin_musicas_store',
-                'origem_id' => $musica->id,
-                'titulo' => $musica->titulo,
-            ]
-        );
-
-        return redirect()
+        $redirecionamento = redirect()
             ->route($this->routeName('musicas.show'), $musica)
             ->with('success', 'Musica cadastrada com sucesso. Quando quiser, use o botao Cadastrar cifra para incluir tom, bpm e letra com cifras.');
+
+        if ($dados['notificar_equipe'] && $usuario->ehAdminMaster()) {
+            if (config('notificacoes.sistema_ativa', false)) {
+                $this->notificacaoSistemaService->enviarParaUsuariosOperacionaisAtivos(
+                    evento: 'aviso_admin',
+                    ator: $usuario,
+                    contexto: [
+                        'origem' => 'admin_musicas_store',
+                        'origem_id' => $musica->id,
+                        'titulo' => 'Nova musica cadastrada: ' . $musica->titulo,
+                        'mensagem' => 'Uma nova musica foi adicionada ao acervo do Voz & Cifra. Confira no painel quando for montar repertorios.',
+                    ]
+                );
+
+                $redirecionamento->with('info', 'Aviso por e-mail solicitado para a equipe.');
+            } else {
+                $redirecionamento->with('warning', 'Musica salva, mas o envio de e-mails do sistema esta desativado nas configuracoes.');
+            }
+        }
+
+        return $redirecionamento;
     }
 
     public function show(Musica $musica): View
@@ -281,6 +292,7 @@ class MusicaController extends Controller
                 'momento_liturgico_id' => ['nullable', Rule::exists('classificacoes_liturgicas', 'id')->where(fn ($query) => $query->where('tipo', 'momento'))],
                 'ativo' => ['nullable', 'boolean'],
                 'confirmar_duplicidade' => ['nullable', 'boolean'],
+                'notificar_equipe' => ['nullable', 'boolean'],
             ],
             [
                 'titulo.required' => 'Informe o titulo da musica base.',
@@ -290,6 +302,7 @@ class MusicaController extends Controller
             ]
         );
 
+        $dados['notificar_equipe'] = (bool) ($dados['notificar_equipe'] ?? false);
         $dados['titulo'] = trim((string) $dados['titulo']);
         $dados['artista'] = isset($dados['artista']) && $dados['artista'] !== null
             ? trim((string) $dados['artista'])
