@@ -1107,3 +1107,121 @@ body:not(.public-theme-dark) .public-share-feedback {
     border-color: rgba(111, 74, 38, 0.2);
     color: #6f4218;
 }
+
+/* Ajuste fino público/mobile: melhora leitura, toque e botões sem alterar o fluxo da missa. */
+.public-tool-button,
+.reading-settings > summary,
+.public-theme-toggle,
+.public-share-trigger,
+.celebration-nav button,
+.home-floating__link {
+    touch-action: manipulation;
+}
+
+.public-tool-button:focus-visible,
+.reading-settings > summary:focus-visible,
+.public-theme-toggle:focus-visible,
+.public-share-trigger:focus-visible,
+.celebration-nav button:focus-visible,
+.home-floating__link:focus-visible {
+    outline: 3px solid rgba(255, 217, 157, 0.72);
+    outline-offset: 3px;
+}
+
+.celebration-title,
+.hero-church,
+.section-title,
+.card-title,
+.empty-title {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+}
+
+.celebration-section {
+    padding-bottom: max(5.5rem, calc(env(safe-area-inset-bottom, 0px) + 5rem));
+}
+
+.celebration-back,
+.reading-settings > summary,
+.public-theme-toggle {
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    min-height: 48px;
+    padding: 0;
+}
+
+body:not(.public-theme-dark) {
+    --bg-1: #d0bea6;
+    --bg-2: #e1ceb3;
+    --bg-3: #c5ad91;
+    --panel: rgba(246, 231, 210, 0.98);
+    --panel-soft: rgba(240, 218, 188, 0.98);
+    --panel-strong: rgba(230, 199, 159, 0.98);
+}
+
+body:not(.public-theme-dark) .lyrics .lyrics-stanza--refrao,
+body:not(.public-theme-dark) .lyrics .lyrics-stanza {
+    box-shadow: inset 0 0 0 1px rgba(111, 74, 38, 0.06);
+}
+
+@media (max-width: 640px) {
+    .page {
+        padding: 6px 5px max(108px, calc(env(safe-area-inset-bottom, 0px) + 100px));
+    }
+
+    .section,
+    .celebration-section,
+    .program-section {
+        border-radius: 20px;
+    }
+
+    .celebration-header {
+        gap: 12px;
+        padding-right: 3.1rem;
+    }
+
+    .celebration-header__left {
+        min-width: 0;
+    }
+
+    .celebration-header__left > div {
+        min-width: 0;
+    }
+
+    .celebration-title {
+        font-size: clamp(27px, 8.1vw, 34px);
+        line-height: 1.02;
+        letter-spacing: -0.04em;
+    }
+
+    .celebration-meta-text {
+        font-size: 14px;
+    }
+
+    .celebration-back,
+    .reading-settings > summary,
+    .public-theme-toggle,
+    .home-floating__link {
+        width: 46px;
+        min-width: 46px;
+        height: 46px;
+        min-height: 46px;
+    }
+
+    .celebration-header__right {
+        right: max(12px, env(safe-area-inset-right, 0px));
+        bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    }
+
+    .home-floating {
+        left: max(12px, env(safe-area-inset-left, 0px));
+        bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    }
+
+    .lyrics {
+        font-size: calc(18px * var(--public-font-scale));
+        line-height: 1.74;
+    }
+}

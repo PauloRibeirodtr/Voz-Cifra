@@ -2000,3 +2000,159 @@ body[data-public-mode='musicos'] .public-scroll-dock.is-running {
     }
 }
 
+/* Ajuste fino público/mobile: melhora leitura, toque e botões sem alterar auto-rolagem. */
+.public-tool-button,
+.reading-settings > summary,
+.public-theme-toggle,
+.public-share-trigger,
+.celebration-nav button,
+.home-floating__link {
+    touch-action: manipulation;
+}
+
+.public-tool-button:focus-visible,
+.reading-settings > summary:focus-visible,
+.public-theme-toggle:focus-visible,
+.public-share-trigger:focus-visible,
+.celebration-nav button:focus-visible,
+.home-floating__link:focus-visible {
+    outline: 3px solid rgba(255, 217, 157, 0.72);
+    outline-offset: 3px;
+}
+
+.celebration-title,
+.hero-church,
+.hero-title,
+.section-title,
+.card-title {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+}
+
+body:not(.public-theme-dark) {
+    --bg-1: #d0bea6;
+    --bg-2: #e1ceb3;
+    --bg-3: #c5ad91;
+    --panel: rgba(246, 231, 210, 0.98);
+    --panel-soft: rgba(240, 218, 188, 0.98);
+    --panel-strong: rgba(230, 199, 159, 0.98);
+    --text: #241610;
+    --muted: #6f5b4a;
+    --accent: #9a6426;
+    --line: rgba(111, 74, 38, 0.2);
+    background:
+        radial-gradient(circle at top right, rgba(121, 76, 34, 0.16), transparent 24rem),
+        radial-gradient(circle at left bottom, rgba(92, 58, 28, 0.14), transparent 28rem),
+        linear-gradient(145deg, var(--bg-1), var(--bg-2) 48%, var(--bg-3)) !important;
+}
+
+body:not(.public-theme-dark) .section,
+body:not(.public-theme-dark) .program-section,
+body:not(.public-theme-dark) .celebration-section,
+body:not(.public-theme-dark) .celebration-shell {
+    background: var(--panel) !important;
+    border-color: var(--line) !important;
+}
+
+body:not(.public-theme-dark) .celebration-item,
+body:not(.public-theme-dark) .card,
+body:not(.public-theme-dark) .empty-state,
+body:not(.public-theme-dark) .public-history-quick {
+    background: var(--panel-soft) !important;
+    border-color: rgba(111, 74, 38, 0.18) !important;
+    color: var(--text) !important;
+}
+
+body:not(.public-theme-dark) .lyrics,
+body:not(.public-theme-dark) .cifra-letra,
+body:not(.public-theme-dark) .celebration-title,
+body:not(.public-theme-dark) .hero-church,
+body:not(.public-theme-dark) .hero-title,
+body:not(.public-theme-dark) .section-title,
+body:not(.public-theme-dark) .card-title {
+    color: var(--text) !important;
+}
+
+body:not(.public-theme-dark) .lyrics-stanza,
+body:not(.public-theme-dark) .lyrics .cifra-linha--refrao {
+    background: rgba(238, 212, 177, 0.68) !important;
+    border-color: rgba(154, 100, 38, 0.28) !important;
+}
+
+body:not(.public-theme-dark) .chord-mark,
+body:not(.public-theme-dark) .lyrics .cifra-acorde,
+body:not(.public-theme-dark) .lyrics .cifra-marcacao,
+body:not(.public-theme-dark) .lyrics-section-label {
+    background: rgba(185, 133, 53, 0.14) !important;
+    border-color: rgba(154, 100, 38, 0.2) !important;
+    color: #8a541d !important;
+}
+
+.celebration-back,
+.reading-settings > summary,
+.public-theme-toggle {
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    min-height: 48px;
+    padding: 0;
+}
+
+body[data-public-mode='musicos'] .celebration-section {
+    padding-bottom: max(7rem, calc(env(safe-area-inset-bottom, 0px) + 6.5rem));
+}
+
+@media (max-width: 719px) {
+    body[data-public-mode='musicos'] .page {
+        padding-bottom: max(124px, calc(env(safe-area-inset-bottom, 0px) + 116px));
+    }
+
+    body[data-public-mode='musicos'] .section,
+    body[data-public-mode='musicos'] .celebration-section,
+    body[data-public-mode='musicos'] .program-section {
+        border-radius: 20px;
+    }
+
+    body[data-public-mode='musicos'] .celebration-header {
+        gap: 12px;
+        padding-right: 3.1rem;
+    }
+
+    body[data-public-mode='musicos'] .celebration-header__left,
+    body[data-public-mode='musicos'] .celebration-header__left > div {
+        min-width: 0;
+    }
+
+    body[data-public-mode='musicos'] .celebration-title {
+        font-size: clamp(27px, 8.1vw, 34px);
+        line-height: 1.02;
+        letter-spacing: -0.04em;
+    }
+
+    body[data-public-mode='musicos'] .celebration-back,
+    body[data-public-mode='musicos'] .reading-settings > summary,
+    .public-theme-toggle,
+    .home-floating__link {
+        width: 46px;
+        min-width: 46px;
+        height: 46px;
+        min-height: 46px;
+    }
+
+    body[data-public-mode='musicos'] .reading-settings {
+        right: max(12px, env(safe-area-inset-right, 0px));
+        bottom: max(82px, calc(env(safe-area-inset-bottom, 0px) + 82px));
+    }
+
+    .home-floating {
+        left: max(12px, env(safe-area-inset-left, 0px));
+        bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    }
+
+    body[data-public-mode='musicos'] .lyrics {
+        font-size: calc(16px * var(--celebration-font-scale, 1));
+        line-height: 1.76;
+    }
+}
+

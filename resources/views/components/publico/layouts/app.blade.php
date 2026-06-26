@@ -559,6 +559,7 @@
             }
         });
     </script>
+    @include('partials.flash-toasts')
     @stack('scripts')
 </body>
 </html>
