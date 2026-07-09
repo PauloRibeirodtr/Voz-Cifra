@@ -21,7 +21,7 @@
         <a href="{{ $rotaCancelar }}" class="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 font-semibold text-gray-700 hover:bg-gray-50">
             Cancelar
         </a>
-        <button type="submit" class="inline-flex items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800">
+        <button type="submit" class="inline-flex cursor-pointer items-center justify-center rounded-xl bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800">
             {{ $textoBotaoSalvar }}
         </button>
     </div>

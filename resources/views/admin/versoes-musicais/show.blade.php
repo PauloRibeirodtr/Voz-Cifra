@@ -19,14 +19,14 @@
         .preview-admin-box { --admin-escala-fonte: 1; }
         .preview-musico-scroll { --escala-fonte: 1; max-height: 82vh; min-height: 58vh; overflow-y: auto; scroll-behavior: smooth; background: linear-gradient(180deg, #ffffff, #fffdf9); }
         .preview-fiel { --escala-fonte: 1; }
-        .cifra-linha { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.18rem; margin-bottom: 0.72rem; }
-        .cifra-linha--refrao { border-left: 4px solid #f59e0b; background: linear-gradient(90deg, rgba(255, 251, 235, 0.9), rgba(255, 251, 235, 0)); margin: 0.18rem 0 0.74rem; padding: 0.42rem 0 0.42rem 0.85rem; border-radius: 0; }
+        .cifra-linha { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.14rem; margin-bottom: 0.34rem; }
+        .cifra-linha--refrao { border-left: 4px solid #f59e0b; background: linear-gradient(90deg, rgba(255, 251, 235, 0.9), rgba(255, 251, 235, 0)); margin: 0.08rem 0 0.38rem; padding: 0.28rem 0 0.28rem 0.72rem; border-radius: 0; }
         .cifra-linha--refrao .cifra-letra { font-weight: 800; color: #111827; }
-        .cifra-segmento { display: inline-flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; min-height: 2.85rem; }
-        .cifra-acordes { min-height: 1.1rem; margin-bottom: 0.02rem; color: #f97316; font-weight: 800; font-size: calc(0.95rem * var(--escala-fonte)); line-height: calc(1rem * var(--escala-fonte)); letter-spacing: 0.01em; white-space: pre; }
+        .cifra-segmento { display: inline-flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; min-height: 2.08rem; }
+        .cifra-acordes { min-height: 0.74rem; margin-bottom: -0.04rem; color: #b91c1c; font-weight: 800; font-size: calc(0.9rem * var(--escala-fonte)); line-height: calc(0.86rem * var(--escala-fonte)); letter-spacing: 0.01em; white-space: pre; }
         .cifra-acorde { display: inline-block; cursor: pointer; padding: 0 0.05rem; border-radius: 0.35rem; transition: background-color 0.15s ease, color 0.15s ease; }
-        .cifra-acorde:hover, .cifra-acorde.ativa { background: rgba(249, 115, 22, 0.14); color: #c2410c; }
-        .cifra-letra { color: #111827; font-size: calc(1.12rem * var(--escala-fonte)); line-height: calc(1.9rem * var(--escala-fonte)); white-space: pre-wrap; }
+        .cifra-acorde:hover, .cifra-acorde.ativa { background: rgba(185, 28, 28, 0.12); color: #7f1d1d; }
+        .cifra-letra { color: #111827; font-size: calc(1.12rem * var(--escala-fonte)); line-height: calc(1.42rem * var(--escala-fonte)); white-space: pre-wrap; }
         .cifra-marcacao { display: inline-flex; align-items: center; border-radius: 9999px; background: #e5e7eb; color: #374151; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 0.85rem; margin: 1rem 0 0.75rem; }
         .cifra-marcacao--refrao { background: #fef3c7; color: #92400e; font-weight: 950; box-shadow: inset 0 0 0 1px rgba(217, 119, 6, 0.22); }
         .preview-fiel { display: grid; gap: 0.65rem; }
@@ -69,15 +69,15 @@
         .admin-musico-video-frame { aspect-ratio: 16 / 9; background: #111827; }
         .admin-musico-video-frame iframe { display: block; width: 100%; height: 100%; border: 0; }
         .admin-musico-cifra { max-height: 68vh; min-height: 56vh; overflow-y: auto; border: 1px solid #ead6b3; border-radius: 1.15rem; background: #ffffff !important; padding: 1.15rem; color: #172033; scroll-behavior: smooth; }
-        .admin-musico-cifra .cifra-linha { margin-bottom: .72rem; }
-        .admin-musico-cifra .cifra-linha--refrao { border-left: 3px solid #f59e0b; border-radius: .65rem; background: linear-gradient(90deg, #fff7ed 0%, #ffffff 74%) !important; margin: .12rem 0 .72rem; padding: .35rem 0 .35rem .8rem; }
+        .admin-musico-cifra .cifra-linha { margin-bottom: .34rem; }
+        .admin-musico-cifra .cifra-linha--refrao { border-left: 3px solid #f59e0b; border-radius: .65rem; background: linear-gradient(90deg, #fff7ed 0%, #ffffff 74%) !important; margin: .08rem 0 .36rem; padding: .28rem 0 .28rem .68rem; }
         .admin-musico-cifra .cifra-linha--refrao .cifra-letra { color: #172033 !important; font-weight: 700; }
-        .admin-musico-cifra .cifra-linha--refrao .cifra-acordes { color: #ea580c !important; }
-        .admin-musico-cifra .cifra-segmento { min-height: 2.65rem; }
-        .admin-musico-cifra .cifra-acordes { color: #ea580c !important; }
+        .admin-musico-cifra .cifra-linha--refrao .cifra-acordes { color: #b91c1c !important; }
+        .admin-musico-cifra .cifra-segmento { min-height: 2.04rem; }
+        .admin-musico-cifra .cifra-acordes { color: #b91c1c !important; }
         .admin-musico-cifra .cifra-letra { color: #172033; }
-        .admin-musico-cifra .cifra-linha--acordes { display: block; padding-left: var(--cifra-indent, 0); margin: .12rem 0 .42rem; }
-        .admin-musico-cifra .cifra-linha--acordes .cifra-acordes { display: inline-flex; flex-wrap: wrap; gap: .75rem; min-height: auto; line-height: 1.35; }
+        .admin-musico-cifra .cifra-linha--acordes { display: block; padding-left: var(--cifra-indent, 0); margin: .06rem 0 .22rem; }
+        .admin-musico-cifra .cifra-linha--acordes .cifra-acordes { display: inline-flex; flex-wrap: wrap; gap: .58rem; min-height: auto; line-height: 1.12; }
         .admin-musico-cifra .cifra-marcacao { background: #ecfdf5; color: #047857; }
         .preview-admin-texto { font-size: calc(0.95rem * var(--admin-escala-fonte)); line-height: calc(1.75rem * var(--admin-escala-fonte)); }
         @media (min-width: 1280px) {
@@ -90,10 +90,10 @@
         @media (max-width: 767px) {
             .abas-modo { grid-template-columns: 1fr; width: 100%; }
             .preview-musico-scroll { max-height: none; }
-            .cifra-linha { display: block; margin-bottom: 0.8rem; }
-            .cifra-segmento { display: inline-flex; min-height: 2.25rem; max-width: 100%; }
-            .cifra-acordes { font-size: calc(0.88rem * var(--escala-fonte)); }
-            .cifra-letra { font-size: calc(1rem * var(--escala-fonte)); line-height: calc(1.62rem * var(--escala-fonte)); }
+            .cifra-linha { display: block; margin-bottom: 0.42rem; }
+            .cifra-segmento { display: inline-flex; min-height: 1.88rem; max-width: 100%; }
+            .cifra-acordes { font-size: calc(0.86rem * var(--escala-fonte)); line-height: calc(0.84rem * var(--escala-fonte)); }
+            .cifra-letra { font-size: calc(1rem * var(--escala-fonte)); line-height: calc(1.3rem * var(--escala-fonte)); }
             .tooltip-acorde { width: 180px; padding: 0.65rem; border-radius: 0.9rem; }
             .tooltip-acorde svg { max-width: 140px; margin: 0 auto; display: block; }
         }

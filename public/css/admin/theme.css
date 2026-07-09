@@ -1000,19 +1000,6 @@ body.theme-dark .shadow-2xl {
     box-shadow: var(--admin-shadow) !important;
 }
 
-body.theme-dark input,
-body.theme-dark select,
-body.theme-dark textarea {
-    background-color: var(--admin-surface) !important;
-    color: var(--admin-text) !important;
-    border-color: var(--admin-border-strong) !important;
-}
-
-body.theme-dark input::placeholder,
-body.theme-dark textarea::placeholder {
-    color: var(--admin-text-muted) !important;
-}
-
 body.theme-dark .bg-emerald-50,
 body.theme-dark .bg-green-50,
 body.theme-dark .bg-blue-50,
@@ -1143,14 +1130,6 @@ body.theme-dark .music-card-action:hover {
 body.theme-dark .music-btn-primary {
     background: #047857 !important;
     color: #ffffff !important;
-}
-
-body.theme-dark .admin-input,
-body.theme-dark .admin-select,
-body.theme-dark .admin-textarea {
-    background: var(--admin-surface) !important;
-    color: var(--admin-text) !important;
-    border-color: var(--admin-border-strong) !important;
 }
 
 body.theme-dark .admin-btn-secondary {
@@ -1617,4 +1596,112 @@ body.theme-dark .draft-recovery {
     .admin-sidebar {
         width: min(20rem, calc(100vw - 2rem));
     }
+}
+
+body:not(.theme-dark) .admin-section-card,
+body.theme-light .admin-section-card,
+body:not(.theme-dark) form > .admin-panel,
+body.theme-light form > .admin-panel,
+body:not(.theme-dark) form > .admin-filter-surface,
+body.theme-light form > .admin-filter-surface,
+body:not(.theme-dark) form > .bg-white,
+body.theme-light form > .bg-white {
+    position: relative;
+    background: linear-gradient(180deg, #f1e7da 0%, #eadfce 100%) !important;
+    border-color: rgba(115, 85, 52, 0.36) !important;
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.84) inset,
+        0 18px 42px rgba(61, 39, 18, 0.16),
+        0 2px 8px rgba(61, 39, 18, 0.08) !important;
+}
+
+body:not(.theme-dark) .admin-section-card::before,
+body.theme-light .admin-section-card::before,
+body:not(.theme-dark) form > .admin-panel::before,
+body.theme-light form > .admin-panel::before,
+body:not(.theme-dark) form > .admin-filter-surface::before,
+body.theme-light form > .admin-filter-surface::before,
+body:not(.theme-dark) form > .bg-white::before,
+body.theme-light form > .bg-white::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: inset 0 0 0 1px rgba(115, 85, 52, 0.08);
+}
+
+body:not(.theme-dark) input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+body:not(.theme-dark) select,
+body:not(.theme-dark) textarea,
+body:not(.theme-dark) .admin-input,
+body:not(.theme-dark) .admin-select,
+body:not(.theme-dark) .admin-textarea,
+body.theme-light input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+body.theme-light select,
+body.theme-light textarea,
+body.theme-light .admin-input,
+body.theme-light .admin-select,
+body.theme-light .admin-textarea {
+    background-color: #fffefa !important;
+    border-color: rgba(115, 85, 52, 0.34) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        0 1px 2px rgba(61, 39, 18, 0.08),
+        0 12px 24px rgba(61, 39, 18, 0.08) !important;
+}
+
+body:not(.theme-dark) input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]):focus,
+body:not(.theme-dark) select:focus,
+body:not(.theme-dark) textarea:focus,
+body:not(.theme-dark) .admin-input:focus,
+body:not(.theme-dark) .admin-select:focus,
+body:not(.theme-dark) .admin-textarea:focus,
+body.theme-light input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]):focus,
+body.theme-light select:focus,
+body.theme-light textarea:focus,
+body.theme-light .admin-input:focus,
+body.theme-light .admin-select:focus,
+body.theme-light .admin-textarea:focus {
+    border-color: rgba(108, 74, 33, 0.68) !important;
+    box-shadow:
+        0 0 0 3px rgba(214, 173, 108, 0.28),
+        0 14px 28px rgba(61, 39, 18, 0.12) !important;
+}
+
+body.theme-dark input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+body.theme-dark select,
+body.theme-dark textarea,
+body.theme-dark .admin-input,
+body.theme-dark .admin-select,
+body.theme-dark .admin-textarea {
+    background-color: #130b0a !important;
+    border-color: rgba(248, 223, 189, 0.52) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 0 0 1px rgba(248, 223, 189, 0.08),
+        0 12px 26px rgba(5, 2, 1, 0.22) !important;
+    color: #fff8ed !important;
+}
+
+body.theme-dark input::placeholder,
+body.theme-dark textarea::placeholder,
+body.theme-dark .admin-input::placeholder,
+body.theme-dark .admin-textarea::placeholder {
+    color: #c9ad87 !important;
+}
+
+body.theme-dark input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]):focus,
+body.theme-dark select:focus,
+body.theme-dark textarea:focus,
+body.theme-dark .admin-input:focus,
+body.theme-dark .admin-select:focus,
+body.theme-dark .admin-textarea:focus {
+    background-color: #0f0807 !important;
+    border-color: #e8be84 !important;
+    box-shadow:
+        0 0 0 3px rgba(232, 190, 132, 0.24),
+        0 16px 30px rgba(5, 2, 1, 0.3) !important;
+    outline: none;
 }

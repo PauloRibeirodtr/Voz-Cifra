@@ -7,7 +7,11 @@
 @include('partials.frontend-assets')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link rel="stylesheet" href="{{ asset('css/admin/theme.css') }}">
+@php
+    $adminThemePath = public_path('css/admin/theme.css');
+    $adminThemeVersion = file_exists($adminThemePath) ? filemtime($adminThemePath) : null;
+@endphp
+<link rel="stylesheet" href="{{ asset('css/admin/theme.css') }}@if($adminThemeVersion)?v={{ $adminThemeVersion }}@endif">
 <style>
     :root {
         color-scheme: light;

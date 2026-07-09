@@ -1,11 +1,48 @@
+.leitura-clara .cifra-linha,
+.apresentacao-cifra-box .cifra-linha {
+    gap: 0.14rem;
+    margin-bottom: 0.34rem;
+}
+
+.leitura-clara .cifra-linha--refrao,
+.apresentacao-cifra-box .cifra-linha--refrao {
+    margin: 0.08rem 0 0.38rem;
+    padding: 0.28rem 0 0.28rem 0.72rem;
+}
+
+.leitura-clara .cifra-segmento,
+.apresentacao-cifra-box .cifra-segmento {
+    min-height: 2.08rem;
+}
+
 .leitura-clara .cifra-acordes,
 .apresentacao-cifra-box .cifra-acordes {
-    color: #c56a1a;
+    min-height: 0.74rem;
+    margin-bottom: -0.04rem;
+    color: #b91c1c;
+    font-size: 0.9rem;
+    line-height: 0.86rem;
+}
+
+.leitura-clara .cifra-acorde,
+.apresentacao-cifra-box .cifra-acorde {
+    border-radius: 0.35rem;
+    padding: 0 0.05rem;
+}
+
+.leitura-clara .cifra-acorde:hover,
+.leitura-clara .cifra-acorde.ativa,
+.apresentacao-cifra-box .cifra-acorde:hover,
+.apresentacao-cifra-box .cifra-acorde.ativa {
+    background: rgba(185, 28, 28, 0.12);
+    color: #7f1d1d;
 }
 
 .leitura-clara .cifra-letra,
 .apresentacao-cifra-box .cifra-letra {
     color: #1f2937;
+    font-size: 1.12rem;
+    line-height: 1.42rem;
 }
 
 .leitura-clara .cifra-marcacao,

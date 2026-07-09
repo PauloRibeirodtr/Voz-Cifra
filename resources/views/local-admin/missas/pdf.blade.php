@@ -15,11 +15,11 @@
         table.repertorio th, table.repertorio td { border: 1px solid #d1d5db; padding: 10px; text-align: left; }
         table.repertorio th { background: #f3f4f6; font-size: 11px; text-transform: uppercase; }
         .cifra-bloco { page-break-inside: avoid; border: 1px solid #d1d5db; border-radius: 12px; padding: 14px; margin-top: 18px; }
-        .cifra-linha { display: block; margin-bottom: 9px; }
-        .cifra-segmento { display: inline-block; vertical-align: top; min-height: 28px; }
-        .cifra-acordes { display: block; min-height: 14px; color: #b45309; font-weight: bold; font-size: 10px; white-space: pre; }
+        .cifra-linha { display: block; margin-bottom: 5px; }
+        .cifra-segmento { display: inline-block; vertical-align: top; min-height: 22px; }
+        .cifra-acordes { display: block; min-height: 10px; color: #b91c1c; font-weight: bold; font-size: 10px; line-height: 10px; white-space: pre; }
         .cifra-acorde { display: inline-block; margin-right: 4px; }
-        .cifra-letra { display: block; color: #111827; font-size: 11px; line-height: 1.7; white-space: pre-wrap; }
+        .cifra-letra { display: block; color: #111827; font-size: 11px; line-height: 1.35; white-space: pre-wrap; }
         .cifra-marcacao { display: inline-block; margin: 10px 0 8px; padding: 4px 10px; border-radius: 999px; background: #e5e7eb; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.08em; }
         .cifra-espaco { height: 10px; }
         .lyrics-stanza { margin-bottom: 10px; line-height: 1.7; }

@@ -38,6 +38,10 @@
             color: #111827;
         }
 
+        .musica-row {
+            transition: background-color 0.16s ease, box-shadow 0.16s ease;
+        }
+
         .musica-row:hover .musica-row-title {
             color: #166534;
         }
@@ -77,6 +81,69 @@
             border-color: #15803d;
             background: #15803d;
             color: #ffffff;
+        }
+
+        body.theme-dark .musicas-toolbar {
+            border-color: var(--admin-border);
+            background: var(--admin-surface-muted);
+            color: var(--admin-text);
+        }
+
+        body.theme-dark .musicas-toolbar .text-gray-900 {
+            color: var(--admin-text) !important;
+        }
+
+        body.theme-dark .musicas-toolbar .text-gray-500 {
+            color: var(--admin-text-soft) !important;
+        }
+
+        body.theme-dark .musica-row-title {
+            color: var(--admin-text) !important;
+        }
+
+        body.theme-dark .musica-row:hover .musica-row-title {
+            color: #d1fae5 !important;
+        }
+
+        body.theme-dark .musica-row:hover {
+            background: rgba(16, 185, 129, 0.14) !important;
+            box-shadow:
+                inset 4px 0 0 rgba(52, 211, 153, 0.78),
+                inset 0 1px 0 rgba(255, 255, 255, 0.04),
+                inset 0 -1px 0 rgba(52, 211, 153, 0.16);
+        }
+
+        body.theme-dark .musica-row:hover td {
+            color: #f8fafc !important;
+        }
+
+        body.theme-dark .musica-row:hover .text-gray-500,
+        body.theme-dark .musica-row:hover .text-gray-600 {
+            color: #d8c4a6 !important;
+        }
+
+        body.theme-dark .musica-filter-chip {
+            border-color: var(--admin-border);
+            background: var(--admin-surface);
+            color: var(--admin-text-soft);
+        }
+
+        body.theme-dark .musica-filter-chip:hover {
+            border-color: rgba(52, 211, 153, 0.35);
+            background: rgba(16, 185, 129, 0.14);
+            color: #d1fae5;
+        }
+
+        body.theme-dark .musica-filter-chip--active {
+            border-color: rgba(52, 211, 153, 0.52);
+            background: #047857;
+            color: #ffffff;
+        }
+
+        body.theme-dark .musica-mobile-card {
+            border-color: var(--admin-border) !important;
+            background: var(--admin-surface-muted) !important;
+            color: var(--admin-text) !important;
         }
     </style>
 @endpush

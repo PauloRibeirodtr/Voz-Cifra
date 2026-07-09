@@ -9,11 +9,11 @@
     .folha-meta-label { display: block; color: #64748b; font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
     .folha-meta-value { display: block; margin-top: .35rem; color: #0f172a; font-size: 1rem; font-weight: 700; }
     .folha-cifra-wrap { border: 1px solid #e2e8f0; border-radius: 1.4rem; background: #fff; padding: 1.25rem 1.4rem; }
-    .cifra-linha { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.15rem; margin-bottom: 0.45rem; }
-    .cifra-segmento { display: inline-flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; min-height: 2.45rem; }
-    .cifra-acordes { min-height: 1rem; margin-bottom: 0.02rem; color: #c2410c; font-weight: 800; font-size: .9rem; line-height: 1rem; letter-spacing: .01em; white-space: pre; }
+    .cifra-linha { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.14rem; margin-bottom: 0.34rem; }
+    .cifra-segmento { display: inline-flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; min-height: 2.08rem; }
+    .cifra-acordes { min-height: 0.74rem; margin-bottom: -0.04rem; color: #b91c1c; font-weight: 800; font-size: .9rem; line-height: .86rem; letter-spacing: .01em; white-space: pre; }
     .cifra-acorde { display: inline-block; padding: 0 0.05rem; }
-    .cifra-letra { color: #111827; font-size: 1.02rem; line-height: 1.65rem; white-space: pre-wrap; }
+    .cifra-letra { color: #111827; font-size: 1.12rem; line-height: 1.42rem; white-space: pre-wrap; }
     .cifra-marcacao { display: inline-flex; align-items: center; border-radius: 9999px; background: #e2e8f0; color: #334155; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.38rem 0.78rem; margin: .9rem 0 .65rem; }
     .cifra-espaco { height: .85rem; }
     .folha-acordes { margin-top: 1.8rem; page-break-inside: avoid; }
