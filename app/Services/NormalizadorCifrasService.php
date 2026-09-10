@@ -69,7 +69,17 @@ class NormalizadorCifrasService
                 continue;
             }
 
-            if ($this->ehLinhaApenasAcordes($linhaAtual) && $this->linhaAnteriorEhMarcacao($linhas, $indice)) {
+            // Linhas visuais alinhadas sobre a letra não são passagens instrumentais.
+            $acordesAlinhadosComLetra = preg_match('/^\s+\S|\S[ \t]{2,}\S/', $linhaAtual) === 1
+                && !str_contains($linhaAtual, '[')
+                && !str_starts_with(ltrim($linhaAtual), '(')
+                && $proximaLinha !== null
+                && trim($proximaLinha) !== ''
+                && !$this->ehLinhaApenasAcordes($proximaLinha)
+                && !$this->ehMarcacaoSecao($proximaLinha)
+                && !$this->ehLinhaTablatura($proximaLinha);
+
+            if ($this->ehLinhaApenasAcordes($linhaAtual) && $this->linhaAnteriorEhMarcacao($linhas, $indice) && !$acordesAlinhadosComLetra) {
                 $linhasNormalizadas[] = $this->converterLinhaSomenteAcordesParaCifras($linhaAtual);
                 continue;
             }
@@ -125,7 +135,9 @@ class NormalizadorCifrasService
                 continue;
             }
 
-            $posicao = $this->localizarPosicaoSeguraNaLetra($resultado, $offset);
+            // As colunas do editor contam caracteres, não bytes UTF-8.
+            $offsetBytes = strlen(mb_substr($linhaLetra, 0, $offset));
+            $posicao = $this->localizarPosicaoSeguraNaLetra($resultado, $offsetBytes);
             $resultado = substr($resultado, 0, $posicao) . '[' . $acordeNormalizado . ']' . substr($resultado, $posicao);
         }
 

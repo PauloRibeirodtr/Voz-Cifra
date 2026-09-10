@@ -7,6 +7,29 @@ use PHPUnit\Framework\TestCase;
 
 class NormalizadorCifrasServiceTest extends TestCase
 {
+    public function test_acordes_alinhados_na_primeira_linha_do_refrao_se_unem_a_letra(): void
+    {
+        $servico = new NormalizadorCifrasService();
+        $texto = "Refrão:\n  G        A         D\nO Senhor é bondoso e compassivo";
+        $esperado = "Refrão:\nO [G]Senhor é [A]bondoso e [D]compassivo";
+
+        $this->assertSame($esperado, $servico->normalizarFormato($texto));
+        $this->assertSame($esperado, $servico->normalizarFormato($esperado));
+    }
+
+    public function test_acorde_unico_alinhado_apos_refrao_se_une_a_letra(): void
+    {
+        $servico = new NormalizadorCifrasService();
+        $this->assertSame("Refrão:\nO [G]Senhor", $servico->normalizarFormato("Refrão:\n  G\nO Senhor"));
+    }
+
+    public function test_linha_instrumental_separada_por_linha_vazia_permanece_independente(): void
+    {
+        $servico = new NormalizadorCifrasService();
+        $this->assertSame("Refrão:\n  [G] [A]\n\nO Senhor", $servico->normalizarFormato("Refrão:\n  G       A\n\nO Senhor"));
+        $this->assertSame("[Intro]\n[G] [A]\nO Senhor", $servico->normalizarFormato("[Intro]\n[G] [A]\nO Senhor"));
+    }
+
     public function test_conversao_de_linha_visual_preserva_acorde_no_meio_da_palavra(): void
     {
         $servico = new NormalizadorCifrasService();

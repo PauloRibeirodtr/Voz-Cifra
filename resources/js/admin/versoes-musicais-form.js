@@ -147,7 +147,7 @@
 
         const converterLinhaSomenteAcordesParaCifras = (linhaAcordes) => {
             const linhaLimpa = limparLinhaAcordes(linhaAcordes);
-            const indentacao = linhaLimpa.match(/^\s*/)?.[0] || '';
+            const indentacao = linhaAcordes.match(/^\s*/)?.[0] || '';
             const tokens = linhaLimpa.trim().split(/\s+/).filter(Boolean);
 
             return indentacao + tokens.map((token) => {
@@ -258,7 +258,17 @@
                     continue;
                 }
 
-                if (ehLinhaApenasAcordes(linhaAtual) && linhaAnteriorEhMarcacao(linhas, i)) {
+                // O espaçamento visual associa os acordes à letra seguinte.
+                const acordesAlinhadosComLetra = /^\s+\S|\S[ \t]{2,}\S/.test(linhaAtual)
+                    && !linhaAtual.includes('[')
+                    && !linhaAtual.trimStart().startsWith('(')
+                    && typeof proximaLinha === 'string'
+                    && proximaLinha.trim() !== ''
+                    && !ehLinhaApenasAcordes(proximaLinha)
+                    && !ehMarcacaoSecao(proximaLinha)
+                    && !ehLinhaTablatura(proximaLinha);
+
+                if (ehLinhaApenasAcordes(linhaAtual) && linhaAnteriorEhMarcacao(linhas, i) && !acordesAlinhadosComLetra) {
                     resultado.push(converterLinhaSomenteAcordesParaCifras(linhaAtual));
                     houveConversao = true;
                     continue;
