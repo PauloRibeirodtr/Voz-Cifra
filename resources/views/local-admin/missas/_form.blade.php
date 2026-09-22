@@ -103,7 +103,7 @@
 
     <aside class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm" data-guide-target="missa-publicacao">
         <h2 class="text-lg font-bold text-gray-900">Status da missa</h2>
-        <p class="mt-2 text-sm text-gray-500">Se marcar como ativa, esta missa passa a ser a principal da igreja para o fluxo operacional.</p>
+        <p class="mt-2 text-sm text-gray-500">Missas ativas permanecem disponíveis no fluxo da igreja até serem inativadas ou terem seu horário encerrado.</p>
 
         <label class="mt-5 inline-flex items-start gap-3 text-sm font-medium text-gray-700">
             <input type="hidden" name="ativo" value="0">

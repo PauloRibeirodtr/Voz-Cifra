@@ -10,12 +10,20 @@ use App\Models\MomentoLiturgico;
 use App\Models\Musica;
 use App\Models\Usuario;
 use App\Models\VersaoMusical;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class MissasRepertorioTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function tearDown(): void
+    {
+        CarbonImmutable::setTestNow();
+
+        parent::tearDown();
+    }
 
     public function test_admin_local_consegue_cadastrar_missa_sem_repertorio_inicial(): void
     {
@@ -40,7 +48,7 @@ class MissasRepertorioTest extends TestCase
                 'publica_para_musicos' => '1',
                 'reaproveitar_repertorio' => '0',
             ])
-            ->assertRedirect(route('local-admin.missas.show', Missa::query()->first()) . '#missa-repertorio')
+            ->assertRedirect(route('local-admin.missas.show', Missa::query()->first()).'#missa-repertorio')
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('missas', [
@@ -49,6 +57,148 @@ class MissasRepertorioTest extends TestCase
         ]);
 
         $this->assertSame($dataMissa, Missa::query()->where('titulo', 'Missa de Domingo')->firstOrFail()->data_missa->toDateString());
+    }
+
+    public function test_cadastro_de_missa_ativa_mantem_outras_missas_futuras_ativas(): void
+    {
+        $igreja = Igreja::factory()->create(['status_operacional' => 'operacional']);
+        $adminLocal = Usuario::factory()->create();
+        $adminLocal->adicionarPapel(PapelIgreja::ADMIN_LOCAL, $igreja);
+
+        $missaExistente = Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa de Quinta',
+            'data_missa' => now('America/Cuiaba')->addDay()->toDateString(),
+            'hora_inicio' => '07:00',
+            'hora_fim' => '08:00',
+            'ativo' => true,
+        ]);
+
+        $this
+            ->actingAs($adminLocal)
+            ->withSession(['igreja_ativa_id' => $igreja->id])
+            ->post(route('local-admin.missas.store'), [
+                'titulo' => 'Missa de Sexta',
+                'data_missa' => now('America/Cuiaba')->addDays(2)->toDateString(),
+                'hora_inicio' => '12:00',
+                'hora_fim' => '13:00',
+                'ativo' => '1',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertTrue((bool) $missaExistente->fresh()->ativo);
+        $this->assertTrue((bool) Missa::query()->where('titulo', 'Missa de Sexta')->firstOrFail()->ativo);
+    }
+
+    public function test_edicao_de_missa_ativa_mantem_outras_missas_futuras_ativas(): void
+    {
+        $igreja = Igreja::factory()->create(['status_operacional' => 'operacional']);
+        $adminLocal = Usuario::factory()->create();
+        $adminLocal->adicionarPapel(PapelIgreja::ADMIN_LOCAL, $igreja);
+
+        $primeiraMissa = Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa de Quinta',
+            'data_missa' => now('America/Cuiaba')->addDay()->toDateString(),
+            'hora_inicio' => '07:00',
+            'hora_fim' => '08:00',
+            'ativo' => true,
+        ]);
+        $segundaMissa = Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa de Sexta',
+            'data_missa' => now('America/Cuiaba')->addDays(2)->toDateString(),
+            'hora_inicio' => '12:00',
+            'hora_fim' => '13:00',
+            'ativo' => true,
+        ]);
+
+        $this
+            ->actingAs($adminLocal)
+            ->withSession(['igreja_ativa_id' => $igreja->id])
+            ->put(route('local-admin.missas.update', $segundaMissa), [
+                'titulo' => 'Missa de Sexta atualizada',
+                'data_missa' => $segundaMissa->data_missa->toDateString(),
+                'hora_inicio' => '12:00',
+                'hora_fim' => '13:30',
+                'ativo' => '1',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertTrue((bool) $primeiraMissa->fresh()->ativo);
+        $this->assertTrue((bool) $segundaMissa->fresh()->ativo);
+    }
+
+    public function test_reativacao_de_missa_mantem_outras_missas_futuras_ativas(): void
+    {
+        $igreja = Igreja::factory()->create(['status_operacional' => 'operacional']);
+        $adminLocal = Usuario::factory()->create();
+        $adminLocal->adicionarPapel(PapelIgreja::ADMIN_LOCAL, $igreja);
+
+        $missaAtiva = Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa de Quinta',
+            'data_missa' => now('America/Cuiaba')->addDay()->toDateString(),
+            'hora_inicio' => '07:00',
+            'hora_fim' => '08:00',
+            'ativo' => true,
+        ]);
+        $missaInativa = Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa de Sexta',
+            'data_missa' => now('America/Cuiaba')->addDays(2)->toDateString(),
+            'hora_inicio' => '12:00',
+            'hora_fim' => '13:00',
+            'ativo' => false,
+        ]);
+
+        $this
+            ->actingAs($adminLocal)
+            ->withSession(['igreja_ativa_id' => $igreja->id])
+            ->post(route('local-admin.missas.toggle', $missaInativa), [
+                'data_missa' => $missaInativa->data_missa->toDateString(),
+                'hora_inicio' => '12:00',
+                'hora_fim' => '13:00',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertTrue((bool) $missaAtiva->fresh()->ativo);
+        $this->assertTrue((bool) $missaInativa->fresh()->ativo);
+    }
+
+    public function test_sincronizacao_inativa_somente_missa_com_horario_final_encerrado(): void
+    {
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-09-24 10:00:00', 'America/Cuiaba'));
+
+        $igreja = Igreja::factory()->create(['status_operacional' => 'operacional']);
+        $adminLocal = Usuario::factory()->create();
+        $adminLocal->adicionarPapel(PapelIgreja::ADMIN_LOCAL, $igreja);
+
+        $missaEncerrada = Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa encerrada',
+            'data_missa' => '2026-09-24',
+            'hora_inicio' => '07:00',
+            'hora_fim' => '08:00',
+            'ativo' => true,
+        ]);
+        $missaFutura = Missa::query()->create([
+            'igreja_id' => $igreja->id,
+            'titulo' => 'Missa futura',
+            'data_missa' => '2026-09-25',
+            'hora_inicio' => '12:00',
+            'hora_fim' => '13:00',
+            'ativo' => true,
+        ]);
+
+        $this
+            ->actingAs($adminLocal)
+            ->withSession(['igreja_ativa_id' => $igreja->id])
+            ->get(route('local-admin.missas.index'))
+            ->assertOk();
+
+        $this->assertFalse((bool) $missaEncerrada->fresh()->ativo);
+        $this->assertTrue((bool) $missaFutura->fresh()->ativo);
     }
 
     public function test_tela_da_missa_gera_catalogo_javascript_valido_para_autocomplete(): void
@@ -103,7 +253,7 @@ class MissasRepertorioTest extends TestCase
         ]);
         $musica = Musica::query()->create([
             'titulo' => 'Canto de Entrada',
-            'letra' => "Senhor, estamos aqui",
+            'letra' => 'Senhor, estamos aqui',
             'criado_por' => $adminLocal->id,
             'ativo' => true,
         ]);
@@ -111,7 +261,7 @@ class MissasRepertorioTest extends TestCase
             'musica_id' => $musica->id,
             'titulo' => 'Versao principal',
             'tom_musical' => 'C',
-            'letra_com_cifras' => "[C]Senhor, estamos aqui",
+            'letra_com_cifras' => '[C]Senhor, estamos aqui',
             'criado_por' => $adminLocal->id,
             'ativo' => true,
         ]);
@@ -128,7 +278,7 @@ class MissasRepertorioTest extends TestCase
                 ->withSession(['igreja_ativa_id' => $igreja->id])
                 ->get(route('local-admin.missas.pdf', ['missa' => $missa, 'formato' => $formato]))
                 ->assertOk()
-                ->assertDownload('missa-' . $missa->id . '-' . str_replace('_', '-', $formato) . '.pdf');
+                ->assertDownload('missa-'.$missa->id.'-'.str_replace('_', '-', $formato).'.pdf');
         }
     }
 
@@ -221,7 +371,7 @@ class MissasRepertorioTest extends TestCase
                 'musica_id' => $musicaFinal->id,
                 'momento_liturgico_id' => $final->id,
             ])
-            ->assertRedirect(route('local-admin.missas.show', $missa) . '#missa-repertorio');
+            ->assertRedirect(route('local-admin.missas.show', $missa).'#missa-repertorio');
 
         $this
             ->actingAs($adminLocal)
@@ -230,7 +380,7 @@ class MissasRepertorioTest extends TestCase
                 'musica_id' => $musicaEntrada->id,
                 'momento_liturgico_id' => $entrada->id,
             ])
-            ->assertRedirect(route('local-admin.missas.show', $missa) . '#missa-repertorio');
+            ->assertRedirect(route('local-admin.missas.show', $missa).'#missa-repertorio');
 
         $this->assertDatabaseHas('missa_musicas', [
             'missa_id' => $missa->id,
@@ -280,7 +430,7 @@ class MissasRepertorioTest extends TestCase
                 'musica_id' => $musica->id,
                 'momento_liturgico_id' => $momento->id,
             ])
-            ->assertRedirect(route('local-admin.missas.show', $missa) . '#missa-repertorio');
+            ->assertRedirect(route('local-admin.missas.show', $missa).'#missa-repertorio');
 
         $this
             ->actingAs($adminLocal)
@@ -392,7 +542,7 @@ class MissasRepertorioTest extends TestCase
             ->actingAs($adminLocal)
             ->withSession(['igreja_ativa_id' => $igreja->id])
             ->post(route('local-admin.missas.repertorio.corrigir-ordem', $missa))
-            ->assertRedirect(route('local-admin.missas.show', $missa) . '#missa-repertorio')
+            ->assertRedirect(route('local-admin.missas.show', $missa).'#missa-repertorio')
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('missa_musicas', [
@@ -426,7 +576,7 @@ class MissasRepertorioTest extends TestCase
         $itens = collect(['Entrada', 'Comunhão', 'Final'])->map(function (string $titulo, int $indice) use ($adminLocal, $missa) {
             $musica = Musica::query()->create([
                 'titulo' => $titulo,
-                'letra' => 'Letra ' . $titulo,
+                'letra' => 'Letra '.$titulo,
                 'criado_por' => $adminLocal->id,
                 'ativo' => true,
             ]);
@@ -669,7 +819,7 @@ class MissasRepertorioTest extends TestCase
             ->actingAs($adminLocal)
             ->withSession(['igreja_ativa_id' => $igreja->id])
             ->post(route('local-admin.missas.concluir-montagem', $missa))
-            ->assertRedirect(route('local-admin.missas.show', $missa) . '#missa-repertorio')
+            ->assertRedirect(route('local-admin.missas.show', $missa).'#missa-repertorio')
             ->assertSessionHas('warning')
             ->assertSessionHas('missa_pendencias');
     }

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\LocalAdmin;
 
-use App\Http\Controllers\Controller;
 use App\Enums\PapelIgreja;
+use App\Http\Controllers\Controller;
 use App\Models\Igreja;
 use App\Models\Missa;
 use App\Models\MissaMusica;
@@ -15,18 +15,19 @@ use App\Models\VersaoMusical;
 use App\Services\AuditoriaOperacionalService;
 use App\Services\FolhaVersaoMusicalService;
 use App\Services\IgrejaAtivaService;
+use App\Services\RenderizadorCifrasHtmlService;
 use App\Services\RenderizadorLetrasHtmlService;
+use App\Services\TranspositorCifrasService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
-use App\Services\RenderizadorCifrasHtmlService;
-use App\Services\TranspositorCifrasService;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class MissaController extends Controller
@@ -37,8 +38,7 @@ class MissaController extends Controller
         private readonly RenderizadorCifrasHtmlService $renderizadorCifrasHtmlService,
         private readonly RenderizadorLetrasHtmlService $renderizadorLetrasHtmlService,
         private readonly FolhaVersaoMusicalService $folhaVersaoMusicalService
-    ) {
-    }
+    ) {}
 
     public function index(): View
     {
@@ -68,7 +68,7 @@ class MissaController extends Controller
 
         return view('local-admin.missas.create', [
             'igreja' => $this->adicionarDadosPublicos($igreja),
-            'missa' => new Missa(),
+            'missa' => new Missa,
             'igrejasAdministradas' => $igrejasAdministradas,
             'temposLiturgicos' => TempoLiturgico::where('ativo', true)->orderBy('nome')->get(),
             'padres' => Usuario::query()
@@ -92,10 +92,6 @@ class MissaController extends Controller
             ->all();
 
         $missa = DB::transaction(function () use ($dados, $igreja, $igrejasPermitidasParaReaproveitar): Missa {
-            if (($dados['ativo'] ?? false) === true) {
-                Missa::where('igreja_id', $igreja->id)->update(['ativo' => false]);
-            }
-
             $missa = Missa::create([
                 'igreja_id' => $igreja->id,
                 'celebrante_usuario_id' => $dados['padre_id'] ?? null,
@@ -110,7 +106,7 @@ class MissaController extends Controller
                 'ativo' => (bool) ($dados['ativo'] ?? true),
             ]);
 
-            if (!empty($dados['reaproveitar_repertorio']) && !empty($dados['missa_origem_id'])) {
+            if (! empty($dados['reaproveitar_repertorio']) && ! empty($dados['missa_origem_id'])) {
                 $missaOrigem = Missa::query()
                     ->whereIn('igreja_id', $igrejasPermitidasParaReaproveitar)
                     ->whereKey($dados['missa_origem_id'])
@@ -145,15 +141,15 @@ class MissaController extends Controller
                 'titulo' => $missa->titulo,
                 'publica_para_fieis' => $missa->publica_para_fieis,
                 'publica_para_musicos' => $missa->publica_para_musicos,
-                'resumo' => !empty($dados['reaproveitar_repertorio']) && !empty($dados['missa_origem_id'])
+                'resumo' => ! empty($dados['reaproveitar_repertorio']) && ! empty($dados['missa_origem_id'])
                     ? 'Missa criada com reaproveitamento de repertório anterior.'
                     : 'Missa criada para a rotina da igreja.',
             ]
         );
 
         return redirect()
-            ->to(route('local-admin.missas.show', $missa) . '#missa-repertorio')
-            ->with('success', !empty($dados['reaproveitar_repertorio']) && !empty($dados['missa_origem_id'])
+            ->to(route('local-admin.missas.show', $missa).'#missa-repertorio')
+            ->with('success', ! empty($dados['reaproveitar_repertorio']) && ! empty($dados['missa_origem_id'])
                 ? 'Missa cadastrada com sucesso. O repertório anterior foi copiado como ponto de partida.'
                 : 'Missa cadastrada com sucesso. Agora adicione as músicas ao repertório.');
     }
@@ -227,12 +223,6 @@ class MissaController extends Controller
         $usuario = $this->obterUsuario();
 
         DB::transaction(function () use ($dados, $missa): void {
-            if (($dados['ativo'] ?? false) === true) {
-                Missa::where('igreja_id', $missa->igreja_id)
-                    ->where('id', '!=', $missa->id)
-                    ->update(['ativo' => false]);
-            }
-
             $missa->update([
                 'celebrante_usuario_id' => $dados['padre_id'] ?? null,
                 'tempo_liturgico_id' => $dados['tempo_liturgico_id'] ?? null,
@@ -284,17 +274,10 @@ class MissaController extends Controller
         $igreja = $this->obterIgreja();
         $usuario = $this->obterUsuario();
         $estadoAnterior = $this->snapshotMissa($missa);
-        $novoStatus = !$missa->ativo;
+        $novoStatus = ! $missa->ativo;
         $dadosReativacao = $novoStatus ? $this->validarDadosReativacao($request, $missa) : [];
 
         DB::transaction(function () use ($missa, $novoStatus, $dadosReativacao): void {
-            if ($novoStatus) {
-                Missa::query()
-                    ->where('igreja_id', $missa->igreja_id)
-                    ->whereKeyNot($missa->id)
-                    ->update(['ativo' => false]);
-            }
-
             $missa->update(array_merge(['ativo' => $novoStatus], $dadosReativacao));
         });
         $missa->refresh();
@@ -320,7 +303,7 @@ class MissaController extends Controller
         );
 
         return back()->with('success', $novoStatus
-            ? 'Missa reativada com sucesso para ' . CarbonImmutable::parse($dadosReativacao['data_missa'])->format('d/m/Y') . ' as ' . $dadosReativacao['hora_inicio'] . '.'
+            ? 'Missa reativada com sucesso para '.CarbonImmutable::parse($dadosReativacao['data_missa'])->format('d/m/Y').' as '.$dadosReativacao['hora_inicio'].'.'
             : 'Missa inativada com sucesso.');
     }
 
@@ -332,9 +315,9 @@ class MissaController extends Controller
 
         if ($totalItens === 0) {
             return redirect()
-                ->to(route('local-admin.missas.show', $missa) . '#missa-repertorio')
+                ->to(route('local-admin.missas.show', $missa).'#missa-repertorio')
                 ->withErrors([
-                    'missa' => 'Montagem nao concluida: adicione pelo menos uma musica ao repertorio de ' . $missa->titulo . '.',
+                    'missa' => 'Montagem nao concluida: adicione pelo menos uma musica ao repertorio de '.$missa->titulo.'.',
                 ]);
         }
 
@@ -354,26 +337,26 @@ class MissaController extends Controller
             $pendencias = [];
 
             if ($itensSemVersao > 0) {
-                $pendencias[] = $itensSemVersao . ' item(ns) sem cifra/versao para os musicos.';
+                $pendencias[] = $itensSemVersao.' item(ns) sem cifra/versao para os musicos.';
             }
 
             if ($itensSemMomento > 0) {
-                $pendencias[] = $itensSemMomento . ' item(ns) sem momento liturgico.';
+                $pendencias[] = $itensSemMomento.' item(ns) sem momento liturgico.';
             }
 
             if ($musicasDuplicadas > 0) {
-                $pendencias[] = $musicasDuplicadas . ' musica(s) repetida(s).';
+                $pendencias[] = $musicasDuplicadas.' musica(s) repetida(s).';
             }
 
             return redirect()
-                ->to(route('local-admin.missas.show', $missa) . '#missa-repertorio')
+                ->to(route('local-admin.missas.show', $missa).'#missa-repertorio')
                 ->with('warning', 'Repertorio salvo com pendencias. Voce pode revisar agora ou publicar depois que estiver tudo pronto.')
                 ->with('missa_pendencias', $pendencias);
         }
 
         return redirect()
-            ->to(route('local-admin.missas.show', $missa) . '#missa-repertorio')
-            ->with('success', 'Tudo certo: repertorio da missa "' . $missa->titulo . '" conferido com ' . $totalItens . ' item(ns).');
+            ->to(route('local-admin.missas.show', $missa).'#missa-repertorio')
+            ->with('success', 'Tudo certo: repertorio da missa "'.$missa->titulo.'" conferido com '.$totalItens.' item(ns).');
     }
 
     public function corrigirOrdemRepertorio(Missa $missa): RedirectResponse
@@ -382,7 +365,7 @@ class MissaController extends Controller
 
         if ($missa->missaMusicas()->count() === 0) {
             return redirect()
-                ->to(route('local-admin.missas.show', $missa) . '#missa-repertorio')
+                ->to(route('local-admin.missas.show', $missa).'#missa-repertorio')
                 ->withErrors([
                     'missa' => 'Adicione musicas ao repertorio antes de corrigir a ordem.',
                 ]);
@@ -391,7 +374,7 @@ class MissaController extends Controller
         $this->reorganizarRepertorioPorMomento($missa);
 
         return redirect()
-            ->to(route('local-admin.missas.show', $missa) . '#missa-repertorio')
+            ->to(route('local-admin.missas.show', $missa).'#missa-repertorio')
             ->with('success', 'Ordem do repertorio corrigida pela sequencia dos momentos liturgicos.');
     }
 
@@ -427,7 +410,7 @@ class MissaController extends Controller
                 ->withInput();
         }
 
-        if (!empty($dados['versao_musical_id'])) {
+        if (! empty($dados['versao_musical_id'])) {
             $versao = VersaoMusical::findOrFail($dados['versao_musical_id']);
             if ((int) $versao->musica_id !== (int) $dados['musica_id']) {
                 return back()->withErrors([
@@ -473,7 +456,7 @@ class MissaController extends Controller
         );
 
         return redirect()
-            ->to(route('local-admin.missas.show', $missa) . '#missa-repertorio')
+            ->to(route('local-admin.missas.show', $missa).'#missa-repertorio')
             ->with('success', 'Música adicionada ao repertório da missa.');
     }
 
@@ -496,7 +479,7 @@ class MissaController extends Controller
             'tom_usado.in' => 'Escolha um tom padronizado da lista para usar nesta missa.',
         ]);
 
-        if (!empty($dados['versao_musical_id'])) {
+        if (! empty($dados['versao_musical_id'])) {
             $versao = VersaoMusical::findOrFail($dados['versao_musical_id']);
             if ((int) $versao->musica_id !== (int) $missaMusica->musica_id) {
                 return back()->withErrors([
@@ -534,7 +517,7 @@ class MissaController extends Controller
         );
 
         return redirect()
-            ->to(route('local-admin.missas.show', $missa) . '#repertorio-item-' . $missaMusica->id)
+            ->to(route('local-admin.missas.show', $missa).'#repertorio-item-'.$missaMusica->id)
             ->with('success', 'Item do repertorio atualizado com sucesso.');
     }
 
@@ -548,9 +531,9 @@ class MissaController extends Controller
             ->orderByDesc('ordem')
             ->first();
 
-        if (!$itemAnterior) {
+        if (! $itemAnterior) {
             return redirect()
-                ->to(route('local-admin.missas.show', $missa) . '#repertorio-item-' . $missaMusica->id);
+                ->to(route('local-admin.missas.show', $missa).'#repertorio-item-'.$missaMusica->id);
         }
 
         DB::transaction(function () use ($missaMusica, $itemAnterior): void {
@@ -565,7 +548,7 @@ class MissaController extends Controller
         });
 
         return redirect()
-            ->to(route('local-admin.missas.show', $missa) . '#repertorio-item-' . $missaMusica->id)
+            ->to(route('local-admin.missas.show', $missa).'#repertorio-item-'.$missaMusica->id)
             ->with('success', 'Item movido para cima.');
     }
 
@@ -627,7 +610,7 @@ class MissaController extends Controller
         }
 
         return redirect()
-            ->to(route('local-admin.missas.show', $missa) . '#missa-repertorio')
+            ->to(route('local-admin.missas.show', $missa).'#missa-repertorio')
             ->with('success', 'Ordem do repertório atualizada.');
     }
 
@@ -641,9 +624,9 @@ class MissaController extends Controller
             ->orderBy('ordem')
             ->first();
 
-        if (!$itemSeguinte) {
+        if (! $itemSeguinte) {
             return redirect()
-                ->to(route('local-admin.missas.show', $missa) . '#repertorio-item-' . $missaMusica->id);
+                ->to(route('local-admin.missas.show', $missa).'#repertorio-item-'.$missaMusica->id);
         }
 
         DB::transaction(function () use ($missaMusica, $itemSeguinte): void {
@@ -658,7 +641,7 @@ class MissaController extends Controller
         });
 
         return redirect()
-            ->to(route('local-admin.missas.show', $missa) . '#repertorio-item-' . $missaMusica->id)
+            ->to(route('local-admin.missas.show', $missa).'#repertorio-item-'.$missaMusica->id)
             ->with('success', 'Item movido para baixo.');
     }
 
@@ -735,7 +718,7 @@ class MissaController extends Controller
             'etiquetaFolha' => 'Folha da igreja',
             'pdfUrl' => route('local-admin.repertorio.pdf', [$missa, $missaMusica]),
             'backUrl' => route('local-admin.repertorio.cifra', [$missa, $missaMusica]),
-            'pageTitle' => ($missaMusica->musica?->titulo ?: 'Versao') . ' | Impressao',
+            'pageTitle' => ($missaMusica->musica?->titulo ?: 'Versao').' | Impressao',
         ]);
     }
 
@@ -750,10 +733,10 @@ class MissaController extends Controller
         return Pdf::loadView('shared.versao-pdf', [
             'folha' => $folha,
             'etiquetaFolha' => 'Folha da igreja',
-            'pageTitle' => ($missaMusica->musica?->titulo ?: 'Versao') . ' | PDF',
+            'pageTitle' => ($missaMusica->musica?->titulo ?: 'Versao').' | PDF',
         ])
             ->setPaper('a4', 'portrait')
-            ->download('missa-' . $missa->id . '-musica-' . $missaMusica->id . '.pdf');
+            ->download('missa-'.$missa->id.'-musica-'.$missaMusica->id.'.pdf');
     }
 
     public function apresentacao(Missa $missa): View
@@ -862,7 +845,7 @@ class MissaController extends Controller
             'formato' => $formato,
         ])->setPaper('a4', 'portrait');
 
-        return $pdf->download('missa-' . $missa->id . '-' . str_replace('_', '-', $formato) . '.pdf');
+        return $pdf->download('missa-'.$missa->id.'-'.str_replace('_', '-', $formato).'.pdf');
     }
 
     public function duplicarParaIgreja(Request $request, Missa $missa): RedirectResponse
@@ -884,7 +867,7 @@ class MissaController extends Controller
                 Rule::in($igrejasDestino->pluck('id')->map(fn ($id) => (string) $id)->all()),
             ],
             'titulo' => ['nullable', 'string', 'max:255'],
-            'data_missa' => ['required', 'date', 'after_or_equal:' . $hoje->toDateString(), 'before_or_equal:' . $hoje->addMonths(3)->toDateString()],
+            'data_missa' => ['required', 'date', 'after_or_equal:'.$hoje->toDateString(), 'before_or_equal:'.$hoje->addMonths(3)->toDateString()],
             'hora_inicio' => ['required', 'date_format:H:i'],
             'hora_fim' => ['required', 'date_format:H:i'],
         ], [
@@ -900,7 +883,7 @@ class MissaController extends Controller
         ]);
 
         if ($dados['hora_inicio'] === $dados['hora_fim']) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+            throw ValidationException::withMessages([
                 'hora_fim' => 'O horario de termino deve ser diferente do horario de inicio.',
             ]);
         }
@@ -911,7 +894,7 @@ class MissaController extends Controller
             horaInicio: (string) $dados['hora_inicio'],
             horaFim: (string) $dados['hora_fim'],
         )) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+            throw ValidationException::withMessages([
                 'hora_inicio' => 'O celebrante desta missa ja esta vinculado a outra missa no mesmo horario.',
             ]);
         }
@@ -968,7 +951,7 @@ class MissaController extends Controller
 
         return redirect()
             ->route('local-admin.missas.show', $novaMissa)
-            ->with('success', 'Missa duplicada para ' . $igrejaDestino->nome . '. Revise os dados, ajuste o repertorio se precisar e publique quando estiver pronta.');
+            ->with('success', 'Missa duplicada para '.$igrejaDestino->nome.'. Revise os dados, ajuste o repertorio se precisar e publique quando estiver pronta.');
     }
 
     private function validarDadosMissa(Request $request): array
@@ -981,7 +964,7 @@ class MissaController extends Controller
             'titulo' => ['required', 'string', 'max:255'],
             'tempo_liturgico_id' => ['nullable', Rule::exists('classificacoes_liturgicas', 'id')->where(fn ($query) => $query->where('tipo', 'tempo'))],
             'padre_id' => ['nullable', 'exists:usuarios,id'],
-            'data_missa' => ['required', 'date', 'after_or_equal:' . $dataMinima, 'before_or_equal:' . $dataMaxima],
+            'data_missa' => ['required', 'date', 'after_or_equal:'.$dataMinima, 'before_or_equal:'.$dataMaxima],
             'hora_inicio' => ['required', 'date_format:H:i'],
             'hora_fim' => ['required', 'date_format:H:i'],
             'observacoes' => ['nullable', 'string'],
@@ -1016,7 +999,7 @@ class MissaController extends Controller
             if (filled($celebranteId)) {
                 $celebrante = Usuario::query()->find($celebranteId);
 
-                if (!$celebrante?->eh_padre) {
+                if (! $celebrante?->eh_padre) {
                     $validator->errors()->add(
                         'padre_id',
                         'Selecione um celebrante valido.'
@@ -1034,7 +1017,7 @@ class MissaController extends Controller
             horaFim: (string) $dados['hora_fim'],
             ignorarMissaId: $request->route('missa')?->id
         )) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+            throw ValidationException::withMessages([
                 'padre_id' => 'Este celebrante ja esta vinculado a outra missa no mesmo horario.',
             ]);
         }
@@ -1048,7 +1031,7 @@ class MissaController extends Controller
         $dataMaxima = $hoje->addMonths(3)->toDateString();
 
         $dados = $request->validate([
-            'data_missa' => ['required', 'date', 'after_or_equal:' . $hoje->toDateString(), 'before_or_equal:' . $dataMaxima],
+            'data_missa' => ['required', 'date', 'after_or_equal:'.$hoje->toDateString(), 'before_or_equal:'.$dataMaxima],
             'hora_inicio' => ['required', 'date_format:H:i'],
             'hora_fim' => ['required', 'date_format:H:i'],
         ], [
@@ -1062,7 +1045,7 @@ class MissaController extends Controller
         ]);
 
         if ($dados['hora_inicio'] === $dados['hora_fim']) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+            throw ValidationException::withMessages([
                 'hora_fim' => 'O horario de termino deve ser diferente do horario de inicio.',
             ]);
         }
@@ -1074,7 +1057,7 @@ class MissaController extends Controller
             horaFim: (string) $dados['hora_fim'],
             ignorarMissaId: $missa->id
         )) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+            throw ValidationException::withMessages([
                 'hora_inicio' => 'O celebrante desta missa ja esta vinculado a outra missa no mesmo horario.',
             ]);
         }
@@ -1084,7 +1067,7 @@ class MissaController extends Controller
 
     private function obterUsuario(): Usuario
     {
-        /** @var \App\Models\Usuario $usuario */
+        /** @var Usuario $usuario */
         $usuario = Auth::user();
 
         abort_unless($usuario && $usuario->ehAdminLocal(), 403);
@@ -1160,11 +1143,11 @@ class MissaController extends Controller
         $igreja->setAttribute('link_publico_musicos', $linkPublicoMusicos);
         $igreja->setAttribute(
             'qr_code_url',
-            'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' . urlencode($linkPublico)
+            'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data='.urlencode($linkPublico)
         );
         $igreja->setAttribute(
             'qr_code_url_musicos',
-            'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' . urlencode($linkPublicoMusicos)
+            'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data='.urlencode($linkPublicoMusicos)
         );
 
         return $igreja;
