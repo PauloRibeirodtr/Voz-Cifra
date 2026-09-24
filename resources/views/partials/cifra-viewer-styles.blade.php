@@ -9,6 +9,7 @@
     .cifra-letra { color: #d1fae5; font-size: 1.08rem; line-height: 1.42rem; white-space: pre-wrap; }
     .cifra-marcacao { display: inline-flex; align-items: center; border-radius: 9999px; background: rgba(255, 255, 255, 0.12); color: #fef3c7; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 0.85rem; margin: 1rem 0 0.75rem; }
     .cifra-marcacao--refrao { background: rgba(16, 185, 129, 0.18); color: #a7f3d0; font-weight: 950; }
+    .cifra-espaco-estrofe { display: block; min-height: 1rem; }
     @media (max-width: 640px) {
         .cifra-linha { gap: 0.1rem; margin-bottom: 0.42rem; }
         .cifra-segmento { min-height: 1.88rem; max-width: 100%; }

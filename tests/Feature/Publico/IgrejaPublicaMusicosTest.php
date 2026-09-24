@@ -126,7 +126,7 @@ class IgrejaPublicaMusicosTest extends TestCase
         $musica = Musica::query()->create([
             'titulo' => 'Canto com Versao',
             'artista' => null,
-            'letra' => "[C]Texto da letra base",
+            'letra' => '[C]Texto da letra base',
             'criado_por' => $usuario->id,
             'ativo' => true,
         ]);
@@ -144,7 +144,7 @@ class IgrejaPublicaMusicosTest extends TestCase
             'missa_id' => $missa->id,
             'musica_id' => $musica->id,
             'versao_musical_id' => $versao->id,
-            'tom_usado' => 'D',
+            'tom_usado' => 'E',
             'momento_liturgico_id' => null,
             'ordem' => 1,
         ]);
@@ -154,7 +154,9 @@ class IgrejaPublicaMusicosTest extends TestCase
         $response->assertOk();
         $response->assertSee('Refrão da versão musical');
         $response->assertSee('lyrics-section-label--refrao', false);
-        $response->assertSee('[D]', false);
+        $response->assertSee('Tom E');
+        $response->assertSee('[E]', false);
+        $response->assertDontSee('[D]Refrão da versão musical', false);
         $response->assertDontSee('Texto da letra base');
     }
 

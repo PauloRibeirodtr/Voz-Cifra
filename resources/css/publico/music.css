@@ -889,6 +889,11 @@
             margin: 0;
         }
 
+        .lyrics .cifra-espaco-estrofe {
+            display: block;
+            min-height: 1rem;
+        }
+
         .lyrics-stanza {
             margin-bottom: 0.62rem;
             border-left: 3px solid rgba(227, 190, 132, 0.22);

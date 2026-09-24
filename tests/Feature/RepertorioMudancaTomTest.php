@@ -94,7 +94,7 @@ class RepertorioMudancaTomTest extends TestCase
         $this
             ->actingAs($adminLocal)
             ->post(route('local-admin.repertorio.tom.aprovar', $solicitacao))
-            ->assertRedirect(route('local-admin.missas.show', $item->missa_id) . '#repertorio-item-' . $item->id);
+            ->assertRedirect(route('local-admin.missas.show', $item->missa_id).'#repertorio-item-'.$item->id);
 
         $this->assertSame('G', $item->fresh()->tom_usado);
         $this->assertSame(SolicitacaoMudancaTom::STATUS_APROVADA, $solicitacao->fresh()->status);
@@ -132,6 +132,38 @@ class RepertorioMudancaTomTest extends TestCase
 
         $this->assertSame('G', $item->fresh()->tom_usado);
         $this->assertSame(SolicitacaoMudancaTom::STATUS_APROVADA, $solicitacao->fresh()->status);
+    }
+
+    public function test_admin_altera_tom_do_repertorio_de_re_para_mi(): void
+    {
+        [$igreja, $adminLocal, , $item] = $this->montarRepertorio();
+        $igreja->update(['status_operacional' => 'operacional']);
+
+        $this
+            ->actingAs($adminLocal)
+            ->withSession(['igreja_ativa_id' => $igreja->id])
+            ->put(route('local-admin.repertorio.update', [$item->missa, $item]), [
+                'versao_musical_id' => $item->versao_musical_id,
+                'tom_usado' => 'E',
+                'momento_liturgico_id' => null,
+            ])
+            ->assertRedirect(route('local-admin.missas.show', $item->missa).'#repertorio-item-'.$item->id);
+
+        $this->assertSame('E', $item->fresh()->tom_usado);
+    }
+
+    public function test_repertorio_do_musico_exibe_cifra_transposta_para_o_tom_da_missa(): void
+    {
+        [, , $musico, $item] = $this->montarRepertorio();
+        $item->update(['tom_usado' => 'E']);
+
+        $this
+            ->actingAs($musico)
+            ->get(route('member.repertorio'))
+            ->assertOk()
+            ->assertSee('data-tom-base="E"', false)
+            ->assertSee('[E]Letra', false)
+            ->assertDontSee('[D]Letra', false);
     }
 
     private function montarRepertorio(): array

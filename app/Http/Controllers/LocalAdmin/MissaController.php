@@ -13,11 +13,11 @@ use App\Models\TempoLiturgico;
 use App\Models\Usuario;
 use App\Models\VersaoMusical;
 use App\Services\AuditoriaOperacionalService;
+use App\Services\CifraRepertorioService;
 use App\Services\FolhaVersaoMusicalService;
 use App\Services\IgrejaAtivaService;
 use App\Services\RenderizadorCifrasHtmlService;
 use App\Services\RenderizadorLetrasHtmlService;
-use App\Services\TranspositorCifrasService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
@@ -34,7 +34,7 @@ class MissaController extends Controller
 {
     public function __construct(
         private readonly AuditoriaOperacionalService $auditoriaOperacionalService,
-        private readonly TranspositorCifrasService $transpositorCifrasService,
+        private readonly CifraRepertorioService $cifraRepertorioService,
         private readonly RenderizadorCifrasHtmlService $renderizadorCifrasHtmlService,
         private readonly RenderizadorLetrasHtmlService $renderizadorLetrasHtmlService,
         private readonly FolhaVersaoMusicalService $folhaVersaoMusicalService
@@ -1222,13 +1222,7 @@ class MissaController extends Controller
 
     private function obterTextoCifraExibicao(MissaMusica $item): string
     {
-        $textoOriginal = $item->versaoMusical?->letra_com_cifras ?? '';
-        $passos = $this->transpositorCifrasService->calcularPassos(
-            $item->versaoMusical?->tom_musical,
-            $item->tom_exibicao
-        );
-
-        return $this->transpositorCifrasService->transporTextoCifrado($textoOriginal, $passos);
+        return $this->cifraRepertorioService->resolver($item)['texto'];
     }
 
     private function normalizarTomInformado(?string $tom): ?string

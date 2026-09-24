@@ -2,3 +2,8 @@
 @import "./member/study.css";
 @import "./member/repertorio.css";
 @import "./local-admin/missa-preview.css";
+
+.cifra-espaco-estrofe {
+    display: block;
+    min-height: 1rem;
+}

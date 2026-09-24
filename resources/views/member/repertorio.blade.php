@@ -100,14 +100,9 @@
                 <div class="space-y-4" data-musicas-lista>
                     @forelse ($missa->missaMusicas as $item)
                         @php
-                            $versaoRepertorio = $item->versaoMusical;
-
-                            if (! $versaoRepertorio || trim((string) $versaoRepertorio->letra_com_cifras) === '') {
-                                $versaoRepertorio = $item->musica?->versoesMusicais
-                                    ?->first(fn ($versao) => trim((string) $versao->letra_com_cifras) !== '');
-                            }
-
-                            $textoCifra = (string) ($versaoRepertorio?->letra_com_cifras ?? '');
+                            $versaoRepertorio = $item->versaoExibicao;
+                            $textoCifra = (string) $item->cifra_repertorio_texto;
+                            $tomCifra = $item->cifra_repertorio_tom;
                             $pedidoTomPendente = $item->solicitacoesMudancaTom
                                 ->where('usuario_id', auth()->id())
                                 ->where('status', \App\Models\SolicitacaoMudancaTom::STATUS_PENDENTE)
@@ -160,7 +155,7 @@
                                     <details class="repertorio-adjustments mb-4">
                                         <summary>
                                             <span>Ajustes da cifra</span>
-                                            <span data-item-tom-label>Tom {{ $item->tom_exibicao ?: ($versaoRepertorio?->tom_musical ?: 'não informado') }}</span>
+                                            <span data-item-tom-label>Tom {{ $tomCifra ?: 'não informado' }}</span>
                                         </summary>
 
                                         <div class="repertorio-controls" data-repertorio-controls>
@@ -217,7 +212,7 @@
                                     <div
                                         data-repertorio-cifra
                                         data-texto-cifra-id="repertorio-cifra-texto-{{ $item->id }}"
-                                        data-tom-base="{{ $item->tom_exibicao ?: $versaoRepertorio?->tom_musical }}"
+                                        data-tom-base="{{ $tomCifra }}"
                                         class="space-y-2 text-base"
                                     ></div>
                                     <script type="application/json" id="repertorio-cifra-texto-{{ $item->id }}">{!! json_encode($textoCifra, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}</script>

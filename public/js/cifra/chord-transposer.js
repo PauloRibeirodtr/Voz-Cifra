@@ -222,7 +222,7 @@
 
             if (trimmed === '') {
                 currentBlockIsChorus = false;
-                return '<div class="h-4"></div>';
+                return '<div class="cifra-espaco-estrofe" aria-hidden="true"></div>';
             }
 
             const sectionAndChordLine = getSectionAndChordLine(trimmed);

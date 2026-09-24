@@ -6,25 +6,28 @@ use App\Http\Controllers\Controller;
 use App\Models\Acorde;
 use App\Models\Igreja;
 use App\Models\Missa;
+use App\Services\CifraRepertorioService;
 use App\Services\RenderizadorLetrasHtmlService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class IgrejaPublicaController extends Controller
 {
     private const HISTORICO_BUSCA_LIMITE = 12;
+
     private const HISTORICO_SUGESTOES_LIMITE = 40;
+
     private const HISTORICO_ULTIMAS_LIMITE = 5;
 
     public function __construct(
-        private readonly RenderizadorLetrasHtmlService $renderizadorLetrasHtmlService
-    ) {
-    }
+        private readonly RenderizadorLetrasHtmlService $renderizadorLetrasHtmlService,
+        private readonly CifraRepertorioService $cifraRepertorioService
+    ) {}
 
     public function show(Request $request, string $slug): View
     {
@@ -57,7 +60,7 @@ class IgrejaPublicaController extends Controller
         $historicoSugestoes = $this->buscarHistoricoSugestoes($igreja, $timezone, $audiencia);
 
         $view = $audiencia === 'musicos' ? 'publico.music' : 'publico.igreja';
-        $cidadeEstadoLinha = trim(($igreja->cidade ?? '') . ' - ' . ($igreja->estado ?? ''), ' -');
+        $cidadeEstadoLinha = trim(($igreja->cidade ?? '').' - '.($igreja->estado ?? ''), ' -');
 
         return view($view, [
             'igreja' => $igreja,
@@ -212,8 +215,7 @@ class IgrejaPublicaController extends Controller
         int $celebracaoSelecionadaId,
         ?Missa $missaEmAndamento,
         ?Missa $proximaMissa
-    ): ?Missa
-    {
+    ): ?Missa {
         if ($missasDisponiveis->isEmpty()) {
             return null;
         }
@@ -404,21 +406,17 @@ class IgrejaPublicaController extends Controller
 
     private function anexarRepertorioPublico(?Missa $missa, bool $exibirCifras = false): void
     {
-        if (!$missa) {
+        if (! $missa) {
             return;
         }
 
         $itens = $missa->missaMusicas->map(function ($item) use ($exibirCifras) {
-            $versaoPublica = $item->versaoMusical;
-
-            if ($exibirCifras && (! $versaoPublica || trim((string) $versaoPublica->letra_com_cifras) === '')) {
-                $versaoPublica = $item->musica?->versoesMusicais
-                    ?->first(fn ($versao) => trim((string) $versao->letra_com_cifras) !== '');
-            }
+            $cifra = $this->cifraRepertorioService->resolver($item, $exibirCifras);
+            $versaoPublica = $cifra['versao'];
 
             $temVersaoVinculada = $versaoPublica !== null && trim((string) $versaoPublica->letra_com_cifras) !== '';
             $letraBase = $exibirCifras && $temVersaoVinculada
-                ? (string) $versaoPublica->letra_com_cifras
+                ? $cifra['texto']
                 : (string) ($item->musica?->letra ?: '');
             $letraPublica = $exibirCifras
                 ? $this->normalizarLetraMusico($letraBase)
@@ -428,7 +426,7 @@ class IgrejaPublicaController extends Controller
                 'ordem' => $item->ordem,
                 'titulo' => $item->musica?->titulo ?: 'Canto sem titulo',
                 'momento' => $item->momentoLiturgico?->nome,
-                'tom' => $item->tomExibicao,
+                'tom' => $temVersaoVinculada ? $cifra['tom_exibicao'] : $item->tomExibicao,
                 'tem_versao_vinculada' => $temVersaoVinculada,
                 'letra_publica' => $letraPublica,
                 'letra_publica_html' => $exibirCifras
@@ -470,14 +468,14 @@ class IgrejaPublicaController extends Controller
             $conteudoEscapado = e($conteudo);
 
             if ($this->ehAcordePublico($conteudo)) {
-                return '<span class="chord-mark" data-acorde-hover="' . $conteudoEscapado . '">[' . $conteudoEscapado . ']</span>';
+                return '<span class="chord-mark" data-acorde-hover="'.$conteudoEscapado.'">['.$conteudoEscapado.']</span>';
             }
 
             if ($this->ehMarcacaoSecaoPublica($conteudo)) {
-                return '<span class="' . $this->classeMarcacaoSecaoPublica($conteudo) . '">' . $conteudoEscapado . '</span>';
+                return '<span class="'.$this->classeMarcacaoSecaoPublica($conteudo).'">'.$conteudoEscapado.'</span>';
             }
 
-            return '[' . $conteudoEscapado . ']';
+            return '['.$conteudoEscapado.']';
         }, $textoEscapado) ?? $textoEscapado;
 
         return nl2br($textoComCifras, false);
@@ -594,7 +592,7 @@ class IgrejaPublicaController extends Controller
 
     private function publicMissaReference(?Missa $missa): ?string
     {
-        if (!$missa) {
+        if (! $missa) {
             return null;
         }
 
