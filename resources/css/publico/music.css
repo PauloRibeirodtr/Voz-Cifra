@@ -750,9 +750,81 @@
             display: none;
         }
 
+        .public-scroll-dock__control {
+            --scroll-track: #d5c6b5;
+            --scroll-fill: #785024;
+            --scroll-thumb: #785024;
+            --scroll-thumb-border: #fffdf9;
+            min-width: 0;
+        }
+
+        body.public-theme-dark .public-scroll-dock__control {
+            --scroll-track: #69544b;
+            --scroll-fill: #f2ca8a;
+            --scroll-thumb: #ffe0a8;
+            --scroll-thumb-border: #211514;
+        }
+
         .public-scroll-dock input[type="range"] {
+            appearance: none;
+            -webkit-appearance: none;
+            display: block;
             width: 100%;
-            accent-color: #047857;
+            height: 24px;
+            margin: 0;
+            background: transparent !important;
+            cursor: pointer;
+        }
+
+        .public-scroll-dock input[type="range"]::-webkit-slider-runnable-track {
+            height: 6px;
+            border-radius: 999px;
+            background: linear-gradient(to right, var(--scroll-fill) var(--scroll-progress, 0%), var(--scroll-track) var(--scroll-progress, 0%));
+        }
+
+        .public-scroll-dock input[type="range"]::-moz-range-track {
+            height: 6px;
+            border-radius: 999px;
+            background: linear-gradient(to right, var(--scroll-fill) var(--scroll-progress, 0%), var(--scroll-track) var(--scroll-progress, 0%));
+        }
+
+        .public-scroll-dock input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            margin-top: -7px;
+            border: 2px solid var(--scroll-thumb-border);
+            border-radius: 50%;
+            background: var(--scroll-thumb);
+            box-shadow: 0 0 0 1px var(--scroll-fill);
+        }
+
+        .public-scroll-dock input[type="range"]::-moz-range-thumb {
+            box-sizing: border-box;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--scroll-thumb-border);
+            border-radius: 50%;
+            background: var(--scroll-thumb);
+            box-shadow: 0 0 0 1px var(--scroll-fill);
+        }
+
+        .public-scroll-dock input[type="range"]:focus-visible {
+            outline: 2px solid var(--scroll-fill);
+            outline-offset: 3px;
+            border-radius: 999px;
+        }
+
+        .public-scroll-dock__limits {
+            display: flex;
+            justify-content: space-between;
+            gap: 4px;
+            color: inherit;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1.4;
+            white-space: nowrap;
         }
 
         .public-scroll-dock__speed {

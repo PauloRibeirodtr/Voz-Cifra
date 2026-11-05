@@ -433,6 +433,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 let publicAutoScrollFrame = null;
                 let ultimoTempoRolagem = null;
                 let restoRolagem = 0;
+                const atualizarControleVelocidade = () => {
+                    if (!controleVelocidadeRolagem) return;
+
+                    const nivel = Number(controleVelocidadeRolagem.value);
+                    controleVelocidadeRolagem.style.setProperty('--scroll-progress', `${((nivel - 1) / 4) * 100}%`);
+                    controleVelocidadeRolagem.setAttribute('aria-valuetext', `Nível ${nivel} de 5`);
+                };
+                controleVelocidadeRolagem?.addEventListener('input', atualizarControleVelocidade);
+                atualizarControleVelocidade();
                 const obterAlvoRolagemPublica = () => document.scrollingElement || document.documentElement || document.body;
                 const pararRolagemPublica = () => {
                     if (publicAutoScrollFrame) {
@@ -458,7 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     const velocidade = Math.max(1, Math.min(5, Number(controleVelocidadeRolagem?.value || 1)));
-                    const pixelsPorSegundo = [18, 32, 52, 78, 112];
+                    const pixelsPorSegundo = [9, 16, 26, 39, 56];
                     const delta = ultimoTempoRolagem ? Math.min(80, timestamp - ultimoTempoRolagem) : 16;
                     ultimoTempoRolagem = timestamp;
                     const deslocamento = ((pixelsPorSegundo[velocidade - 1] || pixelsPorSegundo[0]) * delta) / 1000;
